@@ -1,0 +1,331 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --colorMain: #fffefb;
+    --colorPrimary: #bd4242;
+    --colorBoder: #ffffff1d;
+    --colorFont: #1e1e2f;
+    --color1: #f2f2f2;
+    --container_lg: 76%;
+    --container_md: 90%;
+    --container_sm: 94%;
+    --transition: all 400ms ease;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    color: #1e1e2f;
+    background-color: var(--colorMain);
+    padding: 0;
+}
+
+header {
+    position: fixed;
+    width: 100%;
+    z-index: 2;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+    line-height: 1.2;
+}
+
+h1 {
+    font-size: 2.4rem;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.6rem;
+}
+
+h4 {
+    font-size: 1.3rem;
+}
+
+a {
+    text-decoration: none;
+}
+
+span {
+    color: var(--colorPrimary);
+}
+
+/* General Styles */
+.left-section {
+    padding: 20px;
+}
+
+.left-section img {
+    border-radius: 10px;
+}
+
+.right-section {
+    padding: 20px;
+}
+
+.right-section .image-card {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.right-section img {
+    width: 100%;
+    height: 200px;
+    border-radius: 10px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.right-section .btn {
+    position: absolute;
+    right: 12px;
+    bottom: 0px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: #d73434;
+    padding: 10px 20px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    border: none;
+}
+
+.right-section .btn:hover {
+    background-color: #8f2828;
+}
+
+.text-overlay {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    color: white;
+    font-size: 48px;
+    font-weight: bold;
+    z-index: 2;
+}
+
+
+.accordion-item .accordion-item-design {
+    background-color: #f2f2f2;
+}
+
+
+.accordion-item .accordion-item-design:not(.collapsed) {
+    background-color: var(--colorPrimary);
+    color: #fff;
+    outline: none !important;
+    border: none !important;
+}
+
+.customers-say {
+    background-color: #f2f2f2;
+}
+
+.carousel-custom button {
+    background-color: var(--colorPrimary) !important;
+}
+
+/* Menu Bar Styles */
+.menu-bar {
+    position: absolute;
+    top: 45px;
+    left: 50px;
+    background-color: var(--colorMain);
+    padding: 10px 30px;
+    width: auto;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 15px;
+    z-index: 10;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.menu-bar i {
+    color: var(--colorFont);
+    font-size: 30px;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+/* Hover Effect: Change the menu icon image */
+.menu-bar .menu-icon:hover {
+    content: url('../img/menu (1).png');
+    /* Replace with the path to the new image */
+    transform: scale(1.1);
+    /* Slight scale effect */
+}
+
+.menu-bar .logo {
+    height: 50px;
+    margin-right: 15px;
+}
+
+.menu-bar .brand {
+    color: var(--colorFont);
+    font-weight: bold;
+    font-size: 24px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.menu-bar .nav-link {
+    color: var(--colorFont);
+    margin-right: 20px;
+    font-size: 16px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.menu-bar .nav-link:hover {
+    text-decoration: underline;
+}
+
+.menu-bar .btn-book {
+    color: var(--colorFont);
+    border: 2px solid var(--colorFont);
+    padding: 5px 15px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.menu-bar .btn-book:hover {
+    background-color: var(--colorFont);
+    color: white;
+}
+
+.btn-user {
+    margin-left: 20px;
+}
+
+.cart-icon {
+    margin: 0 10px 0 30px;
+    font-size: 25px !important;
+}
+
+.user p {
+    color: var(--colorFont);
+    font-weight: bold;
+}
+
+.left-section::-webkit-scrollbar {
+    display: none;
+    /* Ẩn thanh cuộn */
+}
+
+.what-can-we-do .accordion {
+    max-height: 900px;
+}
+
+#decrement {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+
+#increment {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+
+.hot-deal input[type="number"] {
+    -moz-appearance: textfield;
+    text-align: center;
+    font-size: 16px;
+    border: none;
+    background-color: var(--body-color);
+    color: #202030;
+    width: 35px;
+}
+
+.hot-deal button {
+    color: #fff;
+    background-color: var(--colorPrimary);
+    border: 1px solid var(--border-color);
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.card-custom {
+    width: 280px;
+    /* background-color: var(--); */
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+
+    /* Menu Bar Styles */
+    .menu-bar {
+        position: relative;
+        top: 0;
+        left: 0;
+        border-radius: 0;
+    }
+
+    .menu-bar i {
+        float: right;
+    }
+
+    .nav-link {
+        display: none;
+    }
+
+    .about img {
+        width: 100%;
+    }
+
+    .about h4 {
+        font-size: 1rem;
+        text-align: center;
+    }
+
+    .about p {
+        font-size: 0.9rem;
+        padding-top: 0 !important;
+        margin: 0;
+    }
+
+    .hide {
+        display: none;
+    }
+
+    .help {
+        padding-bottom: 24px;
+    }
+
+    .what-can-we-do h4 {
+        font-size: 1rem;
+    }
+
+    .what-can-we-do button,
+    .what-can-we-do .accordion-body,
+    .what-can-we-do p {
+        font-size: 0.9rem;
+    }
+
+    .user p {
+        display: none;
+    }
+
+    .hot-deal .row {
+        display: inline;
+    }
+
+    .card-custom {
+    }
+}

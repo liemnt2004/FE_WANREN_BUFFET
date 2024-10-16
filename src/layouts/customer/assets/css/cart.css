@@ -1,0 +1,265 @@
+.cart-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  /* color: var(--colorPrimary); */
+  margin-bottom: 30px;
+}
+
+.breadcrumb-section {
+  display: flex;
+  align-items: center;
+  padding: 60px 0 60px;
+}
+
+.breadcrumb__text h2 {
+  font-size: 46px;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.breadcrumb__option a {
+  display: inline-block;
+  font-size: 16px;
+  color: #ffffff;
+  font-weight: 700;
+  margin-right: 20px;
+  position: relative;
+}
+
+.breadcrumb__option a:after {
+  position: absolute;
+  right: -12px;
+  top: 13px;
+  height: 1px;
+  width: 10px;
+  background: #ffffff;
+  content: "";
+}
+
+.breadcrumb__option span {
+  display: inline-block;
+  font-size: 16px;
+  color: #ffffff;
+}
+
+.cart-heading::before,
+.cart-heading::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--colorFont);
+  margin: 0 15px;
+}
+
+/* Shopping Cart Styles */
+.shopping-cart {
+  background-color: var(--colorMain);
+  margin: 50px auto 0 auto;
+  width: 80%;
+}
+
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+}
+
+.cart-table th,
+.cart-table td {
+  padding: 10px;
+  text-align: left;
+}
+
+.cart-table th {
+  color: var(--colorMain);
+  background-color: #000000;
+}
+
+.cart-table tr:nth-child(even) {
+  background-color: var(--colorBoder);
+}
+
+.cart-table tr:nth-child(odd) {
+  background-color: var(--colorBoder);
+}
+
+.cart-table .delete-btn {
+  color: var(--colorPrimary);
+  cursor: pointer;
+}
+
+.cart-items {
+  display: block;
+  max-height: 300px;
+  /* Chiều cao tối đa cho bảng */
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  /* Cuộn dọc khi vượt quá chiều cao */
+}
+
+.cart-table thead,
+.cart-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  /* Đảm bảo các cột thẳng hàng */
+}
+
+.cart-table .delete-btn:hover {
+  text-decoration: underline;
+}
+
+.product-info {
+  display: flex;
+  align-items: center;
+}
+
+.product-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-right: 15px;
+}
+
+.product-name {
+  font-size: 16px;
+  color: #1e1e2f;
+}
+
+/* Style for Quantity Control */
+.quantity-control {
+  display: flex;
+  align-items: center;
+}
+
+.quantity-control button {
+  background-color: transparent;
+  border: none;
+  color: #1e1e2f;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.quantity-control button:hover {
+  color: #ff5947;
+}
+
+.quantity-control .quantity-input {
+  width: 40px;
+  text-align: center;
+  margin: 0 5px;
+  border: none;
+  background-color: transparent;
+  color: var(--colorFont);
+  font-size: 16px;
+}
+
+/* Total Price and Action Buttons */
+.cart-footer {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--colorFont);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.total-price {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.total-label {
+  color: var(--colorFont);
+}
+
+.total-amount {
+  color: #ff4d4d;
+  margin-left: 10px;
+  font-size: 1.5em;
+}
+
+/* .action-buttons {
+  display: flex;
+  gap: 10px;
+} */
+/* 
+.action-buttons .btn {
+  padding: 10px 20px;
+  font-size: 1em;
+  border-radius: 0;
+  border-radius: 20px;
+}
+
+.action-buttons .btn-danger {
+  background-color: var(--colorPrimary);
+}
+
+.action-buttons .btn-outline-secondary {
+  border-color: #6c757d;
+  color: #6c757d;
+}
+
+.action-buttons .btn-outline-secondary:hover {
+  border: 1px solid var(--colorPrimary);
+  background-color: transparent;
+}
+
+.action-buttons .btn-danger:hover {
+  background-color: transparent;
+  color: var(--colorPrimary);
+
+} */
+
+.btn-outline-secondary {
+  color: var(--colorFont);
+  border: 2px solid var(--colorFont);
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-weight: bold;
+  background: none;
+}
+
+.btn-danger {
+  color: var(--colorPrimary);
+  border: 2px solid var(--colorPrimary);
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-weight: bold;
+  background: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .menu-bar {
+    left: 20px;
+    right: 20px;
+    top: 10px;
+    justify-content: space-between;
+  }
+
+  .product-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .cart-table th,
+  .cart-table td {
+    padding: 5px;
+  }
+
+  .quantity-control .quantity-input {
+    width: 30px;
+    font-size: 14px;
+  }
+
+  .quantity-control button {
+    padding: 5px 8px;
+    font-size: 16px;
+  }
+}

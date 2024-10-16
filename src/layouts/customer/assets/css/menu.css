@@ -1,0 +1,316 @@
+.tinh-height {
+    height: 94.5vh;
+}
+
+.tinh-heightContainer {
+    height: 100vh;
+}
+
+.tinh-heightCard {
+    height: 25%;
+}
+
+.tinh-height100 {
+    height: 100%;
+}
+
+.tinh-height100Trangsition {
+    height: 100%;
+    transition: all 0.5s ease;
+}
+
+.tinh-height50 {
+    height: 50%;
+}
+
+.tinh-height45 {
+    height: 45%;
+}
+
+.tinh-height25 {
+    height: 25%;
+}
+
+.tinh-height25Transition {
+    height: 25%;
+    transition: all 0.5s ease;
+}
+
+.tinh-overflow {
+    overflow: hidden !important;
+}
+
+.tinh-overflowScroll {
+    overflow: hidden;
+    padding: 10px;
+    scrollbar-gutter: stable;
+}
+
+.tinh-overflowScroll:hover {
+    overflow-y: auto;
+    /* Tự động thêm thanh cuộn nếu nội dung vượt quá chiều cao */
+}
+
+.tinh-hoverBorder {
+    border: transparent 1px solid;
+}
+
+.tinh-hoverBorder:hover {
+    border: #e59191 1px solid;
+}
+
+.tinh-borderMain {
+    border: #e59191 1px solid;
+}
+
+.tinh-hiden {
+    height: 0;
+    opacity: 0;
+    transition: all 0.5s ease;
+}
+
+/* Custom Scrollbar Styles (chỉ hỗ trợ trên WebKit browsers) */
+.tinh-overflowScroll::-webkit-scrollbar {
+    width: 5px;
+    /* Chiều rộng của thanh cuộn */
+}
+
+.tinh-overflowScroll::-webkit-scrollbar-track {
+
+    border-radius: 10px;
+    /* Bo tròn track */
+}
+
+.tinh-overflowScroll::-webkit-scrollbar-thumb {
+    background-color: var(--colorPrimary);
+    /* Màu của thanh cuộn */
+    border-radius: 10px;
+    /* Bo tròn thanh cuộn */
+
+}
+
+.tinh-overflowScroll::-webkit-scrollbar-thumb:hover {
+    background-color: #cd7f32;
+    /* Đổi màu khi hover */
+}
+
+
+
+
+.tinh-rounded {
+    border-radius: 15px;
+}
+
+.tinh-pl {
+    padding-left: 1rem;
+}
+
+.tinh-mt7 {
+    margin-top: 3.5rem;
+}
+
+.tinh-mt6 {
+    margin-top: 3rem;
+}
+
+.tinh-mt5 {
+    margin-top: 2.5rem;
+}
+
+.tinh-bgc {
+    background-color: #fffbee !important;
+}
+
+.tinh-bgcHightlight {
+    background-color: #c8753e !important;
+}
+
+.tinh-bgcTransparent {
+    background-color: transparent;
+}
+
+.tinh-textColor {
+    color: var(--colorFont);
+    font-weight: bold;
+}
+
+.tinh-textColorHighlight {
+    color: #c8753e;
+}
+
+.tinh-scaleText {
+    width: auto;
+}
+
+.tinh-navWall {
+    position: relative;
+    /* Để thêm đường phân cách */
+}
+
+.tinh-navWall:not(:last-child)::after {
+    content: "";
+    /* Tạo đường kẻ */
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 0.5px;
+    background-color: var(--colorFont);
+    /* Màu của đường phân cách */
+}
+
+.tinh-fs8 {
+    font-size: 8px;
+}
+
+.tinh-fs10 {
+    font-size: 10px;
+}
+
+.tinh-fs12 {
+    font-size: 12px;
+}
+
+.tinh-spaceProduct {
+    margin-top: 5px !important;
+    margin-bottom: 5px !important;
+}
+
+
+
+
+
+
+
+
+
+
+.tinh-customNumberInput {
+    width: 100%;
+    /* Đặt chiều rộng cho input */
+    height: 100%;
+    /* Chiều cao của input */
+    font-size: 14px;
+    /* Kích thước chữ */
+    outline: none;
+    /* Loại bỏ viền xanh khi input được chọn */
+    border: 0;
+    background-color: #fffbee;
+    transition: all 0.5s ease;
+}
+
+
+.tinh-customNumberInput::-webkit-inner-spin-button,
+.tinh-customNumberInput::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    /* Loại bỏ các nút spin (tăng/giảm số) */
+    margin: 0;
+    /* Xóa khoảng cách mặc định */
+}
+
+.tinh-decrement,
+.tinh-increment {
+    width: 100%;
+    border: 0;
+    background-color: #fffbee;
+}
+
+
+
+
+.tinh-dropdownItem {
+    border: transparent 1px solid;
+}
+
+.tinh-dropdownItem:hover {
+    border: #cd7f32 1px solid;
+    border-radius: 5px;
+    background-color: transparent;
+}
+
+.tinh-borderSearch {
+    border: #cd7f32 1px solid;
+    border-radius: 5px;
+    outline: none;
+}
+
+.menu {
+    /* background-color: #f2f2f2; */
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid var(--colorPrimary);
+}
+
+.form-control {
+    background-color: transparent;
+    /* color: #fff; */
+    border: none;
+    border-bottom: 1px solid #555;
+    padding: 5px 0;
+    font-size: 15px;
+    border-radius: 0;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-bottom: 1px solid var(--colorPrimary);
+}
+
+.offcanvas,
+.offcanvas-lg,
+.offcanvas-md,
+.offcanvas-sm,
+.offcanvas-xl,
+.offcanvas-xxl {
+    width: 505px !important;
+}
+
+.add-to-cart button {
+    color: #fff;
+    background-color: var(--colorPrimary);
+    border: 1px solid var(--border-color);
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+#increment {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+
+span {
+    color: var(--colorFont);
+    padding: 0 !important;
+}
+
+.total-price .table {
+    margin-top: 10px;
+    border-top: 3px solid var(--colorPrimary);
+}
+
+td input {
+    width: 50px;
+    height: 30px;
+    padding: 5px;
+}
+
+td a {
+    color: var(--colorPrimary);
+    font-size: 15px;
+    padding-top: 30px;
+    text-decoration: underline;
+}
+
+.cart-info img {
+    margin-right: 10px;
+}
+
+.btn-danger {
+    color: var(--colorPrimary);
+    border: 2px solid var(--colorPrimary);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    background: none;
+  }

@@ -1,0 +1,12 @@
+.promotion img{
+    border-radius: 10px;
+}
+
+.btn-danger {
+    color: var(--colorPrimary);
+    border: 2px solid var(--colorPrimary);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-weight: bold;
+    background: none;
+  }
