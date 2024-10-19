@@ -16,14 +16,64 @@ import publicAvif from './assets/img/public.avif';
 import khichi from './assets/img/Kichi.svg';
 import loginfooter from './assets/img/Cream and Black Simple Illustration Catering Logo.png';
 import ProductModel from "../../models/ProductModel";
-import {getAll} from "../../api/productApi";
+import {getAll} from "../../api/apiCustommer/productApi";
+import {} from 'react-router'
 
 
-
+interface CartItem {
+    productId: number;
+    productName: string;
+    price: number;
+    image:string;
+    quantity: number;
+}
 const IndexCustomer: React.FC = ()=>{
     let [listProduct, setListProduct] = useState<ProductModel[]>([]);
-    const [loading, setLoading] = useState(true); // Updated state for loading effect
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    useEffect(() => {
+        const storedCart = sessionStorage.getItem('cartItems');
+        if (storedCart) {
+            setCartItems(JSON.parse(storedCart));
+        }
+    }, []);
+
+    function addProduct(cart: CartItem) {
+        // Check if the product already exists in the cart
+        const existingCartItem = cartItems.find(item => item.productId === cart.productId);
+
+        let updatedCartItems;
+
+        if (existingCartItem) {
+            // If the product exists, increase its quantity
+            updatedCartItems = cartItems.map(item =>
+                item.productId === cart.productId
+                    ? { ...item, quantity: item.quantity + 1 }
+                    : item
+            );
+        } else {
+            // If the product does not exist, add it to the cart
+            const newCartItem: CartItem = {
+                productId: cart.productId,
+                productName: cart.productName,
+                price: cart.price,
+                quantity: cart.quantity,
+                image: cart.image,
+            };
+
+            updatedCartItems = [...cartItems, newCartItem];
+        }
+
+        // Update the state with the updated cart items
+        setCartItems(updatedCartItems);
+
+        // Store the updated cart in session storage
+        sessionStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+    }
+
+
 
     useEffect(()=>{
        getAll()
@@ -143,23 +193,36 @@ const IndexCustomer: React.FC = ()=>{
                                     {listProduct.map((product, index) => (
                                         <React.Fragment key={index}>
                                             <div className="col-6 col-md-3">
-                                                <div className="card border border-0 p-3 card-custom"
-                                                     data-bs-toggle="modal"
-                                                     data-bs-target={`#productModal${product.productId}`}>
+                                                <div className="card border border-0 p-3 card-custom text-center"
+                                                     >
                                                     <img src={product.image || lau3} className="rounded-3"
                                                          alt={product.productName || 'Product Image'}
-                                                         style={{height: 200, width: 250}}/>
+                                                         style={{height: 200, width: 250}} data-bs-toggle="modal"
+                                                         data-bs-target={`#productModal${product.productId}`} />
                                                     <div className="card-body p-0">
                                                         <div className="d-flex my-2" style={{fontSize: "14px"}}>
-                                                            <img src={datHang} className="me-2" width="20"
+                                                            <img src={product.image || lau3} className="me-2" width="20"
                                                                  alt="Kichi"/> Kichi
                                                         </div>
                                                         <h5 className="card-title fs-6 m-0 p-0">{product.productName}</h5>
                                                     </div>
                                                     <div
-                                                        className="mt-4 mb-2 d-flex justify-content-between align-items-center">
-                                                        <h6 className="card__price fw-bold">{product.price} đ</h6>
+                                                        className="mt-4 mb-2 d-flex justify-content-around align-items-center">
+                                                        <h6 className="card__price fw-bold">{product.price} VNĐ</h6>
+                                                        <button
+                                                            id="increment"
+                                                            onClick={() => addProduct({
+                                                                productId: product.productId,
+                                                                productName: product.productName,
+                                                                price: product.price,
+                                                                quantity: 1,  // Assuming you're incrementing quantity by 1
+                                                                image: product.image
+                                                            })}
+                                                        >
+                                                            <i className="bi bi-plus-lg"></i>
+                                                        </button>
                                                     </div>
+
                                                 </div>
                                             </div>
 
@@ -200,7 +263,13 @@ const IndexCustomer: React.FC = ()=>{
                                                                         </div>
                                                                     </div>
                                                                     <div className="control-btn-add-to-cart">
-                                                                        <button>Thêm vào giỏ hàng</button>
+                                                                        <button onClick={() => addProduct({
+                                                                            productId: product.productId,
+                                                                            productName: product.productName,
+                                                                            price: product.price,
+                                                                            quantity: 1,  // Assuming you're incrementing quantity by 1
+                                                                            image: product.image
+                                                                        })}>Thêm vào giỏ hàng</button>
                                                                     </div>
                                                                 </div>
                                                             </div>

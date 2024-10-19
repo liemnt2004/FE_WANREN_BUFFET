@@ -1,0 +1,130 @@
+.header {
+    background-color: #c0392b;
+    /* Red background */
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+    font-size: 1.5rem;
+    font-weight: bold;
+    position: relative;
+
+}
+
+.header .cart-icon {
+    font-size: 1.5rem;
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+}
+
+.order_history .card {
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    padding: 0;
+    font-size: 15px;
+}
+
+.order-header {
+    /* Light gray header background */
+    font-weight: bold;
+    font-size: 1.2rem;
+    padding: 15px;
+}
+
+.order-total {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #212529;
+    /* Darker color for contrast */
+}
+
+.order-info,
+.product-info,
+.delivered-info {
+    color: #6c757d;
+    /* Muted gray text */
+}
+
+.product-info h5 {
+    color: #343a40;
+    /* Slightly darker gray for product names */
+}
+
+.card-footer {
+    background-color: #f8f9fa;
+    /* Light gray footer background */
+    border-top: 1px solid #dcdcdc;
+    /* Light gray border */
+}
+
+.btn-outline-primary {
+    color: #007bff;
+    /* Standard bootstrap blue */
+    border-color: #007bff;
+}
+
+.btn-outline-primary:hover {
+    background-color: #007bff;
+    color: #ffffff;
+}
+
+.btn-outline-secondary {
+    color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    color: #ffffff;
+}
+
+.modal-content {
+    background-color: #ffffff;
+    /* White modal background */
+    border: 1px solid #dcdcdc;
+    /* Light gray border */
+}
+
+.modal-header,
+.modal-footer {
+    background-color: #f1f3f5;
+    /* Light gray modal header/footer */
+}
+
+.modal-title {
+    color: #343a40;
+    /* Dark gray title */
+}
+
+.delivered-info {
+    color: #28a745;
+    /* Soft green for positive messages */
+}
+
+.btn-product,
+.btn-buy-again,
+.btn-view-order,
+.btn-view-invoice {
+    font-size: 0.85rem;
+    margin-right: 5px;
+}
+/* 
+.btn-view-order,
+.btn-view-invoice {
+    background-color: #e2e6ea;
+} */
+
+.btn-reservation {
+    color: var(--colorPrimary);
+    border: 2px solid var(--colorPrimary);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    background: none;
+}
+
+.btn-reservation:hover {
+    background-color: var(--colorPrimary);
+    color: white;
+}
+

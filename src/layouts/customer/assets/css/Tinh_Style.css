@@ -1,0 +1,444 @@
+.tinh-height {
+    height: 94.5vh;
+}
+
+.tinh-heightContainer {
+    height: 100vh;
+}
+
+.tinh-heightCard {
+    height: 25%;
+}
+
+.tinh-height100 {
+    height: 100%;
+}
+
+.tinh-height90 {
+    height: 90%;
+}
+
+.tinh-height85 {
+    height: 85%;
+}
+
+.tinh-height80 {
+    height: 80%;
+}
+
+.tinh-height100Trangsition {
+    height: 100%;
+    transition: all 0.5s ease;
+}
+
+.tinh-height60 {
+    height: 60%;
+}
+
+.tinh-height50 {
+    height: 50%;
+}
+
+.tinh-height45 {
+    height: 45%;
+}
+
+.tinh-height40 {
+    height: 40%;
+}
+
+.tinh-height30 {
+    height: 30%;
+}
+
+.tinh-height25 {
+    height: 25%;
+}
+
+.tinh-height10 {
+    height: 10%;
+}
+
+.tinh-height25Transition {
+    height: 25%;
+    transition: all 0.5s ease;
+}
+
+
+.tinh-width50 {
+    width: 50%;
+}
+
+.tinh-width40 {
+    width: 40%;
+}
+
+.tinh-width35 {
+    width: 35%;
+}
+
+.tinh-width25 {
+    width: 25%;
+}
+
+.tinh-width20 {
+    width: 20%;
+}
+
+.tinh-overflow {
+    overflow: hidden !important;
+}
+
+.tinh-overflowScroll {
+    overflow: hidden;
+    padding: 10px;
+    scrollbar-gutter: stable;
+}
+
+.tinh-overflowScroll:hover {
+    overflow-y: auto;
+    /* Tự động thêm thanh cuộn nếu nội dung vượt quá chiều cao */
+}
+
+.tinh-hoverBorder {
+    border: transparent 1px solid;
+}
+
+.tinh-hoverBorder:hover {
+    border: #e59191 1px solid;
+}
+
+.tinh-borderMain {
+    border: 2px solid;
+}
+
+.tinh-hiden {
+    height: 0;
+    opacity: 0;
+    transition: all 0.5s ease;
+}
+
+.tinh-no-outline:focus {
+    outline: none;
+    box-shadow: none;
+    border: var(--colorPrimary) 1px solid;
+}
+
+
+.transition-all {
+    transition: all 0.5s ease;
+    /* Thời gian chuyển đổi */
+}
+
+.tinh-none {
+    display: none;
+}
+
+.tinh-show {
+    display: block;
+}
+
+#leftPanel.col-9 {
+    flex: 0 0 75%;
+    /* Cố định kích thước 75% */
+    max-width: 75%;
+}
+
+#leftPanel.col-3 {
+    flex: 0 0 25%;
+    /* Khi thu nhỏ sẽ còn 25% */
+    max-width: 25%;
+}
+
+#rightPanel.col-3 {
+    flex: 0 0 25%;
+    /* Cố định kích thước 25% */
+    max-width: 25%;
+}
+
+#rightPanel.col-9 {
+    flex: 0 0 75%;
+    /* Khi mở rộng sẽ chiếm 75% */
+    max-width: 75%;
+}
+
+
+
+/* Custom Scrollbar Styles (chỉ hỗ trợ trên WebKit browsers) */
+.tinh-overflowScroll::-webkit-scrollbar {
+    width: 5px;
+    /* Chiều rộng của thanh cuộn */
+}
+
+.tinh-overflowScroll::-webkit-scrollbar-track {
+
+    border-radius: 10px;
+    /* Bo tròn track */
+}
+
+.tinh-overflowScroll::-webkit-scrollbar-thumb {
+    background-color: var(--colorPrimary);
+    /* Màu của thanh cuộn */
+    border-radius: 10px;
+    /* Bo tròn thanh cuộn */
+
+}
+
+.tinh-overflowScroll::-webkit-scrollbar-thumb:hover {
+    background-color: #cd7f32;
+    /* Đổi màu khi hover */
+}
+
+
+
+
+.tinh-rounded {
+    border-radius: 15px;
+}
+
+.tinh-pl {
+    padding-left: 1rem;
+}
+
+.tinh-mr {
+    margin-right: 1rem;
+}
+
+.tinh-mt7 {
+    margin-top: 3.5rem;
+}
+
+.tinh-mt6 {
+    margin-top: 3rem;
+}
+
+.tinh-mt5 {
+    margin-top: 2.5rem;
+}
+
+.tinh-bgc {
+    background-color: #fffbee !important;
+}
+
+.tinh-bgcHighlight {
+    background-color: #fff8d5 !important;
+}
+
+.tinh-bgcWhite {
+    background-color: white;
+}
+
+.tinh-bgcTransparent {
+    background-color: transparent;
+}
+
+.tinh-textColor {
+    color: var(--colorMain);
+}
+
+.tinh-textColorHighlight {
+    color: #c8753e;
+}
+
+.tinh-scaleText {
+    width: auto;
+}
+
+.tinh-navWall {
+    position: relative;
+    /* Để thêm đường phân cách */
+}
+
+.tinh-navWall:not(:last-child)::after {
+    content: "";
+    /* Tạo đường kẻ */
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 0.5px;
+    background-color: #c8753e;
+    /* Màu của đường phân cách */
+}
+
+.tinh-fs8 {
+    font-size: 8px !important;
+}
+
+.tinh-fs10 {
+    font-size: 10px !important;
+}
+
+.tinh-fs12 {
+    font-size: 12px !important;
+}
+
+.tinh-fs14 {
+    font-size: 14px !important;
+}
+
+.tinh-spaceProduct {
+    margin-top: 5px !important;
+    margin-bottom: 5px !important;
+}
+
+
+
+
+.tinh-customNumberInput {
+    width: 100%;
+    /* Đặt chiều rộng cho input */
+    height: 100%;
+    /* Chiều cao của input */
+    font-size: 14px;
+    /* Kích thước chữ */
+    outline: none;
+    /* Loại bỏ viền xanh khi input được chọn */
+    border: 0;
+    background-color: #fffbee;
+    transition: all 0.5s ease;
+}
+
+
+.tinh-customNumberInput::-webkit-inner-spin-button,
+.tinh-customNumberInput::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    /* Loại bỏ các nút spin (tăng/giảm số) */
+    margin: 0;
+    /* Xóa khoảng cách mặc định */
+}
+
+.tinh-decrement,
+.tinh-increment {
+    width: 100%;
+    border: 0;
+    background-color: #fffbee;
+}
+
+
+
+
+.tinh-dropdownItem {
+    border: transparent 1px solid;
+}
+
+.tinh-dropdownItem:hover {
+    border: var(--colorPrimary) 1px solid;
+    border-radius: 5px;
+    background-color: transparent;
+}
+
+.tinh-borderSearch {
+    border: var(--colorPrimary) 1px solid;
+    border-radius: 5px;
+    outline: none;
+}
+
+.tinh-border-shadow {
+    border-bottom: 1px solid #ddd;
+    /* Đường viền dưới */
+    box-shadow: 0 4px 2px -2px gray;
+    /* Hiệu ứng đổ bóng */
+}
+
+.tinh-border-right {
+    border-right: 1px solid #ddd;
+    /* Đường viền bên phải */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    /* Hiệu ứng đổ bóng */
+}
+
+.tinh-divider {
+    border: 0;
+    /* Xóa viền mặc định của <hr> */
+    height: 4px;
+    /* Độ dày của thanh phân cách */
+    background: linear-gradient(to right, #555 30%, rgba(0, 0, 0, 0) 100%);
+    /* Gradient đậm ở bên trái */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    /* Đổ bóng mạnh hơn để tạo độ sâu rõ rệt */
+
+}
+
+.tinh-circle {
+    border-radius: 50%;
+}
+
+
+.tinh-vintage-style {
+    text-align: center;
+    /* Căn giữa nội dung */
+    padding: 20px;
+    /* Khoảng cách padding để các thông tin không quá sát nhau */
+}
+
+.tinh-vintage-style h2 {
+    font-size: 25px;
+    /* Kích thước tiêu đề */
+    margin-bottom: 40px;
+    /* Khoảng cách giữa tên và thông tin bên dưới */
+}
+
+.tinh-vintage-style p {
+    font-size: 15px;
+    /* Kích thước chữ thông tin */
+    font-style: italic;
+    /* Kiểu chữ nghiêng để thêm phần cổ điển */
+}
+
+
+
+
+.tinh-btn-list-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.tinh-btn-list-group a {
+    text-decoration: none;
+    border: 1px solid rgba(99, 99, 99, 0.2);
+    padding: 10px;
+    color: #000;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    border-radius: 20px;
+}
+
+.tinh-btn-list-group span {
+    position: relative;
+    /* z-index coz when we put bg to before and after this span text will not be visible */
+    z-index: 3;
+    color: #000;
+}
+
+
+@media (max-width: 576px) {
+    #leftPanel {
+        padding: 10px;
+    }
+
+    #rightPanel {
+        padding: 10px 0 !important;
+    }
+
+    .tinh-btn-list-group a {
+        font-size: 0.875rem;
+    }
+
+    .tinh-fs10 {
+        font-size: 0.75rem;
+    }
+
+    .tinh-height25 {
+        height: 15vh;
+    }
+
+    .tinh-height30 {
+        height: 20vh;
+    }
+}
