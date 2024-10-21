@@ -10,6 +10,9 @@ import nuocGaoDuaHau from './assets/img/nuoc-gao-dua-hau_1_1.jpg';
 import nuocGaoOiXoai from './assets/img/nuoc-gao-oi-xoai_1_1.jpg';
 import bannerBuffet from './assets/img/banner-gia-buffet-kich-kichi-160824.jpg';
 import ProductMenu from "./productMenu";
+import { fetchProductsByType, getProductHot } from "../../api/apiCustommer/productApi";
+import ProductModel from "../../models/ProductModel";
+
 
 // Define the Category type
 type Category = 'Mains' | 'Desserts' | 'Drinks';
@@ -25,31 +28,43 @@ interface CartItem {
 const MenuProductCustomer: React.FC = () => {
     const [selectedCategory, setSelectedCategory] = useState<Category>('Mains');
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [listproduct, setlistproduct] = useState<ProductModel[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
+    // Load cart items from sessionStorage on component mount
     useEffect(() => {
         const storedCart = sessionStorage.getItem('cartItems');
         if (storedCart) {
-            setCartItems(JSON.parse(storedCart));
+            try {
+                const parsedCart: CartItem[] = JSON.parse(storedCart);
+                setCartItems(parsedCart);
+            } catch (e) {
+                console.error("Failed to parse cartItems from sessionStorage:", e);
+                setCartItems([]);
+            }
         }
     }, []);
 
-
-
-    const products: Record<Category, CartItem[]> = {
-        Mains: [
-            { productId: 1, productName: "Lẩu nấm", price: 49000, image: launam, quantity: 0 },
-            { productId: 2, productName: "Nước gạo dưa hấu", price: 49000, image: nuocGaoDuaHau, quantity: 0 }
-        ],
-        Desserts: [
-            { productId: 8, productName: "Nước gạo ổi xoài", price: 49000, image: nuocGaoOiXoai, quantity: 0 }
-        ],
-        Drinks: [
-            { productId: 9, productName: "Nước ép chanh dây", price: 49000, image: nuocGaoDuaHau, quantity: 0 }
-        ]
-    };
+    // Fetch products when selectedCategory changes
+    useEffect(() => {
+        setLoading(true);
+        setError(null);
+        fetchProductsByType(selectedCategory)
+            .then(product => {
+                setlistproduct(product);
+            })
+            .catch(err => {
+                setError("Failed to load products.");
+                console.error(err);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }, [selectedCategory]);
 
     // Handle add to cart
-    const addToCart = (product: CartItem) => {
+    const addToCart = (product: ProductModel) => {
         const existingProductIndex = cartItems.findIndex(item => item.productId === product.productId);
 
         if (existingProductIndex !== -1) {
@@ -58,15 +73,33 @@ const MenuProductCustomer: React.FC = () => {
             setCartItems(updatedCartItems);
             sessionStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
         } else {
-            const newCartItems = [...cartItems, { ...product, quantity: 1 }];
+            const newCartItem: CartItem = {
+                productId: product.productId,
+                productName: product.productName,
+                price: product.price,
+                quantity: 1,
+                image: product.image,
+            };
+            const newCartItems = [...cartItems, newCartItem];
             setCartItems(newCartItems);
             sessionStorage.setItem('cartItems', JSON.stringify(newCartItems));
         }
     };
 
-
     const renderProducts = () => {
-        return products[selectedCategory].map((product) => (
+        if (loading) {
+            return <div className="text-center">Loading products...</div>;
+        }
+
+        if (error) {
+            return <div className="text-danger text-center">{error}</div>;
+        }
+
+        if (listproduct.length === 0) {
+            return <div className="text-center">No products available in this category.</div>;
+        }
+
+        return listproduct.map((product) => (
             <ProductMenu
                 key={product.productId}
                 id={product.productId}
@@ -90,8 +123,6 @@ const MenuProductCustomer: React.FC = () => {
                                         className="active" aria-current="true" aria-label="Slide 1"></button>
                                 <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"
                                         aria-label="Slide 2"></button>
-                                <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2"
-                                        aria-label="Slide 3"></button>
                             </div>
                             <div className="carousel-inner">
                                 <div className="carousel-item active">
@@ -111,11 +142,11 @@ const MenuProductCustomer: React.FC = () => {
                     <div className="menu"
                          style={{ height: 'calc(100vh - 40px)', boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px' }}>
                         <div className="row d-flex justify-content-center mb-3">
-                            <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall"
+                            <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall" style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}
                                onClick={() => setSelectedCategory('Mains')}>Mains</a>
-                            <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall"
+                            <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall" style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}
                                onClick={() => setSelectedCategory('Desserts')}>Desserts</a>
-                            <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall"
+                            <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall" style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}
                                onClick={() => setSelectedCategory('Drinks')}>Drinks</a>
                         </div>
                         <div>

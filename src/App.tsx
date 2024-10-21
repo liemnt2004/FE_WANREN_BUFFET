@@ -7,6 +7,7 @@ import ReservationForm from "./layouts/customer/reservationCustomer";
 import PromotionCustomer from "./layouts/customer/promotionCustomer";
 import Cart from "./layouts/customer/cartCustomer";
 import MenuProfile from "./layouts/customer/profileCustomer";
+import SignIn from "./layouts/customer/SignIn";
 
 
 function App() {
@@ -36,6 +37,8 @@ export function Routing() {
                 <Route path="/promotion" element={<PromotionCustomer/>}></Route>
                 <Route path="/cart" element={<Cart/>}></Route>
                 <Route path="/profile" element={<MenuProfile/>}></Route>
+                <Route path="/login" element={<SignIn/>}></Route>
+
             </Routes>
         </>
     );

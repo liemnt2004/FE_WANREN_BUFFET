@@ -16,7 +16,7 @@ import publicAvif from './assets/img/public.avif';
 import khichi from './assets/img/Kichi.svg';
 import loginfooter from './assets/img/Cream and Black Simple Illustration Catering Logo.png';
 import ProductModel from "../../models/ProductModel";
-import {getAll} from "../../api/apiCustommer/productApi";
+import { getAllProduct, getProductHot} from "../../api/apiCustommer/productApi";
 import {} from 'react-router'
 
 
@@ -76,12 +76,15 @@ const IndexCustomer: React.FC = ()=>{
 
 
     useEffect(()=>{
-       getAll()
+        getProductHot()
            .then(product =>{
+               console.log(product)
                setListProduct(product)
            })
            .catch()
     },[])
+
+
 
     return (
         <div className="container-fluid">

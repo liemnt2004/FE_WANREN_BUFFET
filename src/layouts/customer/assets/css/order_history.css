@@ -43,7 +43,10 @@
 .order-info,
 .product-info,
 .delivered-info {
+    display: flex;
+    flex-direction: column;
     color: #6c757d;
+    align-items: start;
     /* Muted gray text */
 }
 
