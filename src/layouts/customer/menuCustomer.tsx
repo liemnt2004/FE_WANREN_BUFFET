@@ -12,7 +12,9 @@ function MenuCustomer() {
             <Link to="/menu" className="nav-link">Thực Đơn</Link>
             <Link to="/promotion" className="nav-link">Ưu Đãi</Link>
             <Link to="/reservation" className="btn-book">Đặt Bàn</Link>
-            <Link to="/cart"><i className="bi bi-bag cart-icon"></i></Link>
+            <a data-bs-toggle="offcanvas"
+               data-bs-target="#offcanvasCart"
+               aria-controls="offcanvasCart"><i className="bi bi-bag cart-icon"></i></a>
 
             <div className="d-flex align-items-center user">
                 <Link to="/profile" className="btn-user"><i className="bi bi-person-fill"></i></Link>

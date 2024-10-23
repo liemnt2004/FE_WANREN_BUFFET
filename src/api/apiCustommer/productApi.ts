@@ -116,7 +116,7 @@ export async function SearchProduct(foodname: string): Promise<ProductModel[]> {
                 );
                 rs.push(productModel);
             }
-            console.log(rs)
+
             return rs;
         } else {
             return [];

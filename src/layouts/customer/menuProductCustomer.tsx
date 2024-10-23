@@ -1,55 +1,35 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import './assets/css/styles.css';
 import './assets/css/menu.css';
 
-// Importing images directly
+// Import hình ảnh
 import websiteGreen from './assets/img/website_green.jpg';
 import bannerHome from './assets/img/Banner-Hompage-_1500W-x-700H_px.jpg';
-
 import bannerBuffet from './assets/img/banner-gia-buffet-kich-kichi-160824.jpg';
 
 import ProductModel from "../../models/ProductModel";
-
 import useDebounce from "./useDebounce";
-import { fetchProductsByType, getProductHot, SearchProduct } from "../../api/apiCustommer/productApi";
-
+import { fetchProductsByType, SearchProduct } from "../../api/apiCustommer/productApi";
 import ProductMenu from "./productMenu";
+import { CartContext } from "./CartContext";
 
-// Define the Category type
+// Định nghĩa loại Category
 type Category = 'Mains' | 'Desserts' | 'Drinks';
-
-interface CartItem {
-    productId: number;
-    productName: string;
-    price: number;
-    image: string;
-    quantity: number;
-}
 
 const MenuProductCustomer: React.FC = () => {
     const [selectedCategory, setSelectedCategory] = useState<Category>('Mains');
-    const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [listProduct, setListProduct] = useState<ProductModel[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const [searchTerm, setSearchTerm] = useState<string>(""); // State cho ô tìm kiếm
+    const [searchTerm, setSearchTerm] = useState<string>(""); // Trạng thái cho ô tìm kiếm
 
     // Debounced search term
     const debouncedSearchTerm = useDebounce<string>(searchTerm, 500);
 
-    useEffect(() => {
-        const storedCart = sessionStorage.getItem('cartItems');
-        if (storedCart) {
-            try {
-                const parsedCart: CartItem[] = JSON.parse(storedCart);
-                setCartItems(parsedCart);
-            } catch (e) {
-                console.error("Failed to parse cartItems from sessionStorage:", e);
-                setCartItems([]);
-            }
-        }
-    }, []);
+    const cartContext = useContext(CartContext);
+
+
+
 
     // Fetch products when selectedCategory or debouncedSearchTerm changes
     useEffect(() => {
@@ -60,10 +40,8 @@ const MenuProductCustomer: React.FC = () => {
                 let products: ProductModel[] = [];
 
                 if (debouncedSearchTerm.trim() !== "") {
-                    // Nếu có từ khóa tìm kiếm, gọi API tìm kiếm
                     products = await SearchProduct( debouncedSearchTerm);
                 } else {
-                    // Nếu không, gọi API lấy sản phẩm theo loại
                     products = await fetchProductsByType(selectedCategory);
                 }
 
@@ -79,44 +57,15 @@ const MenuProductCustomer: React.FC = () => {
         fetchData();
     }, [selectedCategory, debouncedSearchTerm]);
 
-    // Handle add to cart
-    const addToCart = (product: ProductModel) => {
-        const existingProductIndex = cartItems.findIndex(item => item.productId === product.productId);
+    if (!cartContext) {
+        return <div>Đang tải giỏ hàng...</div>;
+    }
 
-        if (existingProductIndex !== -1) {
-            const updatedCartItems = [...cartItems];
-            updatedCartItems[existingProductIndex].quantity += 1;
-            setCartItems(updatedCartItems);
-            sessionStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
-        } else {
-            const newCartItem: CartItem = {
-                productId: product.productId,
-                productName: product.productName,
-                price: product.price,
-                quantity: 1,
-                image: product.image,
-            };
-            const newCartItems = [...cartItems, newCartItem];
-            setCartItems(newCartItems);
-            sessionStorage.setItem('cartItems', JSON.stringify(newCartItems));
-        }
-    };
-
-    // Handle update quantity in cart
-    const handleUpdateQuantity = (productId: number, quantity: number) => {
-        const updatedCartItems = cartItems.map(item => {
-            if (item.productId === productId) {
-                return { ...item, quantity };
-            }
-            return item;
-        });
-        setCartItems(updatedCartItems);
-        sessionStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
-    };
+    const { addToCart } = cartContext;
 
     const renderProducts = () => {
         if (loading) {
-            return <div className="text-center">Loading products...</div>;
+            return <div className="text-center">Đang tải sản phẩm...</div>;
         }
 
         if (error) {
@@ -124,7 +73,7 @@ const MenuProductCustomer: React.FC = () => {
         }
 
         if (listProduct.length === 0) {
-            return <div className="text-center">No products available in this category.</div>;
+            return <div className="text-center">Không có sản phẩm nào trong danh mục này.</div>;
         }
 
         return listProduct.map((product) => (
@@ -170,67 +119,36 @@ const MenuProductCustomer: React.FC = () => {
                     <div className="menu"
                          style={{ height: 'calc(100vh - 40px)', boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px' }}>
                         <div className="row d-flex justify-content-center mb-3">
-                            <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall" style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}
-                               onClick={() => setSelectedCategory('Mains')}>Mains</a>
-                            <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall" style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}
-                               onClick={() => setSelectedCategory('Desserts')}>Desserts</a>
-                            <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall" style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}
-                               onClick={() => setSelectedCategory('Drinks')}>Drinks</a>
+                            <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall"
+                               style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}
+                               onClick={() => setSelectedCategory('Mains')}>Món Chính</a>
+                            <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall"
+                               style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}
+                               onClick={() => setSelectedCategory('Desserts')}>Tráng Miệng</a>
+                            <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall"
+                               style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}
+                               onClick={() => setSelectedCategory('Drinks')}>Nước</a>
                         </div>
                         <div>
                             {/* Category Header */}
                             <div className="row" style={{ height: '12.5%', marginLeft: '0px', paddingBottom: '20px' }}>
                                 <span className="text-center fs-4" style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}>
-                                    {
-                                        searchTerm ? "Search" : selectedCategory
-                                    }
-
+                                    {searchTerm ? "Tìm Kiếm" : selectedCategory}
                                 </span>
                             </div>
 
                             {/* Dropdown and Search Input */}
                             <div className="row" style={{ height: '3rem', marginLeft: '0px' }}>
-                                <div className="p-0 d-flex justify-content-between align-items-center">
+                                <div className="p-0 d-flex  align-items-end">
                                     {/* Dropdown */}
-                                    <div className="dropdown">
-                                        <a
-                                            className="btn dropdown-toggle p-0 border-0"
-                                            style={{ height: '2rem', fontSize: '15px' }}
-                                            href="#"
-                                            role="button"
-                                            id="dropdownMenuLink"
-                                            data-bs-toggle="dropdown"
-                                            aria-expanded="false"
-                                        >
-                                            Sort By
-                                        </a>
 
-                                        <ul className="dropdown-menu p-0" aria-labelledby="dropdownMenuLink"
-                                            style={{ fontSize: '15px' }}>
-                                            <li>
-                                                <a className="dropdown-item" href="#">
-                                                    Price: Low to High
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a className="dropdown-item" href="#">
-                                                    Price: High to Low
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a className="dropdown-item" href="#">
-                                                    Newest
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
 
                                     {/* Search Input */}
                                     <div>
                                         <input
                                             type="text"
                                             className="form-control"
-                                            placeholder="Search in here"
+                                            placeholder="Tìm Kiếm"
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
                                         />
@@ -244,65 +162,9 @@ const MenuProductCustomer: React.FC = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* Offcanvas for Cart */}
-                <div className="offcanvas offcanvas-end" tabIndex={-1} id="offcanvasCart"
-                     aria-labelledby="offcanvasCartLabel">
-                    <div className="offcanvas-header">
-                        <h5 className="offcanvas-title">Giỏ Hàng</h5>
-                        <button type="button" className="btn-close" data-bs-dismiss="offcanvas"
-                                aria-label="Close"></button>
-                    </div>
-                    <div className="offcanvas-body">
-                        <div className="cart-page tinh-overflowScroll" style={{ height: 400, overflowY: 'auto' }}>
-                            <table className="table">
-                                <thead>
-                                <tr>
-                                    <th scope="col">Product</th>
-                                    <th scope="col">Quantity</th>
-                                    <th scope="col" className="text-end">Subtotal</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {cartItems.map((item, index) => (
-                                    <tr key={index}>
-                                        <td className="cart-info d-flex align-items-center">
-                                            <img src={item.image} className="rounded" alt={item.productName} width="80" />
-                                            <div>
-                                                <p style={{ margin: 0, fontWeight: 'bold' }}>{item.productName}</p>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="number"
-                                                value={item.quantity}
-                                                min="1"
-                                                onChange={(e) => handleUpdateQuantity(item.productId, Number(e.target.value))}
-                                            />
-                                        </td>
-                                        <td className="text-end">{item.price * item.quantity} VND</td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div className="total-price d-flex justify-content-end">
-                            <table className="table">
-                                <tr>
-                                    <td>Subtotal</td>
-                                    <td className="text-end fw-bold">
-                                        {cartItems.reduce((total, item) => total + item.price * item.quantity, 0)} VND
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        <button className="btn btn-danger">Tiến hành thanh toán</button>
-                    </div>
-                </div>
             </div>
         </>
     );
-
 };
 
 export default MenuProductCustomer;

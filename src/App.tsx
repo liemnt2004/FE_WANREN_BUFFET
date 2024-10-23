@@ -5,17 +5,22 @@ import MenuProductCustomer from "./layouts/customer/menuProductCustomer";
 import IndexCustomer from "./layouts/customer/indexCustomer";
 import ReservationForm from "./layouts/customer/reservationCustomer";
 import PromotionCustomer from "./layouts/customer/promotionCustomer";
-import Cart from "./layouts/customer/cartCustomer";
 import MenuProfile from "./layouts/customer/profileCustomer";
 
 import LoginRegisterComponent from "./layouts/customer/SignIn";
+import Offcanvas from "./layouts/customer/offcanvas";
+import {CartProvider} from "./layouts/customer/CartContext";
+import CartOffcanvas from "./layouts/customer/offcanvas";
 
 
 function App() {
     return(
-        <Router>
-            <Routing/>
-        </Router>
+        <CartProvider>
+            <Router>
+                <Routing/>
+            </Router>
+        </CartProvider>
+
     )
 
 }
@@ -23,24 +28,27 @@ function App() {
 export function Routing() {
     const location = useLocation();
     const isAdminRoute = location.pathname.startsWith("/admin");
-    const isLoginRoute = location.pathname === "/login"; // Check if the path is "/login"
+    const isLoginRoute = location.pathname === "/login"; // Kiểm tra nếu đường dẫn là "/login"
 
     return (
         <>
-
+            {/* Hiển thị MenuCustomer nếu không phải là trang admin hoặc login */}
             {!isAdminRoute && !isLoginRoute && <MenuCustomer />}
 
+            {/* Định nghĩa các Routes */}
             <Routes>
                 <Route path="/" element={<IndexCustomer />} />
                 <Route path="/menu" element={<MenuProductCustomer />} />
                 <Route path="/admin" element={<MenuProductCustomer />} />
-                <Route path="/reservation" element={<ReservationForm/>}></Route>
-                <Route path="/promotion" element={<PromotionCustomer/>}></Route>
-                <Route path="/cart" element={<Cart/>}></Route>
-                <Route path="/profile" element={<MenuProfile/>}></Route>
-                <Route path="/login" element={<LoginRegisterComponent/>}></Route>
+                <Route path="/reservation" element={<ReservationForm />} />
+                <Route path="/promotion" element={<PromotionCustomer />} />
 
+                <Route path="/profile" element={<MenuProfile />} />
+                <Route path="/login" element={<LoginRegisterComponent />} />
             </Routes>
+
+            {/* Bao gồm CartOffcanvas để nó có sẵn trên tất cả các trang */}
+            <CartOffcanvas />
         </>
     );
 }

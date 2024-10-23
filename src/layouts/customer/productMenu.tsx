@@ -1,4 +1,5 @@
 import React from "react";
+import formatMoney from "./assets/FormatMoney";
 
 interface Product {
     id: number;
@@ -21,7 +22,7 @@ const   ProductMenu: React.FC<Product> = (props) => {
             <div className="col-6">
                 <div className="row m-0 align-items-center">
                     <span style={{ fontWeight: "bold" }}>{name}</span>
-                    <span style={{ fontSize: "15px" }}>{price}</span>
+                    <span style={{ fontSize: "15px" }}>{formatMoney(price)}</span>
                 </div>
             </div>
             <div className="col-2 d-flex justify-content-end align-items-center add-to-cart">
