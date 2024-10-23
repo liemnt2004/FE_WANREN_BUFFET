@@ -41,8 +41,7 @@ export async function getAllProduct(): Promise<ProductModel[]> {
 // Get hot products
 export async function getProductHot(): Promise<ProductModel[]> {
     try {
-        const productIds: number[] = await request('http://localhost:8080/ProductHot'); // Đảm bảo đúng endpoint
-        console.log(productIds)
+        const productIds: number[] = await request('http://localhost:8080/api/product/ProductHot'); // Đảm bảo đúng endpoint
         if (Array.isArray(productIds)) {
             const productPromises = productIds.map(id => request(`http://localhost:8080/Product/${id}`));
             const productsData = await Promise.all(productPromises);

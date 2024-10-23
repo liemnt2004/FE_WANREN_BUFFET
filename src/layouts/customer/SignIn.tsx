@@ -2,33 +2,43 @@ import React, { useState, FormEvent, useEffect, ChangeEvent } from 'react';
 import './assets/css/styles.css';
 import { getAllUser } from '../../api/apiCustommer/userApi';
 import UserModel from "../../models/UserModel";
-
+import {useLocation, useParams} from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const LoginRegisterComponent: React.FC = () => {
-    const [isActive, setIsActive] = useState<boolean>(false);
     const [listUser, setListUser] = useState<UserModel[]>([]);
+    const location = useLocation();
+
+    // Nếu URL là "/login" thì hiện form đăng nhập, ngược lại hiện form đăng ký
+    const isLoginRoute = location.pathname === "/login";
+
+    // Trạng thái mặc định dựa trên URL: nếu là "/login" thì hiện đăng nhập
+    const [isActive, setIsActive] = useState<boolean>(!isLoginRoute);
+
     const [signUpData, setSignUpData] = useState({
         username: '',
+        name:'',
         email: '',
         password: '',
         agree: false,
     });
+
     const [signInData, setSignInData] = useState({
         username: '',
         password: '',
-        agree: false,
     });
+
     const [errorMessage, setErrorMessage] = useState<string>('');
 
     const handleRegisterClick = (): void => {
-        setIsActive(true);
+        setIsActive(true); // Bật form đăng ký
     };
 
     const handleLoginClick = (): void => {
-        setIsActive(false);
+        setIsActive(false); // Bật form đăng nhập
     };
 
-    // Handle input changes for sign-up form
+    // Xử lý sự thay đổi input cho form đăng ký
     const handleSignUpChange = (e: ChangeEvent<HTMLInputElement>): void => {
         const { name, value, type, checked } = e.target;
         setSignUpData((prevData) => ({
@@ -37,7 +47,7 @@ const LoginRegisterComponent: React.FC = () => {
         }));
     };
 
-    // Handle input changes for sign-in form
+    // Xử lý sự thay đổi input cho form đăng nhập
     const handleSignInChange = (e: ChangeEvent<HTMLInputElement>): void => {
         const { name, value, type, checked } = e.target;
         setSignInData((prevData) => ({
@@ -50,13 +60,11 @@ const LoginRegisterComponent: React.FC = () => {
         e.preventDefault();
         setErrorMessage('');
 
-        // Validate form data
         if (!signUpData.agree) {
             setErrorMessage('Bạn phải đồng ý với điều khoản & chính sách.');
             return;
         }
 
-        // Send sign-up data to backend API
         try {
             const response = await fetch('http://localhost:8080/api/signup', {
                 method: 'POST',
@@ -72,11 +80,10 @@ const LoginRegisterComponent: React.FC = () => {
 
             if (response.ok) {
                 alert('Đăng ký thành công!');
-                // Optionally, switch to login form
-                setIsActive(false);
-                // Reset sign-up form
+                setIsActive(true);  // Chuyển về form đăng nhập sau khi đăng ký thành công
                 setSignUpData({
                     username: '',
+                    name:'',
                     email: '',
                     password: '',
                     agree: false,
@@ -94,25 +101,16 @@ const LoginRegisterComponent: React.FC = () => {
         e.preventDefault();
         setErrorMessage('');
 
-        // Validate form data
-        if (!signInData.agree) {
-            setErrorMessage('Bạn phải đồng ý với điều khoản & chính sách.');
-            return;
-        }
 
-        // Authenticate user
+
         const user = listUser.find(
             (u) => u.username === signInData.username && u.password === signInData.password
         );
 
-        console.log(user);
-
         if (user) {
-
             alert('Đăng nhập thành công!');
-            // You can redirect the user or update the UI accordingly
         } else {
-            setErrorMessage('Username hoặc mật khẩu không đúng.');
+            setErrorMessage('Tên Đăng Nhập hoặc mật khẩu không đúng.');
         }
     };
 
@@ -126,6 +124,10 @@ const LoginRegisterComponent: React.FC = () => {
             });
     }, []);
 
+
+
+
+
     return (
         <div className="ps28277">
             <div className={`container ${isActive ? 'active' : ''}`} id="container">
@@ -138,9 +140,17 @@ const LoginRegisterComponent: React.FC = () => {
                         <span>hoặc sử dụng email của bạn để đăng ký</span>
                         <input
                             type="text"
-                            placeholder="Username"
+                            placeholder="Tên Đăng Nhập"
                             name="username"
                             value={signUpData.username}
+                            onChange={handleSignUpChange}
+                            required
+                        />
+                        <input
+                            type="text"
+                            placeholder="Họ Và Tên"
+                            name="Họ Và Tên"
+                            value={signUpData.name}
                             onChange={handleSignUpChange}
                             required
                         />
@@ -187,7 +197,7 @@ const LoginRegisterComponent: React.FC = () => {
                         <span>hoặc sử dụng username của bạn để đăng nhập</span>
                         <input
                             type="text"
-                            placeholder="Username"
+                            placeholder="Tên Đăng Nhập"
                             name="username"
                             value={signInData.username}
                             onChange={handleSignInChange}
@@ -202,22 +212,12 @@ const LoginRegisterComponent: React.FC = () => {
                             required
                         />
                         {/* Terms & Policies checkbox */}
-                        <label className="terms">
-                            <input
-                                type="checkbox"
-                                id="signin-agree"
-                                name="agree"
-                                checked={signInData.agree}
-                                onChange={handleSignInChange}
-                                required
-                            />
-                            <span>Tôi đồng ý với</span> <a href="#">điều khoản &amp; chính sách</a>
-                        </label>
+
                         <a className="forget-your-password" href="#">
                             Quên mật khẩu?
                         </a>
 
-                        {errorMessage && <p className="error-message">{errorMessage}</p>}
+                        {errorMessage && <p className="error-message cl-danger">{errorMessage}</p>}
 
                         <button type="submit">Đăng nhập</button>
                     </form>
@@ -228,16 +228,16 @@ const LoginRegisterComponent: React.FC = () => {
                         <div className="toggle-panel toggle-left">
                             <h1>Chào mừng trở lại!</h1>
                             <p>Nhập thông tin cá nhân của bạn để sử dụng tất cả các tính năng của trang web</p>
-                            <button className="hidden" id="login" onClick={handleLoginClick}>
+                            <Link to={"/login"} className="hidden" id="login" onClick={handleLoginClick}>
                                 Đăng nhập
-                            </button>
+                            </Link>
                         </div>
                         <div className="toggle-panel toggle-right">
                             <h1>Chào bạn!</h1>
                             <p>Đăng ký với thông tin cá nhân của bạn để sử dụng tất cả các tính năng của trang web</p>
-                            <button className="hidden" id="register" onClick={handleRegisterClick}>
+                            <Link to={"/register"} className="hidden" id="register" onClick={handleRegisterClick}>
                                 Đăng Ký
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 </div>

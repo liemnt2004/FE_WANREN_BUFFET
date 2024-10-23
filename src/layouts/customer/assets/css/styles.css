@@ -328,10 +328,13 @@ body {
     cursor: pointer;
 }
 
-.ps28277 .container button.hidden {
+.ps28277 .container button.hidden{
     background-color: transparent;
     border-color: #fff;
+
 }
+
+
 
 .ps28277 .container form {
     background-color: #fff;

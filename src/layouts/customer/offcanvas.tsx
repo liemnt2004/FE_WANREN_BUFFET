@@ -49,6 +49,7 @@ const CartOffcanvas: React.FC = () => {
                                                 className="form-control"
                                                 value={item.quantity}
                                                 min="1"
+
                                                 onChange={(e) => updateQuantity(item.productId, Number(e.target.value))}
                                             />
                                         </td>

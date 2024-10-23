@@ -29,11 +29,12 @@ export function Routing() {
     const location = useLocation();
     const isAdminRoute = location.pathname.startsWith("/admin");
     const isLoginRoute = location.pathname === "/login"; // Kiểm tra nếu đường dẫn là "/login"
+    const isRegisterRoute = location.pathname === "/register";
 
     return (
         <>
             {/* Hiển thị MenuCustomer nếu không phải là trang admin hoặc login */}
-            {!isAdminRoute && !isLoginRoute && <MenuCustomer />}
+            {!isAdminRoute && !isLoginRoute && !isRegisterRoute && <MenuCustomer />}
 
             {/* Định nghĩa các Routes */}
             <Routes>
@@ -45,6 +46,8 @@ export function Routing() {
 
                 <Route path="/profile" element={<MenuProfile />} />
                 <Route path="/login" element={<LoginRegisterComponent />} />
+                <Route path="/register" element={<LoginRegisterComponent />} />
+
             </Routes>
 
             {/* Bao gồm CartOffcanvas để nó có sẵn trên tất cả các trang */}
