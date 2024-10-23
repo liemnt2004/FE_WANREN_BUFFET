@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import './assets/css/styles.css';
 import './assets/css/menu.css';
@@ -5,14 +6,15 @@ import './assets/css/menu.css';
 // Importing images directly
 import websiteGreen from './assets/img/website_green.jpg';
 import bannerHome from './assets/img/Banner-Hompage-_1500W-x-700H_px.jpg';
-import launam from './assets/img/la_u_na_m_2.jpg';
-import nuocGaoDuaHau from './assets/img/nuoc-gao-dua-hau_1_1.jpg';
-import nuocGaoOiXoai from './assets/img/nuoc-gao-oi-xoai_1_1.jpg';
+
 import bannerBuffet from './assets/img/banner-gia-buffet-kich-kichi-160824.jpg';
-import ProductMenu from "./productMenu";
-import { fetchProductsByType, getProductHot } from "../../api/apiCustommer/productApi";
+
 import ProductModel from "../../models/ProductModel";
 
+import useDebounce from "./useDebounce";
+import { fetchProductsByType, getProductHot, SearchProduct } from "../../api/apiCustommer/productApi";
+
+import ProductMenu from "./productMenu";
 
 // Define the Category type
 type Category = 'Mains' | 'Desserts' | 'Drinks';
@@ -28,11 +30,14 @@ interface CartItem {
 const MenuProductCustomer: React.FC = () => {
     const [selectedCategory, setSelectedCategory] = useState<Category>('Mains');
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
-    const [listproduct, setlistproduct] = useState<ProductModel[]>([]);
+    const [listProduct, setListProduct] = useState<ProductModel[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState<string>(""); // State cho ô tìm kiếm
 
-    // Load cart items from sessionStorage on component mount
+    // Debounced search term
+    const debouncedSearchTerm = useDebounce<string>(searchTerm, 500);
+
     useEffect(() => {
         const storedCart = sessionStorage.getItem('cartItems');
         if (storedCart) {
@@ -46,22 +51,33 @@ const MenuProductCustomer: React.FC = () => {
         }
     }, []);
 
-    // Fetch products when selectedCategory changes
+    // Fetch products when selectedCategory or debouncedSearchTerm changes
     useEffect(() => {
-        setLoading(true);
-        setError(null);
-        fetchProductsByType(selectedCategory)
-            .then(product => {
-                setlistproduct(product);
-            })
-            .catch(err => {
+        const fetchData = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                let products: ProductModel[] = [];
+
+                if (debouncedSearchTerm.trim() !== "") {
+                    // Nếu có từ khóa tìm kiếm, gọi API tìm kiếm
+                    products = await SearchProduct( debouncedSearchTerm);
+                } else {
+                    // Nếu không, gọi API lấy sản phẩm theo loại
+                    products = await fetchProductsByType(selectedCategory);
+                }
+
+                setListProduct(products);
+            } catch (err) {
                 setError("Failed to load products.");
                 console.error(err);
-            })
-            .finally(() => {
+            } finally {
                 setLoading(false);
-            });
-    }, [selectedCategory]);
+            }
+        };
+
+        fetchData();
+    }, [selectedCategory, debouncedSearchTerm]);
 
     // Handle add to cart
     const addToCart = (product: ProductModel) => {
@@ -86,6 +102,18 @@ const MenuProductCustomer: React.FC = () => {
         }
     };
 
+    // Handle update quantity in cart
+    const handleUpdateQuantity = (productId: number, quantity: number) => {
+        const updatedCartItems = cartItems.map(item => {
+            if (item.productId === productId) {
+                return { ...item, quantity };
+            }
+            return item;
+        });
+        setCartItems(updatedCartItems);
+        sessionStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+    };
+
     const renderProducts = () => {
         if (loading) {
             return <div className="text-center">Loading products...</div>;
@@ -95,11 +123,11 @@ const MenuProductCustomer: React.FC = () => {
             return <div className="text-danger text-center">{error}</div>;
         }
 
-        if (listproduct.length === 0) {
+        if (listProduct.length === 0) {
             return <div className="text-center">No products available in this category.</div>;
         }
 
-        return listproduct.map((product) => (
+        return listProduct.map((product) => (
             <ProductMenu
                 key={product.productId}
                 id={product.productId}
@@ -150,52 +178,62 @@ const MenuProductCustomer: React.FC = () => {
                                onClick={() => setSelectedCategory('Drinks')}>Drinks</a>
                         </div>
                         <div>
-                            {/* Mains Header */}
+                            {/* Category Header */}
                             <div className="row" style={{ height: '12.5%', marginLeft: '0px', paddingBottom: '20px' }}>
                                 <span className="text-center fs-4" style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}>
-                                    {selectedCategory}
+                                    {
+                                        searchTerm ? "Search" : selectedCategory
+                                    }
+
                                 </span>
                             </div>
 
                             {/* Dropdown and Search Input */}
-                            <div className="row" style={{ height: '1.5rem', marginLeft: '0px' }}>
+                            <div className="row" style={{ height: '3rem', marginLeft: '0px' }}>
                                 <div className="p-0 d-flex justify-content-between align-items-center">
+                                    {/* Dropdown */}
                                     <div className="dropdown">
                                         <a
                                             className="btn dropdown-toggle p-0 border-0"
-                                            style={{ height: '1.5rem', fontSize: '15px' }}
+                                            style={{ height: '2rem', fontSize: '15px' }}
                                             href="#"
                                             role="button"
                                             id="dropdownMenuLink"
                                             data-bs-toggle="dropdown"
                                             aria-expanded="false"
                                         >
-                                            Dropdown link
+                                            Sort By
                                         </a>
 
                                         <ul className="dropdown-menu p-0" aria-labelledby="dropdownMenuLink"
                                             style={{ fontSize: '15px' }}>
                                             <li>
                                                 <a className="dropdown-item" href="#">
-                                                    Action
+                                                    Price: Low to High
                                                 </a>
                                             </li>
                                             <li>
                                                 <a className="dropdown-item" href="#">
-                                                    Another action
+                                                    Price: High to Low
                                                 </a>
                                             </li>
                                             <li>
                                                 <a className="dropdown-item" href="#">
-                                                    Something else here
+                                                    Newest
                                                 </a>
                                             </li>
                                         </ul>
                                     </div>
 
+                                    {/* Search Input */}
                                     <div>
-                                        <input type="text" className="form-control" id="name"
-                                               placeholder="Search in here" required />
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="Search in here"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -234,7 +272,14 @@ const MenuProductCustomer: React.FC = () => {
                                                 <p style={{ margin: 0, fontWeight: 'bold' }}>{item.productName}</p>
                                             </div>
                                         </td>
-                                        <td><input type="number" value={item.quantity} min="1" readOnly /></td>
+                                        <td>
+                                            <input
+                                                type="number"
+                                                value={item.quantity}
+                                                min="1"
+                                                onChange={(e) => handleUpdateQuantity(item.productId, Number(e.target.value))}
+                                            />
+                                        </td>
                                         <td className="text-end">{item.price * item.quantity} VND</td>
                                     </tr>
                                 ))}
@@ -257,6 +302,7 @@ const MenuProductCustomer: React.FC = () => {
             </div>
         </>
     );
+
 };
 
 export default MenuProductCustomer;

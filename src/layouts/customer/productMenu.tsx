@@ -8,7 +8,7 @@ interface Product {
     addToCart: (product: { id: number; name: string; price: number; image: string }) => void;
 }
 
-const ProductMenu: React.FC<Product> = (props) => {
+const   ProductMenu: React.FC<Product> = (props) => {
     const { id, name, price, image, addToCart } = props;
 
     const product = { id, name, price, image };

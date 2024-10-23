@@ -86,13 +86,43 @@ export async function fetchProductsByType(typeFood: string): Promise<ProductMode
                 );
                 rs.push(productModel);
             }
-            console.log(rs)
             return rs;
         } else {
             return [];
         }
     } catch (error) {
         console.error(`Cannot fetch products of type ${typeFood}:`, error);
+        throw error;
+    }
+}
+
+
+export async function SearchProduct(foodname: string): Promise<ProductModel[]> {
+    const rs: ProductModel[] = [];
+    try {
+        const data = await request(`http://localhost:8080/Product/search/findByProductNameContaining?productName=${foodname}`);
+        // Spring Data REST thường trả về dữ liệu trong _embedded
+        if (data && data._embedded && data._embedded.products) {
+            for (const product of data._embedded.products) {
+                const productModel = new ProductModel(
+                    product.productId,
+                    product.productName,
+                    product.description,
+                    product.price,
+                    product.typefood, // Đảm bảo truyền đủ tham số
+                    product.image,
+                    product.quantity,
+                    product.productStatus
+                );
+                rs.push(productModel);
+            }
+            console.log(rs)
+            return rs;
+        } else {
+            return [];
+        }
+    } catch (error) {
+        console.error(`Cannot fetch products of type ${foodname}:`, error);
         throw error;
     }
 }

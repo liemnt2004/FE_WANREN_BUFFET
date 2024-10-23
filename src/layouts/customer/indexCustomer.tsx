@@ -554,21 +554,21 @@ const IndexCustomer: React.FC = ()=>{
                     <div className="row d-flex align-items-center justify-content-center">
                         <div className="col-12 image-card text-center">
                             <a href="menu1.html"><img src={cothaygia} alt="Menu" className="img-fluid"/></a>
-                            <a href="menu1.html" className="btn btn-outline-light">Thực Đơn →</a>
+                            <a href="/menu" className="btn btn-outline-light">Thực Đơn →</a>
                         </div>
                     </div>
                     <div className="row d-flex align-items-center justify-content-center">
                         <div className="col-12 image-card text-center">
                             <a href="reservation.html"><img src={bannerHome}
                                                             alt="Reservation" className="img-fluid"/></a>
-                            <a href="reservation.html" className="btn btn-outline-light">Đặt Bàn →</a>
+                            <a href="/reservation" className="btn btn-outline-light">Đặt Bàn →</a>
                         </div>
                     </div>
                     <div className="row d-flex align-items-center justify-content-center">
                         <div className="col-12 image-card text-center">
                             <a href="promotion.html"><img src={publicAvif} alt="Our Restaurant"
                                                           className="img-fluid"/></a>
-                            <a href="promotion.html" className="btn btn-outline-light">Ưu Đãi →</a>
+                            <a href="/promotion" className="btn btn-outline-light">Ưu Đãi →</a>
                         </div>
                     </div>
                 </div>

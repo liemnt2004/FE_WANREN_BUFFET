@@ -119,7 +119,7 @@ const PersonalInfo: React.FC<UserInfoProps> = ({userInfo, setUserInfo}) => {
     };
 
     return (
-        <div className="card p-3 rounded-0 mb-3">
+        <div className="col-12 col-sm-4 tinh-height25 mb-3 mb-sm-0 px-2 px-md-3">
             <h4 className="py-3">Thông tin cá nhân</h4>
             {!editing ? (
                 <div id="personalInfo">
