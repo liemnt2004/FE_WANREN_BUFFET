@@ -1,5 +1,5 @@
 // src/contexts/CartContext.tsx
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import React, {createContext, useState, useEffect, ReactNode, useContext} from 'react';
 import ProductModel from "../../models/ProductModel";
 
 export interface CartItem {
@@ -81,6 +81,11 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
             )
         );
     };
+
+
+    const shouldToggleOffcanvas = () =>{
+
+    }
 
     const removeFromCart = (productId: number) => {
         setCartItems(prevItems =>

@@ -1,5 +1,6 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import formatMoney from "./assets/FormatMoney";
+import {CartItem} from "./CartContext";
 
 interface Product {
     id: number;
@@ -10,6 +11,21 @@ interface Product {
 }
 
 const   ProductMenu: React.FC<Product> = (props) => {
+    const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+    // Load cart từ sessionStorage khi component mount
+    useEffect(() => {
+        const storedCart = sessionStorage.getItem('cartItems');
+        if (storedCart) {
+            try {
+                const parsedCart: CartItem[] = JSON.parse(storedCart);
+                setCartItems(parsedCart);
+            } catch (e) {
+                console.error("Failed to parse cartItems từ sessionStorage:", e);
+                setCartItems([]);
+            }
+        }
+    }, []);
     const { id, name, price, image, addToCart } = props;
 
     const product = { id, name, price, image };
@@ -29,6 +45,7 @@ const   ProductMenu: React.FC<Product> = (props) => {
                 <button
                     id="increment"
                     type="button"
+
                     className="btn btn-danger"
                     data-bs-toggle="offcanvas"
                     data-bs-target="#offcanvasCart"

@@ -131,14 +131,19 @@ const MenuProductCustomer: React.FC = () => {
                         </div>
                         <div>
                             {/* Category Header */}
-                            <div className="row" style={{ height: '12.5%', marginLeft: '0px', paddingBottom: '20px' }}>
-                                <span className="text-center fs-4" style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}>
-                                    {searchTerm ? "Tìm Kiếm" : selectedCategory}
+                            <div className="row" style={{height: '12.5%', marginLeft: '0px', paddingBottom: '20px'}}>
+                                <span className="text-center fs-4" style={{color: 'var(--colorPrimary)', fontWeight: 'bold'}}>
+                                    {searchTerm ? "Tìm Kiếm" :
+                                        (selectedCategory === 'Mains' ? 'Món Chính'
+                                            : selectedCategory === 'Desserts' ? 'Tráng Miệng'
+                                                : selectedCategory === 'Drinks' ? 'Đồ Uống'
+                                                    : selectedCategory)}
                                 </span>
                             </div>
 
+
                             {/* Dropdown and Search Input */}
-                            <div className="row" style={{ height: '3rem', marginLeft: '0px' }}>
+                            <div className="row" style={{height: '3rem', marginLeft: '0px'}}>
                                 <div className="p-0 d-flex  align-items-end">
                                     {/* Dropdown */}
 
@@ -157,7 +162,7 @@ const MenuProductCustomer: React.FC = () => {
                             </div>
                         </div>
                         <div className="row mt-3 tinh-overflowScroll border-0 d-block"
-                             style={{ maxHeight: 'calc(100vh - 200px)', marginLeft: 0, overflowY: 'auto' }}>
+                             style={{maxHeight: 'calc(100vh - 200px)', marginLeft: 0, overflowY: 'auto'}}>
                             {renderProducts()}
                         </div>
                     </div>

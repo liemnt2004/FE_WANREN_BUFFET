@@ -2,14 +2,15 @@ import React, { useState, FormEvent, useEffect, ChangeEvent } from 'react';
 import './assets/css/styles.css';
 import { getAllUser } from '../../api/apiCustommer/userApi';
 import UserModel from "../../models/UserModel";
-import {useLocation, useParams} from "react-router-dom";
+import {useLocation, useNavigate, useParams} from "react-router-dom";
 import { Link } from "react-router-dom";
+
 
 
 const LoginRegisterComponent: React.FC = () => {
     const [listUser, setListUser] = useState<UserModel[]>([]);
     const location = useLocation();
-
+    const navigate = useNavigate();
     // Nếu URL là "/login" thì hiện form đăng nhập, ngược lại hiện form đăng ký
     const isLoginRoute = location.pathname === "/login";
 
@@ -93,6 +94,10 @@ const LoginRegisterComponent: React.FC = () => {
             return;
         }
 
+
+
+
+
         try {
             const response = await fetch('http://localhost:8080/api/customer/register', {
                 method: 'POST',
@@ -114,7 +119,8 @@ const LoginRegisterComponent: React.FC = () => {
             const result = await response.json();
             if (response.ok) {
                 alert('Đăng ký thành công!');
-                setIsActive(true);  // Chuyển về form đăng nhập
+                navigate('/login');
+                setIsActive(false)
                 setSignUpData({
                     username: '',
                     full_name: '',
@@ -143,7 +149,10 @@ const LoginRegisterComponent: React.FC = () => {
                 body: JSON.stringify(signInData),
             });
 
+
+
             const result = await response.json();
+            localStorage.setItem("token",result.jwt);
             if (response.ok) {
                 alert('Đăng nhập thành công!');
                 // Handle successful login (e.g., redirect to another page or set authentication state)

@@ -95,7 +95,6 @@ export async function fetchProductsByType(typeFood: string): Promise<ProductMode
     }
 }
 
-
 export async function SearchProduct(foodname: string): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
