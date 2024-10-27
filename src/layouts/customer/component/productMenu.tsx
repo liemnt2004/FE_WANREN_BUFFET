@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import formatMoney from "./assets/FormatMoney";
+import formatMoney from "./FormatMoney";
 import {CartItem} from "./CartContext";
 
 interface Product {

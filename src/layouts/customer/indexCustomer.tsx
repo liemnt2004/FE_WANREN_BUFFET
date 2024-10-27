@@ -17,8 +17,8 @@ import khichi from './assets/img/Kichi.svg';
 import loginfooter from './assets/img/Cream and Black Simple Illustration Catering Logo.png';
 import ProductModel from "../../models/ProductModel";
 import { getProductHot } from "../../api/apiCustommer/productApi";
-import {CartContext, CartItem} from "./CartContext";
-import formatMoney from "./assets/FormatMoney";
+import {CartContext, CartItem} from "./component/CartContext";
+import formatMoney from "./component/FormatMoney";
 const IndexCustomer: React.FC = () => {
     const [listProduct, setListProduct] = useState<ProductModel[]>([]);
     const [loading, setLoading] = useState(true);

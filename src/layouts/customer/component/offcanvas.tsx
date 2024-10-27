@@ -2,7 +2,8 @@
 
 import React, { useContext } from 'react';
 import {CartContext} from "./CartContext";
-import formatMoney from "./assets/FormatMoney";
+import formatMoney from "./FormatMoney";
+import {Link} from "react-router-dom";
 
 
 const CartOffcanvas: React.FC = () => {
@@ -82,7 +83,7 @@ const CartOffcanvas: React.FC = () => {
                             </tbody>
                         </table>
                     </div>
-                    <button className="btn btn-danger w-100 mt-3">Tiến hành thanh toán</button>
+                    <Link to={"/checkout"} className="btn btn-danger w-100 mt-3">Tiến hành thanh toán</Link>
                 </div>
             </div>
         </>

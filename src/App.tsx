@@ -1,60 +1,69 @@
-import React from 'react';
-import {BrowserRouter as Router, Routes, Route, useLocation} from 'react-router-dom';
+import React, { useContext } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MenuCustomer from "./layouts/customer/menuCustomer";
 import MenuProductCustomer from "./layouts/customer/menuProductCustomer";
 import IndexCustomer from "./layouts/customer/indexCustomer";
 import ReservationForm from "./layouts/customer/reservationCustomer";
 import PromotionCustomer from "./layouts/customer/promotionCustomer";
 import MenuProfile from "./layouts/customer/profileCustomer";
-
 import LoginRegisterComponent from "./layouts/customer/SignIn";
-import Offcanvas from "./layouts/customer/offcanvas";
-import {CartProvider} from "./layouts/customer/CartContext";
-import CartOffcanvas from "./layouts/customer/offcanvas";
-
+import CartOffcanvas from "./layouts/customer/component/offcanvas";
+import { CartProvider } from "./layouts/customer/component/CartContext";
+import { AuthProvider, AuthContext } from "./layouts/customer/component/AuthContext";
+import PublicRoute from "./layouts/customer/component/PublicRoute";
+import Checkout from "./layouts/customer/CheckoutCustomer";
 
 function App() {
-    return(
-        <CartProvider>
-            <Router>
-                <Routing/>
-            </Router>
-        </CartProvider>
-
-    )
-
+    return (
+        <Router>
+            <AuthProvider>
+                <CartProvider>
+                    <Routing />
+                </CartProvider>
+            </AuthProvider>
+        </Router>
+    );
 }
 
 export function Routing() {
-    const location = useLocation();
-    const isAdminRoute = location.pathname.startsWith("/admin");
-    const isLoginRoute = location.pathname === "/login"; // Kiểm tra nếu đường dẫn là "/login"
-    const isRegisterRoute = location.pathname === "/register";
+
+    const hiddenRoutes = ['/admin', '/login', '/register'];
 
     return (
         <>
-            {/* Hiển thị MenuCustomer nếu không phải là trang admin hoặc login */}
-            {!isAdminRoute && !isLoginRoute && !isRegisterRoute && <MenuCustomer />}
+            {/* Display MenuCustomer unless on hidden routes */}
+            {!hiddenRoutes.includes(window.location.pathname) && <MenuCustomer />}
 
-            {/* Định nghĩa các Routes */}
+            {/* Define routes */}
             <Routes>
                 <Route path="/" element={<IndexCustomer />} />
                 <Route path="/menu" element={<MenuProductCustomer />} />
                 <Route path="/admin" element={<MenuProductCustomer />} />
                 <Route path="/reservation" element={<ReservationForm />} />
                 <Route path="/promotion" element={<PromotionCustomer />} />
-
+                <Route
+                    path="/checkout"
+                    element={<Checkout  />}
+                />
                 <Route path="/profile" element={<MenuProfile />} />
-                <Route path="/login" element={<LoginRegisterComponent />} />
-                <Route path="/register" element={<LoginRegisterComponent />} />
 
+                {/* Protect login and register routes */}
+                <Route path="/login" element={
+                    <PublicRoute>
+                        <LoginRegisterComponent />
+                    </PublicRoute>
+                } />
+                <Route path="/register" element={
+                    <PublicRoute>
+                        <LoginRegisterComponent />
+                    </PublicRoute>
+                } />
             </Routes>
 
-            {/* Bao gồm CartOffcanvas để nó có sẵn trên tất cả các trang */}
+            {/* Include CartOffcanvas on all pages */}
             <CartOffcanvas />
         </>
     );
 }
-
 
 export default App;

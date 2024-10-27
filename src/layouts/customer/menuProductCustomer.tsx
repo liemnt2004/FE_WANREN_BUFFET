@@ -8,10 +8,10 @@ import bannerHome from './assets/img/Banner-Hompage-_1500W-x-700H_px.jpg';
 import bannerBuffet from './assets/img/banner-gia-buffet-kich-kichi-160824.jpg';
 
 import ProductModel from "../../models/ProductModel";
-import useDebounce from "./useDebounce";
+import useDebounce from "./component/useDebounce";
 import { fetchProductsByType, SearchProduct } from "../../api/apiCustommer/productApi";
-import ProductMenu from "./productMenu";
-import { CartContext } from "./CartContext";
+import ProductMenu from "./component/productMenu";
+import { CartContext } from "./component/CartContext";
 
 // Định nghĩa loại Category
 type Category = 'Mains' | 'Desserts' | 'Drinks';

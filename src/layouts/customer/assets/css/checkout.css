@@ -1,3 +1,6 @@
+body{
+	display: block;
+}
 .breadcrumb-section {
 	display: flex;
 	align-items: center;
@@ -220,8 +223,8 @@
 
 .checkout__order {
 	background: #f5f5f5;
-	padding: 40px;
-	padding-top: 30px;
+	border-radius: 10px;
+	padding: 10px;
 }
 
 .checkout__order h4 {
@@ -303,18 +306,18 @@
 
 .checkout__order button {
 	font-size: 18px;
-    padding: 10px 10px;
-    border-radius: 20px;
+	padding: 10px 10px;
+	border-radius: 20px;
 	letter-spacing: 2px;
 	width: 100%;
 	margin-top: 10px;
-    color: var(--colorPrimary);
-    border: 2px solid var(--colorPrimary);
-    font-weight: bold;
-    background: none;
+	color: var(--colorPrimary);
+	border: 2px solid var(--colorPrimary);
+	font-weight: bold;
+	background: none;
 }
 
 .checkout__order button:hover {
-    background-color: var(--colorPrimary);
-    color: white;
+	background-color: var(--colorPrimary);
+	color: white;
 }

@@ -1,6 +1,5 @@
 // src/contexts/CartContext.tsx
-import React, {createContext, useState, useEffect, ReactNode, useContext} from 'react';
-import ProductModel from "../../models/ProductModel";
+import React, { createContext, useState, useEffect, ReactNode, useContext } from 'react';
 
 export interface CartItem {
     productId: number;
@@ -9,7 +8,6 @@ export interface CartItem {
     image: string;
     quantity: number;
 }
-
 
 interface CartContextType {
     cartItems: CartItem[];
@@ -27,21 +25,19 @@ interface CartProviderProps {
 }
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
-    const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
-    // Load cart từ sessionStorage khi component mount
-    useEffect(() => {
+    // Khởi tạo cartItems từ sessionStorage
+    const [cartItems, setCartItems] = useState<CartItem[]>(() => {
         const storedCart = sessionStorage.getItem('cartItems');
         if (storedCart) {
             try {
-                const parsedCart: CartItem[] = JSON.parse(storedCart);
-                setCartItems(parsedCart);
+                return JSON.parse(storedCart) as CartItem[];
             } catch (e) {
                 console.error("Failed to parse cartItems từ sessionStorage:", e);
-                setCartItems([]);
+                return [];
             }
         }
-    }, []);
+        return [];
+    });
 
     // Lưu cart vào sessionStorage khi cartItems thay đổi
     useEffect(() => {
@@ -82,11 +78,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         );
     };
 
-
-    const shouldToggleOffcanvas = () =>{
-
-    }
-
     const removeFromCart = (productId: number) => {
         setCartItems(prevItems =>
             prevItems.filter(item => item.productId !== productId)
@@ -104,4 +95,13 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
             {children}
         </CartContext.Provider>
     );
+};
+
+// Custom hook để sử dụng CartContext dễ dàng hơn
+export const useCart = (): CartContextType => {
+    const context = useContext(CartContext);
+    if (!context) {
+        throw new Error("useCart phải được sử dụng trong CartProvider");
+    }
+    return context;
 };
