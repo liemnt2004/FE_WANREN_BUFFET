@@ -10,9 +10,16 @@ import './assets/css/styles.css';
 import { CartContext, CartItem } from './component/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { DecodedToken } from './component/AuthContext';
-import {jwtDecode} from 'jwt-decode';
-import FormatMoney from "./component/FormatMoney"; // Sửa lại câu lệnh import
+import {jwtDecode} from 'jwt-decode'; // Sửa câu lệnh import
+import FormatMoney from "./component/FormatMoney";
 
+
+interface OrderDetailData {
+    productId: number;
+    quantity: number;
+    unitPrice: number;
+    itemNotes: string;
+}
 
 interface CheckoutFormData {
     full_name: string;
@@ -22,8 +29,8 @@ interface CheckoutFormData {
     detail_address: string;
     phoneCheckout: string;
     emailCheckout: string;
-    note: string;
     payment: string;
+    note: string;
 }
 
 interface Location {
@@ -54,14 +61,14 @@ const Checkout: React.FC = () => {
 
     const [formData, setFormData] = useState<CheckoutFormData>({
         full_name: decoded?.fullName || '',
-        tinh: '',
+        tinh: HO_CHI_MINH_ID,
         quan: '',
         phuong: '',
         detail_address: '',
         phoneCheckout: decoded?.phone || '',
         emailCheckout: decoded?.email || '',
-        note: '',
         payment: '',
+        note: '',
     });
 
     const [districts, setDistricts] = useState<Location[]>([]);
@@ -72,6 +79,8 @@ const Checkout: React.FC = () => {
 
     const [errorDistricts, setErrorDistricts] = useState<string>('');
     const [errorWards, setErrorWards] = useState<string>('');
+
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchDistricts = async () => {
@@ -94,8 +103,7 @@ const Checkout: React.FC = () => {
             }
         };
 
-        const timeoutId = setTimeout(fetchDistricts, 500);
-        return () => clearTimeout(timeoutId);
+        fetchDistricts();
     }, []);
 
     useEffect(() => {
@@ -125,8 +133,7 @@ const Checkout: React.FC = () => {
             }
         };
 
-        const timeoutId = setTimeout(fetchWards, 500);
-        return () => clearTimeout(timeoutId);
+        fetchWards();
     }, [formData.quan]);
 
     const handleChange = (
@@ -139,16 +146,71 @@ const Checkout: React.FC = () => {
         }));
     };
 
-    const handleSubmit = (e: FormEvent) => {
-        e.preventDefault();
-        console.log(formData);
-        // Tại đây bạn có thể gửi formData tới API backend của bạn
-    };
-
-    // Tính toán tạm tính, phí giao hàng và tổng tiền
-    const subtotal = listCart.reduce((total, item) => total + item.price, 0);
-    const shippingFee = 15000; // Ví dụ về phí giao hàng
+    // Tính toán tổng tiền
+    const subtotal = listCart.reduce((total, item) => total + item.price * item.quantity, 0);
+    const shippingFee = 15000; // Ví dụ phí giao hàng
     const total = subtotal + shippingFee;
+
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        // Chuẩn bị dữ liệu để gửi tới backend
+        const orderData = {
+            userId: null,
+            customerId: null,
+            orderStatus: 'PREPARING_ORDER',
+            totalAmount: total,
+            tablee: null,
+            payment: formData.payment,
+            createdDate: new Date().toISOString(),
+            notes: formData.note,
+            fullName: formData.full_name,
+            address: `${formData.detail_address}, ${formData.phuong}, ${formData.quan}, ${formData.tinh}`,
+            phone: formData.phoneCheckout,
+            email: formData.emailCheckout,
+            orderDetails: listCart.map(item => ({
+                productId: item.productId,
+                quantity: item.quantity,
+                unitPrice: item.price,
+                itemNotes: '',
+            })),
+        };
+
+        try {
+            // Gửi yêu cầu POST tới backend
+            const response = await fetch('/api/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`, // Bao gồm token nếu cần
+                },
+                body: JSON.stringify(orderData),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                if (formData.payment === 'VN PAY') {
+                    // Chuyển hướng tới URL thanh toán VNPay
+                    window.location.href = result.paymentUrl;
+                } else if (formData.payment === 'Check Payment') {
+                    // Xóa giỏ hàng
+                    cartContext?.clearCart();
+                    // Chuyển hướng tới trang xác nhận đơn hàng
+                    navigate('/order-confirmation', { state: { orderId: result.orderId } });
+                }
+            } else {
+                // Xử lý lỗi từ backend
+                alert(result.message || 'Đặt hàng thất bại. Vui lòng thử lại.');
+            }
+        } catch (error) {
+            console.error('Error submitting order:', error);
+            alert('Đã xảy ra lỗi khi đặt hàng. Vui lòng thử lại.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <section className="checkout spad container-fluid">
@@ -186,6 +248,7 @@ const Checkout: React.FC = () => {
                                         onChange={handleChange}
                                         className="css_select"
                                         disabled
+                                        required
                                     >
                                         <option value={HO_CHI_MINH_ID}>Hồ Chí Minh</option>
                                     </select>
@@ -338,8 +401,8 @@ const Checkout: React.FC = () => {
                                                     key={index}
                                                     className="list-group-item d-flex justify-content-between align-items-center"
                                                 >
-                                                    {item.productName}
-                                                    <span>{FormatMoney(item.price)}</span>
+                                                    {item.productName} x {item.quantity}
+                                                    <span>{FormatMoney(item.price * item.quantity)}</span>
                                                 </li>
                                             ))
                                         ) : (
@@ -369,6 +432,7 @@ const Checkout: React.FC = () => {
                                                 value="Check Payment"
                                                 checked={formData.payment === 'Check Payment'}
                                                 onChange={handleChange}
+                                                required
                                             />
                                             <span className="checkmark"></span>
                                         </label>
@@ -382,6 +446,7 @@ const Checkout: React.FC = () => {
                                                 value="VN PAY"
                                                 checked={formData.payment === 'VN PAY'}
                                                 onChange={handleChange}
+                                                required
                                             />
                                             <span className="checkmark"></span>
                                         </label>
@@ -389,9 +454,9 @@ const Checkout: React.FC = () => {
                                     <button
                                         type="submit"
                                         className="site-btn w-100"
-                                        disabled={listCart.length === 0}
+                                        disabled={listCart.length === 0 || isSubmitting}
                                     >
-                                        ĐẶT HÀNG
+                                        {isSubmitting ? 'Đang xử lý...' : 'ĐẶT HÀNG'}
                                     </button>
                                 </div>
                             </div>

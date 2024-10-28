@@ -8,7 +8,6 @@ export async function getAllProduct(): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
         const data = await request('http://localhost:8080/Product');
-
         console.log(data._embedded.products)// Đảm bảo đúng endpoint
         if (data && data._embedded && data._embedded.products) {
 
