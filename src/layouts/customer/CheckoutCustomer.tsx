@@ -11,6 +11,7 @@ import { CartContext, CartItem } from './component/CartContext';
 import { useNavigate } from 'react-router-dom';
 import {jwtDecode} from 'jwt-decode';
 import FormatMoney from "./component/FormatMoney";
+import {request} from "../../api/Request";
 
 interface OrderDetailData {
     productId: number;
@@ -192,58 +193,9 @@ const Checkout: React.FC = () => {
             })),
         };
 
-        try {
-            // Bước 1: Tạo đơn hàng
-            const createOrderResponse = await fetch('http://localhost:8080/api/orders', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify(orderData),
-            });
-
-            if (!createOrderResponse.ok) {
-                const errorText = await createOrderResponse.text();
-                throw new Error(errorText || 'Đặt hàng thất bại.');
-            }
-
-            const createOrderResult = await createOrderResponse.json();
-            const { orderId } = createOrderResult;
-
-            if (formData.payment === 'VN PAY') {
-                // Bước 2: Tạo thanh toán VN PAY
-                const createPaymentResponse = await fetch(`http://localhost:8080/api/payment/create_payment?price=${total}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-
-                if (!createPaymentResponse.ok) {
-                    const errorText = await createPaymentResponse.text();
-                    throw new Error(errorText || 'Tạo thanh toán VN PAY thất bại.');
-                }
-
-                const paymentUrl = await createPaymentResponse.text(); // Giả sử backend trả về plain text URL
-
-                if (paymentUrl) {
-                    // Chuyển hướng người dùng đến VN PAY để thanh toán
-                    window.location.href = paymentUrl;
-                } else {
-                    alert('Không nhận được URL thanh toán từ server.');
-                }
-            } else if (formData.payment === 'Check Payment') {
-                // Thanh toán khi nhận hàng (COD)
-                cartContext?.clearCart();
-                navigate('/order-confirmation', { state: { orderId } });
-            }
-        } catch (error) {
-            console.error('Error submitting order:', error);
-            alert('Đã xảy ra lỗi khi đặt hàng: ' + error);
-        } finally {
-            setIsSubmitting(false);
-        }
+    const data =  await   request(`http://localhost:8080/api/payment/create_payment?price=${total}`)
+        console.log(data.url)
+        window.location.href = data.url;
     };
 
 
