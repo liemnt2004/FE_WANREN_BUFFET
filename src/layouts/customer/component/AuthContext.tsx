@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import {jwtDecode} from 'jwt-decode';
 
 interface AuthContextType {
-    fullName: string | null;
+    username: string | null;
+    fullName:string | null;
     email: string | null;
     phone: string | null;
     login: (token: string) => void;
@@ -13,7 +14,8 @@ interface AuthContextType {
 }
 
 export const AuthContext = createContext<AuthContextType>({
-    fullName: null,
+    username: null,
+    fullName:null,
     email: null,
     phone: null,
     login: () => {},
@@ -29,12 +31,14 @@ export interface DecodedToken {
     fullName?: string;
     email?: string;
     phone?: string;
+    username?:string;
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-    const [fullName, setFullName] = useState<string | null>(null);
+    const [username, setUsername] = useState<string | null>(null);
     const [email, setEmail] = useState<string | null>(null);
     const [phone, setPhone] = useState<string | null>(null);
+    const [fullName,setFullName] = useState<string | null>(null);
     const navigate = useNavigate();
 
     const decodeToken = (token: string) => {
@@ -45,7 +49,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         try {
             const decoded: DecodedToken = jwtDecode(token);
-            setFullName(decoded.fullName || decoded.sub);
+            console.log(decoded.sub)
+            setFullName(decoded.fullName || null)
+            setUsername(decoded.sub || decoded.sub);
             setEmail(decoded.email || null);
             setPhone(decoded.phone || null);
         } catch (error) {
@@ -67,14 +73,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const logout = () => {
         localStorage.removeItem("token");
-        setFullName(null);
+        setUsername(null);
         setEmail(null);
         setPhone(null);
+        setFullName(null);
         navigate("/login"); // Chuyển hướng tới trang đăng nhập sau khi đăng xuất
     };
 
     return (
-        <AuthContext.Provider value={{ fullName, email, phone, login, logout }}>
+        <AuthContext.Provider value={{ username, fullName, email, phone, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

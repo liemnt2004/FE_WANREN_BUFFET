@@ -9,10 +9,8 @@ import './assets/css/checkout.css';
 import './assets/css/styles.css';
 import { CartContext, CartItem } from './component/CartContext';
 import { useNavigate } from 'react-router-dom';
-import { DecodedToken } from './component/AuthContext';
-import {jwtDecode} from 'jwt-decode'; // Sửa câu lệnh import
+import {jwtDecode} from 'jwt-decode';
 import FormatMoney from "./component/FormatMoney";
-
 
 interface OrderDetailData {
     productId: number;
@@ -22,7 +20,7 @@ interface OrderDetailData {
 }
 
 interface CheckoutFormData {
-    full_name: string;
+    username: string;
     tinh: string;
     quan: string;
     phuong: string;
@@ -43,6 +41,13 @@ interface ApiResponse {
     data: Location[];
 }
 
+interface DecodedToken {
+    sub: string;
+    email: string;
+    phone?: string;
+    fullName: string;
+}
+
 const HO_CHI_MINH_ID = '79'; // ID của Hồ Chí Minh
 
 const Checkout: React.FC = () => {
@@ -52,21 +57,27 @@ const Checkout: React.FC = () => {
     const [listCart, setListCart] = useState<CartItem[]>(
         cartContext?.cartItems || []
     );
+
     let decoded: DecodedToken | null = null;
     if (token) {
-        decoded = jwtDecode(token);
+        try {
+            decoded = jwtDecode<DecodedToken>(token);
+        } catch (error) {
+            console.error('Invalid token:', error);
+            navigate('/login');
+        }
     } else {
         navigate('/login');
     }
 
     const [formData, setFormData] = useState<CheckoutFormData>({
-        full_name: decoded?.fullName || '',
-        tinh: HO_CHI_MINH_ID,
+        username: decoded?.sub || "",
+        tinh: "Thành Phố Hồ Chí Minh",
         quan: '',
         phuong: '',
         detail_address: '',
-        phoneCheckout: decoded?.phone || '',
-        emailCheckout: decoded?.email || '',
+        emailCheckout: decoded?.email || "",
+        phoneCheckout: decoded?.phone || "",
         payment: '',
         note: '',
     });
@@ -155,20 +166,24 @@ const Checkout: React.FC = () => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Chuẩn bị dữ liệu để gửi tới backend
+        if (!formData.payment) {
+            alert('Vui lòng chọn phương thức thanh toán.');
+            setIsSubmitting(false);
+            return;
+        }
+
+        const selectedDistrict = districts.find(district => district.id === formData.quan);
+        const districtName = selectedDistrict ? selectedDistrict.full_name : "";
+        const address22 = `${formData.detail_address}, ${districtName}, ${formData.tinh}`;
+
         const orderData = {
-            userId: null,
-            customerId: null,
-            orderStatus: 'PREPARING_ORDER',
-            totalAmount: total,
-            tablee: null,
-            payment: formData.payment,
-            createdDate: new Date().toISOString(),
-            notes: formData.note,
-            fullName: formData.full_name,
-            address: `${formData.detail_address}, ${formData.phuong}, ${formData.quan}, ${formData.tinh}`,
+            username: formData.username,
+            address: address22,
             phone: formData.phoneCheckout,
             email: formData.emailCheckout,
+            payment: formData.payment,
+            notes: formData.note,
+            totalAmount: total,
             orderDetails: listCart.map(item => ({
                 productId: item.productId,
                 quantity: item.quantity,
@@ -178,39 +193,61 @@ const Checkout: React.FC = () => {
         };
 
         try {
-            // Gửi yêu cầu POST tới backend
-            const response = await fetch('/api/orders', {
+            // Bước 1: Tạo đơn hàng
+            const createOrderResponse = await fetch('http://localhost:8080/api/orders', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`, // Bao gồm token nếu cần
+                    'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify(orderData),
             });
 
-            const result = await response.json();
+            if (!createOrderResponse.ok) {
+                const errorText = await createOrderResponse.text();
+                throw new Error(errorText || 'Đặt hàng thất bại.');
+            }
 
-            if (response.ok) {
-                if (formData.payment === 'VN PAY') {
-                    // Chuyển hướng tới URL thanh toán VNPay
-                    window.location.href = result.paymentUrl;
-                } else if (formData.payment === 'Check Payment') {
-                    // Xóa giỏ hàng
-                    cartContext?.clearCart();
-                    // Chuyển hướng tới trang xác nhận đơn hàng
-                    navigate('/order-confirmation', { state: { orderId: result.orderId } });
+            const createOrderResult = await createOrderResponse.json();
+            const { orderId } = createOrderResult;
+
+            if (formData.payment === 'VN PAY') {
+                // Bước 2: Tạo thanh toán VN PAY
+                const createPaymentResponse = await fetch(`http://localhost:8080/api/payment/create_payment?price=${total}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (!createPaymentResponse.ok) {
+                    const errorText = await createPaymentResponse.text();
+                    throw new Error(errorText || 'Tạo thanh toán VN PAY thất bại.');
                 }
-            } else {
-                // Xử lý lỗi từ backend
-                alert(result.message || 'Đặt hàng thất bại. Vui lòng thử lại.');
+
+                const paymentUrl = await createPaymentResponse.text(); // Giả sử backend trả về plain text URL
+
+                if (paymentUrl) {
+                    // Chuyển hướng người dùng đến VN PAY để thanh toán
+                    window.location.href = paymentUrl;
+                } else {
+                    alert('Không nhận được URL thanh toán từ server.');
+                }
+            } else if (formData.payment === 'Check Payment') {
+                // Thanh toán khi nhận hàng (COD)
+                cartContext?.clearCart();
+                navigate('/order-confirmation', { state: { orderId } });
             }
         } catch (error) {
             console.error('Error submitting order:', error);
-            alert('Đã xảy ra lỗi khi đặt hàng. Vui lòng thử lại.');
+            alert('Đã xảy ra lỗi khi đặt hàng: ' + error);
         } finally {
             setIsSubmitting(false);
         }
     };
+
+
+
 
     return (
         <section className="checkout spad container-fluid">
@@ -229,9 +266,9 @@ const Checkout: React.FC = () => {
                                         type="text"
                                         id="full_name"
                                         name="full_name"
-                                        value={formData.full_name}
-                                        onChange={handleChange}
+                                        value={decoded?.fullName || ''}
                                         className="form-control"
+                                        readOnly
                                         required
                                     />
                                 </div>
@@ -310,7 +347,7 @@ const Checkout: React.FC = () => {
                                         {loadingWards && <option value="">Đang tải...</option>}
                                         {!loadingWards &&
                                             wards.map((ward) => (
-                                                <option key={ward.id} value={ward.id}>
+                                                <option key={ward.id} value={ward.full_name}>
                                                     {ward.full_name}
                                                 </option>
                                             ))}
