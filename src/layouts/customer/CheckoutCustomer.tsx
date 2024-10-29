@@ -48,7 +48,7 @@ interface DecodedToken {
     fullName: string;
 }
 
-const HO_CHI_MINH_ID = '79'; // ID của Hồ Chí Minh
+const HO_CHI_MINH_ID = '79'; 
 
 const Checkout: React.FC = () => {
     const navigate = useNavigate();
