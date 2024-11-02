@@ -159,10 +159,9 @@ const LoginRegisterComponent: React.FC = () => {
             });
 
             const result = await response.json();
-
             if (response.ok) {
-                if (result.jwt) {
-                    login(result.jwt); // Sử dụng hàm login từ AuthContext
+                if (result.token) {
+                    login(result.token); // Sử dụng hàm login từ AuthContext
                     alert('Đăng nhập thành công!');
                     navigate('/'); // Chuyển hướng đến trang chủ hoặc trang người dùng
                 } else {
