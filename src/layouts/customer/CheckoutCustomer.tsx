@@ -1,3 +1,5 @@
+// src/layouts/customer/CheckoutCustomer.tsx
+
 import React, {
     useState,
     useEffect,
@@ -8,10 +10,11 @@ import React, {
 import './assets/css/checkout.css';
 import './assets/css/styles.css';
 import { CartContext, CartItem } from './component/CartContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {jwtDecode} from 'jwt-decode';
 import FormatMoney from "./component/FormatMoney";
-import {request} from "../../api/Request";
+import { request } from "../../api/Request";
+import {DecodedToken} from "./component/AuthContext";
 
 interface OrderDetailData {
     productId: number;
@@ -32,45 +35,71 @@ interface CheckoutFormData {
     note: string;
 }
 
-interface Location {
+interface LocationData {
     id: string;
     full_name: string;
 }
 
 interface ApiResponse {
     error: number;
-    data: Location[];
+    data: LocationData[];
 }
 
-interface DecodedToken {
-    sub: string;
-    email: string;
-    phone?: string;
-    fullName: string;
-}
 
-const HO_CHI_MINH_ID = '79'; 
 
-const Checkout: React.FC = () => {
+const HO_CHI_MINH_ID = '79';
+
+const CheckoutCustomer: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const token = localStorage.getItem('token');
     const cartContext = useContext(CartContext);
-    const [listCart, setListCart] = useState<CartItem[]>(
-        cartContext?.cartItems || []
-    );
+    const [listCart, setListCart] = useState<CartItem[]>(cartContext?.cartItems || []);
 
+    // Modal State
+    const [showModal, setShowModal] = useState<boolean>(false);
+    const [modalMessage, setModalMessage] = useState<string>('');
+    const [modalType, setModalType] = useState<'success' | 'error'>('success');
+
+    // Decode Token
     let decoded: DecodedToken | null = null;
-    if (token) {
-        try {
+    try {
+        if (token) {
             decoded = jwtDecode<DecodedToken>(token);
-        } catch (error) {
-            console.error('Invalid token:', error);
-            navigate('/login');
         }
-    } else {
+    } catch (error) {
+        console.error('Invalid token:', error);
         navigate('/login');
     }
 
+    // Redirect if no token or failed to decode
+    useEffect(() => {
+        if (!decoded) {
+            navigate('/login');
+        }
+    }, [decoded, navigate]);
+
+    // Parse Query Parameters
+    const queryParams = new URLSearchParams(location.search);
+    const success = queryParams.get('success');
+    const error = queryParams.get('error');
+
+    // Show Modal based on Query Params
+    useEffect(() => {
+        if (success) {
+            setModalMessage(decodeURIComponent(success));
+            setModalType('success');
+            setShowModal(true);
+            navigate("/checkout")
+        } else if (error) {
+            setModalMessage(decodeURIComponent(error));
+            setModalType('error');
+            setShowModal(true);
+            navigate("/checkout")
+        }
+    }, [success, error]);
+
+    // Form Data State
     const [formData, setFormData] = useState<CheckoutFormData>({
         username: decoded?.sub || "",
         tinh: "Thành Phố Hồ Chí Minh",
@@ -83,18 +112,22 @@ const Checkout: React.FC = () => {
         note: '',
     });
 
-    const [districts, setDistricts] = useState<Location[]>([]);
-    const [wards, setWards] = useState<Location[]>([]);
+    // Locations State
+    const [districts, setDistricts] = useState<LocationData[]>([]);
+    const [wards, setWards] = useState<LocationData[]>([]);
 
+    // Loading and Error States
     const [loadingDistricts, setLoadingDistricts] = useState<boolean>(false);
     const [loadingWards, setLoadingWards] = useState<boolean>(false);
-
     const [errorDistricts, setErrorDistricts] = useState<string>('');
     const [errorWards, setErrorWards] = useState<string>('');
 
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+    // Fetch Districts
     useEffect(() => {
+        let isMounted = true;
+
         const fetchDistricts = async () => {
             setLoadingDistricts(true);
             setErrorDistricts('');
@@ -103,27 +136,40 @@ const Checkout: React.FC = () => {
                     `https://esgoo.net/api-tinhthanh/2/${HO_CHI_MINH_ID}.htm`
                 );
                 const data: ApiResponse = await response.json();
-                if (data.error === 0) {
-                    setDistricts(data.data);
-                } else {
-                    setErrorDistricts('Không tải được danh sách quận/huyện.');
+                if (isMounted) {
+                    if (data.error === 0) {
+                        setDistricts(data.data);
+                    } else {
+                        setErrorDistricts('Không tải được danh sách quận/huyện.');
+                    }
                 }
             } catch (error) {
-                setErrorDistricts('Đã xảy ra lỗi khi tải danh sách quận/huyện.');
+                if (isMounted) {
+                    setErrorDistricts('Đã xảy ra lỗi khi tải danh sách quận/huyện.');
+                }
             } finally {
-                setLoadingDistricts(false);
+                if (isMounted) {
+                    setLoadingDistricts(false);
+                }
             }
         };
 
         fetchDistricts();
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
+    // Fetch Wards when District Changes
     useEffect(() => {
         if (!formData.quan) {
             setWards([]);
             setFormData((prev) => ({ ...prev, phuong: '' }));
             return;
         }
+
+        let isMounted = true;
 
         const fetchWards = async () => {
             setLoadingWards(true);
@@ -133,21 +179,32 @@ const Checkout: React.FC = () => {
                     `https://esgoo.net/api-tinhthanh/3/${formData.quan}.htm`
                 );
                 const data: ApiResponse = await response.json();
-                if (data.error === 0) {
-                    setWards(data.data);
-                } else {
-                    setErrorWards('Hãy chọn phường của bạn');
+                if (isMounted) {
+                    if (data.error === 0) {
+                        setWards(data.data);
+                    } else {
+                        setErrorWards('Hãy chọn phường của bạn');
+                    }
                 }
             } catch (error) {
-                setErrorWards('Đã xảy ra lỗi khi tải danh sách phường/xã.');
+                if (isMounted) {
+                    setErrorWards('Đã xảy ra lỗi khi tải danh sách phường/xã.');
+                }
             } finally {
-                setLoadingWards(false);
+                if (isMounted) {
+                    setLoadingWards(false);
+                }
             }
         };
 
         fetchWards();
+
+        return () => {
+            isMounted = false;
+        };
     }, [formData.quan]);
 
+    // Handle Input Changes
     const handleChange = (
         e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
     ) => {
@@ -158,17 +215,20 @@ const Checkout: React.FC = () => {
         }));
     };
 
-    // Tính toán tổng tiền
+    // Calculate Totals
     const subtotal = listCart.reduce((total, item) => total + item.price * item.quantity, 0);
-    const shippingFee = 15000; // Ví dụ phí giao hàng
+    const shippingFee = 15000; // Example shipping fee
     const total = subtotal + shippingFee;
 
+    // Handle Form Submission
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
 
         if (!formData.payment) {
-            alert('Vui lòng chọn phương thức thanh toán.');
+            setModalMessage('Vui lòng chọn phương thức thanh toán.');
+            setModalType('error');
+            setShowModal(true);
             setIsSubmitting(false);
             return;
         }
@@ -193,13 +253,71 @@ const Checkout: React.FC = () => {
             })),
         };
 
-    const data =  await   request(`http://localhost:8080/api/payment/create_payment?price=${total}`)
-        console.log(data.url)
-        window.location.href = data.url;
+        try {
+            // If VN PAY is selected, create order and redirect to payment
+            if (formData.payment === "VN PAY") {
+                const createOrderResponse = await fetch('http://localhost:8080/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(orderData),
+                });
+
+                if (!createOrderResponse.ok) {
+                    const errorData = await createOrderResponse.json();
+                    throw new Error(errorData.message || "Đặt hàng thất bại.");
+                }
+
+                const createOrderResult = await createOrderResponse.json();
+                const orderId = createOrderResult.orderId;
+
+                // Create payment URL after successful order creation
+                const paymentResponse = await request(`http://localhost:8080/api/payment/create_payment?price=${total}`);
+                if (!paymentResponse || !paymentResponse.url) {
+                    throw new Error("Tạo thanh toán VN PAY thất bại.");
+                }
+                cartContext?.clearCart()
+                // Redirect user to VN PAY payment URL
+                window.location.href = paymentResponse.url;
+
+            } else if (formData.payment === "Check Payment") {
+                // Handle other payment methods, e.g., Cash on Delivery
+                const createOrderResponse = await fetch('http://localhost:8080/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(orderData),
+                });
+
+                if (!createOrderResponse.ok) {
+                    const errorData = await createOrderResponse.json();
+                    throw new Error(errorData.message || "Đặt hàng thất bại.");
+                }
+
+                const createOrderResult = await createOrderResponse.json();
+
+                setModalMessage("Đặt hàng thành công. Chúng tôi sẽ liên hệ với bạn sớm.");
+                setModalType('success');
+                setShowModal(true);
+                cartContext?.clearCart()
+                navigate('/checkout'); // Redirect to orders page
+            }
+        } catch (error: any) {
+            console.error("Đặt hàng thất bại:", error);
+            setModalMessage(error.message || "Có lỗi xảy ra trong quá trình đặt hàng hoặc tạo thanh toán.");
+            setModalType('error');
+            setShowModal(true);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-
-
+    // Close Modal Handler
+    const handleCloseModal = () => setShowModal(false);
 
     return (
         <section className="checkout spad container-fluid">
@@ -208,7 +326,7 @@ const Checkout: React.FC = () => {
                     <h4>Thông Tin Thanh Toán</h4>
                     <form onSubmit={handleSubmit}>
                         <div className="row">
-                            {/* Form Thông Tin Thanh Toán */}
+                            {/* Payment Information Form */}
                             <div className="col-lg-8 col-md-6">
                                 <div className="checkout__input mb-3">
                                     <label htmlFor="full_name">
@@ -218,14 +336,14 @@ const Checkout: React.FC = () => {
                                         type="text"
                                         id="full_name"
                                         name="full_name"
-                                        value={decoded?.fullName || ''}
+                                        value={decoded?.fullName}
                                         className="form-control"
                                         readOnly
                                         required
                                     />
                                 </div>
 
-                                {/* Chọn Địa Phương */}
+                                {/* Province Selection (Hidden/Disabled) */}
                                 <div className="css_select_div mb-3 d-none">
                                     <label htmlFor="tinh" className="form-label">
                                         Tỉnh/Thành phố<span className="text-danger">*</span>
@@ -243,16 +361,14 @@ const Checkout: React.FC = () => {
                                     </select>
                                 </div>
 
-                                {/* Chọn Quận/Huyện */}
+                                {/* District Selection */}
                                 <div className="checkout__input mb-3">
                                     <label htmlFor="quan" className="form-label">
                                         Quận/Huyện<span className="text-danger">*</span>
                                     </label>
                                     <br />
                                     <select
-                                        className={`css_select ${
-                                            errorDistricts ? 'is-invalid' : ''
-                                        }`}
+                                        className={`css_select ${errorDistricts ? 'is-invalid' : ''}`}
                                         id="quan"
                                         name="quan"
                                         title="Chọn Quận Huyện"
@@ -279,7 +395,7 @@ const Checkout: React.FC = () => {
                                     )}
                                 </div>
 
-                                {/* Chọn Phường/Xã */}
+                                {/* Ward Selection */}
                                 <div className="checkout__input mb-3">
                                     <label htmlFor="phuong" className="form-label">
                                         Phường/Xã<span className="text-danger">*</span>
@@ -311,6 +427,7 @@ const Checkout: React.FC = () => {
                                     )}
                                 </div>
 
+                                {/* Detailed Address */}
                                 <div className="checkout__input mb-3">
                                     <label htmlFor="detail_address">
                                         Tên Đường / Tòa Nhà<span className="text-danger">*</span>
@@ -326,6 +443,7 @@ const Checkout: React.FC = () => {
                                     />
                                 </div>
 
+                                {/* Phone and Email */}
                                 <div className="row">
                                     <div className="col-lg-6">
                                         <div className="checkout__input mb-3">
@@ -361,7 +479,7 @@ const Checkout: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Ghi Chú Đơn Hàng */}
+                                {/* Order Notes */}
                                 <div className="checkout__input mb-3">
                                     <label htmlFor="note">Ghi Chú Đơn Hàng</label>
                                     <textarea
@@ -375,7 +493,7 @@ const Checkout: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Tóm Tắt Đơn Hàng */}
+                            {/* Order Summary */}
                             <div className="col-lg-4 col-md-6">
                                 <div className="checkout__order">
                                     <h4>Đơn Hàng</h4>
@@ -411,7 +529,7 @@ const Checkout: React.FC = () => {
                                         <span>{FormatMoney(total)}</span>
                                     </div>
 
-                                    {/* Phương Thức Thanh Toán */}
+                                    {/* Payment Methods */}
                                     <div className="checkout__input__checkbox mb-3">
                                         <label>
                                             Thanh Toán Khi Nhận Hàng
@@ -453,8 +571,26 @@ const Checkout: React.FC = () => {
                     </form>
                 </div>
             </div>
+
+            {/* Modal */}
+            {showModal && (
+                <div className="modal-overlay" onClick={() => setShowModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h5 className={`modal-title ${modalType === 'success' ? 'text-success' : 'text-danger'}`}>
+                            {modalType === 'success' ? 'Thành Công' : 'Lỗi'}
+                        </h5>
+                        <p>{modalMessage}</p>
+                        <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            )}
+
+
         </section>
     );
+
 };
 
-export default Checkout;
+export default CheckoutCustomer;

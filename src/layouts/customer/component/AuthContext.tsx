@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [username, setUsername] = useState<string | null>(null);
     const [email, setEmail] = useState<string | null>(null);
     const [phone, setPhone] = useState<string | null>(null);
-    const [fullName,setFullName] = useState<string | null>(null);
+    const [fullName,setFullName] = useState<string | null>(null)
     const navigate = useNavigate();
 
     const decodeToken = (token: string) => {
@@ -49,7 +49,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         try {
             const decoded: DecodedToken = jwtDecode(token);
-            console.log(decoded.sub)
             setFullName(decoded.fullName || null)
             setUsername(decoded.sub || decoded.sub);
             setEmail(decoded.email || null);
