@@ -2,15 +2,6 @@ body {
     background: #f7f7f1;
   }
 
-  .container-fluid {
-    flex: 1;
-    width: calc(100% - 2%);
-    height: 100%;
-    background-color: #f7f7f9;
-    border-radius: 35px;
-    margin: 15px;
-    padding: 1rem;
-  }
   .admin-layout {
     padding-top: 12px;
     display: flex;
@@ -356,7 +347,6 @@ body {
   }
   .add-employee-btn:hover{
     background-color: #05d639;
-    color: white;
   }
   .table-container {
     max-height: 400px;
@@ -391,7 +381,7 @@ body {
 
   .table {
     width: 100%;
-    min-width: 1500px;
+    min-width: 1700px;
     border-collapse: separate;
     border-spacing: 0;
   }
@@ -425,6 +415,12 @@ body {
 .table tbody tr:nth-child(even) {
     background-color: #fafafa;
 }
+.password-column {
+  max-width: 150px; 
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 
   .modal-content {
     border-radius: 8px;
@@ -441,11 +437,48 @@ body {
   .form-label {
     font-weight: 600;
   }
-  
+
+  .modal-footer .btn-primary {
+    background-color: #ff1493;
+    border-color: #ff1493;
+    transition: background-color 0.3s ease;
+  }
+  .modal-footer .btn-primary:hover {
+    background-color: #e0118e;
+    border-color: #e0118e;
+  }
+
   .modal-footer .btn-secondary {
     background-color: #6c757d;
+    border-color: #6c757d;
   }
-  
+  .modal-footer .btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+  }
   .modal-footer .btn-primary {
     background-color: #0d6efd;
   }
+  .custom-input {
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .custom-input:focus {
+    border-color: #ff1493;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .custom-select .ant-select-selector {
+    border-radius: 8px !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .custom-select .ant-select-selector:focus,
+  .custom-select .ant-select-focused .ant-select-selector {
+    border-color: #ff1493 !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  

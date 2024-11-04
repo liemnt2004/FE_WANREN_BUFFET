@@ -3,7 +3,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import kichi from "./assets/img/warenbuffet.png";
-import CustomUpdateStatusModal from "../CustomComponent/CustomStatusModal";
 import { message, Switch } from "antd";
 
 const EmployeeManagement: React.FC = () => {
@@ -260,20 +259,6 @@ const EmployeeManagement: React.FC = () => {
           </div>
         </div>
       </div>
-      <CustomUpdateStatusModal
-        custom={pendingSwitchState ? "blue" : "red"}
-        isOpen={isModalOpen}
-        title="Confirm Status Change"
-        subTitle={[
-          `Are you sure you want to ${
-            pendingSwitchState ? "enable" : "disable"
-          } the status?`,
-        ]}
-        textClose="Cancel"
-        textConfirm={pendingSwitchState ? "Enable" : "Disable"}
-        handleClose={handleModalClose}
-        handleConfirm={handleModalConfirm}
-      />
     </React.Fragment>
   );
 };
