@@ -1,24 +1,8 @@
 import React from "react";
+import {ProductDetail} from "../layouts/customer/profileCustomer";
 
 
- interface ProductModel {
-    productId: number;
-    productName: string;
-    description: string;
-    price: number;
-    typefood: string;
-    image: string;
-    quantity: number;
-    productStatus: string;
-}
 
- interface OrderDetail {
-    orderDetailId: number;
-    quantity: number;
-    unitPrice: number;
-    itemNotes: string;
-    product: ProductModel;
-}
 
 export interface OrderModel {
     orderId: number;
@@ -30,5 +14,5 @@ export interface OrderModel {
     payment: string;
     createdDate: string;
     updatedDate?: string | null;
-    orderDetails: OrderDetail[];
+    producHistorytDTO:ProductDetail;
 }

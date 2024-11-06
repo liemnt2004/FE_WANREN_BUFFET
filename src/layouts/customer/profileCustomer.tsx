@@ -1,3 +1,5 @@
+
+
 import React, {useEffect, useState} from "react";
 import "./assets/css/styles.css";
 import "./assets/css/Tinh_Style.css";
@@ -6,6 +8,13 @@ import kichi from "./assets/img/Cream and Black Simple Illustration Catering Log
 import { DecodedToken } from "./component/AuthContext";
 import {jwtDecode} from "jwt-decode"; // Corrected import
 import { useNavigate } from "react-router-dom";
+import {getProductHot} from "../../api/apiCustommer/productApi";
+import {getPreparingOrders} from "../../api/apiCustommer/OrderApi";
+import {Simulate} from "react-dom/test-utils";
+import error = Simulate.error;
+import formatMoney from "./component/FormatMoney";
+import axios from "axios";
+import {OrderModel} from "../../models/OrderModel";
 
 interface UserInfo {
     fullName: string;
@@ -14,13 +23,30 @@ interface UserInfo {
     password: string;
 }
 
+
+
+// models/ProductDetail.ts
+export interface ProductDetail {
+    _productId: number;
+    _productName: string;
+    _description: string;
+    _price: number;
+    _typefood: string;
+    _image: string;
+    _quantity:number;
+    _productStatus:string;
+    _total:number
+}
+
+
 interface UserInfoProps {
     userInfo: UserInfo;
     setUserInfo: React.Dispatch<React.SetStateAction<UserInfo>>;
 }
 
 interface HistoryOrderProps{
-
+    listOrder: OrderModel[];
+    setListOrder:React.Dispatch<React.SetStateAction<OrderModel[]>>;
 }
 
 
@@ -328,156 +354,179 @@ const AccountContent: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => (
     </div>
 );
 
-const OrdersContent: React.FC<HistoryOrderProps> = () => {
+const OrdersContent: React.FC<HistoryOrderProps> = ({ listOrder , setListOrder }) => {
+    const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+    const [orderDetails, setOrderDetails] = useState<ProductDetail[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+    const [totalmodal,setTotalmodal] = useState<number | null>();
+
+    console.log(listOrder)
+    useEffect(() => {
+        if (selectedOrderId) {
+            setLoading(true);
+            setError(null);
+            axios
+                .get<any[]>(`http://localhost:8080/api/orders/GetOrderDetailByOrderId/${selectedOrderId}`)
+                .then(response => {
+                    setOrderDetails(response.data);
+                    setLoading(false);
+                })
+                .catch(err => {
+                    console.error("Error fetching order details:", err);
+                    setError("Failed to load order details.");
+                    setLoading(false);
+                });
+        }
+    }, [selectedOrderId]);
+
+    useEffect(() => {
+        // Calculate total whenever orderDetails changes
+        if (selectedOrderId != null) {
+            const total = orderDetails.reduce((sum, product) => sum + (product._price * product._quantity), 0);
+            setTotalmodal(total + 15000);
+        }
+    }, [orderDetails, selectedOrderId]);
+
+
+
+    const handleViewMore = (orderId: number) => {
+        setSelectedOrderId(orderId);
+    };
+
     return (
         <div
             className="row tinh-height90 m-0 align-items-center tinh-overflowScroll order_history"
-            style={{padding: "100px 40px 0 40px"}}
+            style={{ padding: "100px 40px 0 40px" }}
         >
             <div className="container mt-5">
+                {listOrder.map((order) => (
+                    <div className="card mb-3" key={order.orderId}>
+                        <div className="card-header order-header">
+                            <span>Mã Đơn Hàng: {order.orderId}</span>
+                            <span className="float-end order-total">{formatMoney(order.totalAmount)}</span>
+                        </div>
+                        <div className="card-body">
+                            {/*<p className="order-info">*/}
+                            {/*    Date placed: {new Intl.DateTimeFormat('en-US', {*/}
+                            {/*    year: 'numeric',*/}
+                            {/*    month: 'long',*/}
+                            {/*    day: 'numeric'*/}
+                            {/*}).format(new Date(order.createdDate))}*/}
+                            {/*</p>*/}
+
+                            <p className="order-info">Địa Chỉ Giao Hàng: {order.address}</p>
+                            <div className="row g-0">
+
+                                    <div className="col-md-2">
+                                        <img
+                                            src={order.producHistorytDTO._image} // Replace with a dynamic source if available
+                                            className="img-fluid rounded-start"
+                                            alt="Product"
+                                        />
+                                        <div className="col-md-10">
+                                            <div className="product-info">
+                                                <h5>{order.producHistorytDTO._productName}</h5>
+                                                <p>
+                                                    {order.producHistorytDTO._description}
+                                                </p>
+                                                <p>
+                                                   x {order.producHistorytDTO._quantity}
+                                                </p>
+                                                <a href="#" className="btn btn-outline-secondary btn-buy-again">Buy
+                                                    again</a>
+                                            </div>
+                                        </div>
+                                    </div>
 
 
-                <div className="card mb-3">
-                    <div className="card-header order-header">
-                        <span>Order number: WU8819111</span>
-                        <span className="float-end order-total">$160.00</span>
-                    </div>
-                    <div className="card-body">
-                        <p className="order-info">Date placed: July 6, 2021</p>
-                        <div className="row g-0">
-                            <div className="col-md-2">
-                                <img src="images/micro_backpack.jpg" className="img-fluid rounded-start"
-                                     alt="Micro Backpack"/>
-                            </div>
-                            <div className="col-md-10">
-                                <div className="product-info">
-                                    <h5>Micro Backpack</h5>
-                                    <p>Are you minimalist looking for a compact carry option? The Micro Backpack is
-                                        perfect
-                                        for your essentials everyday carry items. Wear it like a backpack or carry it
-                                        like a
-                                        satchel for all day use.</p>
-                                    <p className="delivered-info"><i className="fas fa-check-circle"></i> Delivered on
-                                        July
-                                        12, 2021</p>
-                                    <a href="#" className="btn btn-outline-primary btn-product">View product</a>
-                                    <a href="#" className="btn btn-outline-secondary btn-buy-again">Buy again</a>
-                                </div>
+
                             </div>
                         </div>
-                    </div>
-                    <div className="card-footer">
-                        <a href="#" className="btn btn-outline-primary btn-view-order" data-bs-toggle="modal"
-                           data-bs-target="#orderModal1"><i className="fas fa-info-circle"></i> View More Products</a>
-                        <a href="#" className="btn btn-outline-secondary btn-view-invoice"><i
-                            className="fas fa-file-invoice"></i> View Invoice</a>
-                    </div>
-                </div>
+                        <div className="card-footer">
+                            <button
+                                type="button"
+                                className="btn btn-outline-primary btn-view-order"
+                                data-bs-toggle="modal"
+                                data-bs-target="#orderModal"
+                                onClick={() => handleViewMore(order.orderId)}
+                            >
+                                <i className="fas fa-info-circle"></i> View More Products
+                            </button>
 
+                        </div>
+                    </div>
+                ))}
 
-                <div className="modal fade" id="orderModal1" tabIndex={-1} aria-labelledby="orderModalLabel1"
-                     aria-hidden="true">
+                {/* Modal for viewing more products */}
+                <div className="modal fade" id="orderModal" tabIndex={-1} aria-labelledby="orderModalLabel" aria-hidden="true">
                     <div className="modal-dialog modal-lg">
                         <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title" id="orderModalLabel1">Order #WU8819111 - More Products</h5>
-                                <button type="button" className="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
-                            </div>
-                            <div className="modal-body">
-
-                                <div className="row mb-3">
-                                    <div className="col-md-4">
-                                        <img src="images/micro_backpack.jpg" className="img-fluid"
-                                             alt="Micro Backpack"/>
-                                    </div>
-                                    <div className="col-md-8">
-                                        <h5>Micro Backpack</h5>
-                                        <p>$70.00</p>
-                                        <p>Are you minimalist looking for a compact carry option? The Micro Backpack is
-                                            perfect for your essentials everyday carry items. Wear it like a backpack or
-                                            carry it like a satchel for all day use.</p>
-                                        <p className="delivered-info"><i className="fas fa-check-circle"></i> Delivered
-                                            on
-                                            July 12, 2021</p>
-                                        <a href="#" className="btn btn-primary"><i className="fas fa-redo"></i> Buy
-                                            Again</a>
+                            {loading && (
+                                <div className="modal-body text-center">
+                                    <div className="spinner-border" role="status">
+                                        <span className="visually-hidden">Loading...</span>
                                     </div>
                                 </div>
-
-                                <div className="row mb-3">
-                                    <div className="col-md-4">
-                                        <img src="images/nomad_shopping_tote.jpg" className="img-fluid"
-                                             alt="Nomad Shopping Tote"/>
-                                    </div>
-                                    <div className="col-md-8">
-                                        <h5>Nomad Shopping Tote</h5>
-                                        <p>$90.00</p>
-                                        <p>This durable shopping tote is perfect for the world traveler. Its yellow
-                                            canvas
-                                            construction is water, fray, tear-resistant.</p>
-                                        <p className="delivered-info"><i className="fas fa-check-circle"></i> Delivered
-                                            on
-                                            July 12, 2021</p>
-                                        <a href="#" className="btn btn-primary"><i className="fas fa-redo"></i> Buy
-                                            Again</a>
-                                    </div>
+                            )}
+                            {error && (
+                                <div className="modal-body">
+                                    <p className="text-danger">{error}</p>
                                 </div>
-
-                                <div className="row">
-                                    <div className="col-md-12">
-                                        <h6><strong>Shipping Cost:</strong> $10.00</h6>
-                                        <h6><strong>Voucher Applied:</strong> -$20.00</h6>
-                                        <h6><strong>Final Total:</strong> $150.00</h6>
+                            )}
+                            {!loading && !error && selectedOrderId && (
+                                <>
+                                    <div className="modal-header">
+                                        <h5 className="modal-title" id="orderModalLabel">Mã Đơn Hàng #{selectedOrderId} - Chi Tiết sản phẩm</h5>
+                                        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
-                                </div>
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close
-                                </button>
-                            </div>
+                                    <div className="modal-body">
+                                        {orderDetails.length > 0 ? (
+                                            orderDetails.map((product, index) => (
+                                                <div className="row mb-3" key={product._productId}>
+                                                    <div className="col-md-4">
+                                                        <img src={product._image || "images/default_product.jpg"}
+                                                             className="img-fluid" alt={product._productName}/>
+                                                    </div>
+                                                    <div className="col-md-8">
+                                                        <h5>{product._productName}</h5>
+                                                        <p>{formatMoney(product._price)}</p>
+                                                        <p>{product._description}</p>
+                                                        <p>x{product._quantity}</p>
+                                                        <a href="#" className="btn btn-primary"><i
+                                                            className="fas fa-redo"></i> Buy Again</a>
+                                                    </div>
+
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p>No products found for this order.</p>
+                                        )}
+                                        {/* Assuming Shipping, Voucher, and Final Total are part of the order details or can be fetched separately */}
+                                        <div className="row">
+                                            <div className="col-md-12">
+                                                <h6><strong>Shipping Cost:</strong> {formatMoney(15000)}</h6>
+                                                <h6><strong>Voucher Applied:</strong> -{formatMoney(20)}</h6>
+                                                <h6><strong>Final Total:</strong> {formatMoney(totalmodal || 0)}</h6>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div className="modal-footer">
+                                        <button type="button" className="btn btn-secondary"
+                                                data-bs-dismiss="modal">Close
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
-
-
-                <div className="card mb-3">
-                    <div className="card-header order-header">
-                        <span>Order number: AT4841546</span>
-                        <span className="float-end order-total">$40.00</span>
-                    </div>
-                    <div className="card-body">
-                        <p className="order-info">Date placed: December 22, 2020</p>
-                        <div className="row g-0">
-                            <div className="col-md-2">
-                                <img src="images/double_stack_bag.jpg" className="img-fluid rounded-start"
-                                     alt="Double Stack Clothing Bag"/>
-                            </div>
-                            <div className="col-md-10">
-                                <div className="product-info">
-                                    <h5>Double Stack Clothing Bag</h5>
-                                    <p>Save space and protect your favorite clothes in this double-layer garment
-                                        bag.</p>
-                                    <p className="delivered-info"><i className="fas fa-check-circle"></i> Delivered on
-                                        January 5, 2021</p>
-                                    <a href="#" className="btn btn-outline-primary btn-product">View product</a>
-                                    <a href="#" className="btn btn-outline-secondary btn-buy-again">Buy again</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="card-footer">
-                        <a href="#" className="btn btn-outline-primary btn-view-order"><i
-                            className="fas fa-info-circle"></i> View Order</a>
-                        <a href="#" className="btn btn-outline-secondary btn-view-invoice"><i
-                            className="fas fa-file-invoice"></i> View Invoice</a>
-                    </div>
-                </div>
-
             </div>
         </div>
-    )
-}
+    );
+};
+
 
 const VoucherContent: React.FC = () => (
     <div
@@ -512,6 +561,17 @@ const MenuProfile: React.FC = () => {
         phoneNumber: decoded?.phone || "",
         password: "", // Initialize as empty for security
     });
+
+    const [listOrder,setListOrder] = useState<OrderModel[]>([]);
+    useEffect(() => {
+        getPreparingOrders(49)
+            .then(Order =>{
+                setListOrder(Order)
+            })
+            .catch(error =>{
+                console.log(error)
+            })
+    }, []);
 
     const togglePanel = (panelType: string) => {
         setActivePanel(panelType);
@@ -573,7 +633,7 @@ const MenuProfile: React.FC = () => {
                                 {activePanel === "account" && (
                                     <AccountContent userInfo={userInfo} setUserInfo={setUserInfo}/>
                                 )}
-                                {activePanel === "orders" && <OrdersContent/>}
+                                {activePanel === "orders" && <OrdersContent setListOrder={setListOrder} listOrder={listOrder} />}
                                 {activePanel === "voucher" && <VoucherContent/>}
                             </>
                         )}
