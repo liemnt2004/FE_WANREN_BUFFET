@@ -75,7 +75,7 @@ const MenuProductCustomer: React.FC = () => {
         if (listProduct.length === 0) {
             return <div className="text-center">Không có sản phẩm nào trong danh mục này.</div>;
         }
-
+        console.log(listProduct)
         return listProduct.map((product) => (
             <ProductMenu
                 key={product.productId}

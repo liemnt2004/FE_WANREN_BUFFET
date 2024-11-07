@@ -94,6 +94,35 @@ export async function fetchProductsByType(typeFood: string): Promise<ProductMode
     }
 }
 
+export async function getOrderDetail(OrderDetailId:number): Promise<ProductModel[]> {
+    const rs: ProductModel[] = [];
+    try {
+        const data = await request(`http://localhost:8080/Order_detail/${OrderDetailId}/product`);
+        // Spring Data REST thường trả về dữ liệu trong _embedded
+        if (data && data._embedded && data._embedded.products) {
+            for (const product of data._embedded.products) {
+                const productModel = new ProductModel(
+                    product.productId,
+                    product.productName,
+                    product.description,
+                    product.price,
+                    product.typefood, // Đảm bảo truyền đủ tham số
+                    product.image,
+                    product.quantity,
+                    product.productStatus
+                );
+                rs.push(productModel);
+            }
+            return rs;
+        } else {
+            return [];
+        }
+    } catch (error) {
+        console.error( error);
+        throw error;
+    }
+}
+
 export async function SearchProduct(foodname: string): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {

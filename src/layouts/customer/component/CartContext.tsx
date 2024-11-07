@@ -1,4 +1,3 @@
-// src/contexts/CartContext.tsx
 import React, { createContext, useState, useEffect, ReactNode, useContext } from 'react';
 
 export interface CartItem {
@@ -12,6 +11,7 @@ export interface CartItem {
 interface CartContextType {
     cartItems: CartItem[];
     addToCart: (product: CartItem) => void;
+    buyAgain: (product: CartItem, quantity: number) => void;
     updateQuantity: (productId: number, quantity: number) => void;
     removeFromCart: (productId: number) => void;
     clearCart: () => void;
@@ -25,21 +25,19 @@ interface CartProviderProps {
 }
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
-    // Khởi tạo cartItems từ sessionStorage
     const [cartItems, setCartItems] = useState<CartItem[]>(() => {
         const storedCart = sessionStorage.getItem('cartItems');
         if (storedCart) {
             try {
                 return JSON.parse(storedCart) as CartItem[];
             } catch (e) {
-                console.error("Failed to parse cartItems từ sessionStorage:", e);
+                console.error("Failed to parse cartItems from sessionStorage:", e);
                 return [];
             }
         }
         return [];
     });
 
-    // Lưu cart vào sessionStorage khi cartItems thay đổi
     useEffect(() => {
         sessionStorage.setItem('cartItems', JSON.stringify(cartItems));
     }, [cartItems]);
@@ -68,6 +66,24 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         });
     };
 
+    const buyAgain = (product: CartItem, quantity: number = 1) => {
+        setCartItems(prevItems => {
+            const existingProduct = prevItems.find(item => item.productId === product.productId);
+            if (existingProduct) {
+                return prevItems.map(item =>
+                    item.productId === product.productId
+                        ? { ...item, quantity: item.quantity + quantity }
+                        : item
+                );
+            } else {
+                return [
+                    ...prevItems,
+                    { ...product, quantity },
+                ];
+            }
+        });
+    };
+
     const updateQuantity = (productId: number, quantity: number) => {
         setCartItems(prevItems =>
             prevItems.map(item =>
@@ -91,17 +107,17 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
     return (
-        <CartContext.Provider value={{ cartItems, addToCart, updateQuantity, removeFromCart, clearCart, subtotal }}>
+        <CartContext.Provider value={{ cartItems, addToCart, buyAgain, updateQuantity, removeFromCart, clearCart, subtotal }}>
             {children}
         </CartContext.Provider>
     );
 };
 
-// Custom hook để sử dụng CartContext dễ dàng hơn
+// Custom hook for using CartContext
 export const useCart = (): CartContextType => {
     const context = useContext(CartContext);
     if (!context) {
-        throw new Error("useCart phải được sử dụng trong CartProvider");
+        throw new Error("useCart must be used within a CartProvider");
     }
     return context;
 };
