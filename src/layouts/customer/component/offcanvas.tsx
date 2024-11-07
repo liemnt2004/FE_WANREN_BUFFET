@@ -14,7 +14,7 @@ const CartOffcanvas: React.FC = () => {
     }
 
     const { cartItems, updateQuantity, removeFromCart, subtotal } = cartContext;
-
+    console.log(cartItems)
     return (
         <>
             {/* Offcanvas cho Giỏ Hàng */}

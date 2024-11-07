@@ -14,5 +14,5 @@ export interface OrderModel {
     payment: string;
     createdDate: string;
     updatedDate?: string | null;
-    producHistorytDTO:ProductDetail;
+    producHistorytDTOList:ProductDetail[];
 }

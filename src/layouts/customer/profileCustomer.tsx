@@ -1,6 +1,6 @@
 
 
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import "./assets/css/styles.css";
 import "./assets/css/Tinh_Style.css";
 import "./assets/css/order_history.css";
@@ -15,6 +15,7 @@ import error = Simulate.error;
 import formatMoney from "./component/FormatMoney";
 import axios from "axios";
 import {OrderModel} from "../../models/OrderModel";
+import {CartContext, CartItem} from "./component/CartContext";
 
 interface UserInfo {
     fullName: string;
@@ -360,8 +361,8 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({ listOrder , setListOrder }
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [totalmodal,setTotalmodal] = useState<number | null>();
+    const cartContext = useContext(CartContext);
 
-    console.log(listOrder)
     useEffect(() => {
         if (selectedOrderId) {
             setLoading(true);
@@ -388,6 +389,28 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({ listOrder , setListOrder }
         }
     }, [orderDetails, selectedOrderId]);
 
+    if (!cartContext) {
+        return <div>Đang tải giỏ hàng...</div>;
+    }
+
+    const { addToCart ,subtotal } = cartContext;
+
+    const handleBuyAgain = (products: ProductDetail[]) => {
+        products.forEach((product) => {
+            const cartItem: CartItem = {
+                productId: product._productId,
+                productName: product._productName,
+                price: product._price,
+                image: product._image,
+                quantity: product._quantity,
+            };
+
+            addToCart(cartItem)
+        });
+    };
+
+
+
 
 
     const handleViewMore = (orderId: number) => {
@@ -407,38 +430,41 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({ listOrder , setListOrder }
                             <span className="float-end order-total">{formatMoney(order.totalAmount)}</span>
                         </div>
                         <div className="card-body">
-                            {/*<p className="order-info">*/}
-                            {/*    Date placed: {new Intl.DateTimeFormat('en-US', {*/}
-                            {/*    year: 'numeric',*/}
-                            {/*    month: 'long',*/}
-                            {/*    day: 'numeric'*/}
-                            {/*}).format(new Date(order.createdDate))}*/}
-                            {/*</p>*/}
+                            <p className="order-info">
+
+                            </p>
 
                             <p className="order-info">Địa Chỉ Giao Hàng: {order.address}</p>
                             <div className="row g-0">
 
                                     <div className="col-md-2">
                                         <img
-                                            src={order.producHistorytDTO._image} // Replace with a dynamic source if available
+                                            src={order.producHistorytDTOList[0]._image} // Replace with a dynamic source if available
                                             className="img-fluid rounded-start"
                                             alt="Product"
                                         />
                                         <div className="col-md-10">
                                             <div className="product-info">
-                                                <h5>{order.producHistorytDTO._productName}</h5>
+
+                                                <h5>{order.producHistorytDTOList[0]._productName}</h5>
                                                 <p>
-                                                    {order.producHistorytDTO._description}
+                                                    {order.producHistorytDTOList[0]._description}
                                                 </p>
                                                 <p>
-                                                   x {order.producHistorytDTO._quantity}
+                                                    x {order.producHistorytDTOList[0]._quantity}
                                                 </p>
-                                                <a href="#" className="btn btn-outline-secondary btn-buy-again">Buy
-                                                    again</a>
+                                                <button
+                                                    onClick={() => handleBuyAgain(order.producHistorytDTOList)}
+                                                    className="btn btn-outline-secondary btn-buy-again"
+                                                    data-bs-toggle="offcanvas"
+                                                    data-bs-target="#offcanvasCart"
+                                                    aria-controls="offcanvasCart"
+                                                >
+                                                    Mua Lại
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
-
 
 
                             </div>
@@ -449,9 +475,10 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({ listOrder , setListOrder }
                                 className="btn btn-outline-primary btn-view-order"
                                 data-bs-toggle="modal"
                                 data-bs-target="#orderModal"
+
                                 onClick={() => handleViewMore(order.orderId)}
                             >
-                                <i className="fas fa-info-circle"></i> View More Products
+                                <i className="fas fa-info-circle"></i> Chi Tiết Sản Phẩm Đã Mua
                             </button>
 
                         </div>
@@ -493,8 +520,6 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({ listOrder , setListOrder }
                                                         <p>{formatMoney(product._price)}</p>
                                                         <p>{product._description}</p>
                                                         <p>x{product._quantity}</p>
-                                                        <a href="#" className="btn btn-primary"><i
-                                                            className="fas fa-redo"></i> Buy Again</a>
                                                     </div>
 
                                                 </div>
@@ -505,9 +530,9 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({ listOrder , setListOrder }
                                         {/* Assuming Shipping, Voucher, and Final Total are part of the order details or can be fetched separately */}
                                         <div className="row">
                                             <div className="col-md-12">
-                                                <h6><strong>Shipping Cost:</strong> {formatMoney(15000)}</h6>
-                                                <h6><strong>Voucher Applied:</strong> -{formatMoney(20)}</h6>
-                                                <h6><strong>Final Total:</strong> {formatMoney(totalmodal || 0)}</h6>
+                                                <h6><strong>Phí Giao Hàng:</strong> {formatMoney(15000)}</h6>
+                                                <h6><strong>Voucher:</strong> -{formatMoney(20)}</h6>
+                                                <h6><strong>Tổng Tiền:</strong> {formatMoney(totalmodal || 0)}</h6>
                                             </div>
                                         </div>
 
@@ -567,6 +592,7 @@ const MenuProfile: React.FC = () => {
         getPreparingOrders(49)
             .then(Order =>{
                 setListOrder(Order)
+                console.log(Order)
             })
             .catch(error =>{
                 console.log(error)
