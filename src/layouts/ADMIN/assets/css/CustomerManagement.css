@@ -342,12 +342,14 @@ body {
     height: 45px;
     border-radius: 25px;
     padding: 10px 20px;
-    background-color: #05d639;
+    background-color: #fc470a;
     color: white;
   }
-  .add-employee-btn:hover{
-    background-color: #05d639;
+  .add-employee-btn span{
+   
+    color: white;
   }
+
   .table-container {
     max-height: 400px;
     overflow-y: auto;

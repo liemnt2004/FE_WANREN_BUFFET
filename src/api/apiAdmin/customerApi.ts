@@ -1,11 +1,16 @@
 import CustomerModelAdmin from "../../models/AdminModels/CustomerModel";
 
-// Hàm lấy danh sách khách hàng
+// Function to fetch the list of customers
 export async function getCustomerList(
   page: number
 ): Promise<{ data: CustomerModelAdmin[]; totalPages: number }> {
   try {
     const response = await fetch(`http://localhost:8080/Customer?page=${page}`);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch customer list");
+    }
+
     const data = await response.json();
 
     if (data?._embedded?.customers) {
@@ -16,14 +21,15 @@ export async function getCustomerList(
               customer.customerId,
               customer.username,
               customer.password,
-              customer.fullname,
+              customer.fullName,
               customer.email,
               customer.phoneNumber,
               customer.address,
               customer.loyaltyPoints,
               customer.customerType,
+              customer.accountStatus,
               customer.createdDate,
-              customer.accountStatus
+              customer.updatedDate
             )
         ),
         totalPages: data.page.totalPages,
@@ -37,89 +43,124 @@ export async function getCustomerList(
   }
 }
 
-// Hàm tạo khách hàng mới
+// Function to create a new customer
 export async function createCustomer(
-  customerData: Partial<CustomerModelAdmin>
-): Promise<CustomerModelAdmin | null> {
+  newCustomer: Partial<CustomerModelAdmin>
+): Promise<void> {
   try {
-    const response = await fetch("http://localhost:8080/Customer/create", {
+    const response = await fetch(`http://localhost:8080/Customer/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(customerData),
+      body: JSON.stringify(newCustomer),
     });
 
     if (!response.ok) {
-      console.error("Failed to create customer: HTTP error", response.status);
-      return null;
+      // Fetch and log error details if creation fails
+      const errorData = await response.json();
+      console.error("Error creating customer:", errorData);
+      throw new Error("Failed to create customer");
+    }
+  } catch (error) {
+    console.error("Cannot create customer:", error);
+  }
+}
+
+// Function to partially update an existing customer
+export async function updateCustomer(
+  id: number,
+  updatedFields: Partial<CustomerModelAdmin>
+): Promise<void> {
+  try {
+    const response = await fetch(
+      `http://localhost:8080/Customer/update/${id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedFields),
+      }
+    );
+
+    if (!response.ok) {
+      // Fetch and log error details if update fails
+      const errorData = await response.json();
+      console.error("Error updating customer:", errorData);
+      throw new Error("Failed to update customer");
+    }
+  } catch (error) {
+    console.error("Cannot update customer:", error);
+  }
+}
+export async function updateCustomerAccountStatus(
+  id: number,
+  accountStatus: boolean
+): Promise<void> {
+  try {
+    const response = await fetch(
+      `http://localhost:8080/Customer/updateAccountStatus/${id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ accountStatus }),
+      }
+    );
+
+    if (!response.ok) {
+      // Fetch and log error details if update fails
+      const errorData = await response.json();
+      console.error("Error updating account status:", errorData);
+      throw new Error("Failed to update account status");
+    }
+  } catch (error) {
+    console.error("Cannot update account status:", error);
+  }
+}
+export async function searchCustomers(
+  query: string
+): Promise<CustomerModelAdmin[]> {
+  try {
+    const queryParams = new URLSearchParams();
+    queryParams.append("q", query); // Use 'q' as the single search parameter
+
+    const response = await fetch(
+      `http://localhost:8080/Customer/search?${queryParams.toString()}`
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to search customers");
     }
 
     const data = await response.json();
 
-    if (data && data.customerId) {
-      return new CustomerModelAdmin(
-        data.customerId,
-        data.username,
-        data.password,
-        data.fullname,
-        data.email,
-        data.phoneNumber,
-        data.address,
-        data.loyaltyPoints,
-        data.customerType,
-        data.createdDate,
-        data.accountStatus
+    // Map the response to CustomerModelAdmin instances
+    if (data?._embedded?.customers) {
+      return data._embedded.customers.map(
+        (customer: any) =>
+          new CustomerModelAdmin(
+            customer.customerId,
+            customer.username,
+            customer.password,
+            customer.fullName,
+            customer.email,
+            customer.phoneNumber,
+            customer.address,
+            customer.loyaltyPoints,
+            customer.customerType,
+            customer.accountStatus,
+            customer.createdDate,
+            customer.updatedDate
+          )
       );
     } else {
-      console.warn("Unexpected response format:", data);
-      return null;
+      return [];
     }
   } catch (error) {
-    console.error("Failed to create customer:", error);
-    return null;
-  }
-}
-export async function updateCustomer(
-  customerId: number,
-  customerData: Partial<CustomerModelAdmin>
-): Promise<boolean> {
-  try {
-    const response = await fetch(
-      `http://localhost:8080/Customer/update/${customerId}`,
-      {
-        method: "PUT", // Use PUT to update all data; alternatively, PATCH can also be used.
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(customerData), // Send the complete customer data
-      }
-    );
-
-    return response.ok;
-  } catch (error) {
-    console.error("Failed to update customer:", error);
-    return false;
-  }
-}
-// Hàm xóa khách hàng
-export async function deleteCustomer(customerId: number): Promise<boolean> {
-  try {
-    const response = await fetch(
-      `http://localhost:8080/Customer/delete/${customerId}`,
-      {
-        method: "DELETE",
-      }
-    );
-
-    if (!response.ok) {
-      console.error("Failed to delete customer: HTTP error", response.status);
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    console.error("Failed to delete customer:", error);
-    return false;
+    console.error("Cannot search customers:", error);
+    return [];
   }
 }

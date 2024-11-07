@@ -6,6 +6,7 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
+
 import MenuCustomer from "./layouts/customer/menuCustomer";
 import MenuProductCustomer from "./layouts/customer/menuProductCustomer";
 import IndexCustomer from "./layouts/customer/indexCustomer";
@@ -19,7 +20,10 @@ import Employeemanagement from "./layouts/ADMIN/employeemanagement";
 import CustommerManagement from "./layouts/ADMIN/customermanagement";
 import MenuAdmin from "./layouts/ADMIN/menuAdmin";
 import AdminLayout from "./layouts/ADMIN/AdminLayout";
+import DashboardCashier from "./layouts/cashier/dashboardCashier";
 import { CartProvider } from "./layouts/customer/component/CartContext";
+import MenuCashier from "./layouts/cashier/component/menuCashier";
+import LoginCashier from "./layouts/cashier/loginCashier";
 
 // Định nghĩa kiểu dữ liệu cho AuthContext
 interface AuthContextType {
@@ -82,15 +86,36 @@ function Routing() {
     "/admin/employeemanagement",
     "/admin/customermanagement",
   ];
+  const cashierRoutes = ["/cashier", "/cashier/orders", "/cashier/dashboard"];
+  const cashierExcludedRoutes = ["/cashier/login"];
+
+  // Đối tượng ánh xạ các component menu
+  const menuComponents = {
+    admin: <MenuAdmin />,
+    cashier: <MenuCashier />,
+    customer: <MenuCustomer />,
+  };
+
+  // Kiểm tra nếu đường dẫn là /cashier/login thì không hiển thị menu nào
+  if (cashierExcludedRoutes.includes(location.pathname)) {
+    return (
+      <Routes>
+        <Route path="/cashier/login" element={<LoginCashier />} />
+      </Routes>
+    );
+  }
+
+  // Xác định loại menu dựa trên đường dẫn hiện tại
+  const menuType = adminRoutes.includes(location.pathname)
+    ? "admin"
+    : cashierRoutes.includes(location.pathname)
+    ? "cashier"
+    : "customer";
 
   return (
     <>
       {/* Hiển thị MenuAdmin nếu là các đường dẫn của admin, ngược lại hiển thị MenuCustomer */}
-      {adminRoutes.includes(location.pathname) ? (
-        <MenuAdmin />
-      ) : (
-        <MenuCustomer />
-      )}
+      {menuComponents[menuType]}
 
       {/* Định nghĩa các tuyến đường */}
       <Routes>
@@ -101,6 +126,10 @@ function Routing() {
         <Route path="/menu" element={<MenuProductCustomer />} />
         <Route path="/reservation" element={<ReservationForm />} />
         <Route path="/promotion" element={<PromotionCustomer />} />
+
+        {/* Định nghĩa các tuyến đường của cashier */}
+        <Route path="/cashier" element={<DashboardCashier />} />
+        <Route path="/cashier/login" element={<LoginCashier />} />
 
         {/* Các tuyến đường yêu cầu xác thực */}
         <Route

@@ -9,61 +9,58 @@ import {
   Modal,
   Select,
   Switch,
-  message,
   Button,
   Row,
   Col,
+  notification,
 } from "antd";
 import CustomerModelAdmin from "../../models/AdminModels/CustomerModel";
-
 import {
-  createCustomer,
-  deleteCustomer,
   getCustomerList,
+  createCustomer,
   updateCustomer,
+  updateCustomerAccountStatus,
+  searchCustomers,
 } from "../../api/apiAdmin/customerApi";
-import form from "antd/es/form";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 
 const CustomerManagement: React.FC = () => {
-  // State cho quản lý modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [currentCustomerId, setCurrentCustomerId] = useState<number | null>(
+    null
+  );
+  const [currentStatus, setCurrentStatus] = useState<boolean>(false);
+
   const [editCustomer, setEditCustomer] =
     useState<Partial<CustomerModelAdmin> | null>(null);
-
-  const [form] = Form.useForm();
-  const openEditModal = (customer: CustomerModelAdmin) => {
-    setEditCustomer(customer);
-    setIsEditModalOpen(true);
-    form.setFieldsValue(customer); // Populate form with selected customer data
-  };
-  // State cho quản lý khách hàng
   const [customers, setCustomers] = useState<CustomerModelAdmin[]>([]);
-
-  const [newCustomer, setNewCustomer] = useState<Partial<CustomerModelAdmin>>({
-    username: "",
-    password: "",
-    fullname: "",
-    email: "",
-    phonenumber: "",
-    address: "",
-    loyaltyPoints: 0,
-    customerType: "normal",
-    accountStatus: true,
-  });
-
-  // State cho quản lý tải dữ liệu và phân trang
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState<number | null>(null);
-
-  // Tham chiếu tới table container để xử lý sự kiện scroll
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [addForm] = Form.useForm();
+  const [editForm] = Form.useForm();
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
-  // Hàm load thêm khách hàng khi scroll
+  const openEditModal = (customer: CustomerModelAdmin) => {
+    setEditCustomer(customer);
+    setIsEditModalOpen(true);
+    editForm.setFieldsValue({
+      ...customer,
+      accountStatus: customer.accountStatus ? true : false,
+    });
+  };
+
+  const openAddModal = () => {
+    setEditCustomer(null);
+    addForm.resetFields();
+    setIsModalOpen(true);
+  };
+
   const loadMoreCustomers = useCallback(async () => {
     if (loading || (totalPages !== null && page >= totalPages)) return;
-
     setLoading(true);
     try {
       const response = await getCustomerList(page);
@@ -112,137 +109,150 @@ const CustomerManagement: React.FC = () => {
     };
   }, [handleScroll]);
 
-  // Hàm xử lý trạng thái switch của khách hàng
-  const handleSwitchChange = async (checked: boolean, customerId: number) => {
-    setCustomers((prevCustomers) =>
-      prevCustomers.map((customer) =>
-        customer.customerId === customerId
-          ? { ...customer, accountStatus: checked }
-          : customer
-      )
-    );
-  };
-
-  // Xử lý thay đổi dữ liệu khách hàng mới
-  const handleNewCustomerChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { id, value } = e.target;
-    setNewCustomer((prevCustomer) => ({ ...prevCustomer, [id]: value }));
-  };
-
-  // Thêm khách hàng mới
-  const handleAddCustomer = async () => {
+  const handleSaveNewCustomer = async () => {
     try {
-      const values = await form.validateFields(); // Validate fields
-      const createdCustomer = await createCustomer(values); // Use form values here
-      if (createdCustomer) {
-        message.success("Customer added successfully.");
-        form.resetFields();
-        setIsModalOpen(false);
-      }
+      const newCustomerData = await addForm.validateFields();
+      await createCustomer(newCustomerData);
+      notification.success({
+        message: "Customer Created",
+        description: "The new customer has been created successfully!",
+      });
+      setIsModalOpen(false);
+      addForm.resetFields();
+      setPage(0);
+      setCustomers([]);
+      loadMoreCustomers();
     } catch (error) {
-      message.error("Please fill in all required fields.");
+      console.error("Failed to save new customer:", error);
+      notification.error({
+        message: "Creation Failed",
+        description: "An error occurred while creating the customer.",
+      });
     }
   };
 
-  // Save changes for the edited customer
-  const handleSaveChanges = async () => {
+  const handleSaveEditCustomer = async () => {
     try {
-      const values = await form.validateFields();
+      const updatedCustomerData = await editForm.validateFields();
       if (editCustomer && editCustomer.customerId) {
-        const success = await updateCustomer(editCustomer.customerId, values);
-        if (success) {
-          setCustomers((prevCustomers) =>
-            prevCustomers.map((customer) =>
-              customer.customerId === editCustomer.customerId
-                ? { ...customer, ...values }
-                : customer
-            )
-          );
-          message.success("Customer updated successfully.");
-          setIsEditModalOpen(false);
-          setEditCustomer(null);
-          form.resetFields();
-        } else {
-          message.error("Failed to update customer.");
-        }
+        await updateCustomer(editCustomer.customerId, updatedCustomerData);
+        notification.success({
+          message: "Customer Updated",
+          description: "The customer has been updated successfully!",
+        });
+        setIsEditModalOpen(false);
+        setPage(0);
+        setCustomers([]);
+        loadMoreCustomers();
       }
     } catch (error) {
-      message.error("Validation failed.");
+      console.error("Failed to update customer:", error);
+      notification.error({
+        message: "Update Failed",
+        description: "An error occurred while updating the customer.",
+      });
     }
   };
 
-  //xóa
-  const handleDeleteCustomer = async (customerId: number) => {
-    Modal.confirm({
-      title: "Are you sure you want to delete this customer?",
-      okText: "Yes",
-      okType: "danger",
-      cancelText: "No",
-      onOk: async () => {
-        try {
-          const success = await deleteCustomer(customerId);
-          if (success) {
-            setCustomers((prevCustomers) =>
-              prevCustomers.filter(
-                (customer) => customer.customerId !== customerId
-              )
-            );
-            message.success("Customer deleted successfully.");
-          } else {
-            message.error("Failed to delete customer.");
-          }
-        } catch (error) {
-          console.error("Error deleting customer:", error);
-          message.error("Failed to delete customer.");
-        }
-      },
-    });
+  // Show confirmation modal
+  const showConfirmModal = (customerId: number, newStatus: boolean) => {
+    setCurrentCustomerId(customerId);
+    setCurrentStatus(newStatus);
+    setConfirmModalVisible(true);
   };
 
+  const handleConfirmToggleStatus = async () => {
+    if (currentCustomerId !== null) {
+      try {
+        await updateCustomerAccountStatus(currentCustomerId, currentStatus);
+        setCustomers((prevCustomers) =>
+          prevCustomers.map((customer) =>
+            customer.customerId === currentCustomerId
+              ? { ...customer, accountStatus: currentStatus }
+              : customer
+          )
+        );
+        notification.success({
+          message: "Account Status Updated",
+          description: `Account status has been ${
+            currentStatus ? "activated" : "deactivated"
+          }.`,
+        });
+      } catch (error) {
+        console.error("Failed to update account status:", error);
+        notification.error({
+          message: "Update Failed",
+          description: "An error occurred while updating account status.",
+        });
+      } finally {
+        setConfirmModalVisible(false);
+      }
+    }
+  };
+  const handleSearchInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const handleSearch = async () => {
+    try {
+      const data = await searchCustomers(searchQuery);
+      setCustomers(data);
+      setPage(0);
+    } catch (error) {
+      console.error("Failed to search customers:", error);
+    }
+  };
   return (
     <div className="container-fluid">
-      {/* Main Content */}
       <div className="main-content">
         <div className="employee-management">
           <h2>Manage Customers</h2>
-          {/* Search and Filter Bar */}
           <div className="search-filter">
             <div className="search-wrapper">
               <input
                 type="text"
                 className="form-control search-input"
-                placeholder="Search customers..."
+                placeholder="Search for employees..."
+                value={searchQuery}
+                onChange={handleSearchInputChange}
               />
-              <i className="fas fa-search search-icon"></i>
+              <i
+                className="fas fa-search search-icon"
+                onClick={handleSearch}
+              ></i>
+              {/* Trigger search on click */}
             </div>
             <select className="form-select filter-select">
               <option value="">Filter</option>
             </select>
-
             <Button
-              onClick={() => setIsModalOpen(true)}
-              className="btn add-employee-btn text-white "
+              onClick={openAddModal}
+              className="btn add-employee-btn text-white"
             >
               Add Customer
             </Button>
           </div>
+
           {/* Add Customer Modal */}
           <Modal
             title="Add New Customer"
             visible={isModalOpen}
-            onCancel={() => setIsModalOpen(false)}
+            onCancel={() => {
+              setIsModalOpen(false);
+              addForm.resetFields();
+            }}
             footer={[
               <Button key="cancel" onClick={() => setIsModalOpen(false)}>
                 Close
               </Button>,
-              <Button key="save" type="primary" onClick={handleAddCustomer}>
+              <Button key="save" type="primary" onClick={handleSaveNewCustomer}>
                 Save
               </Button>,
             ]}
           >
-            <Form form={form} layout="vertical" initialValues={newCustomer}>
+            <Form form={addForm} layout="vertical" initialValues={{}}>
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item
@@ -263,19 +273,15 @@ const CustomerManagement: React.FC = () => {
                       { required: true, message: "Please enter a password!" },
                     ]}
                   >
-                    <Input.Password
-                      style={{ height: 33 }}
-                      placeholder="Enter password"
-                    />
+                    <Input.Password placeholder="Enter password" />
                   </Form.Item>
                 </Col>
               </Row>
-
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item
                     label="Full Name"
-                    name="fullname"
+                    name="fullName"
                     rules={[
                       { required: true, message: "Please enter full name!" },
                     ]}
@@ -296,12 +302,11 @@ const CustomerManagement: React.FC = () => {
                   </Form.Item>
                 </Col>
               </Row>
-
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item
                     label="Phone Number"
-                    name="phonenumber"
+                    name="phoneNumber"
                     rules={[
                       {
                         required: true,
@@ -309,15 +314,7 @@ const CustomerManagement: React.FC = () => {
                       },
                     ]}
                   >
-                    <Input
-                      placeholder="Enter phone number"
-                      onChange={(e) =>
-                        setNewCustomer((prevCustomer) => ({
-                          ...prevCustomer,
-                          phonenumber: e.target.value.replace(/\D/g, ""),
-                        }))
-                      }
-                    />
+                    <Input placeholder="Enter phone number" />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -332,7 +329,6 @@ const CustomerManagement: React.FC = () => {
                   </Form.Item>
                 </Col>
               </Row>
-
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item label="Loyalty Points" name="loyaltyPoints">
@@ -350,97 +346,165 @@ const CustomerManagement: React.FC = () => {
               </Row>
             </Form>
           </Modal>
+
           {/* Edit Customer Modal */}
           <Modal
             title="Edit Customer"
             visible={isEditModalOpen}
             onCancel={() => {
               setIsEditModalOpen(false);
-              form.resetFields();
+              editForm.resetFields();
             }}
-            onOk={handleSaveChanges}
-            okText="Save Changes"
-            cancelText="Close"
+            footer={[
+              <Button key="cancel" onClick={() => setIsEditModalOpen(false)}>
+                Close
+              </Button>,
+              <Button
+                key="save"
+                type="primary"
+                onClick={handleSaveEditCustomer}
+              >
+                Save Changes
+              </Button>,
+            ]}
           >
             <Form
-              form={form}
+              form={editForm}
               layout="vertical"
               initialValues={editCustomer || {}}
             >
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Username"
+                    name="username"
+                    rules={[
+                      { required: true, message: "Please enter a username!" },
+                    ]}
+                  >
+                    <Input placeholder="Enter username" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Full Name"
+                    name="fullName"
+                    rules={[
+                      { required: true, message: "Please enter full name!" },
+                    ]}
+                  >
+                    <Input placeholder="Enter full name" />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Email"
+                    name="email"
+                    rules={[
+                      { required: true, message: "Please enter an email!" },
+                      { type: "email", message: "Please enter a valid email!" },
+                    ]}
+                  >
+                    <Input placeholder="Enter email" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Phone Number"
+                    name="phoneNumber"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter a phone number!",
+                      },
+                    ]}
+                  >
+                    <Input placeholder="Enter phone number" />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item label="Address" name="address">
+                    <Input placeholder="Enter address" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item label="Loyalty Points" name="loyaltyPoints">
+                    <Input type="number" placeholder="Enter loyalty points" />
+                  </Form.Item>
+                </Col>
+              </Row>
               <Form.Item
-                label="Username"
-                name="username"
-                rules={[
-                  { required: true, message: "Please input the username!" },
-                ]}
+                label="Account Status"
+                name="accountStatus"
+                valuePropName="checked"
               >
-                <Input placeholder="Enter username" />
-              </Form.Item>
-
-              <Form.Item
-                label="Full Name"
-                name="fullname"
-                rules={[
-                  { required: true, message: "Please input the full name!" },
-                ]}
-              >
-                <Input placeholder="Enter full name" />
-              </Form.Item>
-
-              <Form.Item
-                label="Email"
-                name="email"
-                rules={[
-                  { required: true, message: "Please input the email!" },
-                  { type: "email", message: "Please enter a valid email!" },
-                ]}
-              >
-                <Input placeholder="Enter email" />
-              </Form.Item>
-
-              <Form.Item
-                label="Phone Number"
-                name="phonenumber"
-                rules={[
-                  { required: true, message: "Please input the phone number!" },
-                ]}
-              >
-                <Input placeholder="Enter phone number" />
-              </Form.Item>
-
-              <Form.Item label="Address" name="address">
-                <Input placeholder="Enter address" />
-              </Form.Item>
-
-              <Form.Item label="Loyalty Points" name="loyaltyPoints">
-                <Input type="number" placeholder="Enter loyalty points" />
-              </Form.Item>
-              <Form.Item label="Loyalty Points" name="createdDate">
-                <Input type="Date" placeholder="Enter loyalty points" />
-              </Form.Item>
-
-              <Form.Item label="Account Status" name="accountStatus">
-                <Select placeholder="Select account status">
-                  <Select.Option value={true}>Active</Select.Option>
-                  <Select.Option value={false}>Inactive</Select.Option>
-                </Select>
+                <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
               </Form.Item>
             </Form>
           </Modal>
-          {/* Table */}
-          <div className="table-container">
+
+          {/* Custom Confirmation Modal */}
+          <Modal
+            visible={confirmModalVisible}
+            onCancel={() => setConfirmModalVisible(false)}
+            footer={null}
+            centered
+            width={400}
+          >
+            <div style={{ textAlign: "center" }}>
+              <ExclamationCircleOutlined
+                style={{ fontSize: "48px", color: "#ff4d4f" }}
+              />
+              <h3 style={{ fontWeight: "bold", marginTop: "16px" }}>
+                Confirm Status Change
+              </h3>
+              <p style={{ fontSize: "16px" }}>
+                Are you sure you want to{" "}
+                {currentStatus ? "activate" : "deactivate"} this account?
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginTop: "24px",
+                }}
+              >
+                <Button
+                  onClick={() => setConfirmModalVisible(false)}
+                  style={{ backgroundColor: "#f0f0f0", color: "#000" }}
+                >
+                  Go Back
+                </Button>
+                <Button
+                  type="primary"
+                  style={{
+                    backgroundColor: "rgb(252, 71, 10)",
+                    borderColor: "rgb(252, 71, 10)",
+                  }}
+                  onClick={handleConfirmToggleStatus}
+                >
+                  {currentStatus ? "Activate" : "Deactivate"}
+                </Button>
+              </div>
+            </div>
+          </Modal>
+
+          {/* Customer Table */}
+          <div className="table-container" ref={tableContainerRef}>
             <table className="table table-striped">
               <thead>
                 <tr>
                   <th>CustomerID</th>
                   <th>Username</th>
-                  <th>Password</th>
                   <th>Full Name</th>
                   <th>Email</th>
                   <th>Phone Number</th>
                   <th>Address</th>
                   <th>Registration Date</th>
-                  <th>Position</th>
                   <th>Loyalty Points</th>
                   <th>Account Status</th>
                   <th>Actions</th>
@@ -451,19 +515,19 @@ const CustomerManagement: React.FC = () => {
                   <tr key={customer.customerId}>
                     <td>{customer.customerId}</td>
                     <td>{customer.username}</td>
-                    <td className="password-column">{customer.password}</td>
-                    <td>{customer.fullname}</td>
+                    <td>{customer.fullName}</td>
                     <td>{customer.email}</td>
-                    <td>{customer.phonenumber}</td>
+                    <td>{customer.phoneNumber}</td>
                     <td>{customer.address}</td>
-                    <td>{customer.createdDate}</td>
+                    <td>
+                      {new Date(customer.createdDate).toLocaleDateString()}
+                    </td>
                     <td>{customer.loyaltyPoints}</td>
-                    <td>{customer.customerType}</td>
                     <td>
                       <Switch
                         checked={customer.accountStatus}
-                        onChange={(checked) =>
-                          handleSwitchChange(checked, customer.customerId)
+                        onChange={(newStatus) =>
+                          showConfirmModal(customer.customerId, newStatus)
                         }
                       />
                     </td>
@@ -475,14 +539,8 @@ const CustomerManagement: React.FC = () => {
                       >
                         <i className="fas fa-edit"></i>
                       </button>
-                      <button
-                        type="button"
-                        className="icon-button-remove"
-                        onClick={() =>
-                          handleDeleteCustomer(customer.customerId)
-                        }
-                      >
-                        <i className="fas fa-trash"></i>
+                      <button type="button" className="icon-button-remove">
+                        <i className="fa-solid fa-trash"></i>
                       </button>
                     </td>
                   </tr>
