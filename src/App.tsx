@@ -12,6 +12,7 @@ import { CartProvider } from "./layouts/customer/component/CartContext";
 import { AuthProvider, AuthContext } from "./layouts/customer/component/AuthContext";
 import PublicRoute from "./layouts/customer/component/PublicRoute";
 import Checkout from "./layouts/customer/CheckoutCustomer";
+import PromotionDetail from "./layouts/customer/PromotionDetail";
 
 function App() {
     return (
@@ -26,7 +27,6 @@ function App() {
 }
 
 export function Routing() {
-
     const hiddenRoutes = ['/admin', '/login', '/register'];
 
     return (
@@ -41,10 +41,9 @@ export function Routing() {
                 <Route path="/admin" element={<MenuProductCustomer />} />
                 <Route path="/reservation" element={<ReservationForm />} />
                 <Route path="/promotion" element={<PromotionCustomer />} />
-                <Route
-                    path="/checkout"
-                    element={<Checkout  />}
-                />
+                <Route path="/promotion_detail/:id" element={<PromotionDetail />} /> {/* Fixed route path */}
+
+                <Route path="/checkout" element={<Checkout />} />
                 <Route path="/profile" element={<MenuProfile />} />
 
                 {/* Protect login and register routes */}
@@ -65,5 +64,6 @@ export function Routing() {
         </>
     );
 }
+
 
 export default App;

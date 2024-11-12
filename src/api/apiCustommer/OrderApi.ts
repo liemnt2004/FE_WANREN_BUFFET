@@ -9,11 +9,11 @@ import { OrderModel } from "../../models/OrderModel";
 // Hàm lấy đơn hàng đang trong trạng thái "PREPARING_ORDER"
 export async function getPreparingOrders(customerId: number): Promise<OrderModel[]> {
     try {
+        const token = localStorage.getItem("token");
         const response = await axios.get(`http://localhost:8080/api/orders/GetOrderByCustomerId/${customerId}`, {
             headers: {
                 "Content-Type": "application/json",
-                // Thêm Authorization header nếu cần
-                // "Authorization": `Bearer ${token}`,
+                "Authorization": `Bearer ${token}`,
             },
         });
         // Kiểm tra cấu trúc dữ liệu trả về

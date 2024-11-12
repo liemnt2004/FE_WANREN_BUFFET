@@ -355,25 +355,51 @@ const AccountContent: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => (
     </div>
 );
 
-const OrdersContent: React.FC<HistoryOrderProps> = ({ listOrder , setListOrder }) => {
+const OrdersContent: React.FC<HistoryOrderProps> = ({
+                                                        listOrder,
+                                                        setListOrder,
+                                                    }) => {
     const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
     const [orderDetails, setOrderDetails] = useState<ProductDetail[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const [totalmodal,setTotalmodal] = useState<number | null>();
+    const [totalmodal, setTotalmodal] = useState<number | null>(null);
     const cartContext = useContext(CartContext);
+
+    // State variables for order review
+    const [selectedOrderForReview, setSelectedOrderForReview] =
+        useState<OrderModel | null>(null);
+    const [reviewContent, setReviewContent] = useState<string>("");
+    const [reviewSubmitting, setReviewSubmitting] = useState<boolean>(false);
+    const [reviewError, setReviewError] = useState<string | null>(null);
+
+
 
     useEffect(() => {
         if (selectedOrderId) {
             setLoading(true);
             setError(null);
+
+            const token = localStorage.getItem("token");
+
+            const headers = {
+                "Content-Type": "application/json",
+            } as any;
+
+            if (token) {
+                headers["Authorization"] = `Bearer ${token}`;
+            }
+
             axios
-                .get<any[]>(`http://localhost:8080/api/orders/GetOrderDetailByOrderId/${selectedOrderId}`)
-                .then(response => {
+                .get<ProductDetail[]>(
+                    `http://localhost:8080/api/orders/GetOrderDetailByOrderId/${selectedOrderId}`,
+                    { headers: headers }
+                )
+                .then((response) => {
                     setOrderDetails(response.data);
                     setLoading(false);
                 })
-                .catch(err => {
+                .catch((err) => {
                     console.error("Error fetching order details:", err);
                     setError("Failed to load order details.");
                     setLoading(false);
@@ -381,10 +407,14 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({ listOrder , setListOrder }
         }
     }, [selectedOrderId]);
 
+
     useEffect(() => {
         // Calculate total whenever orderDetails changes
         if (selectedOrderId != null) {
-            const total = orderDetails.reduce((sum, product) => sum + (product._price * product._quantity), 0);
+            const total = orderDetails.reduce(
+                (sum, product) => sum + product._price * product._quantity,
+                0
+            );
             setTotalmodal(total + 15000);
         }
     }, [orderDetails, selectedOrderId]);
@@ -393,7 +423,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({ listOrder , setListOrder }
         return <div>Đang tải giỏ hàng...</div>;
     }
 
-    const { addToCart ,subtotal } = cartContext;
+    const { addToCart } = cartContext;
 
     const handleBuyAgain = (products: ProductDetail[]) => {
         products.forEach((product) => {
@@ -405,16 +435,68 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({ listOrder , setListOrder }
                 quantity: product._quantity,
             };
 
-            addToCart(cartItem)
+            addToCart(cartItem);
         });
     };
 
-
-
-
-
     const handleViewMore = (orderId: number) => {
         setSelectedOrderId(orderId);
+    };
+
+    const openOrderReviewModal = (order: OrderModel) => {
+        setSelectedOrderForReview(order);
+    };
+
+    const closeOrderReviewModal = () => {
+        setSelectedOrderForReview(null);
+        setReviewContent("");
+        setReviewError(null);
+    };
+
+    const handleOrderReviewSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setReviewSubmitting(true);
+        setReviewError(null);
+        const token = localStorage.getItem("token");
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/review/Creact_review`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    order: Number(selectedOrderForReview?.orderId),
+                    content: reviewContent,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to submit review");
+            }
+
+            // Update the isReviewed flag for the order
+            if (selectedOrderForReview) {
+                setListOrder((prevOrders) =>
+                    prevOrders.map((order) =>
+                        order.orderId === selectedOrderForReview.orderId
+                            ? { ...order, isReviewed: true }
+                            : order
+                    )
+                );
+            }
+
+            // Reset form and close modal
+            closeOrderReviewModal();
+
+            alert("Đánh giá của bạn đã được gửi thành công!");
+        } catch (error) {
+            console.error("Error submitting review:", error);
+            setReviewError("Gửi đánh giá thất bại. Vui lòng thử lại.");
+        } finally {
+            setReviewSubmitting(false);
+        }
     };
 
     return (
@@ -427,66 +509,70 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({ listOrder , setListOrder }
                     <div className="card mb-3" key={order.orderId}>
                         <div className="card-header order-header">
                             <span>Mã Đơn Hàng: {order.orderId}</span>
-                            <span className="float-end order-total">{formatMoney(order.totalAmount)}</span>
+                            <span className="float-end order-total">
+                {formatMoney(order.totalAmount)}
+              </span>
                         </div>
                         <div className="card-body">
-                            <p className="order-info">
-
-                            </p>
-
                             <p className="order-info">Địa Chỉ Giao Hàng: {order.address}</p>
                             <div className="row g-0">
-
-                                    <div className="col-md-2">
-                                        <img
-                                            src={order.producHistorytDTOList[0]._image} // Replace with a dynamic source if available
-                                            className="img-fluid rounded-start"
-                                            alt="Product"
-                                        />
-                                        <div className="col-md-10">
-                                            <div className="product-info">
-
-                                                <h5>{order.producHistorytDTOList[0]._productName}</h5>
-                                                <p>
-                                                    {order.producHistorytDTOList[0]._description}
-                                                </p>
-                                                <p>
-                                                    x {order.producHistorytDTOList[0]._quantity}
-                                                </p>
-                                                <button
-                                                    onClick={() => handleBuyAgain(order.producHistorytDTOList)}
-                                                    className="btn btn-outline-secondary btn-buy-again"
-                                                    data-bs-toggle="offcanvas"
-                                                    data-bs-target="#offcanvasCart"
-                                                    aria-controls="offcanvasCart"
-                                                >
-                                                    Mua Lại
-                                                </button>
-                                            </div>
-                                        </div>
+                                <div className="col-md-2">
+                                    <img
+                                        src={order.producHistorytDTOList[0]._image}
+                                        className="img-fluid rounded-start"
+                                        alt="Product"
+                                    />
+                                </div>
+                                <div className="col-md-10">
+                                    <div className="product-info">
+                                        <h5>{order.producHistorytDTOList[0]._productName}</h5>
+                                        <p>{order.producHistorytDTOList[0]._description}</p>
+                                        <p>x {order.producHistorytDTOList[0]._quantity}</p>
+                                        <button
+                                            onClick={() => handleBuyAgain(order.producHistorytDTOList)}
+                                            className="btn btn-outline-secondary btn-buy-again"
+                                        >
+                                            Mua Lại
+                                        </button>
                                     </div>
-
-
+                                </div>
                             </div>
                         </div>
                         <div className="card-footer">
                             <button
                                 type="button"
                                 className="btn btn-outline-primary btn-view-order"
-                                data-bs-toggle="modal"
-                                data-bs-target="#orderModal"
-
                                 onClick={() => handleViewMore(order.orderId)}
                             >
                                 <i className="fas fa-info-circle"></i> Chi Tiết Sản Phẩm Đã Mua
                             </button>
 
+                            {/* Conditionally render the review button */}
+                            {!order.isReviewed ? (
+                                <button
+                                    className="btn btn-outline-secondary mt-2"
+                                    onClick={() => openOrderReviewModal(order)}
+                                >
+                                    Đánh Giá Đơn Hàng
+                                </button>
+                            ) : (
+                                <button className="btn btn-secondary mt-2" disabled>
+                                    Đã Đánh Giá
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}
 
                 {/* Modal for viewing more products */}
-                <div className="modal fade" id="orderModal" tabIndex={-1} aria-labelledby="orderModalLabel" aria-hidden="true">
+                <div
+                    className={`modal fade ${selectedOrderId ? "show" : ""}`}
+                    id="orderModal"
+                    tabIndex={-1}
+                    aria-labelledby="orderModalLabel"
+                    aria-hidden={selectedOrderId ? "false" : "true"}
+                    style={{ display: selectedOrderId ? "block" : "none" }}
+                >
                     <div className="modal-dialog modal-lg">
                         <div className="modal-content">
                             {loading && (
@@ -504,42 +590,62 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({ listOrder , setListOrder }
                             {!loading && !error && selectedOrderId && (
                                 <>
                                     <div className="modal-header">
-                                        <h5 className="modal-title" id="orderModalLabel">Mã Đơn Hàng #{selectedOrderId} - Chi Tiết sản phẩm</h5>
-                                        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        <h5 className="modal-title" id="orderModalLabel">
+                                            Mã Đơn Hàng #{selectedOrderId} - Chi Tiết sản phẩm
+                                        </h5>
+                                        <button
+                                            type="button"
+                                            className="btn-close"
+                                            aria-label="Close"
+                                            onClick={() => setSelectedOrderId(null)}
+                                        ></button>
                                     </div>
                                     <div className="modal-body">
                                         {orderDetails.length > 0 ? (
-                                            orderDetails.map((product, index) => (
+                                            orderDetails.map((product) => (
                                                 <div className="row mb-3" key={product._productId}>
                                                     <div className="col-md-4">
-                                                        <img src={product._image || "images/default_product.jpg"}
-                                                             className="img-fluid" alt={product._productName}/>
+                                                        <img
+                                                            src={
+                                                                product._image || "images/default_product.jpg"
+                                                            }
+                                                            className="img-fluid"
+                                                            alt={product._productName}
+                                                        />
                                                     </div>
                                                     <div className="col-md-8">
                                                         <h5>{product._productName}</h5>
                                                         <p>{formatMoney(product._price)}</p>
                                                         <p>{product._description}</p>
-                                                        <p>x{product._quantity}</p>
+                                                        <p>Số lượng: x{product._quantity}</p>
                                                     </div>
-
                                                 </div>
                                             ))
                                         ) : (
-                                            <p>No products found for this order.</p>
+                                            <p>Không có sản phẩm nào trong đơn hàng này.</p>
                                         )}
-                                        {/* Assuming Shipping, Voucher, and Final Total are part of the order details or can be fetched separately */}
                                         <div className="row">
                                             <div className="col-md-12">
-                                                <h6><strong>Phí Giao Hàng:</strong> {formatMoney(15000)}</h6>
-                                                <h6><strong>Voucher:</strong> -{formatMoney(20)}</h6>
-                                                <h6><strong>Tổng Tiền:</strong> {formatMoney(totalmodal || 0)}</h6>
+                                                <h6>
+                                                    <strong>Phí Giao Hàng:</strong> {formatMoney(15000)}
+                                                </h6>
+                                                <h6>
+                                                    <strong>Voucher:</strong> -{formatMoney(0)}
+                                                </h6>
+                                                <h6>
+                                                    <strong>Tổng Tiền:</strong>{" "}
+                                                    {formatMoney(totalmodal || 0)}
+                                                </h6>
                                             </div>
                                         </div>
-
                                     </div>
                                     <div className="modal-footer">
-                                        <button type="button" className="btn btn-secondary"
-                                                data-bs-dismiss="modal">Close
+                                        <button
+                                            type="button"
+                                            className="btn btn-secondary"
+                                            onClick={() => setSelectedOrderId(null)}
+                                        >
+                                            Đóng
                                         </button>
                                     </div>
                                 </>
@@ -547,10 +653,82 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({ listOrder , setListOrder }
                         </div>
                     </div>
                 </div>
+
+                {/* Order Review Modal */}
+                <div
+                    className={`modal fade ${selectedOrderForReview ? "show" : ""}`}
+                    id="orderReviewModal"
+                    tabIndex={-1}
+                    aria-labelledby="orderReviewModalLabel"
+                    aria-hidden={selectedOrderForReview ? "false" : "true"}
+                    style={{ display: selectedOrderForReview ? "block" : "none" }}
+                >
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <form onSubmit={handleOrderReviewSubmit}>
+                                <div className="modal-header">
+                                    <h5 className="modal-title" id="orderReviewModalLabel">
+                                        Đánh Giá Đơn Hàng
+                                    </h5>
+                                    <button
+                                        type="button"
+                                        className="btn-close"
+                                        aria-label="Close"
+                                        onClick={closeOrderReviewModal}
+                                    ></button>
+                                </div>
+                                <div className="modal-body">
+                                    {reviewError && (
+                                        <div className="alert alert-danger">{reviewError}</div>
+                                    )}
+                                    <div className="mb-3">
+                                        <label className="form-label">Mã Đơn Hàng</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            value={selectedOrderForReview?.orderId}
+                                            disabled
+                                        />
+                                    </div>
+                                    <div className="mb-3">
+                                        <label htmlFor="reviewContent" className="form-label">
+                                            Nhận Xét Của Bạn
+                                        </label>
+                                        <textarea
+                                            id="reviewContent"
+                                            className="form-control"
+                                            value={reviewContent}
+                                            onChange={(e) => setReviewContent(e.target.value)}
+                                            rows={4}
+                                            required
+                                        ></textarea>
+                                    </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        onClick={closeOrderReviewModal}
+                                    >
+                                        Hủy
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="btn btn-primary"
+                                        disabled={reviewSubmitting}
+                                    >
+                                        {reviewSubmitting ? "Đang Gửi..." : "Gửi Nhận Xét"}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
 };
+
 
 
 const VoucherContent: React.FC = () => (
@@ -592,7 +770,7 @@ const MenuProfile: React.FC = () => {
         getPreparingOrders(49)
             .then(Order =>{
                 setListOrder(Order)
-                console.log(Order)
+
             })
             .catch(error =>{
                 console.log(error)

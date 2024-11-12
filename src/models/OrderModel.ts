@@ -15,4 +15,5 @@ export interface OrderModel {
     createdDate: string;
     updatedDate?: string | null;
     producHistorytDTOList:ProductDetail[];
+    isReviewed: boolean;
 }

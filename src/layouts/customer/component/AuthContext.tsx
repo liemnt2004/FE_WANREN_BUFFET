@@ -42,10 +42,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const navigate = useNavigate();
 
     const decodeToken = (token: string) => {
-        if (!token) {
-            navigate('/login');
-            return;
-        }
+
 
         try {
             const decoded: DecodedToken = jwtDecode(token);
@@ -53,6 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUsername(decoded.sub || decoded.sub);
             setEmail(decoded.email || null);
             setPhone(decoded.phone || null);
+
         } catch (error) {
             console.error("Invalid token:", error);
             logout(); // Gọi logout nếu token không hợp lệ
@@ -76,7 +74,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setEmail(null);
         setPhone(null);
         setFullName(null);
-        navigate("/login"); // Chuyển hướng tới trang đăng nhập sau khi đăng xuất
     };
 
     return (

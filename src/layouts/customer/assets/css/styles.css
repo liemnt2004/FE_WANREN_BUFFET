@@ -294,6 +294,7 @@ body {
     width: 768px;
     max-width: 100%;
     min-height: 480px;
+    margin-top:10% ;
 }
 
 .ps28277 .container p {
@@ -365,6 +366,7 @@ body {
     align-items: center;
     justify-content: left;
     margin-bottom: 5px;
+
 }
 
 .ps28277 #signin-agree {
@@ -540,6 +542,16 @@ body {
         font-size: 1rem;
         text-align: center;
     }
+    .nav-link-menu{
+        display: block ;
+    }
+
+    .btn-book{
+        height: 50px;
+        font-size: 15px;
+    }
+
+
 
     .about p {
         font-size: 0.9rem;

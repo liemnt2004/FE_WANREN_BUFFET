@@ -1,4 +1,3 @@
-
 import {request} from "../Request";
 import PromotionModel from "../../models/PromotionModel";
 
@@ -6,12 +5,13 @@ export async function getAllPromotion(): Promise<PromotionModel[]> {
     const rs: PromotionModel[] = [];
     try {
         const data = await request('http://localhost:8080/Promotion/search/findByPromotionStatus?promotionStatus=true');
-
+        console.log(data)
         if (data && data._embedded && data._embedded.promotions) {
 
             for (const promotion of data._embedded.promotions) {
                 const promotionmodel = new PromotionModel(
-                   promotion.PromotionId,
+                    promotion.promotion
+                    ,
                     promotion.promotionName,
                     promotion.description,
                     promotion.promotionType,
@@ -30,5 +30,32 @@ export async function getAllPromotion(): Promise<PromotionModel[]> {
     } catch (error) {
         console.error("Cannot fetch product list:", error);
         return [];
+    }
+}
+
+
+
+export async function GetPromotionById(PromotionId: number): Promise<PromotionModel | null> {
+    try {
+
+        const data = await request(`http://localhost:8080/Promotion/${PromotionId}`);
+
+        if (data) {
+            return new PromotionModel(
+                data.promotion,
+                data.promotionName,
+                data.description,
+                data.promotionType,
+                data.promotionValue,
+                data.startDate,
+                data.endDate,
+                data.promotionStatus
+            );
+        } else {
+            return null; // Return null if no data is found
+        }
+    } catch (error) {
+        console.error("Cannot fetch promotion details:", error);
+        return null;
     }
 }
