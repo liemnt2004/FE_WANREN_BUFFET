@@ -1,19 +1,56 @@
 import CustomerModelAdmin from "../../models/AdminModels/CustomerModel";
 
 // Function to fetch the list of customers
-export async function getCustomerList(
-  page: number
+
+export async function fetchCustomerList(
+  page: number,
+  fullName?: string
 ): Promise<{ data: CustomerModelAdmin[]; totalPages: number }> {
   try {
-    const response = await fetch(`http://localhost:8080/Customer?page=${page}`);
+    const url = fullName
+      ? `http://localhost:8080/Customer/search?fullName=${encodeURIComponent(
+          fullName
+        )}`
+      : `http://localhost:8080/Customer?page=${page}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch customer list");
+      throw new Error(
+        `Failed to fetch customer data: ${response.status} ${response.statusText}`
+      );
     }
 
     const data = await response.json();
 
-    if (data?._embedded?.customers) {
+    if (Array.isArray(data)) {
+      // Adjusting to handle direct array response if applicable
+      return {
+        data: data.map(
+          (customer: any) =>
+            new CustomerModelAdmin(
+              customer.customerId,
+              customer.username,
+              customer.password,
+              customer.fullName,
+              customer.email,
+              customer.phoneNumber,
+              customer.address,
+              customer.loyaltyPoints,
+              customer.customerType,
+              customer.accountStatus,
+              customer.createdDate,
+              customer.updatedDate
+            )
+        ),
+        totalPages: 1,
+      };
+    } else if (data?._embedded?.customers) {
       return {
         data: data._embedded.customers.map(
           (customer: any) =>
@@ -32,13 +69,13 @@ export async function getCustomerList(
               customer.updatedDate
             )
         ),
-        totalPages: data.page.totalPages,
+        totalPages: data.page ? data.page.totalPages : 1,
       };
     } else {
       return { data: [], totalPages: 0 };
     }
   } catch (error) {
-    console.error("Cannot fetch customer list:", error);
+    console.error("Cannot fetch customer data:", error);
     return { data: [], totalPages: 0 };
   }
 }
@@ -67,20 +104,20 @@ export async function createCustomer(
   }
 }
 
-// Function to partially update an existing customer
+// Function to update an existing customer
 export async function updateCustomer(
-  id: number,
-  updatedFields: Partial<CustomerModelAdmin>
+  customerId: number,
+  updatedCustomer: Partial<CustomerModelAdmin>
 ): Promise<void> {
   try {
     const response = await fetch(
-      `http://localhost:8080/Customer/update/${id}`,
+      `http://localhost:8080/Customer/update/${customerId}`,
       {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(updatedFields),
+        body: JSON.stringify(updatedCustomer),
       }
     );
 
@@ -94,19 +131,21 @@ export async function updateCustomer(
     console.error("Cannot update customer:", error);
   }
 }
-export async function updateCustomerAccountStatus(
-  id: number,
+
+// Function to update only the account status of a customer
+export async function updateAccountStatus(
+  customerId: number,
   accountStatus: boolean
 ): Promise<void> {
   try {
     const response = await fetch(
-      `http://localhost:8080/Customer/updateAccountStatus/${id}`,
+      `http://localhost:8080/Customer/updateAccountStatus/${customerId}`,
       {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ accountStatus }),
+        body: JSON.stringify(accountStatus),
       }
     );
 
@@ -120,47 +159,25 @@ export async function updateCustomerAccountStatus(
     console.error("Cannot update account status:", error);
   }
 }
-export async function searchCustomers(
-  query: string
-): Promise<CustomerModelAdmin[]> {
-  try {
-    const queryParams = new URLSearchParams();
-    queryParams.append("q", query); // Use 'q' as the single search parameter
 
+export async function deleteCustomer(customerId: number): Promise<void> {
+  try {
     const response = await fetch(
-      `http://localhost:8080/Customer/search?${queryParams.toString()}`
+      `http://localhost:8080/Customer/delete/${customerId}`,
+      {
+        method: "DELETE",
+      }
     );
 
     if (!response.ok) {
-      throw new Error("Failed to search customers");
-    }
-
-    const data = await response.json();
-
-    // Map the response to CustomerModelAdmin instances
-    if (data?._embedded?.customers) {
-      return data._embedded.customers.map(
-        (customer: any) =>
-          new CustomerModelAdmin(
-            customer.customerId,
-            customer.username,
-            customer.password,
-            customer.fullName,
-            customer.email,
-            customer.phoneNumber,
-            customer.address,
-            customer.loyaltyPoints,
-            customer.customerType,
-            customer.accountStatus,
-            customer.createdDate,
-            customer.updatedDate
-          )
-      );
+      // Fetch and log error details if deletion fails
+      const errorData = await response.json();
+      console.error("Error deleting customer:", errorData);
+      throw new Error("Failed to delete customer");
     } else {
-      return [];
+      console.log("Customer deleted successfully");
     }
   } catch (error) {
-    console.error("Cannot search customers:", error);
-    return [];
+    console.error("Cannot delete customer:", error);
   }
 }

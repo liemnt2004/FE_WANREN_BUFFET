@@ -24,43 +24,7 @@ import DashboardCashier from "./layouts/cashier/dashboardCashier";
 import { CartProvider } from "./layouts/customer/component/CartContext";
 import MenuCashier from "./layouts/cashier/component/menuCashier";
 import LoginCashier from "./layouts/cashier/loginCashier";
-
-// Định nghĩa kiểu dữ liệu cho AuthContext
-interface AuthContextType {
-  isAuthenticated: boolean;
-  login: () => void;
-  logout: () => void;
-}
-
-// Tạo ngữ cảnh (context) cho AuthContext với giá trị mặc định undefined
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Tạo hook để sử dụng AuthContext
-const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within an AuthProvider");
-  return context;
-};
-
-// Định nghĩa kiểu dữ liệu cho props của AuthProvider
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-// AuthProvider component cung cấp trạng thái và các hàm liên quan đến xác thực
-const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // Hàm đăng nhập/đăng xuất giả lập
-  const login = () => setIsAuthenticated(true);
-  const logout = () => setIsAuthenticated(false);
-
-  return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
+import { AuthProvider } from "./layouts/customer/component/AuthContext";
 
 // Component chính của ứng dụng
 function App() {
@@ -77,7 +41,7 @@ function App() {
 
 // Component Routing để định nghĩa các tuyến đường và hiển thị menu tương ứng
 function Routing() {
-  const { isAuthenticated } = useAuth();
+  // const { isAuthenticated } = useAuth();
   const location = useLocation();
 
   // Các tuyến đường dành riêng cho admin
@@ -132,18 +96,8 @@ function Routing() {
         <Route path="/cashier/login" element={<LoginCashier />} />
 
         {/* Các tuyến đường yêu cầu xác thực */}
-        <Route
-          path="/checkout"
-          element={
-            isAuthenticated ? <Checkout /> : <Navigate to="/login" replace />
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            isAuthenticated ? <MenuProfile /> : <Navigate to="/login" replace />
-          }
-        />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/profile" element={<MenuProfile />} />
 
         {/* Các tuyến đường của admin sử dụng AdminLayout */}
         <Route

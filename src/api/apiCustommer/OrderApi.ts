@@ -4,28 +4,29 @@ import axios from "axios";
 
 import { OrderModel } from "../../models/OrderModel";
 
-
-
 // Hàm lấy đơn hàng đang trong trạng thái "PREPARING_ORDER"
-export async function getPreparingOrders(customerId: number): Promise<OrderModel[]> {
-    try {
-        const response = await axios.get(`http://localhost:8080/api/orders/GetOrderByCustomerId/${customerId}`, {
-            headers: {
-                "Content-Type": "application/json",
-                // Thêm Authorization header nếu cần
-                // "Authorization": `Bearer ${token}`,
-            },
-        });
-        // Kiểm tra cấu trúc dữ liệu trả về
-        if (response.data) {
-            return response.data as OrderModel[];
-        } else {
-            return [];
-        }
-    } catch (error) {
-        console.error("Cannot fetch preparing orders:", error);
-        return [];
+export async function getPreparingOrders(
+  customerId: number
+): Promise<OrderModel[]> {
+  try {
+    const response = await axios.get(
+      `http://localhost:8080/api/orders/GetOrderByCustomerId/${customerId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          // Thêm Authorization header nếu cần
+          // "Authorization": `Bearer ${token}`,
+        },
+      }
+    );
+    // Kiểm tra cấu trúc dữ liệu trả về
+    if (response.data) {
+      return response.data as OrderModel[];
+    } else {
+      return [];
     }
+  } catch (error) {
+    console.error("Cannot fetch preparing orders:", error);
+    return [];
+  }
 }
-
-

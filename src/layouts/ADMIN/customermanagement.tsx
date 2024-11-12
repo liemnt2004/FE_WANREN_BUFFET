@@ -16,11 +16,11 @@ import {
 } from "antd";
 import CustomerModelAdmin from "../../models/AdminModels/CustomerModel";
 import {
-  getCustomerList,
   createCustomer,
   updateCustomer,
-  updateCustomerAccountStatus,
-  searchCustomers,
+  deleteCustomer,
+  updateAccountStatus,
+  fetchCustomerList,
 } from "../../api/apiAdmin/customerApi";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 
@@ -32,24 +32,30 @@ const CustomerManagement: React.FC = () => {
     null
   );
   const [currentStatus, setCurrentStatus] = useState<boolean>(false);
-
   const [editCustomer, setEditCustomer] =
     useState<Partial<CustomerModelAdmin> | null>(null);
   const [customers, setCustomers] = useState<CustomerModelAdmin[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState<number | null>(null);
+  const [searchInput, setSearchInput] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
+
   const [addForm] = Form.useForm();
   const [editForm] = Form.useForm();
   const tableContainerRef = useRef<HTMLDivElement>(null);
+  const [confirmDeleteCustomerId, setConfirmDeleteCustomerId] = useState<
+    number | null
+  >(null);
+  const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] =
+    useState(false);
 
   const openEditModal = (customer: CustomerModelAdmin) => {
     setEditCustomer(customer);
     setIsEditModalOpen(true);
     editForm.setFieldsValue({
       ...customer,
-      accountStatus: customer.accountStatus ? true : false,
+      accountStatus: !!customer.accountStatus,
     });
   };
 
@@ -59,12 +65,25 @@ const CustomerManagement: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  useEffect(() => {
+    const handler = setTimeout(() => setSearchQuery(searchInput), 500);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
+
+  useEffect(() => {
+    setPage(0);
+    setCustomers([]);
+    setTotalPages(null);
+    loadMoreCustomers();
+  }, [searchQuery]);
+
   const loadMoreCustomers = useCallback(async () => {
     if (loading || (totalPages !== null && page >= totalPages)) return;
     setLoading(true);
     try {
-      const response = await getCustomerList(page);
+      const response = await fetchCustomerList(page, searchQuery);
       const { data: newCustomers, totalPages: newTotalPages } = response;
+
       setCustomers((prevCustomers) => {
         const existingCustomerIds = new Set(
           prevCustomers.map((c) => c.customerId)
@@ -72,7 +91,9 @@ const CustomerManagement: React.FC = () => {
         const newUniqueCustomers = newCustomers.filter(
           (customer) => !existingCustomerIds.has(customer.customerId)
         );
-        return [...prevCustomers, ...newUniqueCustomers];
+        return page === 0
+          ? newCustomers
+          : [...prevCustomers, ...newUniqueCustomers];
       });
       setPage((prevPage) => prevPage + 1);
       setTotalPages(newTotalPages);
@@ -81,7 +102,7 @@ const CustomerManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [loading, page, totalPages]);
+  }, [loading, page, totalPages, searchQuery]);
 
   useEffect(() => {
     loadMoreCustomers();
@@ -91,22 +112,14 @@ const CustomerManagement: React.FC = () => {
     if (tableContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } =
         tableContainerRef.current;
-      if (scrollTop + clientHeight >= scrollHeight - 50) {
-        loadMoreCustomers();
-      }
+      if (scrollTop + clientHeight >= scrollHeight - 50) loadMoreCustomers();
     }
   }, [loadMoreCustomers]);
 
   useEffect(() => {
     const tableContainer = tableContainerRef.current;
-    if (tableContainer) {
-      tableContainer.addEventListener("scroll", handleScroll);
-    }
-    return () => {
-      if (tableContainer) {
-        tableContainer.removeEventListener("scroll", handleScroll);
-      }
-    };
+    tableContainer?.addEventListener("scroll", handleScroll);
+    return () => tableContainer?.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
   const handleSaveNewCustomer = async () => {
@@ -134,7 +147,7 @@ const CustomerManagement: React.FC = () => {
   const handleSaveEditCustomer = async () => {
     try {
       const updatedCustomerData = await editForm.validateFields();
-      if (editCustomer && editCustomer.customerId) {
+      if (editCustomer?.customerId) {
         await updateCustomer(editCustomer.customerId, updatedCustomerData);
         notification.success({
           message: "Customer Updated",
@@ -154,56 +167,70 @@ const CustomerManagement: React.FC = () => {
     }
   };
 
-  // Show confirmation modal
-  const showConfirmModal = (customerId: number, newStatus: boolean) => {
+  const handleDeleteCustomer = (customerId: number) => {
+    setConfirmDeleteCustomerId(customerId);
+    setConfirmDeleteModalVisible(true);
+  };
+  const handleConfirmDeleteCustomer = async () => {
+    if (confirmDeleteCustomerId !== null) {
+      try {
+        await deleteCustomer(confirmDeleteCustomerId);
+        notification.success({
+          message: "Customer Deleted",
+          description: "The customer has been deleted successfully!",
+        });
+        setPage(0);
+        setCustomers([]);
+        loadMoreCustomers();
+      } catch (error) {
+        console.error("Failed to delete customer:", error);
+        notification.error({
+          message: "Deletion Failed",
+          description: "An error occurred while deleting the customer.",
+        });
+      } finally {
+        setConfirmDeleteModalVisible(false);
+        setConfirmDeleteCustomerId(null);
+      }
+    }
+  };
+
+  const handleUpdateAccountStatus = (
+    customerId: number,
+    newStatus: boolean
+  ) => {
     setCurrentCustomerId(customerId);
     setCurrentStatus(newStatus);
     setConfirmModalVisible(true);
   };
 
-  const handleConfirmToggleStatus = async () => {
+  const handleConfirmStatusChange = async () => {
     if (currentCustomerId !== null) {
       try {
-        await updateCustomerAccountStatus(currentCustomerId, currentStatus);
-        setCustomers((prevCustomers) =>
-          prevCustomers.map((customer) =>
-            customer.customerId === currentCustomerId
-              ? { ...customer, accountStatus: currentStatus }
-              : customer
-          )
-        );
+        await updateAccountStatus(currentCustomerId, currentStatus);
         notification.success({
           message: "Account Status Updated",
-          description: `Account status has been ${
+          description: `The account status has been successfully ${
             currentStatus ? "activated" : "deactivated"
-          }.`,
+          }!`,
         });
+        setPage(0);
+        setCustomers([]);
+        loadMoreCustomers();
       } catch (error) {
         console.error("Failed to update account status:", error);
         notification.error({
           message: "Update Failed",
-          description: "An error occurred while updating account status.",
+          description: "An error occurred while updating the account status.",
         });
       } finally {
         setConfirmModalVisible(false);
+        setCurrentCustomerId(null);
+        setCurrentStatus(false);
       }
     }
   };
-  const handleSearchInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setSearchQuery(event.target.value);
-  };
 
-  const handleSearch = async () => {
-    try {
-      const data = await searchCustomers(searchQuery);
-      setCustomers(data);
-      setPage(0);
-    } catch (error) {
-      console.error("Failed to search customers:", error);
-    }
-  };
   return (
     <div className="container-fluid">
       <div className="main-content">
@@ -214,15 +241,11 @@ const CustomerManagement: React.FC = () => {
               <input
                 type="text"
                 className="form-control search-input"
-                placeholder="Search for employees..."
-                value={searchQuery}
-                onChange={handleSearchInputChange}
+                placeholder="Search for customers..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
               />
-              <i
-                className="fas fa-search search-icon"
-                onClick={handleSearch}
-              ></i>
-              {/* Trigger search on click */}
+              <i className="fas fa-search search-icon"></i>
             </div>
             <select className="form-select filter-select">
               <option value="">Filter</option>
@@ -437,17 +460,10 @@ const CustomerManagement: React.FC = () => {
                   </Form.Item>
                 </Col>
               </Row>
-              <Form.Item
-                label="Account Status"
-                name="accountStatus"
-                valuePropName="checked"
-              >
-                <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
-              </Form.Item>
             </Form>
           </Modal>
 
-          {/* Custom Confirmation Modal */}
+          {/* Confirmation Modal */}
           <Modal
             visible={confirmModalVisible}
             onCancel={() => setConfirmModalVisible(false)}
@@ -481,13 +497,58 @@ const CustomerManagement: React.FC = () => {
                 </Button>
                 <Button
                   type="primary"
+                  onClick={handleConfirmStatusChange}
                   style={{
                     backgroundColor: "rgb(252, 71, 10)",
                     borderColor: "rgb(252, 71, 10)",
                   }}
-                  onClick={handleConfirmToggleStatus}
                 >
                   {currentStatus ? "Activate" : "Deactivate"}
+                </Button>
+              </div>
+            </div>
+          </Modal>
+
+          {/* modal xóa */}
+          <Modal
+            visible={confirmDeleteModalVisible}
+            onCancel={() => setConfirmDeleteModalVisible(false)}
+            footer={null}
+            centered
+            width={400}
+          >
+            <div style={{ textAlign: "center" }}>
+              <ExclamationCircleOutlined
+                style={{ fontSize: "48px", color: "#ff4d4f" }}
+              />
+              <h3 style={{ fontWeight: "bold", marginTop: "16px" }}>
+                Confirm Delete
+              </h3>
+              <p style={{ fontSize: "16px" }}>
+                Are you sure you want to delete this customer?
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginTop: "24px",
+                }}
+              >
+                <Button
+                  onClick={() => setConfirmDeleteModalVisible(false)}
+                  style={{ backgroundColor: "#f0f0f0", color: "#000" }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={handleConfirmDeleteCustomer}
+                  style={{
+                    backgroundColor: "rgb(252, 71, 10)",
+                    borderColor: "rgb(252, 71, 10)",
+                  }}
+                >
+                  Delete
                 </Button>
               </div>
             </div>
@@ -524,12 +585,17 @@ const CustomerManagement: React.FC = () => {
                     </td>
                     <td>{customer.loyaltyPoints}</td>
                     <td>
-                      <Switch
-                        checked={customer.accountStatus}
-                        onChange={(newStatus) =>
-                          showConfirmModal(customer.customerId, newStatus)
-                        }
-                      />
+                      <td>
+                        <Switch
+                          checked={customer.accountStatus}
+                          onClick={() =>
+                            handleUpdateAccountStatus(
+                              customer.customerId,
+                              !customer.accountStatus
+                            )
+                          }
+                        />
+                      </td>
                     </td>
                     <td>
                       <button
@@ -539,12 +605,25 @@ const CustomerManagement: React.FC = () => {
                       >
                         <i className="fas fa-edit"></i>
                       </button>
-                      <button type="button" className="icon-button-remove">
+                      <button
+                        type="button"
+                        className="icon-button-remove"
+                        onClick={() =>
+                          handleDeleteCustomer(customer.customerId)
+                        }
+                      >
                         <i className="fa-solid fa-trash"></i>
                       </button>
                     </td>
                   </tr>
                 ))}
+                {loading && (
+                  <tr>
+                    <td colSpan={10} style={{ textAlign: "center" }}>
+                      Loading...
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
