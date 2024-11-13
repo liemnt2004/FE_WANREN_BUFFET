@@ -50,7 +50,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUsername(decoded.sub || decoded.sub);
             setEmail(decoded.email || null);
             setPhone(decoded.phone || null);
-
         } catch (error) {
             console.error("Invalid token:", error);
             logout(); // Gọi logout nếu token không hợp lệ
