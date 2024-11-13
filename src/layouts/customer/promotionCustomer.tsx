@@ -13,6 +13,7 @@ import './assets/css/promotion.css';
 // Import API và mô hình
 import { getAllPromotion } from "../../api/apiCustommer/promotionApi";
 import PromotionModel from "../../models/PromotionModel";
+import {Link} from "react-router-dom";
 
 const PromotionCustomer: React.FC = () => {
     const [listpromotion, setListPromotion] = useState<PromotionModel[]>([]);
@@ -23,6 +24,7 @@ const PromotionCustomer: React.FC = () => {
         const fetchPromotions = async () => {
             try {
                 const promotions = await getAllPromotion();
+
                 setListPromotion(promotions);
             } catch (err) {
                 console.error(err);
@@ -154,9 +156,9 @@ const PromotionCustomer: React.FC = () => {
                                                 {calculateDaysRemaining(promotion.endDate)} ngày
                                             </p>
                                         </div>
-                                        <a href="#" className="btn btn-danger mt-2">
+                                        <Link  to={'/promotion_detail/' + promotion.PromotionId} className="btn btn-danger mt-2">
                                             Xem chi tiết
-                                        </a>
+                                        </Link>
                                     </div>
                                 </div>
                             </div>

@@ -15,7 +15,6 @@ import {
 } from "./layouts/customer/component/AuthContext";
 import PublicRoute from "./layouts/customer/component/PublicRoute";
 import Checkout from "./layouts/customer/CheckoutCustomer";
-// import PromotionDetail from "./layouts/customer/PromotionDetail";
 
 function App() {
   return (
@@ -30,50 +29,45 @@ function App() {
 }
 
 export function Routing() {
-  const hiddenRoutes = ["/admin", "/login", "/register"];
+
+    const hiddenRoutes = ['/admin', '/login', '/register'];
 
   return (
     <>
       {/* Display MenuCustomer unless on hidden routes */}
       {!hiddenRoutes.includes(window.location.pathname) && <MenuCustomer />}
 
-      {/* Define routes */}
-      <Routes>
-        <Route path="/" element={<IndexCustomer />} />
-        <Route path="/menu" element={<MenuProductCustomer />} />
-        <Route path="/admin" element={<MenuProductCustomer />} />
-        <Route path="/reservation" element={<ReservationForm />} />
-        <Route path="/promotion" element={<PromotionCustomer />} />
-        {/* <Route
-          path="/promotion_detail/:id"
-          element={<PromotionDetail />}
-        />{" "} */}
-        {/* Fixed route path */}
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/profile" element={<MenuProfile />} />
-        {/* Protect login and register routes */}
-        <Route
-          path="/login"
-          element={
-            <PublicRoute>
-              <LoginRegisterComponent />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <PublicRoute>
-              <LoginRegisterComponent />
-            </PublicRoute>
-          }
-        />
-      </Routes>
+            {/* Define routes */}
+            <Routes>
+                <Route path="/" element={<IndexCustomer />} />
+                <Route path="/menu" element={<MenuProductCustomer />} />
+                <Route path="/admin" element={<MenuProductCustomer />} />
+                <Route path="/reservation" element={<ReservationForm />} />
+                <Route path="/promotion" element={<PromotionCustomer />} />
+                <Route
+                    path="/checkout"
+                    element={<Checkout  />}
+                />
+                <Route path="/profile" element={<MenuProfile />} />
+
+                {/* Protect login and register routes */}
+                <Route path="/login" element={
+                    <PublicRoute>
+                        <LoginRegisterComponent />
+                    </PublicRoute>
+                } />
+                <Route path="/register" element={
+                    <PublicRoute>
+                        <LoginRegisterComponent />
+                    </PublicRoute>
+                } />
+            </Routes>
 
       {/* Include CartOffcanvas on all pages */}
       <CartOffcanvas />
     </>
   );
 }
+
 
 export default App;

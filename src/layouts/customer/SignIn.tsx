@@ -163,7 +163,8 @@ const LoginRegisterComponent: React.FC = () => {
                 if (result.token) {
                     login(result.token); // Sử dụng hàm login từ AuthContext
                     alert('Đăng nhập thành công!');
-                    navigate('/'); // Chuyển hướng đến trang chủ hoặc trang người dùng
+                    // window.location.href("http://localhost:3000/")
+                    window.location.href = "http://localhost:3000/";
                 } else {
                     setErrorMessage('Token không hợp lệ từ server.');
                 }
