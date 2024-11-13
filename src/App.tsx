@@ -5,8 +5,12 @@ import {
   Route,
   Navigate,
   useLocation,
-  BrowserRouter,
+  RouteObject,
+  createBrowserRouter,
+  Outlet,
+  RouterProvider,
 } from "react-router-dom";
+
 import MenuCustomer from "./layouts/customer/menuCustomer";
 import MenuProductCustomer from "./layouts/customer/menuProductCustomer";
 import IndexCustomer from "./layouts/customer/indexCustomer";
@@ -20,10 +24,13 @@ import Employeemanagement from "./layouts/ADMIN/employeemanagement";
 import CustommerManagement from "./layouts/ADMIN/customermanagement";
 import MenuAdmin from "./layouts/ADMIN/menuAdmin";
 import AdminLayout from "./layouts/ADMIN/AdminLayout";
-import DashboardCashier from "./layouts/cashier/dashboardCashier";  
+import DashboardCashier from "./layouts/cashier/dashboardCashier";
 import { CartProvider } from "./layouts/customer/component/CartContext";
 import MenuCashier from "./layouts/cashier/component/menuCashier";
 import LoginCashier from "./layouts/cashier/loginCashier";
+import MainLayoutCashier from "./layouts/cashier/mainLayoutCashier";
+import ManagementTableCashier from "./layouts/cashier/managementTableCashier";
+import ManagementFoodCashier from "./layouts/cashier/managementFoodCashier";
 
 // Định nghĩa kiểu dữ liệu cho AuthContext
 interface AuthContextType {
@@ -79,40 +86,96 @@ function App() {
 function Routing() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Các tuyến đường dành riêng cho admin
   const adminRoutes = [
-    "/admin",
-    "/admin/employeemanagement",
+    "/admin","/admin/employeemanagement",
     "/admin/customermanagement",
   ];
-  const cashierRoutes = ['/cashier', '/cashier/orders', '/cashier/dashboard'];
-  const cashierExcludedRoutes = ['/cashier/login'];
+  const cashierRoutes = ["/cashier", "/cashier/orders", "/cashier/dashboard", "/cashier/table", "/cashier/food"];
+  const cashierExcludedRoutes = ["/cashier/login"];
 
   // Đối tượng ánh xạ các component menu
-const menuComponents = {
-  admin: <MenuAdmin />,
-  cashier: <MenuCashier />,
-  customer: <MenuCustomer />
-};
+  const menuComponents = {
+    admin: <MenuAdmin />,
+    cashier: <MenuCashier />,
+    customer: <MenuCustomer />,
+  };
 
-// Kiểm tra nếu đường dẫn là /cashier/login thì không hiển thị menu nào
-if (cashierExcludedRoutes.includes(location.pathname)) {
-  return null; // Không render menu nào cả
+
+
+
+  // Xác định loại menu dựa trên đường dẫn hiện tại
+  const menuType = adminRoutes.includes(location.pathname)
+    ? "admin"
+    : cashierRoutes.includes(location.pathname)
+    ? "cashier"
+    : "customer";
+
+
+
+
+
+
+
+
+  // Kiểm tra nếu đường dẫn là /cashier/login thì không hiển thị menu nào
+  if (cashierExcludedRoutes.includes(location.pathname)) {
+    return (
+      <Routes>
+        <Route path="/cashier/login" element={!isLoggedIn ? <LoginCashier onLoginSuccess={function (): void {
+          setIsLoggedIn(true)
+          console.log("hellow");
+          <Navigate to="/cashier" />
+          throw new Error("Function not implemented.");
+        } } /> : <Navigate to="/cashier" />} />
+      </Routes>
+    );
+  }
+
+
+
+ 
+ 
+
+
+
+if (cashierRoutes.includes(location.pathname)) {
+  return (
+    <Routes>
+      
+
+          <Route path="/cashier" element={isLoggedIn ? <MainLayoutCashier /> : <Navigate to="/cashier/login" />}>
+            <Route index element={<DashboardCashier />} />
+            {/* Thêm các tuyến khác cho cashier */}
+            <Route path="table" element={<ManagementTableCashier />} />
+            <Route path="food" element={<ManagementFoodCashier />} />
+          </Route>
+
+
+
+
+    </Routes>
+  );
 }
 
-// Xác định loại menu dựa trên đường dẫn hiện tại
-const menuType =
-  adminRoutes.includes(location.pathname)
-    ? 'admin'
-    : cashierRoutes.includes(location.pathname)
-    ? 'cashier'
-    : 'customer';
+
+
+
+
+
+
+
+
+
+
+
+
 
   return (
     <>
       {/* Hiển thị MenuAdmin nếu là các đường dẫn của admin, ngược lại hiển thị MenuCustomer */}
-
       {menuComponents[menuType]}
 
       {/* Định nghĩa các tuyến đường */}
@@ -125,18 +188,7 @@ const menuType =
         <Route path="/reservation" element={<ReservationForm />} />
         <Route path="/promotion" element={<PromotionCustomer />} />
 
-        <Route path="/cashier" element={<Navigate to="/cashier/login" replace />} />
-        <Route path="/cashier/login" element={<LoginCashier />} />
-        
-      
- 
-        {/* Route cha */}
-        <Route path="/cashier" element={<DashboardCashier />}>
-          {/* Route con */}
-          <Route path="login" element={<LoginCashier />} />
-        </Route>
-   
- 
+
 
         {/* Các tuyến đường yêu cầu xác thực */}
         <Route
