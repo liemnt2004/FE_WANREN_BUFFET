@@ -77,7 +77,7 @@ export async function fetchProductsByType(typeFood: string): Promise<ProductMode
                     product.productName,
                     product.description,
                     product.price,
-                    product.typefood, // Đảm bảo truyền đủ tham số
+                    product.typefood, 
                     product.image,
                     product.quantity,
                     product.productStatus
