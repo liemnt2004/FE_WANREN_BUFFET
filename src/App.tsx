@@ -13,6 +13,12 @@ import { AuthProvider, AuthContext } from "./layouts/customer/component/AuthCont
 import PublicRoute from "./layouts/customer/component/PublicRoute";
 import Checkout from "./layouts/customer/CheckoutCustomer";
 import PromotionDetail from "./layouts/customer/PromotionDetail";
+import Forgotpassword from "./layouts/customer/forgotpassword";
+import EnterOtp from "./layouts/customer/EnterOtp";
+import ResetPasswordOtp from "./layouts/customer/ResetPasswordOtp";
+import PrivateRoute from "./layouts/PrivateRoute";
+import EmployeeLoginComponent from "./layouts/EmployeeLoginComponent";
+import EmployeePublicRoute from "./layouts/EmployeePublicRoute";
 
 function App() {
     return (
@@ -25,28 +31,31 @@ function App() {
         </Router>
     );
 }
+export default App;
+
 
 export function Routing() {
-    const hiddenRoutes = ['/admin', '/login', '/register'];
+    const hiddenRoutes = ['/admin', '/login', '/register', '/employee/login'];
 
     return (
         <>
-            {/* Display MenuCustomer unless on hidden routes */}
+            {/* Hiển thị MenuCustomer trừ khi ở các routes ẩn */}
             {!hiddenRoutes.includes(window.location.pathname) && <MenuCustomer />}
 
-            {/* Define routes */}
             <Routes>
+                {/* Các route công khai */}
                 <Route path="/" element={<IndexCustomer />} />
                 <Route path="/menu" element={<MenuProductCustomer />} />
-                <Route path="/admin" element={<MenuProductCustomer />} />
                 <Route path="/reservation" element={<ReservationForm />} />
                 <Route path="/promotion" element={<PromotionCustomer />} />
-                <Route path="/promotion_detail/:id" element={<PromotionDetail />} /> {/* Fixed route path */}
-
+                <Route path="/forgot-password" element={<Forgotpassword />} />
+                <Route path="/enter-otp" element={<EnterOtp />} />
+                <Route path="/reset-password" element={<ResetPasswordOtp />} />
+                <Route path="/promotion_detail/:id" element={<PromotionDetail />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/profile" element={<MenuProfile />} />
 
-                {/* Protect login and register routes */}
+                {/* Bảo vệ route login và register cho khách hàng */}
                 <Route path="/login" element={
                     <PublicRoute>
                         <LoginRegisterComponent />
@@ -57,13 +66,40 @@ export function Routing() {
                         <LoginRegisterComponent />
                     </PublicRoute>
                 } />
+
+                {/* Route đăng nhập cho nhân viên */}
+                <Route path="/employee/login" element={
+                    <EmployeePublicRoute>
+                        <EmployeeLoginComponent />
+                    </EmployeePublicRoute>
+                } />
+
+                {/* Route dành cho nhân viên */}
+                <Route path="/employee" element={
+                    <PrivateRoute allowedRoles={['EMPLOYEE', 'MANAGER']}>
+                        <IndexCustomer />
+                    </PrivateRoute>
+                } />
+
+                {/* Route dành cho quản lý */}
+                <Route path="/manager" element={
+                    <PrivateRoute allowedRoles={['MANAGER']}>
+                        <IndexCustomer />
+                    </PrivateRoute>
+                } />
+
+                {/* Trang không có quyền truy cập */}
+                <Route path="/unauthorized" element={<IndexCustomer />} />
+
+                {/* Route không tìm thấy */}
+                <Route path="*" element={<IndexCustomer />} />
             </Routes>
 
-            {/* Include CartOffcanvas on all pages */}
+            {/* Bao gồm CartOffcanvas trên tất cả các trang */}
             <CartOffcanvas />
         </>
     );
 }
 
 
-export default App;
+

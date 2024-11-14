@@ -10,8 +10,6 @@ import {jwtDecode} from "jwt-decode"; // Corrected import
 import { useNavigate } from "react-router-dom";
 import {getProductHot} from "../../api/apiCustommer/productApi";
 import {getPreparingOrders} from "../../api/apiCustommer/OrderApi";
-import {Simulate} from "react-dom/test-utils";
-import error = Simulate.error;
 import formatMoney from "./component/FormatMoney";
 import axios from "axios";
 import {OrderModel} from "../../models/OrderModel";
@@ -781,6 +779,11 @@ const MenuProfile: React.FC = () => {
         setActivePanel(panelType);
     };
 
+    function logout(){
+        localStorage.clear()
+        window.location.reload();
+    }
+
     return (
         <>
             {/* Main Content */}
@@ -830,6 +833,7 @@ const MenuProfile: React.FC = () => {
                                     <h2>{userInfo.fullName}</h2>
                                     <p>{userInfo.phoneNumber}</p>
                                     <p>Email: {userInfo.email}</p>
+                                    <button className="btn" onClick={logout}>Đăng Xuất</button>
                                 </div>
                             </div>
                         ) : (

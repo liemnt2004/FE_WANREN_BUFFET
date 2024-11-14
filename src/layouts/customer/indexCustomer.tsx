@@ -293,29 +293,54 @@ const IndexCustomer: React.FC = () => {
                                         </div>
                                     </div>
                                     <div className="col-md-6" style={{paddingRight: 0}}>
-                                        <h4 className="fw-bold pb-4">KHÁCH HÀNG NÓI GÌ ?</h4>
-                                        <div id="carouselExampleIndicators" className="carousel slide m-0">
-                                            <div className="carousel-indicators carousel-custom">
-                                                <button type="button" data-bs-target="#carouselExampleIndicators"
-                                                        data-bs-slide-to="0" className="active" aria-current="true"
-                                                        aria-label="Slide 1"></button>
-                                                <button type="button" data-bs-target="#carouselExampleIndicators"
-                                                        data-bs-slide-to="1" aria-label="Slide 2"></button>
-                                                <button type="button" data-bs-target="#carouselExampleIndicators"
-                                                        data-bs-slide-to="2" aria-label="Slide 3"></button>
+                                        <h4 className="fw-bold pb-4">KHÁCH HÀNG NÓI GÌ?</h4>
+                                        <div id="carouselExampleCaptions" className="carousel slide"
+                                             data-bs-ride="carousel">
+                                            {/* Carousel Indicators */}
+                                            <div className="carousel-indicators">
+                                                <button
+                                                    type="button"
+                                                    data-bs-target="#carouselExampleCaptions"
+                                                    data-bs-slide-to="0"
+                                                    className="active"
+                                                    aria-current="true"
+                                                    aria-label="Slide 1"
+                                                ></button>
+                                                <button
+                                                    type="button"
+                                                    data-bs-target="#carouselExampleCaptions"
+                                                    data-bs-slide-to="1"
+                                                    aria-label="Slide 2"
+                                                ></button>
+                                                <button
+                                                    type="button"
+                                                    data-bs-target="#carouselExampleCaptions"
+                                                    data-bs-slide-to="2"
+                                                    aria-label="Slide 3"
+                                                ></button>
                                             </div>
+
+                                            {/* Carousel Inner */}
                                             <div className="carousel-inner">
+                                                {/* Slide 1 */}
                                                 <div className="carousel-item active">
                                                     <div className="customers-say text-center p-5">
                                                         <div className="profile-img text-center">
-                                                            <img src={khichi} alt="" width="70"
-                                                                 height="70"
-                                                                 className="img-fluid" style={{borderRadius: '50%'}}/>
+                                                            <img
+                                                                src={khichi}
+                                                                alt="Khichi"
+                                                                width="70"
+                                                                height="70"
+                                                                className="img-fluid"
+                                                                style={{borderRadius: '50%'}}
+                                                            />
                                                         </div>
                                                         <div className="comment py-5">
-                                                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                                                            <p>
+                                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
                                                                 Magni nesciunt tempore, dolore voluptatibus
-                                                                reprehenderit vel!</p>
+                                                                reprehenderit vel!
+                                                            </p>
                                                         </div>
                                                         <div className="profile-info">
                                                             <h5 className="name">Nguyen Hoai Nam</h5>
@@ -323,17 +348,26 @@ const IndexCustomer: React.FC = () => {
                                                         </div>
                                                     </div>
                                                 </div>
+
+                                                {/* Slide 2 */}
                                                 <div className="carousel-item">
                                                     <div className="customers-say text-center p-5">
                                                         <div className="profile-img">
-                                                            <img src="assets/img/icook.svg" alt="" width="70"
-                                                                 height="70"
-                                                                 className="img-fluid" style={{borderRadius: '50%'}}/>
+                                                            <img
+                                                                src={khichi}
+                                                                alt="Icook"
+                                                                width="70"
+                                                                height="70"
+                                                                className="img-fluid"
+                                                                style={{borderRadius: '50%'}}
+                                                            />
                                                         </div>
                                                         <div className="comment py-5">
-                                                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                                                            <p>
+                                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
                                                                 Magni nesciunt tempore, dolore voluptatibus
-                                                                reprehenderit vel!</p>
+                                                                reprehenderit vel!
+                                                            </p>
                                                         </div>
                                                         <div className="profile-info">
                                                             <h5 className="name">Mai Thi My Linh</h5>
@@ -341,17 +375,26 @@ const IndexCustomer: React.FC = () => {
                                                         </div>
                                                     </div>
                                                 </div>
+
+                                                {/* Slide 3 */}
                                                 <div className="carousel-item">
                                                     <div className="customers-say text-center p-5">
                                                         <div className="profile-img">
-                                                            <img src="assets/img/kichi.svg" alt="" width="70"
-                                                                 height="70"
-                                                                 className="img-fluid" style={{borderRadius: '50%'}}/>
+                                                            <img
+                                                                src={khichi}
+                                                                alt="Kichi"
+                                                                width="70"
+                                                                height="70"
+                                                                className="img-fluid"
+                                                                style={{borderRadius: '50%'}}
+                                                            />
                                                         </div>
                                                         <div className="comment py-5">
-                                                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                                                            <p>
+                                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
                                                                 Magni nesciunt tempore, dolore voluptatibus
-                                                                reprehenderit vel!</p>
+                                                                reprehenderit vel!
+                                                            </p>
                                                         </div>
                                                         <div className="profile-info">
                                                             <h5 className="name">Luong Cong Huan</h5>
@@ -360,6 +403,26 @@ const IndexCustomer: React.FC = () => {
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            {/* Carousel Controls */}
+                                            <button
+                                                className="carousel-control-prev"
+                                                type="button"
+                                                data-bs-target="#carouselExampleCaptions"
+                                                data-bs-slide="prev"
+                                            >
+                                                <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                <span className="visually-hidden">Previous</span>
+                                            </button>
+                                            <button
+                                                className="carousel-control-next"
+                                                type="button"
+                                                data-bs-target="#carouselExampleCaptions"
+                                                data-bs-slide="next"
+                                            >
+                                                <span className="carousel-control-next-icon" aria-hidden="true"></span>
+                                                <span className="visually-hidden">Next</span>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -447,7 +510,7 @@ const IndexCustomer: React.FC = () => {
                                 <div className="name-item">Lẩu Xuyên Tiêu Deli</div>
                                 <div className="capacity-item">900 ml</div>
                                 <div className="capacity-item-details">
-                                <div className="capacity-item-name"></div>
+                                    <div className="capacity-item-name"></div>
                                     <div className="capacity-item-milli"></div>
                                 </div>
                                 <div className="container-price-quantity">
