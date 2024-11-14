@@ -1,5 +1,5 @@
 /* Thêm đoạn này vào cashierSidebar.css */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .card {
         min-width: 56px;
         /* Thu hẹp chiều rộng của sidebar */
