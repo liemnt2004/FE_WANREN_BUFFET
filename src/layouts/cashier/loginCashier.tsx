@@ -26,9 +26,6 @@ const LoginCashier: React.FC<LoginCashierProps> = ({ onLoginSuccess }) => {
       });
 
       const matchedUser = response.data;
-      console.log(matchedUser)
-
-      console.log(matchedUser.roles[0].roleId)
 
 
 

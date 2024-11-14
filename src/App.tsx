@@ -31,6 +31,7 @@ import LoginCashier from "./layouts/cashier/loginCashier";
 import MainLayoutCashier from "./layouts/cashier/mainLayoutCashier";
 import ManagementTableCashier from "./layouts/cashier/managementTableCashier";
 import ManagementFoodCashier from "./layouts/cashier/managementFoodCashier";
+import ManagementOrdersOnlCashier from "./layouts/cashier/managementOrdersOnlCashier";
 
 // Định nghĩa kiểu dữ liệu cho AuthContext
 interface AuthContextType {
@@ -93,7 +94,7 @@ function Routing() {
     "/admin","/admin/employeemanagement",
     "/admin/customermanagement",
   ];
-  const cashierRoutes = ["/cashier", "/cashier/orders", "/cashier/dashboard", "/cashier/table", "/cashier/food"];
+  const cashierRoutes = ["/cashier", "/cashier/orders", "/cashier/dashboard", "/cashier/table", "/cashier/food", "/cashier/ordersOnline"];
   const cashierExcludedRoutes = ["/cashier/login"];
 
   // Đối tượng ánh xạ các component menu
@@ -119,14 +120,18 @@ function Routing() {
 
 
 
+    // phần routes của cashier v
+
+
+
+
 
   // Kiểm tra nếu đường dẫn là /cashier/login thì không hiển thị menu nào
   if (cashierExcludedRoutes.includes(location.pathname)) {
     return (
       <Routes>
         <Route path="/cashier/login" element={!isLoggedIn ? <LoginCashier onLoginSuccess={function (): void {
-          setIsLoggedIn(true)
-          console.log("hellow");
+          setIsLoggedIn(true);
           <Navigate to="/cashier" />
           throw new Error("Function not implemented.");
         } } /> : <Navigate to="/cashier" />} />
@@ -136,7 +141,6 @@ function Routing() {
 
 
 
- 
  
 
 
@@ -151,6 +155,7 @@ if (cashierRoutes.includes(location.pathname)) {
             {/* Thêm các tuyến khác cho cashier */}
             <Route path="table" element={<ManagementTableCashier />} />
             <Route path="food" element={<ManagementFoodCashier />} />
+            <Route path="ordersOnline" element={<ManagementOrdersOnlCashier />} />
           </Route>
 
 
@@ -163,7 +168,7 @@ if (cashierRoutes.includes(location.pathname)) {
 
 
 
-
+    // phần routes của cashier ^
 
 
 
