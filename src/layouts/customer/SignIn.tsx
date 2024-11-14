@@ -107,7 +107,7 @@ const LoginRegisterComponent: React.FC = () => {
             username: signUpData.username,
             email: signUpData.email,
             password: signUpData.password,
-            fullname: signUpData.full_name,
+            fullName: signUpData.full_name,
             phoneNumber: null,
             address: null,
             loyaltyPoints: 0,
