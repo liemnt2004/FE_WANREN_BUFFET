@@ -55,7 +55,7 @@ const ManagementFoodCashier = () => {
     const newStatus = currentStatus === "HIDDEN" ? "IN_STOCK" : "HIDDEN";
 
     try {
-        await axios.put(`http://localhost:8080/Product/${productId}`, {
+        await axios.patch(`http://localhost:8080/Product/${productId}`, {
             productStatus: newStatus
         });
 
@@ -82,7 +82,7 @@ const ManagementFoodCashier = () => {
         <CardGrid>
 
             {products.map(product =>(
-              <CardFoodCashier img={product.image} price={product.price} name={product.productName} description={product.description} status={product.productStatus=="HIDDEN"?false:true} productId={product.productId} onToggleStatus={toggleProductStatus}  />
+              <CardFoodCashier img={product.image} price={product.price} name={product.productName} description={product.description} status={product.productStatus==="HIDDEN"?false:true} productId={product.productId} onToggleStatus={toggleProductStatus}  />
             ))}
 
         </CardGrid>
