@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import '../assets/css/cashierCardFood.css';
 
@@ -13,43 +13,42 @@ type Props = {
   onToggleStatus: (productId: number, currentStatus: string) => void;
 };
 
-const CardFoodCashier = ({img, price, name, description, status, productId, onToggleStatus}:Props) => {
-
+const CardFoodCashier = ({ img, price, name, description, status, productId, onToggleStatus }: Props) => {
   const [isOn, setIsOn] = useState(status);
 
-  // Hàm xử lý khi thay đổi trạng thái
+  useEffect(() => {
+    setIsOn(status); // Đồng bộ isOn với trạng thái mới khi cha thay đổi
+  }, [status]);
+
   const handleToggle = () => {
-    setIsOn(!isOn);
+    onToggleStatus(productId!, isOn ? "IN_STOCK" : "HIDDEN");
+    setIsOn(!isOn); // Thay đổi ngay lập tức khi nhấn nút
   };
-  // https://png.pngtree.com/element_our/20190524/ourlarge/pngtree-food-hot-pot-illustration-pattern-image_1100384.jpg
+
   return (
     <div className="flex flex-col bg-white w-72 h-80 rounded-md py-3 px-6 border">
       <img src={img} alt={name} className="w-full h-32 object-cover rounded-md" />
       <h3 className="text-center font-bold text-xl text-gray-800 m-0 pb-2">{price}đ</h3>
       <h3 className="text-base font-semibold text-gray-900 m-0 p-0">{name}</h3>
       <p className="text-sm text-gray-500 pb-3 p-0 m-0 truncate-description">{description}</p>
-      <div className="flex gap-2 text-sm text-gray-500 border-b pb-2">
-
-      </div>
       <div className="flex justify-around items-center py-3">
-
-      <StyledWrapper>
-      <label className="switch">
-        <input
-          type="checkbox"
-          className="toggle"
-          checked={isOn}
-          onChange={() => onToggleStatus(productId!, status ? "IN_STOCK" : "HIDDEN")}
-        />
-        <span className="slider" />
-        <span className="card-side" />
-      </label>
-    </StyledWrapper>
-
+        <StyledWrapper>
+          <label className="switch">
+            <input
+              type="checkbox"
+              className="toggle"
+              checked={isOn}
+              onChange={handleToggle}
+            />
+            <span className="slider" />
+            <span className="card-side" />
+          </label>
+        </StyledWrapper>
       </div>
     </div>
   );
-}
+};
+
 
 
 
