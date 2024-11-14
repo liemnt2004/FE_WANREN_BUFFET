@@ -31,7 +31,18 @@ function App() {
 
 export function Routing() {
   const hiddenRoutes = ["/admin", "/login", "/register"];
-
+  const hiddenRoutesAdmin = [
+    "/admin",
+    "/admin/customermanagement",
+    "/admin/employeemanagement",
+  ];
+  const cashierRoutes = [
+    "/cashier",
+    "/cashier/orders",
+    "/cashier/dashboard",
+    "/cashier/table",
+    "/cashier/food",
+  ];
   return (
     <>
       {/* Display MenuCustomer unless on hidden routes */}
