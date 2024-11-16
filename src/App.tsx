@@ -32,7 +32,6 @@ import MainLayoutCashier from "./layouts/cashier/mainLayoutCashier";
 import ManagementTableCashier from "./layouts/cashier/managementTableCashier";
 import ManagementFoodCashier from "./layouts/cashier/managementFoodCashier";
 import ManagementOrdersOnlCashier from "./layouts/cashier/managementOrdersOnlCashier";
-import { ProductsProvider } from "./layouts/cashier/component/ProductsContext";
 
 // Định nghĩa kiểu dữ liệu cho AuthContext
 interface AuthContextType {
@@ -88,7 +87,7 @@ function App() {
 function Routing() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Các tuyến đường dành riêng cho admin
   const adminRoutes = [
@@ -148,23 +147,21 @@ function Routing() {
 
 if (cashierRoutes.includes(location.pathname)) {
   return (
-    <ProductsProvider>
-      <Routes>
+    <Routes>
       
 
-      <Route path="/cashier" element={isLoggedIn ? <MainLayoutCashier /> : <Navigate to="/cashier/login" />}>
-        <Route index element={<DashboardCashier />} />
-        {/* Thêm các tuyến khác cho cashier */}
-        <Route path="table" element={<ManagementTableCashier />} />
-        <Route path="food" element={<ManagementFoodCashier />} />
-        <Route path="ordersOnline" element={<ManagementOrdersOnlCashier />} />
-      </Route>
+          <Route path="/cashier" element={isLoggedIn ? <MainLayoutCashier /> : <Navigate to="/cashier/login" />}>
+            <Route index element={<DashboardCashier />} />
+            {/* Thêm các tuyến khác cho cashier */}
+            <Route path="table" element={<ManagementTableCashier />} />
+            <Route path="food" element={<ManagementFoodCashier />} />
+            <Route path="ordersOnline" element={<ManagementOrdersOnlCashier />} />
+          </Route>
 
 
 
 
-      </Routes>
-    </ProductsProvider>
+    </Routes>
   );
 }
 
