@@ -121,26 +121,36 @@ const CustomerManagement: React.FC = () => {
     tableContainer?.addEventListener("scroll", handleScroll);
     return () => tableContainer?.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
+  const resetCustomers = () => {
+    setPage(0);
+    setCustomers([]);
+    setTotalPages(null);
+    loadMoreCustomers(); // Ensure `loadMoreCustomers` is properly defined and available
+  };
+  const handleApiError = (error: any, message: string) => {
+    console.error(message, error);
+    notification.error({
+      message: message,
+      description: error?.message || "An unexpected error occurred.",
+    });
+  };
 
   const handleSaveNewCustomer = async () => {
     try {
-      const newCustomerData = await addForm.validateFields();
-      await createCustomer(newCustomerData);
+      const newCustomer = await addForm.validateFields();
+      const token = localStorage.getItem("token"); // Retrieve token from localStorage
+      if (!token) {
+        throw new Error("User is not authenticated. Token is missing.");
+      }
+      await createCustomer(newCustomer, token);
       notification.success({
         message: "Customer Created",
         description: "The new customer has been created successfully!",
       });
       setIsModalOpen(false);
-      addForm.resetFields();
-      setPage(0);
-      setCustomers([]);
-      loadMoreCustomers();
+      resetCustomers();
     } catch (error) {
-      console.error("Failed to save new customer:", error);
-      notification.error({
-        message: "Creation Failed",
-        description: "An error occurred while creating the customer.",
-      });
+      handleApiError(error, "Failed to save new customer");
     }
   };
 

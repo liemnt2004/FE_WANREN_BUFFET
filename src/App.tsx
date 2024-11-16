@@ -29,6 +29,7 @@ import StaffLayout from "./layouts/ADMIN/StaffLayout";
 import EmployeeManagement from "./layouts/ADMIN/employeemanagement";
 import MainDash from "./layouts/ADMIN/Dashboard";
 import NotFoundPage from "./layouts/404";
+import Management from "./layouts/ADMIN/manager";
 
 function App() {
   return (
@@ -52,6 +53,11 @@ export function Routing() {
     "/staff/employees",
     "/staff",
     "/admin/manage-work-shifts",
+    "/admin/manage-promotions",
+    "/admin/manage-accounts",
+    "/admin/customers",
+    "/admin/employees",
+    "/admin/dashboard",
   ];
 
   return (
@@ -132,6 +138,11 @@ export function Routing() {
           <Route path="/admin/customers" element={<CustomerManagement />} />
           <Route path="/admin/employees" element={<EmployeeManagement />} />
           <Route path="/admin/dashboard" element={<MainDash />} />
+          <Route
+            path="/admin/manage-promotions"
+            element={<EmployeeManagement />}
+          />
+          <Route path="/admin/manage-accounts" element={<Management />} />
         </Route>
 
         {/* Route không tìm thấy */}

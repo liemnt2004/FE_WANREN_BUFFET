@@ -1,5 +1,5 @@
 import CustomerModelAdmin from "../../models/AdminModels/CustomerModel";
-
+const API_URL = "http://localhost:8080";
 // Function to fetch the list of customers
 
 export async function fetchCustomerList(
@@ -82,25 +82,21 @@ export async function fetchCustomerList(
 
 // Function to create a new customer
 export async function createCustomer(
-  newCustomer: Partial<CustomerModelAdmin>
+  newCustomer: Partial<CustomerModelAdmin>,
+  token: string
 ): Promise<void> {
-  try {
-    const response = await fetch(`http://localhost:8080/Customer/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newCustomer),
-    });
+  const response = await fetch(`${API_URL}/Customer/create`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(newCustomer),
+  });
 
-    if (!response.ok) {
-      // Fetch and log error details if creation fails
-      const errorData = await response.json();
-      console.error("Error creating customer:", errorData);
-      throw new Error("Failed to create customer");
-    }
-  } catch (error) {
-    console.error("Cannot create customer:", error);
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(`Failed to create customer: ${errorData.message}`);
   }
 }
 
