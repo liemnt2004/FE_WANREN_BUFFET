@@ -3,7 +3,7 @@ class EmployeeAdmin {
     public userId: number,
     public username: string,
     private password: string,
-    public fullName: string,
+    public fullname: string,
     public email: string,
     public phoneNumber: string,
     public address: string,

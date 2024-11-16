@@ -6,6 +6,7 @@ export async function fetchCustomerList(
   page: number,
   fullName?: string
 ): Promise<{ data: CustomerModelAdmin[]; totalPages: number }> {
+  const employeeToken = localStorage.getItem("employeeToken");
   try {
     const url = fullName
       ? `http://localhost:8080/Customer/search?fullName=${encodeURIComponent(
@@ -17,6 +18,7 @@ export async function fetchCustomerList(
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${employeeToken}`,
       },
     });
 

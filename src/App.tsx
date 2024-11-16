@@ -19,7 +19,6 @@ import ResetPasswordOtp from "./layouts/customer/ResetPasswordOtp";
 import PrivateRoute from "./layouts/PrivateRoute";
 import EmployeeLoginComponent from "./layouts/EmployeeLoginComponent";
 import EmployeePublicRoute from "./layouts/EmployeePublicRoute";
-import AdminLayout from "./layouts/ADMIN/AdminLayout";
 import CustomerManagement from "./layouts/ADMIN/customermanagement";
 import MenuAdmin from "./layouts/ADMIN/menuAdmin";
 import StaffLayout from "./layouts/ADMIN/StaffLayout";
@@ -42,7 +41,8 @@ export default App;
 
 
 export function Routing() {
-    const hiddenRoutes = ['/admin', '/login', '/register', '/employee/login' , '/staff/employees' , '/staff' , "/admin/manage-work-shifts"];
+    const hiddenRoutes = ['/admin', '/login', '/register', '/employee/login'
+        , '/staff/employees' , '/staff' , "/admin/manage-work-shifts ","/admin/employees"];
 
     return (
         <>
