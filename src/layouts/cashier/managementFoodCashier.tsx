@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import CardFoodCashier from "./component/cardFoodCashier";
 import styled from "styled-components";
 import axios from "axios";
+import { ProductsProvider } from "./component/ProductsContext";
+import { useProducts } from "./component/ProductsContext";
 
 
 
 
 
-
-type Product = {
+interface Product{
   productId?: number;
   productName?: string;
   description?: string;
@@ -28,7 +29,7 @@ type Product = {
 
 const ManagementFoodCashier = () => {
 
-
+    const { filteredProducts } = useProducts();
 
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -79,13 +80,15 @@ const ManagementFoodCashier = () => {
 
 
     return (
-        <CardGrid>
+        <ProductsProvider>
+            <CardGrid>
 
-            {products.map(product =>(
-              <CardFoodCashier img={product.image} price={product.price} name={product.productName} description={product.description} status={product.productStatus==="HIDDEN"?false:true} productId={product.productId} onToggleStatus={toggleProductStatus}  />
+            {filteredProducts.map(product =>(
+            <CardFoodCashier img={product.image} price={product.price} name={product.productName} description={product.description} status={product.productStatus==="HIDDEN"?false:true} productId={product.productId} onToggleStatus={toggleProductStatus}  />
             ))}
 
-        </CardGrid>
+            </CardGrid>
+        </ProductsProvider>
     );
 };
 

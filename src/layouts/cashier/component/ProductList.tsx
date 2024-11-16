@@ -12,6 +12,7 @@ interface Product {
 
 const ProductList: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
+    const [searchTerm, setSearchTerm] = useState<string>('');
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -26,10 +27,26 @@ const ProductList: React.FC = () => {
 
         fetchProducts();
     }, []);
+    // Hàm lọc sản phẩm theo từ khóa tìm kiếm
+  const filteredProducts = products.filter(product =>
+    product.productName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
     return (
         <div>
             <h1>Danh sách sản phẩm</h1>
+
+            {/* Thanh tìm kiếm */}
+            <div className="search-container">
+                <input
+                type="text"
+                placeholder="Tìm kiếm sản phẩm..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}  // Cập nhật từ khóa tìm kiếm
+                className="search-input"
+                />
+            </div>
+            {/* Hiển thị danh sách sản phẩm */}
             <ul>
                 {products.map(product => (
                     <li key={product.productId}>{product.productName} - ${product.price}</li>
