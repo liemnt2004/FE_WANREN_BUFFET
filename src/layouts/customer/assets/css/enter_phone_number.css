@@ -1,0 +1,104 @@
+.ps36231-enter-phone-number{
+    display: flex;
+    margin: auto auto;
+    min-height: 600px;
+    justify-content: center;
+    align-items: center;
+    width: 1040px;
+}
+
+.ps36231-enter-phone-number > form > .box-enter-phone{
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 3px 10px 0 rgba(0, 0, 0, .14);
+    width: 500px;
+    min-height: 275px;
+    padding: 25px;
+}
+
+.ps36231-enter-phone-number .box-enter-phone .back-to-login{
+    margin-right: 40px;
+}
+
+.ps36231-enter-phone-number .box-enter-phone .back-to-login > i{
+    color: #bd4242;
+    font-size: 30px;
+}
+
+.ps36231-enter-phone-number .title > div{
+    font-size: 1.25rem;
+}
+
+.ps36231-enter-phone-number .input-phone{
+    padding: 30px 50px 0 50px;
+}
+
+.ps36231-enter-phone-number .input-phone > div > input{
+    width: 100%;
+    padding: 8px;
+    outline: none;
+    border: 1px solid rgba(0, 0, 0, .14);
+    border-radius: 2px;
+    box-shadow: inset 0 2px 0 rgba(0, 0, 0, .02);
+    font-size: 14px;
+}
+
+.ps36231-enter-phone-number .input-phone > span{
+    margin-top: 5px;
+    color: gray;
+    font-size: 13px;
+}
+
+.ps36231-enter-phone-number .input-phone > .next-to-otp{
+    margin-top: 20px;
+    text-decoration: none;
+    background-color: #bd4242;
+    font-size: 15px;
+    padding: 8px 0;
+    color: white;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+@media screen and (max-width: 991px) {
+    .ps36231-enter-phone-number{
+        height: 800px;
+        width: 991px;
+    }
+
+    .ps36231-enter-phone-number > form > .box-enter-phone{
+        width: 700px;
+        padding: 35px;
+    }
+    
+
+    .ps36231-enter-phone-number .box-enter-phone .back-to-login{
+        margin-right: 60px;
+    }
+
+    .ps36231-enter-phone-number .box-enter-phone .back-to-login > i{
+        font-size: 50px;
+    }
+
+    .ps36231-enter-phone-number .title > div{
+        font-size: 40px;
+    }
+
+    .ps36231-enter-phone-number .input-phone > div > input{
+        padding: 15px;
+        font-size: 30px;
+    }
+
+    .ps36231-enter-phone-number .input-phone > span{
+        margin-top: 10px;
+        font-size: 25px;
+    }
+
+    .ps36231-enter-phone-number .input-phone > .next-to-otp{
+        font-size: 25px;
+        padding: 10px 0;
+    }
+
+}
+

@@ -1,0 +1,154 @@
+.ps36231-enter-otp{
+    display: flex;
+    margin: auto auto;
+    width: 1040px;
+    min-height: 600px;
+    justify-content: center;
+    align-items: center;
+}
+
+.ps36231-enter-otp > form > .box-enter-otp{
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 3px 10px 0 rgba(0, 0, 0, .14);
+    width: 500px;
+    min-height: 275px;
+    padding: 25px;
+}
+
+.ps36231-enter-otp .box-enter-otp .back-to-enter-phone{
+    margin-right: 40px;
+}
+
+.ps36231-enter-otp .box-enter-otp .back-to-enter-phone > i{
+    color: #bd4242;
+    font-size: 30px;
+}
+
+.ps36231-enter-otp .title > div{
+    font-size: 1.25rem;
+}
+
+.ps36231-enter-otp .input-otp{
+    padding: 30px 50px 0 50px;
+}
+
+.ps36231-enter-otp .input-otp > div > input{
+    margin-top: 40px;
+    background-color: initial;
+    border: 0;
+    font-family: Arial;
+    font-size: 27px;
+    font-weight: 400;
+    letter-spacing: 35px;
+    outline: none;
+    padding: 0 0 0 40px;
+    width: 100%;    
+}
+
+.ps36231-enter-otp .input-otp > .next-to-reset-password{
+    margin-top: 20px;
+    text-decoration: none;
+    background-color: #bd4242;
+    font-size: 15px;
+    padding: 8px 0;
+    color: white;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+/* CSS ẩn con trỏ khi đạt đủ 6 ký tự */
+#otp-input:valid {
+    caret-color: transparent;
+}
+
+.ps36231-enter-otp .input-otp .all-align{
+    padding-left: 20px;
+}
+
+.ps36231-enter-otp .input-otp .align-number{
+    border-top: 1px solid rgba(0, 0, 0, .26);
+    width: 35px;
+    margin-right: 20px;
+}
+
+.ps36231-enter-otp .input-otp .note-otp{
+    text-align: center;
+}
+
+.ps36231-enter-otp .input-otp .note-otp > p{
+    margin-bottom: 8px;
+}
+
+.ps36231-enter-otp .input-otp .note-otp > span{
+    font-size: larger;
+}
+
+.ps36231-enter-otp .when-dont-done{
+    text-align: center;
+    margin-top: 30px;
+    padding-bottom: 12px;
+}
+
+.ps36231-enter-otp .when-dont-done span > a{
+    text-decoration: none;
+}
+
+@media screen and (max-width: 991px) {
+    .ps36231-enter-otp{
+        width: 991px;
+        height: 800px;
+    }
+
+    .ps36231-enter-otp > form > .box-enter-otp{
+        width: 700px;
+        padding: 35px;
+    }
+    
+    .ps36231-enter-otp .box-enter-otp .back-to-enter-phone{
+        margin-right: 60px;
+    }
+
+    .ps36231-enter-otp .box-enter-otp .back-to-enter-phone > i{
+        font-size: 50px;
+    }
+
+    .ps36231-enter-otp .title > div{
+        font-size: 40px;
+    }
+
+    .ps36231-enter-otp .input-otp > div > input{
+        font-size: 80px;
+    }
+
+    .ps36231-enter-otp .input-otp > .next-to-reset-password{
+        font-size: 25px;
+        padding: 10px 0;
+    }
+
+    .ps36231-enter-otp .input-otp .note-otp > p{
+        font-size: 30px;
+    }
+    
+    .ps36231-enter-otp .input-otp .note-otp > span{
+        font-size: 35px;
+    }
+
+    .ps36231-enter-otp .when-dont-done{
+        margin-top: 30px;
+        padding-bottom: 12px;
+        font-size: 25px;
+    }
+
+    .ps36231-enter-otp .input-otp .all-align{
+        padding-left: 32px;
+    }
+    
+    .ps36231-enter-otp .input-otp .align-number{
+        border-top: 1px solid rgba(0, 0, 0, .26);
+        width: 50px;
+        margin-right: 30px;
+    }
+
+}
