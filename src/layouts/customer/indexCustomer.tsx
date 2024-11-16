@@ -494,45 +494,7 @@ const IndexCustomer: React.FC = () => {
             </div>
 
             {/* Modals */}
-            <div className="ps36231 modal" id="myModal">
-                <div className="modal-dialog modal-dialog-centered">
-                    <div className="modal-content">
-                        <div className="container-modal">
-                            <div className="container-modal-header">
-                                <div className="control-img">
-                                    <img src={lau3} alt=""/>
-                                    <div className="container-button d-grid place-item-center">
-                                        <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="container-modal-footer">
-                                <div className="name-item">Lẩu Xuyên Tiêu Deli</div>
-                                <div className="capacity-item">900 ml</div>
-                                <div className="capacity-item-details">
-                                    <div className="capacity-item-name"></div>
-                                    <div className="capacity-item-milli"></div>
-                                </div>
-                                <div className="container-price-quantity">
-                                    <div className="price-quantity">
-                                        <div className="price">
-                                            <span>Giá: 45.000₫</span>
-                                        </div>
-                                        <div className="quantity-control">
-                                            <div className="minus"><span><i className="bi bi-dash-lg"></i></span></div>
-                                            <div className="quantity">1</div>
-                                            <div className="plus"><span><i className="bi bi-plus-lg"></i></span></div>
-                                        </div>
-                                    </div>
-                                    <div className="control-btn-add-to-cart">
-                                        <button>Thêm vào giỏ hàng</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
 
 
         </div>

@@ -106,10 +106,10 @@ const VoucherPanel: React.FC<TogglePanelProps> = ({ togglePanel }) => (
 );
 
 const MenuList: React.FC<TogglePanelProps> = ({ togglePanel }) => (
-    <div className="row tinh-height90 m-0 p-3 align-items-center" id="leftContent2">
-        <div className="row tinh-height30 m-0 p-2 px-3 d-flex align-items-center justify-content-center">
-            <div className="row m-0 p-0 d-flex justify-content-center">
-                <img src={kichi} className="rounded-circle w-50" alt="User Logo" />
+    <div className="row tinh-height90 m-0 p-3 align-items-center" id="leftContent2" >
+        <div className="row tinh-height30 m-0 p-2 px-3 d-flex align-items-center justify-content-center" >
+            <div className="row m-0 p-0 d-flex justify-content-center" >
+                <img src={kichi} className="rounded-circle w-50 " alt="User Logo" style={{width:10}} />
             </div>
         </div>
         <div className="d-flex flex-column justify-content-between">
@@ -521,7 +521,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                         alt="Product"
                                     />
                                 </div>
-                                <div className="col-md-10">
+                                <div className="col-md-10 mx-2">
                                     <div className="product-info">
                                         <h5>{order.producHistorytDTOList[0]._productName}</h5>
                                         <p>{order.producHistorytDTOList[0]._description}</p>
@@ -536,7 +536,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                 </div>
                             </div>
                         </div>
-                        <div className="card-footer">
+                        <div className="card-footer ">
                             <button
                                 type="button"
                                 className="btn btn-outline-primary btn-view-order"
@@ -548,13 +548,13 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                             {/* Conditionally render the review button */}
                             {!order.isReviewed ? (
                                 <button
-                                    className="btn btn-outline-secondary mt-2"
+                                    className="btn btn-outline-secondary "
                                     onClick={() => openOrderReviewModal(order)}
                                 >
                                     Đánh Giá Đơn Hàng
                                 </button>
                             ) : (
-                                <button className="btn btn-secondary mt-2" disabled>
+                                <button className="btn btn-secondary " disabled>
                                     Đã Đánh Giá
                                 </button>
                             )}
@@ -795,7 +795,7 @@ const MenuProfile: React.FC = () => {
                         className={`position-relative ${
                             activePanel ? "col-md-4" : "col-md-8"
                         } col-12 tinh-rounded tinh-height transition-all`}
-                        style={{boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px"}}
+                        style={{boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px" }}
                     >
                         {!activePanel ? (
                             <div className="row tinh-height90 m-0 p-3 align-items-center">
@@ -820,11 +820,12 @@ const MenuProfile: React.FC = () => {
                             <div className="row tinh-height90 m-0 p-3 align-items-center">
                                 <div
                                     className="row tinh-height30 m-0 p-2 px-3 d-flex align-items-center justify-content-center">
-                                    <div className="row m-0 p-0 tinh-height50 tinh-width50">
+                                    <div className="">
                                         <img
                                             src={kichi}
                                             alt="User Logo"
-                                            className="img-fluid rounded-circle"
+                                            className=" rounded-circle"
+                                            style={{padding:100}}
                                         />
                                     </div>
                                 </div>

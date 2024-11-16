@@ -19,6 +19,13 @@ import ResetPasswordOtp from "./layouts/customer/ResetPasswordOtp";
 import PrivateRoute from "./layouts/PrivateRoute";
 import EmployeeLoginComponent from "./layouts/EmployeeLoginComponent";
 import EmployeePublicRoute from "./layouts/EmployeePublicRoute";
+import AdminLayout from "./layouts/ADMIN/AdminLayout";
+import CustomerManagement from "./layouts/ADMIN/customermanagement";
+import MenuAdmin from "./layouts/ADMIN/menuAdmin";
+import StaffLayout from "./layouts/ADMIN/StaffLayout";
+import EmployeeManagement from "./layouts/ADMIN/employeemanagement";
+import MainDash from "./layouts/ADMIN/Dashboard";
+import NotFoundPage from "./layouts/404";
 
 function App() {
     return (
@@ -35,7 +42,7 @@ export default App;
 
 
 export function Routing() {
-    const hiddenRoutes = ['/admin', '/login', '/register', '/employee/login'];
+    const hiddenRoutes = ['/admin', '/login', '/register', '/employee/login' , '/staff/employees' , '/staff' , "/admin/manage-work-shifts"];
 
     return (
         <>
@@ -75,24 +82,36 @@ export function Routing() {
                 } />
 
                 {/* Route dành cho nhân viên */}
-                <Route path="/employee" element={
-                    <PrivateRoute allowedRoles={['EMPLOYEE', 'MANAGER']}>
-                        <IndexCustomer />
+                <Route path="/staff" element={
+                    <PrivateRoute allowedRoles={['STAFF', 'ADMIN']}>
+                        <IndexCustomer/>
                     </PrivateRoute>
                 } />
+
+
 
                 {/* Route dành cho quản lý */}
-                <Route path="/manager" element={
-                    <PrivateRoute allowedRoles={['MANAGER']}>
+                <Route path="/cashier" element={
+                    <PrivateRoute allowedRoles={['CASHIER','ADMIN']}>
                         <IndexCustomer />
                     </PrivateRoute>
                 } />
 
-                {/* Trang không có quyền truy cập */}
-                <Route path="/unauthorized" element={<IndexCustomer />} />
+                <Route path="/admin" element={
+                    <PrivateRoute allowedRoles={['ADMIN']}>
+                        <StaffLayout />
+                    </PrivateRoute>
+                } >
+                    <Route index element={<MainDash />} /> {/* Default */}
+                    <Route path="/admin/customers" element={<CustomerManagement />} />
+                    <Route path="/admin/employees" element={<EmployeeManagement />} />
+                    <Route path="/admin/dashboard" element={<MainDash />} />
+                 </Route>
+
+
 
                 {/* Route không tìm thấy */}
-                <Route path="*" element={<IndexCustomer />} />
+                <Route path="*" element={<NotFoundPage />} />
             </Routes>
 
             {/* Bao gồm CartOffcanvas trên tất cả các trang */}

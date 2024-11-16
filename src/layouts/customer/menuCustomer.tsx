@@ -3,7 +3,7 @@ import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import logo from './assets/img/warenbuffet.png';
 import { AuthContext } from "./component/AuthContext";
-
+import './assets/css/menu.css';
 function MenuCustomer() {
     const { fullName } = useContext(AuthContext);
 
