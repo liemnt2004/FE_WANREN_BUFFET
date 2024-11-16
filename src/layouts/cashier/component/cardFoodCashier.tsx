@@ -58,7 +58,7 @@ const StyledWrapper = styled.div`
     --input-focus: #2d8cf0;
     --bg-color: #fff;
     --bg-color-alt: #666;
-    --main-color: #323232;
+    --main-color: #d9d7d7;
     --input-out-of-focus: #ccc;
     position: relative;
     display: flex;

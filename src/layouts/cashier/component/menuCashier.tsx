@@ -1,8 +1,12 @@
-import styled from 'styled-components';
-import '../assets/css/cashierMenu.css';
+import React, { useState, useEffect } from 'react';
 import Logo from '../assets/img/logo2.png';
 import { Link } from 'react-router-dom';
+import styled from 'styled-components';
+import '../assets/css/cashierMenu.css';
+import { ProductsProvider } from './ProductsContext';
+import { useProducts } from "./ProductsContext";
 
+// Component dành cho thanh tìm kiếm
 const StyledWrapperSearch = styled.div`
   .input[type="text"] {
     display: block;
@@ -94,21 +98,89 @@ const StyledWrapperMenu = styled.div`
   }
 `;
 
+interface Product{
+  productId: number;
+  productName: string;
+  description: string;
+  price: number;
+  createdDate: string;
+  updatedDate: string | null;
+  typeFood: string;
+  image: string;
+  productStatus: string;
+  quantity: number;
+}
 
-const MenuCashier = () => {
+const productFilter: any = () =>{
+
+}
+
+const MenuCashier: React.FC = () => {
+  const { setFilteredProducts } = useProducts();
+  const [searchTerm, setSearchTerm] = useState<string>(''); // State để lưu giá trị tìm kiếm
+  const [products, setProducts] = useState<Product[]>([]); // State để lưu danh sách sản phẩm
+  // const [filteredProducts, setFilteredProducts] = useState<Product[]>([]); // State để lưu sản phẩm đã lọc
+  const [loading, setLoading] = useState<boolean>(false); // State để kiểm tra trạng thái loading
+  const [error, setError] = useState<string>(''); // State để lưu thông báo lỗi nếu có
+
+  // Hàm lấy dữ liệu sản phẩm từ API khi component mount
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true); // Bắt đầu loading
+      setError(''); // Reset error trước khi lấy dữ liệu mới
+
+      try {
+        // Giả sử bạn đã có dữ liệu sản phẩm từ API
+        const response = await fetch('http://localhost:8080/Product');
+        const data = await response.json();
+        if (data && data._embedded) {
+          setProducts(data._embedded.products); // Lưu sản phẩm vào state
+          setFilteredProducts(data._embedded.products); // Mặc định hiển thị tất cả sản phẩm
+        } else {
+          throw new Error('Không có dữ liệu từ API');
+        }
+      } catch (error) {
+        setError('Lỗi khi lấy dữ liệu sản phẩm: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      } finally {
+        setLoading(false); // Kết thúc loading
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Hàm xử lý tìm kiếm khi người dùng nhập từ khóa
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const keyword = event.target.value;
+    setSearchTerm(keyword); // Cập nhật giá trị tìm kiếm
+
+    // Lọc sản phẩm theo từ khóa
+    const filtered = products.filter(product =>
+      product.productName.toLowerCase().includes(keyword.toLowerCase()) // Kiểm tra nếu tên sản phẩm có chứa từ khóa
+    );
+
+    setFilteredProducts(filtered); // Cập nhật danh sách sản phẩm đã lọc
+  };
+
   return (
+    <ProductsProvider>
     <div className="d-flex flex-column flex-md-row align-items-center justify-content-between p-3 border rounded shadow-lg">
-      {/* Logo on top in mobile view */}
       <div className="logo d-flex align-items-center mb-3 mb-md-0">
         <img src={Logo} alt="Warent-Buffet" style={{ width: 125 }} />
       </div>
 
-      {/* Search bar in the center, hidden on smaller screens */}
+      {/* Thanh tìm kiếm */}
       <StyledWrapperSearch>
-        <input type="text" name="text" placeholder="Tìm kiếm từ khóa!" className="input" />
+        <input
+          type="text"
+          placeholder="Tìm kiếm sản phẩm..."
+          value={searchTerm} // Gán giá trị của input từ state
+          onChange={handleSearch} // Xử lý tìm kiếm khi người dùng thay đổi
+          className="input"
+        />
       </StyledWrapperSearch>
 
-      {/* WrapperMenu always visible */}
+
       <StyledWrapperMenu>
         <div id="navbody">
           <form action="#" className="d-flex align-items-center p-0 m-0">
@@ -117,34 +189,24 @@ const MenuCashier = () => {
               <label htmlFor="choose1">
                 <li className="li">
                   <Link to="/cashier">
-                  <svg viewBox="0 0 24 24" fill="none" height={24} width={24} xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="svg w-6 h-6 text-gray-800 dark:text-white">
-                    <path d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" stroke="currentColor" />
-                  </svg>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      height={24}
+                      width={24}
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true"
+                      className="svg w-6 h-6 text-gray-800 dark:text-white"
+                    >
+                      <path
+                        d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5"
+                        strokeWidth={2}
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                        stroke="currentColor"
+                      />
+                    </svg>
                   </Link>
-                </li>
-              </label>
-              <input className="radio" name="rad" id="choose2" type="radio" />
-              <label htmlFor="choose2">
-                <li className="li">
-                  <svg viewBox="0 0 24 24" fill="none" height={24} width={24} xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="svg w-6 h-6 text-gray-800 dark:text-white">
-                    <path d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" strokeWidth={2} strokeLinecap="round" stroke="currentColor" />
-                  </svg>
-                </li>
-              </label>
-              <input className="radio" name="rad" id="choose3" type="radio" />
-              <label htmlFor="choose3">
-                <li className="li">
-                  <svg viewBox="0 0 24 24" fill="none" height={24} width={24} xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="svg w-6 h-6 text-gray-800 dark:text-white">
-                    <path d="M21 12c0 4.97-4.03 9-9 9a9.933 9.933 0 0 1-4.74-1.2L3 21l1.2-4.26A9.933 9.933 0 0 1 3 12c0-4.97 4.03-9 9-9s9 4.03 9 9Z" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" stroke="currentColor" />
-                  </svg>
-                </li>
-              </label>
-              <input className="radio" name="rad" id="choose4" type="radio" />
-              <label htmlFor="choose4">
-                <li className="li">
-                  <svg viewBox="0 0 24 24" fill="none" height={24} width={24} xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="svg w-6 h-6 text-gray-800 dark:text-white">
-                    <path d="M10 19H5a1 1 0 0 1-1-1v-1a3 3 0 0 1 3-3h2m10 1a3 3 0 0 1-3 3m3-3a3 3 0 0 0-3-3m3 3h1m-4 3a3 3 0 0 1-3-3m3 3v1m-3-4a3 3 0 0 1 3-3m-3 3h-1m4-3v-1m-2.121 1.879-.707-.707m5.656 5.656-.707-.707m-4.242 0-.707.707m5.656-5.656-.707.707M12 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" strokeWidth={2} strokeLinejoin="round" strokeLinecap="square" stroke="currentColor" />
-                  </svg>
                 </li>
               </label>
             </ul>
@@ -152,6 +214,7 @@ const MenuCashier = () => {
         </div>
       </StyledWrapperMenu>
     </div>
+    </ProductsProvider>
   );
 };
 

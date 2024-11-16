@@ -11,7 +11,7 @@ type Props = {
 };
 
 
-const CardOrdersOnlCashier = ({orderId, orderStatus, totalAmount, notes, address, username}:Props) => {
+const CardOrdersOnlCashier = ({ orderId, orderStatus, totalAmount, notes, address, username }: Props) => {
   return (
     <StyledWrapper>
       <div className="card">
@@ -27,12 +27,12 @@ const CardOrdersOnlCashier = ({orderId, orderStatus, totalAmount, notes, address
               </svg>
               <strong>{orderId}.</strong>
               <strong>  {orderStatus === "WAITING"
-    ? "Chờ xác nhận"
-    : orderStatus === "PREPARING_ORDER"
-    ? "Đang chuẩn bị"
-    : orderStatus === "IN_TRANSIT"
-    ? "Đang giao"
-    : "Đã hoàn thành"}</strong>
+                ? "Chờ xác nhận"
+                : orderStatus === "PREPARING_ORDER"
+                  ? "Đang chuẩn bị"
+                  : orderStatus === "IN_TRANSIT"
+                    ? "Đang giao"
+                    : "Đã hoàn thành"}</strong>
             </div>
           </div>
           <div className="front">
@@ -55,8 +55,8 @@ const CardOrdersOnlCashier = ({orderId, orderStatus, totalAmount, notes, address
                     <strong className='text-warning mx-1'>{totalAmount}đ</strong>
                   </p>
                 </div>
-                <p className="card-footer m-0 p-1" style={{minHeight: 50}}>
-                {notes}
+                <p className="card-footer m-0 p-1" style={{ minHeight: 50 }}>
+                  {notes}
                 </p>
               </div>
             </div>
