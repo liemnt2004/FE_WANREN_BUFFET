@@ -1,5 +1,10 @@
 import React, { useContext } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import MenuCustomer from "./layouts/customer/menuCustomer";
 import MenuProductCustomer from "./layouts/customer/menuProductCustomer";
 import IndexCustomer from "./layouts/customer/indexCustomer";
@@ -16,7 +21,16 @@ import {
 import PublicRoute from "./layouts/customer/component/PublicRoute";
 import Checkout from "./layouts/customer/CheckoutCustomer";
 import PromotionDetail from "./layouts/customer/PromotionDetail";
-
+import CustomerManagement from "./layouts/ADMIN/customermanagement";
+import EmployeeManagement from "./layouts/ADMIN/employeemanagement";
+import MenuAdmin from "./layouts/ADMIN/menuAdmin";
+import MainLayoutCashier from "./layouts/cashier/mainLayoutCashier";
+import ManagementTableCashier from "./layouts/cashier/managementTableCashier";
+import ManagementFoodCashier from "./layouts/cashier/managementFoodCashier";
+import DashboardCashier from "./layouts/cashier/dashboardCashier";
+import WorkShift from "./layouts/ADMIN/workshiftManagement";
+import PromotionManagement from "./layouts/ADMIN/promotionManagement";
+import Management from "./layouts/ADMIN/manager";
 function App() {
   return (
     <Router>
@@ -35,6 +49,9 @@ export function Routing() {
     "/admin",
     "/admin/customermanagement",
     "/admin/employeemanagement",
+    "/admin/workshift",
+    "/admin/managepromotions",
+    "/admin/manageaccounts",
   ];
   const cashierRoutes = [
     "/cashier",
@@ -43,11 +60,17 @@ export function Routing() {
     "/cashier/table",
     "/cashier/food",
   ];
+
   return (
     <>
       {/* Display MenuCustomer unless on hidden routes */}
-      {!hiddenRoutes.includes(window.location.pathname) && <MenuCustomer />}
-
+      {!(
+        hiddenRoutes.includes(window.location.pathname) ||
+        hiddenRoutesAdmin.includes(window.location.pathname) ||
+        cashierRoutes.includes(window.location.pathname)
+      ) && <MenuCustomer />}
+      {/* Admin */}
+      {hiddenRoutesAdmin.includes(window.location.pathname) && <MenuAdmin />}
       {/* Define routes */}
       <Routes>
         <Route path="/" element={<IndexCustomer />} />
@@ -55,10 +78,7 @@ export function Routing() {
         <Route path="/admin" element={<MenuProductCustomer />} />
         <Route path="/reservation" element={<ReservationForm />} />
         <Route path="/promotion" element={<PromotionCustomer />} />
-        <Route
-          path="/promotion_detail/:id"
-          element={<PromotionDetail />}
-        />{" "}
+        <Route path="/promotion_detail/:id" element={<PromotionDetail />} />
         {/* Fixed route path */}
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/profile" element={<MenuProfile />} />
@@ -79,6 +99,31 @@ export function Routing() {
             </PublicRoute>
           }
         />
+        {/* Admin */}
+        <Route
+          path="/admin/customermanagement"
+          element={<CustomerManagement />}
+        />
+        <Route
+          path="/admin/employeemanagement"
+          element={<EmployeeManagement />}
+        />
+        <Route path="/admin/workshift" element={<WorkShift />} />
+        <Route
+          path="/admin/managepromotions"
+          element={<PromotionManagement />}
+        />
+        <Route path="/admin/manageaccounts" element={<Management />} />
+        {/* <Route path="/admin/workshift" element={<WorkShift />} /> */}
+      </Routes>
+      {/* cashier */}
+      <Routes>
+        <Route path="/cashier" element={<MainLayoutCashier />}>
+          <Route index element={<DashboardCashier />} />
+          {/* Thêm các tuyến khác cho cashier */}
+          <Route path="table" element={<ManagementTableCashier />} />
+          <Route path="food" element={<ManagementFoodCashier />} />
+        </Route>
       </Routes>
 
       {/* Include CartOffcanvas on all pages */}

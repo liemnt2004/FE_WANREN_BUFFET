@@ -122,7 +122,6 @@ export async function updateCustomer(
     );
 
     if (!response.ok) {
-      // Fetch and log error details if update fails
       const errorData = await response.json();
       console.error("Error updating customer:", errorData);
       throw new Error("Failed to update customer");

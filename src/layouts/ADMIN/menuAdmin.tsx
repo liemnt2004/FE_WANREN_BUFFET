@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import logo from "./assets/img/warenbuffet.png";
 import "./assets/css/CustomerManagement.css";
+
 function MenuAdmin() {
   return (
     <div className="admin-layout">
@@ -41,34 +42,30 @@ function MenuAdmin() {
           <img src={logo} alt="Shop Logo" />
         </div>
         <div className="menu">
-          <div className="menuItem">
+          <Link to="/admin/home" className="menuItem">
             <i className="fas fa-home"></i> Home
-          </div>
-          <div className="menuItem">
+          </Link>
+          <Link to="/admin/managedishes" className="menuItem">
             <i className="fas fa-utensils"></i> Manage Dishes
-          </div>
-          <div className="menuItem">
+          </Link>
+          <Link to="/admin/managepromotions" className="menuItem">
             <i className="fas fa-bullhorn"></i> Manage Promotions
-          </div>
-          <div className="menuItem">
+          </Link>
+          <Link to="/admin/manageaccounts" className="menuItem">
             <i className="fas fa-user-cog"></i> Manage Accounts
-          </div>
-          <div className="menuItem">
-            <Link to="/admin/employeemanagement">
-              <i className="fas fa-users"></i> Manage Employees
-            </Link>
-          </div>
-          <div className="menuItem active">
-            <Link to="/admin/customermanagement">
-              <i className="fas fa-user-friends"></i> Manage Customers
-            </Link>
-          </div>
-          <div className="menuItem">
+          </Link>
+          <Link to="/admin/employeemanagement" className="menuItem">
+            <i className="fas fa-users"></i> Manage Employees
+          </Link>
+          <Link to="/admin/customermanagement" className="menuItem active">
+            <i className="fas fa-user-friends"></i> Manage Customers
+          </Link>
+          <Link to="/admin/workshift" className="menuItem">
             <i className="fas fa-calendar-alt"></i> Manage Work Shifts
-          </div>
-          <div className="menuItem">
+          </Link>
+          <Link to="/admin/revenuereport" className="menuItem">
             <i className="fas fa-chart-line"></i> Revenue Report
-          </div>
+          </Link>
         </div>
       </div>
     </div>

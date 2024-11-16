@@ -1,28 +1,73 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
 
-const loginCashier = () => {
+type LoginCashierProps = {
+  onLoginSuccess: () => void;
+};
+
+type User = {
+  username?: string;
+  password?: string;
+  userType?: string;
+}
+
+
+
+const LoginCashier: React.FC<LoginCashierProps> = ({ onLoginSuccess }) => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const handleLogin = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/User/findByUsername`, {
+        params: { username }
+      });
+
+      const matchedUser = response.data;
+      console.log(matchedUser)
+
+      console.log(matchedUser.roles[0].roleId)
+
+
+
+
+      if (matchedUser && matchedUser.password === password && matchedUser.roles[0].roleId === 3) {
+        onLoginSuccess();
+      } else {
+        setError("Sai mật khẩu");
+      }
+    } catch (error) {
+      setError("Không tìm thấy người dùng");
+    }
+  };
+
   return (
     <StyledWrapper>
-      <div className="container">
+      <div className="container d-flex justify-content-center h100vh align-items-center">
         <div className="card">
           <a className="login">Log in</a>
           <div className="inputBox">
-          <input type="text" required={true} />
+            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required={true} />
             <span className="user">Username</span>
           </div>
           <div className="inputBox">
-          <input type="password" required={true} />
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required={true} />
             <span>Password</span>
           </div>
-          <button className="enter">Enter</button>
+          <button className="enter" onClick={handleLogin}>Enter</button>
+          {error && <p style={{ color: 'red' }}>{error}</p>}
         </div>
       </div>
     </StyledWrapper>
   );
-}
+};
 
 const StyledWrapper = styled.div`
+  .h100vh {
+    height: 100vh;
+  }
   .login {
     color: #000;
     text-transform: uppercase;
@@ -36,7 +81,7 @@ const StyledWrapper = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 350px;
+    height: 350px;
     width: 300px;
     flex-direction: column;
     gap: 35px;
@@ -117,4 +162,4 @@ const StyledWrapper = styled.div`
     color: white;
   }`;
 
-export default loginCashier;
+export default LoginCashier;
