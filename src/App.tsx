@@ -1,10 +1,5 @@
 import React, { useContext } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MenuCustomer from "./layouts/customer/menuCustomer";
 import MenuProductCustomer from "./layouts/customer/menuProductCustomer";
 import IndexCustomer from "./layouts/customer/indexCustomer";
@@ -21,16 +16,20 @@ import {
 import PublicRoute from "./layouts/customer/component/PublicRoute";
 import Checkout from "./layouts/customer/CheckoutCustomer";
 import PromotionDetail from "./layouts/customer/PromotionDetail";
+import Forgotpassword from "./layouts/customer/forgotpassword";
+import EnterOtp from "./layouts/customer/EnterOtp";
+import ResetPasswordOtp from "./layouts/customer/ResetPasswordOtp";
+import PrivateRoute from "./layouts/PrivateRoute";
+import EmployeeLoginComponent from "./layouts/EmployeeLoginComponent";
+import EmployeePublicRoute from "./layouts/EmployeePublicRoute";
+import AdminLayout from "./layouts/ADMIN/AdminLayout";
 import CustomerManagement from "./layouts/ADMIN/customermanagement";
-import EmployeeManagement from "./layouts/ADMIN/employeemanagement";
 import MenuAdmin from "./layouts/ADMIN/menuAdmin";
-import MainLayoutCashier from "./layouts/cashier/mainLayoutCashier";
-import ManagementTableCashier from "./layouts/cashier/managementTableCashier";
-import ManagementFoodCashier from "./layouts/cashier/managementFoodCashier";
-import DashboardCashier from "./layouts/cashier/dashboardCashier";
-import WorkShift from "./layouts/ADMIN/workshiftManagement";
-import PromotionManagement from "./layouts/ADMIN/promotionManagement";
-import Management from "./layouts/ADMIN/manager";
+import StaffLayout from "./layouts/ADMIN/StaffLayout";
+import EmployeeManagement from "./layouts/ADMIN/employeemanagement";
+import MainDash from "./layouts/ADMIN/Dashboard";
+import NotFoundPage from "./layouts/404";
+
 function App() {
   return (
     <Router>
@@ -42,47 +41,38 @@ function App() {
     </Router>
   );
 }
+export default App;
 
 export function Routing() {
-  const hiddenRoutes = ["/admin", "/login", "/register"];
-  const hiddenRoutesAdmin = [
+  const hiddenRoutes = [
     "/admin",
-    "/admin/customermanagement",
-    "/admin/employeemanagement",
-    "/admin/workshift",
-    "/admin/managepromotions",
-    "/admin/manageaccounts",
-  ];
-  const cashierRoutes = [
-    "/cashier",
-    "/cashier/orders",
-    "/cashier/dashboard",
-    "/cashier/table",
-    "/cashier/food",
+    "/login",
+    "/register",
+    "/employee/login",
+    "/staff/employees",
+    "/staff",
+    "/admin/manage-work-shifts",
   ];
 
   return (
     <>
-      {/* Display MenuCustomer unless on hidden routes */}
-      {!(
-        hiddenRoutes.includes(window.location.pathname) ||
-        hiddenRoutesAdmin.includes(window.location.pathname) ||
-        cashierRoutes.includes(window.location.pathname)
-      ) && <MenuCustomer />}
-      {/* Admin */}
-      {hiddenRoutesAdmin.includes(window.location.pathname) && <MenuAdmin />}
-      {/* Define routes */}
+      {/* Hiển thị MenuCustomer trừ khi ở các routes ẩn */}
+      {!hiddenRoutes.includes(window.location.pathname) && <MenuCustomer />}
+
       <Routes>
+        {/* Các route công khai */}
         <Route path="/" element={<IndexCustomer />} />
         <Route path="/menu" element={<MenuProductCustomer />} />
-        <Route path="/admin" element={<MenuProductCustomer />} />
         <Route path="/reservation" element={<ReservationForm />} />
         <Route path="/promotion" element={<PromotionCustomer />} />
+        <Route path="/forgot-password" element={<Forgotpassword />} />
+        <Route path="/enter-otp" element={<EnterOtp />} />
+        <Route path="/reset-password" element={<ResetPasswordOtp />} />
         <Route path="/promotion_detail/:id" element={<PromotionDetail />} />
-        {/* Fixed route path */}
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/profile" element={<MenuProfile />} />
-        {/* Protect login and register routes */}
+
+        {/* Bảo vệ route login và register cho khách hàng */}
         <Route
           path="/login"
           element={
@@ -99,37 +89,57 @@ export function Routing() {
             </PublicRoute>
           }
         />
-        {/* Admin */}
+
+        {/* Route đăng nhập cho nhân viên */}
         <Route
-          path="/admin/customermanagement"
-          element={<CustomerManagement />}
+          path="/employee/login"
+          element={
+            <EmployeePublicRoute>
+              <EmployeeLoginComponent />
+            </EmployeePublicRoute>
+          }
         />
+
+        {/* Route dành cho nhân viên */}
         <Route
-          path="/admin/employeemanagement"
-          element={<EmployeeManagement />}
+          path="/staff"
+          element={
+            <PrivateRoute allowedRoles={["STAFF", "ADMIN"]}>
+              <IndexCustomer />
+            </PrivateRoute>
+          }
         />
-        <Route path="/admin/workshift" element={<WorkShift />} />
+
+        {/* Route dành cho quản lý */}
         <Route
-          path="/admin/managepromotions"
-          element={<PromotionManagement />}
+          path="/cashier"
+          element={
+            <PrivateRoute allowedRoles={["CASHIER", "ADMIN"]}>
+              <IndexCustomer />
+            </PrivateRoute>
+          }
         />
-        <Route path="/admin/manageaccounts" element={<Management />} />
-        {/* <Route path="/admin/workshift" element={<WorkShift />} /> */}
-      </Routes>
-      {/* cashier */}
-      <Routes>
-        <Route path="/cashier" element={<MainLayoutCashier />}>
-          <Route index element={<DashboardCashier />} />
-          {/* Thêm các tuyến khác cho cashier */}
-          <Route path="table" element={<ManagementTableCashier />} />
-          <Route path="food" element={<ManagementFoodCashier />} />
+
+        <Route
+          path="/admin"
+          element={
+            <PrivateRoute allowedRoles={["ADMIN"]}>
+              <StaffLayout />
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<MainDash />} /> {/* Default */}
+          <Route path="/admin/customers" element={<CustomerManagement />} />
+          <Route path="/admin/employees" element={<EmployeeManagement />} />
+          <Route path="/admin/dashboard" element={<MainDash />} />
         </Route>
+
+        {/* Route không tìm thấy */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
 
-      {/* Include CartOffcanvas on all pages */}
+      {/* Bao gồm CartOffcanvas trên tất cả các trang */}
       <CartOffcanvas />
     </>
   );
 }
-
-export default App;

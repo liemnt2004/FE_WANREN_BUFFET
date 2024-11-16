@@ -266,9 +266,9 @@ const LoginRegisterComponent: React.FC = () => {
                         />
                         {/* Terms & Policies checkbox */}
 
-                        <a className="forget-your-password" href="#">
+                        <Link to={"/forgot-password"} className="forget-your-password">
                             Quên mật khẩu?
-                        </a>
+                        </Link>
 
                         {errorMessage && <p className="error-message cl-danger">{errorMessage}</p>}
 

@@ -1,5 +1,7 @@
-body {
-  background: #f7f7f1;
+
+a{
+  text-decoration: none;
+  color: black;
 }
 
 .admin-layout {
@@ -401,7 +403,7 @@ body {
   font-size: 1.2em;
 }
 
-.table {
+.table-admin {
   width: 100%;
   min-width: 1700px;
   border-collapse: separate;
@@ -412,7 +414,7 @@ body {
   overflow: hidden;
 }
 
-.table thead th {
+.table-admin thead th {
   background-color: #f7f7f9;
   font-size: 14px;
   font-weight: bold;
@@ -424,7 +426,7 @@ body {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.table tbody td {
+.table-admin tbody td {
   padding: 12px;
   font-size: 13px;
   color: #555;
@@ -432,11 +434,11 @@ body {
   vertical-align: middle;
 }
 
-.table tbody tr:hover {
+.table-admin tbody tr:hover {
   background-color: #f1f1f1;
 }
 
-.table tbody tr:nth-child(even) {
+.table-admin tbody tr:nth-child(even) {
   background-color: #fafafa;
 }
 

@@ -14,6 +14,9 @@ const DashboardCashier = () => {
       <Link to="food">
       <CardMenuCashier icon="bi-egg-fried" title="Food" color1="#a1c4fd" color2="#c2e9fb" />
       </Link>
+      <Link to="ordersOnline">
+      <CardMenuCashier icon="bi-basket" title="Online Orders" color1="#84fab0" color2="#8fd3f4" />
+      </Link>
     </div>
     </StyledWrapper>
   );
