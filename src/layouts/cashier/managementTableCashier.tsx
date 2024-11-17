@@ -2,31 +2,23 @@ import React, { useEffect, useState } from "react";
 import CardTableCashier from "./component/cardTableCashier";
 import styled from "styled-components";
 import axios from "axios";
+import { fetchTables, Table } from "../../api/apiCashier/tableApi";
 
-type Table = {
-  createdDate: string;
-  updatedDate: string | null;
-  tableId: number;
-  tableNumber: number;
-  tableStatus: string;
-  location: string;
-};
+
 
 const ManagementTableCashier: React.FC = () => {
   // Đưa `useState` vào trong component
   const [tables, setTables] = useState<Table[]>([]);
 
   useEffect(() => {
-    const fetchTables = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/Table');
-        setTables(response.data._embedded.tablees); // Đảm bảo đúng đường dẫn `_embedded.tables`
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu:", error);
-      }
+    const loadTables = async () => {
+
+        const data = await fetchTables();
+        setTables(data); // Đảm bảo đúng đường dẫn `_embedded.tables`
+
     };
 
-    fetchTables();
+    loadTables();
   }, []);
 
   return (

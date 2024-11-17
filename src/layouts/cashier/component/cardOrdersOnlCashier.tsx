@@ -8,13 +8,14 @@ type Props = {
   notes?: string;
   address?: string;
   username?: string;
+  onClick?: () => void;
 };
 
 
-const CardOrdersOnlCashier = ({orderId, orderStatus, totalAmount, notes, address, username}:Props) => {
+const CardOrdersOnlCashier = ({orderId, orderStatus, totalAmount, notes, address, username, onClick}:Props) => {
   return (
     <StyledWrapper>
-      <div className="card">
+      <div className="card" onClick={onClick} style={{ cursor: onClick ? "pointer" : "default" }}>
         <div className="content">
           <div className="back">
             <div className="back-content">

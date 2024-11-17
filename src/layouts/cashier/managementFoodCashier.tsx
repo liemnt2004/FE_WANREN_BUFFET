@@ -2,26 +2,7 @@ import { useEffect, useState } from "react";
 import CardFoodCashier from "./component/cardFoodCashier";
 import styled from "styled-components";
 import axios from "axios";
-
-
-
-
-
-
-type Product = {
-  productId?: number;
-  productName?: string;
-  description?: string;
-  price?: number;
-  createdDate?: string;
-  updatedDate?: string | null;
-  typeFood?: string;
-  image?: string;
-  productStatus?: string;
-  quantity?: number;
-}
-
-
+import { fetchProducts, updateProductStatus, Product } from '../../api/apiCashier/foodApi';
 
 
 
@@ -34,16 +15,12 @@ const ManagementFoodCashier = () => {
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-      const fetchProducts = async () => {
-          try {
-              const response = await axios.get('http://localhost:8080/Product');
-              setProducts(response.data._embedded.products);
-          } catch (error) {
-              console.error("Lỗi khi lấy dữ liệu sản phẩm:", error);
-          }
+      const loadFood = async () => {
+          const data = await fetchProducts();
+          setProducts(data)
       };
 
-      fetchProducts();
+      loadFood();
   }, []);
 
 
@@ -55,9 +32,7 @@ const ManagementFoodCashier = () => {
     const newStatus = currentStatus === "HIDDEN" ? "IN_STOCK" : "HIDDEN";
 
     try {
-        await axios.patch(`http://localhost:8080/Product/${productId}`, {
-            productStatus: newStatus
-        });
+        await updateProductStatus(productId, newStatus);
 
         // Cập nhật lại trạng thái trong danh sách sản phẩm
         setProducts(prevProducts => 
