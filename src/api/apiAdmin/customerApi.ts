@@ -86,11 +86,13 @@ export async function fetchCustomerList(
 export async function createCustomer(
   newCustomer: Partial<CustomerModelAdmin>
 ): Promise<void> {
+  const token = localStorage.getItem("employeeToken");
   try {
     const response = await fetch(`http://localhost:8080/Customer/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(newCustomer),
     });

@@ -411,7 +411,7 @@ const CustomerManagement: React.FC = () => {
                 <Col span={12}>
                   <Form.Item
                     label="Full Name"
-                    name="fullName"
+                    name="full_name"
                     rules={[
                       { required: true, message: "Please enter full name!" },
                     ]}

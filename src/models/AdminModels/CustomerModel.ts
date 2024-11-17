@@ -15,7 +15,7 @@ class CustomerModelAdmin {
     customerId: number,
     username: string,
     password: string,
-    fullName: string,
+    full_name: string,
     email: string,
     phoneNumber: string,
     address: string,
@@ -28,7 +28,7 @@ class CustomerModelAdmin {
     this.customerId = customerId;
     this.username = username;
     this.password = password;
-    this.fullName = fullName;
+    this.fullName = full_name;
     this.email = email;
     this.phoneNumber = phoneNumber;
     this.address = address;
