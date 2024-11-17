@@ -23,7 +23,17 @@ import {
   fetchCustomerList,
 } from "../../api/apiAdmin/customerApi";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
-
+function getEmployeeToken(): string {
+  const employeeToken = localStorage.getItem("employeeToken");
+  if (!employeeToken) {
+    notification.error({
+      message: "Authentication Error",
+      description: "Please log in to continue.",
+    });
+    throw new Error("Employee token is missing.");
+  }
+  return employeeToken;
+}
 const CustomerManagement: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -49,7 +59,6 @@ const CustomerManagement: React.FC = () => {
   >(null);
   const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] =
     useState(false);
-
   const openEditModal = (customer: CustomerModelAdmin) => {
     setEditCustomer(customer);
     setIsEditModalOpen(true);
@@ -76,11 +85,11 @@ const CustomerManagement: React.FC = () => {
     setTotalPages(null);
     loadMoreCustomers();
   }, [searchQuery]);
-
   const loadMoreCustomers = useCallback(async () => {
     if (loading || (totalPages !== null && page >= totalPages)) return;
     setLoading(true);
     try {
+      const token = getEmployeeToken();
       const response = await fetchCustomerList(page, searchQuery);
       const { data: newCustomers, totalPages: newTotalPages } = response;
 
@@ -98,6 +107,10 @@ const CustomerManagement: React.FC = () => {
       setPage((prevPage) => prevPage + 1);
       setTotalPages(newTotalPages);
     } catch (error) {
+      notification.error({
+        message: "Fetch Failed",
+        description: "Unable to fetch customer data.",
+      });
       console.error("Failed to fetch customers:", error);
     } finally {
       setLoading(false);
@@ -107,7 +120,6 @@ const CustomerManagement: React.FC = () => {
   useEffect(() => {
     loadMoreCustomers();
   }, [loadMoreCustomers]);
-
   const handleScroll = useCallback(() => {
     if (tableContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } =
@@ -121,36 +133,26 @@ const CustomerManagement: React.FC = () => {
     tableContainer?.addEventListener("scroll", handleScroll);
     return () => tableContainer?.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
-  const resetCustomers = () => {
-    setPage(0);
-    setCustomers([]);
-    setTotalPages(null);
-    loadMoreCustomers(); // Ensure `loadMoreCustomers` is properly defined and available
-  };
-  const handleApiError = (error: any, message: string) => {
-    console.error(message, error);
-    notification.error({
-      message: message,
-      description: error?.message || "An unexpected error occurred.",
-    });
-  };
 
   const handleSaveNewCustomer = async () => {
     try {
-      const newCustomer = await addForm.validateFields();
-      const token = localStorage.getItem("token"); // Retrieve token from localStorage
-      if (!token) {
-        throw new Error("User is not authenticated. Token is missing.");
-      }
-      await createCustomer(newCustomer, token);
+      const newCustomerData = await addForm.validateFields();
+      await createCustomer(newCustomerData);
       notification.success({
         message: "Customer Created",
         description: "The new customer has been created successfully!",
       });
       setIsModalOpen(false);
-      resetCustomers();
+      addForm.resetFields();
+      setPage(0);
+      setCustomers([]);
+      loadMoreCustomers();
     } catch (error) {
-      handleApiError(error, "Failed to save new customer");
+      console.error("Failed to save new customer:", error);
+      notification.error({
+        message: "Creation Failed",
+        description: "An error occurred while creating the customer.",
+      });
     }
   };
 
@@ -158,7 +160,7 @@ const CustomerManagement: React.FC = () => {
     try {
       const updatedCustomerData = await editForm.validateFields();
       if (editCustomer?.customerId) {
-        await updateCustomer(editCustomer.customerId, updatedCustomerData);
+        await updateCustomer(editCustomer.customerId, updatedCustomerData); // `getEmployeeToken` sẽ được gọi bên trong hàm API
         notification.success({
           message: "Customer Updated",
           description: "The customer has been updated successfully!",

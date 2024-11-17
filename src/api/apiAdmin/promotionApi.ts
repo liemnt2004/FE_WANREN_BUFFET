@@ -3,17 +3,30 @@ import PromotionAdmin from "../../models/AdminModels/Promotion";
 
 const API_BASE_URL = "http://localhost:8080/Promotion";
 
+// Function to get employee token
+function getEmployeeToken(): string {
+  const employeeToken = localStorage.getItem("employeeToken");
+  if (!employeeToken) {
+    throw new Error("Employee token is missing. Please log in.");
+  }
+  return employeeToken;
+}
+
+// Fetch all promotions with pagination
 export const getAllPromotions = async (): Promise<PromotionAdmin[]> => {
   let page = 0;
   let allPromotions: PromotionAdmin[] = [];
-  let totalPages: number | undefined;
+  let totalPages: number = 1;
 
   try {
     do {
-      const response = await axios.get(`${API_BASE_URL}?page=${page}`);
+      const response = await axios.get(`${API_BASE_URL}?page=${page}`, {
+        headers: {
+          Authorization: `Bearer ${getEmployeeToken()}`,
+        },
+      });
 
-      // Access metadata for pagination (totalPages, etc.)
-      const promotionsData = response.data._embedded.promotions;
+      const promotionsData = response.data?._embedded?.promotions || [];
       const promotions = promotionsData.map(
         (promotion: any) =>
           new PromotionAdmin(
@@ -31,11 +44,9 @@ export const getAllPromotions = async (): Promise<PromotionAdmin[]> => {
       );
 
       allPromotions = [...allPromotions, ...promotions];
-
-      totalPages = response.data.page?.totalPages;
-
+      totalPages = response.data.page?.totalPages || 1;
       page += 1;
-    } while (page <= (totalPages || 1));
+    } while (page < totalPages);
 
     return allPromotions;
   } catch (error) {
@@ -43,21 +54,21 @@ export const getAllPromotions = async (): Promise<PromotionAdmin[]> => {
     throw error;
   }
 };
+
+// Create a new promotion
 export async function createPromotion(
   newPromotion: Partial<PromotionAdmin>
 ): Promise<void> {
   try {
-    const response = await fetch(`http://localhost:8080/Promotion/create`, {
-      method: "POST",
+    const response = await axios.post(`${API_BASE_URL}/create`, newPromotion, {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${getEmployeeToken()}`, // Add token to headers
       },
-      body: JSON.stringify(newPromotion),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Error creating Promotion:", errorData);
+    if (response.status !== 201) {
+      console.error("Error creating Promotion:", response.data);
       throw new Error("Failed to create Promotion");
     }
   } catch (error) {
@@ -66,6 +77,7 @@ export async function createPromotion(
   }
 }
 
+// Update an existing promotion
 export const updatePromotion = async (
   id: number,
   promotionUpdates: Partial<PromotionAdmin>
@@ -77,6 +89,7 @@ export const updatePromotion = async (
       {
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${getEmployeeToken()}`, // Add token to headers
         },
       }
     );
@@ -87,9 +100,15 @@ export const updatePromotion = async (
     throw error;
   }
 };
+
+// Delete a promotion
 export const deletePromotion = async (id: number): Promise<void> => {
   try {
-    await axios.delete(`${API_BASE_URL}/delete/${id}`);
+    await axios.delete(`${API_BASE_URL}/delete/${id}`, {
+      headers: {
+        Authorization: `Bearer ${getEmployeeToken()}`, // Add token to headers
+      },
+    });
     console.log(`Promotion with ID ${id} has been deleted successfully.`);
   } catch (error) {
     console.error(`Error deleting promotion with ID ${id}:`, error);

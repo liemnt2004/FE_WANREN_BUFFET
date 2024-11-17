@@ -1,22 +1,26 @@
 import CustomerModelAdmin from "../../models/AdminModels/CustomerModel";
 const API_URL = "http://localhost:8080";
-// Function to fetch the list of customers
 
+// Function to fetch the list of customers
 export async function fetchCustomerList(
   page: number,
   fullName?: string
 ): Promise<{ data: CustomerModelAdmin[]; totalPages: number }> {
+  const employeeToken = localStorage.getItem("employeeToken");
+  if (!employeeToken) {
+    throw new Error("Employee token is missing. Please log in.");
+  }
+
   try {
     const url = fullName
-      ? `http://localhost:8080/Customer/search?fullName=${encodeURIComponent(
-          fullName
-        )}`
-      : `http://localhost:8080/Customer?page=${page}`;
+      ? `${API_URL}/Customer/search?fullName=${encodeURIComponent(fullName)}`
+      : `${API_URL}/Customer?page=${page}`;
 
     const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${employeeToken}`,
       },
     });
 
@@ -29,7 +33,6 @@ export async function fetchCustomerList(
     const data = await response.json();
 
     if (Array.isArray(data)) {
-      // Adjusting to handle direct array response if applicable
       return {
         data: data.map(
           (customer: any) =>
@@ -82,21 +85,30 @@ export async function fetchCustomerList(
 
 // Function to create a new customer
 export async function createCustomer(
-  newCustomer: Partial<CustomerModelAdmin>,
-  token: string
+  newCustomer: Partial<CustomerModelAdmin>
 ): Promise<void> {
-  const response = await fetch(`${API_URL}/Customer/create`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(newCustomer),
-  });
+  const employeeToken = localStorage.getItem("employeeToken");
+  if (!employeeToken) {
+    throw new Error("Employee token is missing. Please log in.");
+  }
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(`Failed to create customer: ${errorData.message}`);
+  try {
+    const response = await fetch(`${API_URL}/Customer/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${employeeToken}`,
+      },
+      body: JSON.stringify(newCustomer),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Failed to create customer: ${errorData.message}`);
+    }
+  } catch (error) {
+    console.error("Cannot create customer:", error);
+    throw error; // Rethrow for higher-level handling
   }
 }
 
@@ -105,25 +117,29 @@ export async function updateCustomer(
   customerId: number,
   updatedCustomer: Partial<CustomerModelAdmin>
 ): Promise<void> {
+  const employeeToken = localStorage.getItem("employeeToken");
+  if (!employeeToken) {
+    throw new Error("Employee token is missing. Please log in.");
+  }
+
   try {
-    const response = await fetch(
-      `http://localhost:8080/Customer/update/${customerId}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedCustomer),
-      }
-    );
+    const response = await fetch(`${API_URL}/Customer/update/${customerId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${employeeToken}`,
+      },
+      body: JSON.stringify(updatedCustomer),
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
       console.error("Error updating customer:", errorData);
-      throw new Error("Failed to update customer");
+      throw new Error(`Failed to update customer: ${errorData.message}`);
     }
   } catch (error) {
     console.error("Cannot update customer:", error);
+    throw error; // Rethrow for higher-level handling
   }
 }
 
@@ -132,47 +148,57 @@ export async function updateAccountStatus(
   customerId: number,
   accountStatus: boolean
 ): Promise<void> {
+  const employeeToken = localStorage.getItem("employeeToken");
+  if (!employeeToken) {
+    throw new Error("Employee token is missing. Please log in.");
+  }
+
   try {
     const response = await fetch(
-      `http://localhost:8080/Customer/updateAccountStatus/${customerId}`,
+      `${API_URL}/Customer/updateAccountStatus/${customerId}`,
       {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${employeeToken}`,
         },
-        body: JSON.stringify(accountStatus),
+        body: JSON.stringify({ accountStatus }),
       }
     );
 
     if (!response.ok) {
-      // Fetch and log error details if update fails
       const errorData = await response.json();
       console.error("Error updating account status:", errorData);
-      throw new Error("Failed to update account status");
+      throw new Error(`Failed to update account status: ${errorData.message}`);
     }
   } catch (error) {
     console.error("Cannot update account status:", error);
+    throw error; // Rethrow for higher-level handling
   }
 }
 
+// Function to delete a customer
 export async function deleteCustomer(customerId: number): Promise<void> {
+  const employeeToken = localStorage.getItem("employeeToken");
+  if (!employeeToken) {
+    throw new Error("Employee token is missing. Please log in.");
+  }
+
   try {
-    const response = await fetch(
-      `http://localhost:8080/Customer/delete/${customerId}`,
-      {
-        method: "DELETE",
-      }
-    );
+    const response = await fetch(`${API_URL}/Customer/delete/${customerId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${employeeToken}`,
+      },
+    });
 
     if (!response.ok) {
-      // Fetch and log error details if deletion fails
       const errorData = await response.json();
       console.error("Error deleting customer:", errorData);
-      throw new Error("Failed to delete customer");
-    } else {
-      console.log("Customer deleted successfully");
+      throw new Error(`Failed to delete customer: ${errorData.message}`);
     }
   } catch (error) {
     console.error("Cannot delete customer:", error);
+    throw error; // Rethrow for higher-level handling
   }
 }

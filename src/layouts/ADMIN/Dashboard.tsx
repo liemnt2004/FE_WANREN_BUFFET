@@ -160,7 +160,7 @@ const MainDash: React.FC = () => {
         <div className="col-8">
           {/* Cards Section */}
           <div className="row">
-            <div className="cards">
+            <div className="cards ">
               <div className="parentContainer">
                 {/* Compact Sales Card */}
                 <div

@@ -22,7 +22,6 @@ import ResetPasswordOtp from "./layouts/customer/ResetPasswordOtp";
 import PrivateRoute from "./layouts/PrivateRoute";
 import EmployeeLoginComponent from "./layouts/EmployeeLoginComponent";
 import EmployeePublicRoute from "./layouts/EmployeePublicRoute";
-import AdminLayout from "./layouts/ADMIN/AdminLayout";
 import CustomerManagement from "./layouts/ADMIN/customermanagement";
 import MenuAdmin from "./layouts/ADMIN/menuAdmin";
 import StaffLayout from "./layouts/ADMIN/StaffLayout";
@@ -30,6 +29,8 @@ import EmployeeManagement from "./layouts/ADMIN/employeemanagement";
 import MainDash from "./layouts/ADMIN/Dashboard";
 import NotFoundPage from "./layouts/404";
 import Management from "./layouts/ADMIN/manager";
+import PromotionManagement from "./layouts/ADMIN/promotionManagement";
+import WorkShift from "./layouts/ADMIN/workshiftManagement";
 
 function App() {
   return (
@@ -140,9 +141,10 @@ export function Routing() {
           <Route path="/admin/dashboard" element={<MainDash />} />
           <Route
             path="/admin/manage-promotions"
-            element={<EmployeeManagement />}
+            element={<PromotionManagement />}
           />
           <Route path="/admin/manage-accounts" element={<Management />} />
+          <Route path="/admin/manage-work-shifts" element={<WorkShift />} />
         </Route>
 
         {/* Route không tìm thấy */}
