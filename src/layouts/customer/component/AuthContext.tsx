@@ -1,23 +1,46 @@
-// src/components/AuthContext.tsx
-
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {jwtDecode} from 'jwt-decode';
 
 interface AuthContextType {
+    // Thông tin khách hàng
+    userId: string | null; // Thêm userId
     username: string | null;
-    fullName:string | null;
+    fullName: string | null;
     email: string | null;
     phone: string | null;
-    login: (token: string) => void;
-    logout: () => void;
+    roles: string[] | null;
+    address: string | null; // Thêm address
+
+    // Thông tin nhân viên
+    employeeUsername: string | null;
+    employeeFullName: string | null;
+    employeeEmail: string | null;
+    employeePhone: string | null;
+    employeeRoles: string[] | null;
+
+    // Hàm đăng nhập và đăng xuất
+    login: (token: string, isEmployee?: boolean) => void;
+    logout: (isEmployee?: boolean) => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
+    // Khách hàng
+    userId: null,
     username: null,
-    fullName:null,
+    fullName: null,
     email: null,
     phone: null,
+    roles: null,
+    address: null,
+
+    // Nhân viên
+    employeeUsername: null,
+    employeeFullName: null,
+    employeeEmail: null,
+    employeePhone: null,
+    employeeRoles: null,
+
+    // Hàm đăng nhập và đăng xuất
     login: () => {},
     logout: () => {},
 });
@@ -28,59 +51,123 @@ interface AuthProviderProps {
 
 export interface DecodedToken {
     sub: string;
+    userId?: number; // Thêm userId
+    address?: string; // Thêm address
     fullName?: string;
     email?: string;
     phone?: string;
-    username?:string;
+    roles?: string[];
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+    // State cho khách hàng
+    const [userId, setUserId] = useState<string | null>(null); // Thêm userId
     const [username, setUsername] = useState<string | null>(null);
+    const [fullName, setFullName] = useState<string | null>(null);
     const [email, setEmail] = useState<string | null>(null);
     const [phone, setPhone] = useState<string | null>(null);
-    const [fullName,setFullName] = useState<string | null>(null)
-    const navigate = useNavigate();
+    const [roles, setRoles] = useState<string[] | null>(null);
+    const [address, setAddress] = useState<string | null>(null); // Thêm address
 
-    const decodeToken = (token: string) => {
+    // State cho nhân viên
+    const [employeeUsername, setEmployeeUsername] = useState<string | null>(null);
+    const [employeeFullName, setEmployeeFullName] = useState<string | null>(null);
+    const [employeeEmail, setEmployeeEmail] = useState<string | null>(null);
+    const [employeePhone, setEmployeePhone] = useState<string | null>(null);
+    const [employeeRoles, setEmployeeRoles] = useState<string[] | null>(null);
 
-
+    const decodeToken = (token: string, isEmployee: boolean = false) => {
         try {
-            const decoded: DecodedToken = jwtDecode(token);
-            setFullName(decoded.fullName || null)
-            setUsername(decoded.sub || decoded.sub);
-            setEmail(decoded.email || null);
-            setPhone(decoded.phone || null);
+            const decoded: DecodedToken = jwtDecode<DecodedToken>(token);
+            console.log(decoded);
+            if (isEmployee) {
+                setEmployeeUsername(decoded.sub || null);
+                setEmployeeFullName(decoded.fullName || null);
+                setEmployeeEmail(decoded.email || null);
+                setEmployeePhone(decoded.phone || null);
+                setEmployeeRoles(decoded.roles || null);
+                setUserId(null);
+                setAddress(null);
+            } else {
+                setUserId(decoded.userId ? decoded.userId.toString() : null); // Lưu userId
+                setUsername(decoded.sub || null);
+                setFullName(decoded.fullName || null);
+                setEmail(decoded.email || null);
+                setPhone(decoded.phone || null);
+                setRoles(decoded.roles || null);
+                setAddress(decoded.address || null); // Lưu address
+            }
+
         } catch (error) {
             console.error("Invalid token:", error);
-            logout(); // Gọi logout nếu token không hợp lệ
+            logout(isEmployee);
         }
     };
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        decodeToken(token || "");
+        if (token) {
+            decodeToken(token);
+        }
+        const employeeToken = localStorage.getItem("employeeToken");
+        if (employeeToken) {
+            decodeToken(employeeToken, true);
+        }
     }, []);
 
-    const login = (token: string) => {
-        localStorage.setItem("token", token);
-        decodeToken(token);
-        navigate("/"); // Chuyển hướng tới trang chủ sau khi đăng nhập thành công
+    const login = (token: string, isEmployee: boolean = false) => {
+        if (isEmployee) {
+            localStorage.setItem("employeeToken", token);
+            decodeToken(token, true);
+        } else {
+            localStorage.setItem("token", token);
+            decodeToken(token);
+        }
     };
 
-    const logout = () => {
-        localStorage.removeItem("token");
-        setUsername(null);
-        setEmail(null);
-        setPhone(null);
-        setFullName(null);
+    const logout = (isEmployee: boolean = false) => {
+        if (isEmployee) {
+            localStorage.removeItem("employeeToken");
+            setEmployeeUsername(null);
+            setEmployeeFullName(null);
+            setEmployeeEmail(null);
+            setEmployeePhone(null);
+            setEmployeeRoles(null);
+        } else {
+            localStorage.removeItem("token");
+            setUserId(null); // Reset userId
+            setUsername(null);
+            setFullName(null);
+            setEmail(null);
+            setPhone(null);
+            setRoles(null);
+            setAddress(null); // Reset address
+        }
     };
 
     return (
-        <AuthContext.Provider value={{ username, fullName, email, phone, login, logout }}>
+        <AuthContext.Provider
+            value={{
+                // Khách hàng
+                userId,
+                username,
+                fullName,
+                email,
+                phone,
+                roles,
+                address,
+                // Nhân viên
+                employeeUsername,
+                employeeFullName,
+                employeeEmail,
+                employeePhone,
+                employeeRoles,
+                // Hàm đăng nhập và đăng xuất
+                login,
+                logout,
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );
 };
-
-// Custom hook để dễ dàng sử dụng AuthContext
-export const useAuth = () => React.useContext(AuthContext);

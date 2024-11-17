@@ -3,11 +3,13 @@ import EmployeeAdmin from "../../models/AdminModels/EmployeeModel";
 export async function getListUser(page: number = 1): Promise<{
   _embedded: { users: EmployeeAdmin[] };
 }> {
+  const employeeToken = localStorage.getItem("employeeToken");
   try {
     const response = await fetch(`http://localhost:3000/User?page=${page}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${employeeToken}`,
       },
     });
     if (!response.ok) {
@@ -25,11 +27,13 @@ export async function getListUser(page: number = 1): Promise<{
 export async function createUser(
   user: EmployeeAdmin
 ): Promise<EmployeeAdmin | null> {
+  const employeeToken = localStorage.getItem("employeeToken");
   try {
     const response = await fetch(`http://localhost:3000/User/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${employeeToken}`,
       },
       body: JSON.stringify(user),
     });
@@ -51,11 +55,13 @@ export async function updateUser(
   id: number,
   updatedFields: Partial<EmployeeAdmin>
 ): Promise<EmployeeAdmin | null> {
+  const employeeToken = localStorage.getItem("employeeToken");
   try {
     const response = await fetch(`http://localhost:3000/User/update/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${employeeToken}`,
       },
       body: JSON.stringify(updatedFields),
     });
@@ -77,6 +83,7 @@ export async function updateAccountStatus(
   id: number,
   accountStatus: boolean
 ): Promise<EmployeeAdmin | null> {
+  const employeeToken = localStorage.getItem("employeeToken");
   try {
     const response = await fetch(
       `http://localhost:3000/User/updateAccountStatus/${id}`,
@@ -84,6 +91,7 @@ export async function updateAccountStatus(
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${employeeToken}`,
         },
         body: JSON.stringify(accountStatus),
       }
@@ -103,11 +111,13 @@ export async function updateAccountStatus(
 }
 
 export async function deleteUser(id: number): Promise<void> {
+  const employeeToken = localStorage.getItem("employeeToken");
   try {
     const response = await fetch(`http://localhost:3000/User/delete/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${employeeToken}`,
       },
     });
 
@@ -132,6 +142,7 @@ export async function searchUsers(
     size?: number;
   } = {}
 ): Promise<{ _embedded: { users: EmployeeAdmin[] } }> {
+  const employeeToken = localStorage.getItem("employeeToken");
   try {
     const queryParams = new URLSearchParams();
 
@@ -149,6 +160,7 @@ export async function searchUsers(
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${employeeToken}`,
         },
       }
     );

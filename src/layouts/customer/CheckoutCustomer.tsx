@@ -14,7 +14,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {jwtDecode} from 'jwt-decode';
 import FormatMoney from "./component/FormatMoney";
 import { request } from "../../api/Request";
-import {DecodedToken} from "./component/AuthContext";
+import { DecodedToken } from "./component/AuthContext";
 
 interface OrderDetailData {
     productId: number;
@@ -44,8 +44,6 @@ interface ApiResponse {
     error: number;
     data: LocationData[];
 }
-
-
 
 const HO_CHI_MINH_ID = '79';
 
@@ -90,14 +88,14 @@ const CheckoutCustomer: React.FC = () => {
             setModalMessage(decodeURIComponent(success));
             setModalType('success');
             setShowModal(true);
-            navigate("/checkout")
+            navigate("/checkout", { replace: true });
         } else if (error) {
             setModalMessage(decodeURIComponent(error));
             setModalType('error');
             setShowModal(true);
-            navigate("/checkout")
+            navigate("/checkout", { replace: true });
         }
-    }, [success, error]);
+    }, [success, error, navigate]);
 
     // Form Data State
     const [formData, setFormData] = useState<CheckoutFormData>({
@@ -112,6 +110,10 @@ const CheckoutCustomer: React.FC = () => {
         note: '',
     });
 
+    // New States for Address Selection
+    const [useExistingAddress, setUseExistingAddress] = useState<boolean>(true); // Mặc định sử dụng địa chỉ đã lưu
+    const [showNewAddressForm, setShowNewAddressForm] = useState<boolean>(false);
+
     // Locations State
     const [districts, setDistricts] = useState<LocationData[]>([]);
     const [wards, setWards] = useState<LocationData[]>([]);
@@ -121,6 +123,7 @@ const CheckoutCustomer: React.FC = () => {
     const [loadingWards, setLoadingWards] = useState<boolean>(false);
     const [errorDistricts, setErrorDistricts] = useState<string>('');
     const [errorWards, setErrorWards] = useState<string>('');
+    const [errorSavedAddress, setErrorSavedAddress] = useState<string>('');
 
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -233,9 +236,25 @@ const CheckoutCustomer: React.FC = () => {
             return;
         }
 
-        const selectedDistrict = districts.find(district => district.id === formData.quan);
-        const districtName = selectedDistrict ? selectedDistrict.full_name : "";
-        const address22 = `${formData.detail_address}, ${districtName}, ${formData.tinh}`;
+        let address22 = '';
+
+        if (!showNewAddressForm && decoded) {
+            // Sử dụng địa chỉ đã lưu từ token
+            address22 = `${decoded.roles}`;
+        } else {
+            // Sử dụng địa chỉ mới nhập
+            if (!formData.quan || !formData.phuong || !formData.detail_address) {
+                setModalMessage('Vui lòng điền đầy đủ thông tin địa chỉ.');
+                setModalType('error');
+                setShowModal(true);
+                setIsSubmitting(false);
+                return;
+            }
+
+            const selectedDistrict = districts.find(district => district.id === formData.quan);
+            const districtName = selectedDistrict ? selectedDistrict.full_name : "";
+            address22 = `${formData.detail_address}, ${formData.phuong}, ${districtName}, ${formData.tinh}`;
+        }
 
         const orderData = {
             username: formData.username,
@@ -254,7 +273,7 @@ const CheckoutCustomer: React.FC = () => {
         };
 
         try {
-            // If VN PAY is selected, create order and redirect to payment
+            // Nếu chọn VN PAY
             if (formData.payment === "VN PAY") {
                 const createOrderResponse = await fetch('http://localhost:8080/api/orders', {
                     method: 'POST',
@@ -273,17 +292,17 @@ const CheckoutCustomer: React.FC = () => {
                 const createOrderResult = await createOrderResponse.json();
                 const orderId = createOrderResult.orderId;
 
-                // Create payment URL after successful order creation
+                // Tạo URL thanh toán
                 const paymentResponse = await request(`http://localhost:8080/api/payment/create_payment?price=${total}`);
                 if (!paymentResponse || !paymentResponse.url) {
                     throw new Error("Tạo thanh toán VN PAY thất bại.");
                 }
                 cartContext?.clearCart()
-                // Redirect user to VN PAY payment URL
+                // Chuyển hướng người dùng tới URL thanh toán VN PAY
                 window.location.href = paymentResponse.url;
 
             } else if (formData.payment === "Check Payment") {
-                // Handle other payment methods, e.g., Cash on Delivery
+                // Xử lý phương thức thanh toán khác, ví dụ: Cash on Delivery
                 const createOrderResponse = await fetch('http://localhost:8080/api/orders', {
                     method: 'POST',
                     headers: {
@@ -304,7 +323,7 @@ const CheckoutCustomer: React.FC = () => {
                 setModalType('success');
                 setShowModal(true);
                 cartContext?.clearCart()
-                navigate('/checkout'); // Redirect to orders page
+                navigate('/checkout'); // Chuyển hướng tới trang đơn hàng
             }
         } catch (error: any) {
             console.error("Đặt hàng thất bại:", error);
@@ -328,120 +347,134 @@ const CheckoutCustomer: React.FC = () => {
                         <div className="row">
                             {/* Payment Information Form */}
                             <div className="col-lg-8 col-md-6">
+                                {/* Button Toggle Address */}
                                 <div className="checkout__input mb-3">
-                                    <label htmlFor="full_name">
-                                        Họ và Tên<span className="text-danger">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="full_name"
-                                        name="full_name"
-                                        value={decoded?.fullName}
-                                        className="form-control"
-                                        readOnly
-                                        required
-                                    />
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary mb-3"
+                                        onClick={() => {
+                                            setShowNewAddressForm(!showNewAddressForm);
+                                        }}
+                                    >
+                                        {showNewAddressForm ? 'Sử Dụng Địa Chỉ Đã Lưu' : 'Thêm Địa Chỉ Mới'}
+                                    </button>
                                 </div>
 
-                                {/* Province Selection (Hidden/Disabled) */}
-                                <div className="css_select_div mb-3 d-none">
-                                    <label htmlFor="tinh" className="form-label">
-                                        Tỉnh/Thành phố<span className="text-danger">*</span>
-                                    </label>
-                                    <select
-                                        id="tinh"
-                                        name="tinh"
-                                        value={formData.tinh}
-                                        onChange={handleChange}
-                                        className="css_select"
-                                        disabled
-                                        required
-                                    >
-                                        <option value={HO_CHI_MINH_ID}>Hồ Chí Minh</option>
-                                    </select>
-                                </div>
-
-                                {/* District Selection */}
-                                <div className="checkout__input mb-3">
-                                    <label htmlFor="quan" className="form-label">
-                                        Quận/Huyện<span className="text-danger">*</span>
-                                    </label>
-                                    <br />
-                                    <select
-                                        className={`css_select ${errorDistricts ? 'is-invalid' : ''}`}
-                                        id="quan"
-                                        name="quan"
-                                        title="Chọn Quận Huyện"
-                                        value={formData.quan}
-                                        onChange={handleChange}
-                                        disabled={loadingDistricts}
-                                        required
-                                    >
-                                        <option value="">Quận Huyện</option>
-                                        {loadingDistricts && (
-                                            <option value="">Đang tải...</option>
-                                        )}
-                                        {!loadingDistricts &&
-                                            districts.map((district) => (
-                                                <option key={district.id} value={district.id}>
-                                                    {district.full_name}
-                                                </option>
-                                            ))}
-                                    </select>
-                                    {errorDistricts && (
-                                        <div className="invalid-feedback d-block">
-                                            {errorDistricts}
+                                {/* Nếu sử dụng địa chỉ đã lưu */}
+                                {!showNewAddressForm && decoded && (
+                                    <div className="checkout__input mb-3">
+                                        <label>Địa Chỉ Đã Lưu</label>
+                                        <div className="saved-address">
+                                            <p><strong>Họ và Tên:</strong> {decoded.fullName}</p>
+                                            <p><strong>Địa chỉ:</strong> {`${decoded.email}`}</p>
                                         </div>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
 
-                                {/* Ward Selection */}
-                                <div className="checkout__input mb-3">
-                                    <label htmlFor="phuong" className="form-label">
-                                        Phường/Xã<span className="text-danger">*</span>
-                                    </label>
-                                    <br />
-                                    <select
-                                        className={`css_select ${errorWards ? 'is-invalid' : ''}`}
-                                        id="phuong"
-                                        name="phuong"
-                                        title="Chọn Phường Xã"
-                                        value={formData.phuong}
-                                        onChange={handleChange}
-                                        disabled={!formData.quan || loadingWards}
-                                        required
-                                    >
-                                        <option value="">Phường Xã</option>
-                                        {loadingWards && <option value="">Đang tải...</option>}
-                                        {!loadingWards &&
-                                            wards.map((ward) => (
-                                                <option key={ward.id} value={ward.full_name}>
-                                                    {ward.full_name}
-                                                </option>
-                                            ))}
-                                    </select>
-                                    {errorWards && (
-                                        <div className="invalid-feedback d-block">
-                                            {errorWards}
+                                {/* Nếu thêm địa chỉ mới */}
+                                {showNewAddressForm && (
+                                    <>
+                                        {/* Province Selection (Hidden/Disabled) */}
+                                        <div className="css_select_div mb-3 d-none">
+                                            <label htmlFor="tinh" className="form-label">
+                                                Tỉnh/Thành phố<span className="text-danger">*</span>
+                                            </label>
+                                            <select
+                                                id="tinh"
+                                                name="tinh"
+                                                value={formData.tinh}
+                                                onChange={handleChange}
+                                                className="css_select"
+                                                disabled
+                                                required
+                                            >
+                                                <option value={HO_CHI_MINH_ID}>Hồ Chí Minh</option>
+                                            </select>
                                         </div>
-                                    )}
-                                </div>
 
-                                {/* Detailed Address */}
-                                <div className="checkout__input mb-3">
-                                    <label htmlFor="detail_address">
-                                        Tên Đường / Tòa Nhà<span className="text-danger">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="detail_address"
-                                        name="detail_address"
-                                        value={formData.detail_address}
-                                        onChange={handleChange}
-                                        className="form-control"
-                                        required
-                                    />
-                                </div>
+                                        {/* Quận/Huyện Selection */}
+                                        <div className="checkout__input mb-3">
+                                            <label htmlFor="quan" className="form-label">
+                                                Quận/Huyện<span className="text-danger">*</span>
+                                            </label>
+                                            <br />
+                                            <select
+                                                className={`css_select ${errorDistricts ? 'is-invalid' : ''}`}
+                                                id="quan"
+                                                name="quan"
+                                                title="Chọn Quận Huyện"
+                                                value={formData.quan}
+                                                onChange={handleChange}
+                                                disabled={loadingDistricts}
+                                                required
+                                            >
+                                                <option value="">Quận Huyện</option>
+                                                {loadingDistricts && (
+                                                    <option value="">Đang tải...</option>
+                                                )}
+                                                {!loadingDistricts &&
+                                                    districts.map((district) => (
+                                                        <option key={district.id} value={district.id}>
+                                                            {district.full_name}
+                                                        </option>
+                                                    ))}
+                                            </select>
+                                            {errorDistricts && (
+                                                <div className="invalid-feedback d-block">
+                                                    {errorDistricts}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Phường/Xã Selection */}
+                                        <div className="checkout__input mb-3">
+                                            <label htmlFor="phuong" className="form-label">
+                                                Phường/Xã<span className="text-danger">*</span>
+                                            </label>
+                                            <br />
+                                            <select
+                                                className={`css_select ${errorWards ? 'is-invalid' : ''}`}
+                                                id="phuong"
+                                                name="phuong"
+                                                title="Chọn Phường Xã"
+                                                value={formData.phuong}
+                                                onChange={handleChange}
+                                                disabled={!formData.quan || loadingWards}
+                                                required
+                                            >
+                                                <option value="">Phường Xã</option>
+                                                {loadingWards && <option value="">Đang tải...</option>}
+                                                {!loadingWards &&
+                                                    wards.map((ward) => (
+                                                        <option key={ward.id} value={ward.full_name}>
+                                                            {ward.full_name}
+                                                        </option>
+                                                    ))}
+                                            </select>
+                                            {errorWards && (
+                                                <div className="invalid-feedback d-block">
+                                                    {errorWards}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Detailed Address */}
+                                        <div className="checkout__input mb-3">
+                                            <label htmlFor="detail_address">
+                                                Tên Đường / Tòa Nhà<span className="text-danger">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="detail_address"
+                                                name="detail_address"
+                                                value={formData.detail_address}
+                                                onChange={handleChange}
+                                                className="form-control"
+                                                required
+                                            />
+                                        </div>
+                                    </>
+                                )}
 
                                 {/* Phone and Email */}
                                 <div className="row">
@@ -586,8 +619,6 @@ const CheckoutCustomer: React.FC = () => {
                     </div>
                 </div>
             )}
-
-
         </section>
     );
 
