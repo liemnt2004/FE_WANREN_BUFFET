@@ -32,6 +32,15 @@ import MainLayoutCashier from "./layouts/cashier/mainLayoutCashier";
 import ManagementTableCashier from "./layouts/cashier/managementTableCashier";
 import ManagementFoodCashier from "./layouts/cashier/managementFoodCashier";
 import ManagementOrdersOnlCashier from "./layouts/cashier/managementOrdersOnlCashier";
+import Header from "./layouts/staff/component/Header";
+import Sidebar from "./layouts/staff/component/Sidebar";
+import MainContent from "./layouts/staff/component/MainContent";
+import OrderOnTable from "./layouts/staff/component/orderOnTable/orderOnTable";
+import CheckoutLayout from "./layouts/staff/component/checkout/CheckoutLayout";
+import Checkout1 from "./layouts/staff/component/checkout/Checkout1";
+import Checkout2 from "./layouts/staff/component/checkout/Checkout2";
+import Checkout3 from "./layouts/staff/component/checkout/Checkout3";
+import TableModal from "./layouts/staff/component/TableModal";
 
 // Định nghĩa kiểu dữ liệu cho AuthContext
 interface AuthContextType {
@@ -91,7 +100,7 @@ function Routing() {
 
   // Các tuyến đường dành riêng cho admin
   const adminRoutes = [
-    "/admin","/admin/employeemanagement",
+    "/admin", "/admin/employeemanagement",
     "/admin/customermanagement",
   ];
   const cashierRoutes = ["/cashier", "/cashier/orders", "/cashier/dashboard", "/cashier/table", "/cashier/food", "/cashier/ordersOnline"];
@@ -111,8 +120,8 @@ function Routing() {
   const menuType = adminRoutes.includes(location.pathname)
     ? "admin"
     : cashierRoutes.includes(location.pathname)
-    ? "cashier"
-    : "customer";
+      ? "cashier"
+      : "customer";
 
 
 
@@ -120,7 +129,7 @@ function Routing() {
 
 
 
-    // phần routes của cashier v
+  // phần routes của cashier v
 
 
 
@@ -134,56 +143,74 @@ function Routing() {
           setIsLoggedIn(true);
           <Navigate to="/cashier" />
           throw new Error("Function not implemented.");
-        } } /> : <Navigate to="/cashier" />} />
+        }} /> : <Navigate to="/cashier" />} />
       </Routes>
     );
   }
 
 
 
- 
 
 
 
-if (cashierRoutes.includes(location.pathname)) {
+
+  if (cashierRoutes.includes(location.pathname)) {
+    return (
+      <Routes>
+
+
+        <Route path="/cashier" element={isLoggedIn ? <MainLayoutCashier /> : <Navigate to="/cashier/login" />}>
+          <Route index element={<DashboardCashier />} />
+          {/* Thêm các tuyến khác cho cashier */}
+          <Route path="table" element={<ManagementTableCashier />} />
+          <Route path="food" element={<ManagementFoodCashier />} />
+          <Route path="ordersOnline" element={<ManagementOrdersOnlCashier />} />
+        </Route>
+
+
+
+
+      </Routes>
+    );
+  }
+
+
+
+
+  // phần routes của cashier ^
+  type ContentType = 'home' | '2nd_floor' | 'gdeli' | 'setting';
+
+  const selectedContent = 'home';
+
+  const handleSidebarClick = (contentType: ContentType) => {
+
+  };
+
+
   return (
-    <Routes>
-      
-
-          <Route path="/cashier" element={isLoggedIn ? <MainLayoutCashier /> : <Navigate to="/cashier/login" />}>
-            <Route index element={<DashboardCashier />} />
-            {/* Thêm các tuyến khác cho cashier */}
-            <Route path="table" element={<ManagementTableCashier />} />
-            <Route path="food" element={<ManagementFoodCashier />} />
-            <Route path="ordersOnline" element={<ManagementOrdersOnlCashier />} />
-          </Route>
 
 
-
-
-    </Routes>
-  );
-}
-
-
-
-
-    // phần routes của cashier ^
-
-
-
-
-
-
-
-
-
-  return (
     <>
       {/* Hiển thị MenuAdmin nếu là các đường dẫn của admin, ngược lại hiển thị MenuCustomer */}
-      {menuComponents[menuType]}
+      {/* {menuComponents[menuType]} */}
 
       {/* Định nghĩa các tuyến đường */}
+
+      <div>
+        <Routes>
+          <Route path="/staff" element={<><Header toggleId="header-toggle" /><Sidebar onClickContent={handleSidebarClick} /><MainContent content={selectedContent} /></>} />
+          <Route path="/orderOnTable/:tableId" element={<OrderOnTable />} />
+
+
+          <Route path="/checkout/order/:orderId" element={<CheckoutLayout />}>
+            <Route path="step1" element={<Checkout1 />} />
+            <Route path="step2" element={<Checkout2 />} />
+            <Route path="step3" element={<Checkout3 />} />
+          </Route>
+        </Routes>
+        <TableModal />
+      </div>
+
       <Routes>
         {/* Tuyến đường công khai cho trang chủ */}
         <Route path="/" element={<IndexCustomer />} />

@@ -1,4 +1,4 @@
-.header {
+.header_cus {
     background-color: #c0392b;
     /* Red background */
     color: white;
@@ -10,7 +10,7 @@
 
 }
 
-.header .cart-icon {
+.header_cus .cart-icon {
     font-size: 1.5rem;
     position: absolute;
     right: 20px;
