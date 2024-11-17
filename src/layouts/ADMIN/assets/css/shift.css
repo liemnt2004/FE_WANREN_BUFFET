@@ -1,0 +1,124 @@
+.ps36231 .morning-shift{
+    background-color: blue;
+}
+
+.ps36231 .night-shift{
+    background-color: black;
+    color: white;
+}
+
+.ps36231 .split-shift{
+    background-color: blueviolet;
+    color: white;
+}
+
+.ps36231 .straight-morning-shift{
+    background-color: rgb(255, 199, 56);
+}
+
+.ps36231 .straight-night-shift{
+    background-color: brown;
+}
+
+.ps36231 .middle-shift-1{
+    background-color: rgb(72, 179, 36);
+}
+
+.ps36231 .middle-shift-2{
+    background-color: green;
+}
+
+.ps36231 .table{
+    margin-bottom: 0;
+}
+
+.ps36231 .day-number{
+    margin-bottom: 10px;
+}
+
+.ps36231 .btn-add-shift{
+    background-color: unset;
+    color: gray;
+    width: 24px;
+    height: 24px;
+    outline: none;
+    border: none;
+    text-align: center;
+    align-items: center;
+    margin-top: 5px;
+    font-size: 20px;
+}
+
+.ps36231 .btn-add-shift > span{
+    text-align: center;
+}
+
+.ps36231 .filter{
+    outline: unset;
+    border: unset;
+    box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+    padding: 3px 5px;
+    margin-right: 10px;
+    border-radius: 3px;
+    height: 30px;
+}
+
+.ps36231 .filter-by-name{
+    outline: unset;
+    border: unset;
+    box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+    padding: 3px 5px 3px 9px;
+    margin-right: 10px;
+    border-radius: 3px;
+    height: 30px;
+}
+
+.ps36231 .filter-by-name::placeholder{
+    color: rgb(170, 164, 164);
+}
+
+.ps36231 .btn-search-by-name{
+    outline: unset;
+    border: unset;
+    box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+    height: 30px;
+    border-radius: 3px;
+    padding: 3px 10px;
+    color: black;
+    background-color: orange;
+    margin-right: 10px;
+}
+
+.ps36231 .btn-export-excel{
+    outline: unset;
+    border: unset;
+    box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+    height: 30px;
+    border-radius: 3px;
+    padding: 3px 10px;
+    color: white;
+    background-color: green;
+}
+
+
+.ps36231 .table > thead > tr > th{
+    background-color: orange;
+}
+
+.ps36231 .card-shift > div{
+    border-radius: 3px;
+    padding: 3px 5px;
+    color: white;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.ps36231 .card-shift .btn-edit-calendar{
+    outline: unset;
+    border: unset;
+    background-color: transparent;
+    color: white;
+}
+
+
+

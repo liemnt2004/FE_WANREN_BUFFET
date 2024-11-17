@@ -4,7 +4,7 @@ import React, { useState, FormEvent, ChangeEvent, useContext } from 'react';
 import './assets/css/styles.css';
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { AuthContext } from "./component/AuthContext";
-import jwtDecode from "jwt-decode"; // Sửa lại cách import
+// import jwtDecode from "jwt-decode"; // Sửa lại cách import
 
 const LoginRegisterComponent: React.FC = () => {
     const navigate = useNavigate();
