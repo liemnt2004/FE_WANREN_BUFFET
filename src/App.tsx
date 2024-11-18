@@ -141,7 +141,6 @@ export function Routing() {
           }
         />
 
-
         {/* Route dành cho quản lý */}
         <Route
           path="/cashier"
@@ -150,7 +149,6 @@ export function Routing() {
               <IndexCustomer />
             </PrivateRoute>
           }
-
         />
 
         <Route
