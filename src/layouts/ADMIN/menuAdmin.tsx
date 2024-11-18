@@ -1,6 +1,9 @@
-import { Link } from "react-router-dom";
+// src/components/MenuAdmin.tsx
+import React from "react";
+import { NavLink } from "react-router-dom";
 import logo from "./assets/img/warenbuffet.png";
 import "./assets/css/CustomerManagement.css";
+
 function MenuAdmin() {
   return (
     <div className="admin-layout">
@@ -41,34 +44,71 @@ function MenuAdmin() {
           <img src={logo} alt="Shop Logo" />
         </div>
         <div className="menu">
-          <div className="menuItem">
+          <NavLink
+            to="/admin"
+            end
+            className={({ isActive }) =>
+              isActive ? "menuItem active" : "menuItem"
+            }
+          >
             <i className="fas fa-home"></i> Home
-          </div>
-          <div className="menuItem">
+          </NavLink>
+          <NavLink
+            to="/admin/manage-dishes"
+            className={({ isActive }) =>
+              isActive ? "menuItem active" : "menuItem"
+            }
+          >
             <i className="fas fa-utensils"></i> Manage Dishes
-          </div>
-          <div className="menuItem">
+          </NavLink>
+          <NavLink
+            to="/admin/manage-promotions"
+            className={({ isActive }) =>
+              isActive ? "menuItem active" : "menuItem"
+            }
+          >
             <i className="fas fa-bullhorn"></i> Manage Promotions
-          </div>
-          <div className="menuItem">
+          </NavLink>
+          <NavLink
+            to="/admin/manage-accounts"
+            className={({ isActive }) =>
+              isActive ? "menuItem active" : "menuItem"
+            }
+          >
             <i className="fas fa-user-cog"></i> Manage Accounts
-          </div>
-          <div className="menuItem">
-            <Link to="/admin/employeemanagement">
-              <i className="fas fa-users"></i> Manage Employees
-            </Link>
-          </div>
-          <div className="menuItem active">
-            <Link to="/admin/customermanagement">
-              <i className="fas fa-user-friends"></i> Manage Customers
-            </Link>
-          </div>
-          <div className="menuItem">
+          </NavLink>
+          <NavLink
+            to="/admin/employees"
+            className={({ isActive }) =>
+              isActive ? "menuItem active" : "menuItem"
+            }
+          >
+            <i className="fas fa-users"></i> Manage Employees
+          </NavLink>
+          <NavLink
+            to="/admin/customers"
+            className={({ isActive }) =>
+              isActive ? "menuItem active" : "menuItem"
+            }
+          >
+            <i className="fas fa-user-friends"></i> Manage Customers
+          </NavLink>
+          <NavLink
+            to="/admin/manage-work-shifts"
+            className={({ isActive }) =>
+              isActive ? "menuItem active" : "menuItem"
+            }
+          >
             <i className="fas fa-calendar-alt"></i> Manage Work Shifts
-          </div>
-          <div className="menuItem">
+          </NavLink>
+          <NavLink
+            to="/admin/revenue-report"
+            className={({ isActive }) =>
+              isActive ? "menuItem active" : "menuItem"
+            }
+          >
             <i className="fas fa-chart-line"></i> Revenue Report
-          </div>
+          </NavLink>
         </div>
       </div>
     </div>

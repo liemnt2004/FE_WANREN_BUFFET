@@ -53,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal}) => 
                     onClick={() => onClickContent(link.value as 'hotpot' | 'meat' | 'mushroom' | 'seafood' | 'meatballs' | 'vegetables' | 'noodles')}
                   >
                     <i className="ri-pie-chart-2-fill"></i>
-                    <span>{link.label}</span>
+                    <span style={{color: 'var(--firstColor)'}}>{link.label}</span>
                   </a>
                 )
               ))}
@@ -72,7 +72,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal}) => 
                     onClick={() => onClickContent(link.value as 'buffet_tickets' | 'dessert')}
                   >
                     <i className="ri-pie-chart-2-fill"></i>
-                    <span>{link.label}</span>
+                    <span style={{color: 'var(--firstColor)'}}>{link.label}</span>
                   </a>
                 )
               ))}
@@ -90,7 +90,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal}) => 
                     onClick={() => onClickContent(link.value as 'mixers' | 'soft_drinks' | 'beer' | 'wine')}
                   >
                     <i className="ri-pie-chart-2-fill"></i>
-                    <span>{link.label}</span>
+                    <span style={{color: 'var(--firstColor)'}}>{link.label}</span>
                   </a>
                 )
               ))}
@@ -100,12 +100,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal}) => 
         <div className="sidebar__actions">
           <button>
             <i className="ri-moon-clear-fill sidebar__link sidebar__theme" id="theme-button">
-              <span>Giao diện</span>
+              <span style={{color: 'var(--firstColor)'}}>Giao diện</span>
             </i>
           </button>
           <button className="sidebar__link" onClick={onOpenExitModal} >
             <i className="ri-logout-box-r-fill"></i>
-            <span>Thoát</span>
+            <span style={{color: 'var(--firstColor)'}}>Thoát</span>
           </button>
         </div>
       </div>

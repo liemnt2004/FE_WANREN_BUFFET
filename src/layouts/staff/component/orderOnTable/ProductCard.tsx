@@ -60,7 +60,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                                 <button id="increment"
                             type="button"
                             className="btn btn-danger" onClick={decrementQuantity}><i className="bi bi-dash-lg"></i></button>
-                                <span className='px-2'>{cartQuantity}</span>
+                                <span className='px-2 text-dark fw-bold'>{cartQuantity}</span>
                                 <button id="increment"
                             type="button"
                             className="btn btn-danger" onClick={incrementQuantity}><i className="bi bi-plus-lg"></i></button>

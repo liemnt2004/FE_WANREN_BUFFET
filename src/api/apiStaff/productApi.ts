@@ -95,9 +95,27 @@ export async function fetchProductsByType(typeFood: string): Promise<ProductMode
 
 export async function fetchProductsByCategory(category: string): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
+    const employeeToken = localStorage.getItem("employeeToken");
+
     try {
-        const data = await request(`http://localhost:8080/api/product/by-category?categoryName=${category}`);
-        console.log(data)
+        // Gọi API
+        const response = await fetch(`http://localhost:8080/api/product/by-category?categoryName=${category}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${employeeToken}`,
+            },
+        });
+
+        // Kiểm tra trạng thái HTTP
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        // Parse JSON từ response
+        const data = await response.json();
+
+        // Kiểm tra nếu `data` là mảng
         if (Array.isArray(data)) {
             for (const product of data) {
                 const productModel = new ProductModel(
@@ -109,17 +127,21 @@ export async function fetchProductsByCategory(category: string): Promise<Product
                     product.image,
                     product.quantity,
                     product.productStatus,
-                    product.category ? product.category.categoryName : 'No Category'  // Lấy categoryName từ API
+                    product.category ? product.category.categoryName : 'No Category'
                 );
                 rs.push(productModel);
             }
+        } else {
+            console.warn("Data received is not an array", data);
         }
+
         return rs;
     } catch (error) {
         console.error(`Cannot fetch products of category ${category}:`, error);
         throw error;
     }
 }
+
 
 
 

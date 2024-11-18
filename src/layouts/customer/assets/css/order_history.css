@@ -131,3 +131,6 @@
     color: white;
 }
 
+.card-footer button{
+    height: 50px;
+}

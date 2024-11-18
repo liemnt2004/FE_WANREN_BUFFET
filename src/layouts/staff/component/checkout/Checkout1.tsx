@@ -49,7 +49,7 @@ const Checkout1: React.FC = () => {
                         Gọi nhân viên
                     </div>
                     <div className="turn-dashboard">
-                        <button onClick={() => navigate("/")}>
+                        <button onClick={() => navigate("/staff")}>
                             <i className="bi bi-arrow-counterclockwise"></i> Về trang chủ
                         </button>
                     </div>

@@ -75,7 +75,6 @@ const MenuProductCustomer: React.FC = () => {
         if (listProduct.length === 0) {
             return <div className="text-center">Không có sản phẩm nào trong danh mục này.</div>;
         }
-        console.log(listProduct)
         return listProduct.map((product) => (
             <ProductMenu
                 key={product.productId}
@@ -90,7 +89,7 @@ const MenuProductCustomer: React.FC = () => {
 
     return (
         <>
-            <div className="row mobile-layout">
+            <div className="container-fluid row mobile-layout">
                 {/* Left Section */}
                 <div className="col-md-8 position-relative left-section" style={{ paddingBottom: 0 }}>
                     <section className="banner">
@@ -117,7 +116,7 @@ const MenuProductCustomer: React.FC = () => {
                 {/* Right Section */}
                 <div className="col-12 col-md-4 px-md-4 px-2" style={{ paddingTop: 20 }}>
                     <div className="menu"
-                         style={{ height: 'calc(100vh - 40px)', boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px' }}>
+                         style={{ height: 'calc(100vh - 20px)', boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px' }}>
                         <div className="row d-flex justify-content-center mb-3">
                             <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall"
                                style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}

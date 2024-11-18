@@ -26,9 +26,16 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   const selectedItemsTotal = selectedItemsSubtotal + selectedItemsTax;
   const [activeTab, setActiveTab] = useState('selecting');
   const [order_id, setOrderId] = useState<any>(0);
-  
+
   const fetchOrderDetails = useCallback(async (orderId: number) => {
-    const response = await fetch(`http://localhost:8080/api/orders_detail_staff/${orderId}`);
+    const employeeToken = localStorage.getItem("employeeToken");
+    const response = await fetch(`http://localhost:8080/api/orders_detail_staff/${orderId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${employeeToken}`,
+      },
+    });
     if (response.ok) {
       const data = await response.json();
       const items = await Promise.all(data.map(async (item: any) => {
@@ -49,8 +56,15 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
 
   useEffect(() => {
     const fetchOrderId = async () => {
+      const employeeToken = localStorage.getItem("employeeToken");
       try {
-        const response = await fetch(`http://localhost:8080/api/order_staff/findOrderIdByTableId/${tableId}`);
+        const response = await fetch(`http://localhost:8080/api/order_staff/findOrderIdByTableId/${tableId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${employeeToken}`,
+          },
+        });
         if (!response.ok) throw new Error('Error fetching orderId');
 
         const orderIdText = await response.text();
@@ -60,7 +74,14 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
 
         if (orderId) {
           setOrderId(orderId);
-          const orderResponse = await fetch(`http://localhost:8080/api/order_staff/status/${orderId}`);
+          const employeeToken = localStorage.getItem("employeeToken");
+          const orderResponse = await fetch(`http://localhost:8080/api/order_staff/status/${orderId}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${employeeToken}`,
+            },
+          });
           if (!orderResponse.ok) throw new Error('Error fetching order details');
 
           const orderData = await orderResponse.json();
@@ -75,13 +96,17 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
         }
       } catch (error) {
         console.error(error);
-      } 
+      }
     };
 
     const createNewOrder = async () => {
+      const employeeToken = localStorage.getItem("employeeToken");
       const newOrderResponse = await fetch('http://localhost:8080/api/order_staff/add', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${employeeToken}`,
+        },
         body: JSON.stringify({
           userId: 1,
           address: "145 Phan Xích Long",
@@ -113,7 +138,15 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
 
     console.log(selectedItemsSubtotal);
     try {
-      const response = await fetch(`http://localhost:8080/api/order_staff/findOrderIdByTableId/${tableId}`);
+      const employeeToken = localStorage.getItem("employeeToken");
+      const response = await fetch(`http://localhost:8080/api/order_staff/findOrderIdByTableId/${tableId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${employeeToken}`,
+        },
+      });
+      if (!response.ok) throw new Error('Error fetching orderId');
       const orderIdText = await response.text();
       const orderId = orderIdText ? Number(orderIdText) : null;
       setOrderId(orderId);
@@ -130,20 +163,26 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
 
       const detailsResponse = await fetch(`http://localhost:8080/api/orders_detail_staff/add_or_update/${orderId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' ,
+          Authorization: `Bearer ${employeeToken}`,
+        },
         body: JSON.stringify(orderDetails),
       });
       if (!detailsResponse.ok) throw new Error('Error adding or updating order details');
 
       await fetch(`http://localhost:8080/api/order_staff/${orderId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ totalAmount: selectedItemsSubtotal + subtotal}),
+        headers: { 'Content-Type': 'application/json' ,
+          Authorization: `Bearer ${employeeToken}`,
+        },
+        body: JSON.stringify({ totalAmount: selectedItemsSubtotal + subtotal }),
       });
 
       await fetch(`http://localhost:8080/api/table/${tableId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' , 
+          Authorization: `Bearer ${employeeToken}`,
+        },
         body: JSON.stringify({ tableStatus: 'OCCUPIED_TABLE' }),
       });
 
@@ -194,7 +233,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
                         <div>
                           <p style={{ margin: 0, fontWeight: 'bold' }}>{item.product.productName}</p>
                           <p>{item.note || ''}</p>
-                          <button className="btn btn-link" onClick={() => onRemoveItem(item.product.productId)}>Remove</button>
+                          <button className="p-0 text-decoration-underline" onClick={() => onRemoveItem(item.product.productId)}>Remove</button>
                         </div>
                       </td>
                       <td>

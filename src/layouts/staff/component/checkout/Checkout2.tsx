@@ -5,7 +5,6 @@ import { getOrderAmount, updateLoyaltyPoint } from "../../../../api/apiStaff/ord
 
 const Checkout2: React.FC = () => {
     const { orderId } = useParams<{ orderId: string }>();
-    const [loading, setLoading] = useState<boolean>(true);
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [error1, setError1] = useState<string | null>(null);
@@ -74,7 +73,7 @@ const Checkout2: React.FC = () => {
                         Gọi nhân viên
                     </div>
                     <div className="turn-dashboard">
-                        <button onClick={() => navigate("/")}>
+                        <button onClick={() => navigate("/staff")}>
                             <i className="bi bi-arrow-counterclockwise"></i> Về trang chủ
                         </button>
                     </div>
