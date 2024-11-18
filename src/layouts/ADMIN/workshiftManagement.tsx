@@ -5,19 +5,19 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import { Tabs, TabsProps, theme, Modal } from "antd";
 import StickyBox from "react-sticky-box";
 import { Calendar } from "antd";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 
 const WorkShiftCalendar: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const handleDateSelect = (date: Dayjs) => {
-    setSelectedDate(date.format("YYYY-MM-DD")); // Lưu ngày đã chọn
-    setIsModalOpen(true); // Hiển thị Modal
+    setSelectedDate(date.format("YYYY-MM-DD"));
+    setIsModalOpen(true);
   };
 
   const handleModalClose = () => {
-    setIsModalOpen(false); // Đóng Modal
+    setIsModalOpen(false);
   };
 
   return (
@@ -51,7 +51,7 @@ const WorkShiftCalendar: React.FC = () => {
       </div>
       <Calendar
         fullscreen={false}
-        onSelect={handleDateSelect} // Xử lý khi nhấn vào ngày
+        onSelect={handleDateSelect}
         style={{
           border: "1px solid #d9d9d9",
           borderRadius: "8px",
@@ -118,7 +118,7 @@ const items = [
   {
     label: "Tab 2",
     key: "2",
-    children: <WorkShiftCalendar />, // Sử dụng WorkShiftCalendar
+    children: <WorkShiftCalendar />,
   },
 ];
 
