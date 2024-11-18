@@ -31,6 +31,12 @@ import NotFoundPage from "./layouts/404";
 import Management from "./layouts/ADMIN/manager";
 import PromotionManagement from "./layouts/ADMIN/promotionManagement";
 import WorkShift from "./layouts/ADMIN/workshiftManagement";
+import StaffIndex from "./layouts/staff/component/StaffIndex";
+import OrderOnTable from "./layouts/staff/component/orderOnTable/orderOnTable";
+import CheckoutLayout from "./layouts/staff/component/checkout/CheckoutLayout";
+import Checkout1 from "./layouts/staff/component/checkout/Checkout1";
+import Checkout2 from "./layouts/staff/component/checkout/Checkout2";
+import Checkout3 from "./layouts/staff/component/checkout/Checkout3";
 
 function App() {
   return (
@@ -46,6 +52,14 @@ function App() {
 export default App;
 
 export function Routing() {
+  const isHiddenRoute = (pathname: string) => {
+    // Kiểm tra nếu đường dẫn chính xác hoặc khớp với "/orderOnTable/:tableId" hoặc "/checkout/order/:orderId/:step"
+    return hiddenRoutes.some(route => 
+      pathname === route || 
+      (route === "/orderOnTable" && /^\/orderOnTable\/\d+$/.test(pathname)) || 
+      (route === "/checkout/order" && /^\/checkout\/order\/\d+\/step\d+$/.test(pathname)) // Kiểm tra "/checkout/order/:orderId/:step"
+    );
+  };
   const hiddenRoutes = [
     "/admin",
     "/login",
@@ -59,12 +73,16 @@ export function Routing() {
     "/admin/customers",
     "/admin/employees",
     "/admin/dashboard",
+    "/orderOnTable",
+    "/checkout/order"
   ];
 
   return (
+
+
     <>
       {/* Hiển thị MenuCustomer trừ khi ở các routes ẩn */}
-      {!hiddenRoutes.includes(window.location.pathname) && <MenuCustomer />}
+      {!isHiddenRoute(window.location.pathname) && <MenuCustomer />}
 
       <Routes>
         {/* Các route công khai */}
@@ -108,11 +126,17 @@ export function Routing() {
         />
 
         {/* Route dành cho nhân viên */}
+        <Route path="/orderOnTable/:tableId" element={<OrderOnTable />} />
+        <Route path="/checkout/order/:orderId" element={<CheckoutLayout />}>
+          <Route path="step1" element={<Checkout1 />} />
+          <Route path="step2" element={<Checkout2 />} />
+          <Route path="step3" element={<Checkout3 />} />
+        </Route>
         <Route
           path="/staff"
           element={
             <PrivateRoute allowedRoles={["STAFF", "ADMIN"]}>
-              <IndexCustomer />
+              <StaffIndex />
             </PrivateRoute>
           }
         />
