@@ -6,11 +6,12 @@ import ProductModal from './ProductModal';
 
 interface ProductListProps {
     category: string;
+    area: string;
     cartItems: { product: ProductModel; quantity: number; note: string; totalPrice: number }[];
     setCartItems: React.Dispatch<React.SetStateAction<{ product: ProductModel; quantity: number; note: string; totalPrice: number }[]>>;
 }
 
-const ProductList: React.FC<ProductListProps> = ({ category, cartItems, setCartItems }) => {
+const ProductList: React.FC<ProductListProps> = ({ category, area ,cartItems, setCartItems }) => {
     const [products, setProducts] = useState<ProductModel[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -22,7 +23,27 @@ const ProductList: React.FC<ProductListProps> = ({ category, cartItems, setCartI
             setLoading(true);
             try {
                 const fetchedProducts = await fetchProductsByCategory(category);
-                setProducts(fetchedProducts);
+
+                const adjustProductPrice = (product: ProductModel, area: string): ProductModel => {
+                    if (area === 'Table' && product.typeFood !== 'buffet_tickets') {
+                        return new ProductModel(
+                            product.productId,
+                            product.productName,
+                            product.description,
+                            0, // Set price to 0
+                            product.typeFood,
+                            product.image,
+                            product.quantity,
+                            product.productStatus,
+                            product.category
+                          );
+                    }
+                    return product;
+                };
+    
+                const adjustedProducts = fetchedProducts.map((product) => adjustProductPrice(product, area));
+    
+                setProducts(adjustedProducts); // Đảm bảo kiểu dữ liệu
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Failed to fetch products';
                 setError(errorMessage);
@@ -30,9 +51,10 @@ const ProductList: React.FC<ProductListProps> = ({ category, cartItems, setCartI
                 setLoading(false);
             }
         };
-
+    
         loadProducts();
-    }, [category]);
+    }, [category, area]); // Thêm area vào dependencies
+    
 
     const handleImageClick = (product: ProductModel) => {
         setSelectedProduct(product);

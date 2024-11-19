@@ -9,6 +9,10 @@ const Checkout1: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [orderTableNum, setOrderTableNum] = useState<number>(0);
     const [orderDetails, setOrderDetails] = useState<OrderDetailsWithNameProduct[]>([]);
+    const [isEditing, setIsEditing] = useState<boolean>(false);  // Trạng thái chỉnh sửa
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [passwordInput, setPasswordInput] = useState<string>('');
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -36,8 +40,64 @@ const Checkout1: React.FC = () => {
         loadOrderDetails();
     }, [orderId]);
 
+    const handleQuantityChange = (index: number, operation: 'increase' | 'decrease') => {
+        const updatedOrderDetails = [...orderDetails];
+        const newQuantity = operation === 'increase' ? updatedOrderDetails[index].quantity! + 1 : updatedOrderDetails[index].quantity! - 1;
+
+        if (newQuantity >= 0) {
+            updatedOrderDetails[index].quantity = newQuantity;
+            setOrderDetails(updatedOrderDetails);
+        }
+    };
+
+    const handleSaveChanges = async () => {
+        // Đây là nơi bạn có thể gọi API để lưu lại thay đổi
+        try {
+            // await saveOrderDetails(orderId, orderDetails);  // Giả sử có một API lưu dữ liệu
+            setIsModalOpen(true);
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : "Failed to save order details";
+            setError(errorMessage);
+        }
+    };
+
+    const handlePasswordSubmit = () => {
+        const currentPassword = '123'; // Replace with actual password fetching logic
+
+        if (passwordInput === currentPassword) {
+            setIsEditing(false); // Enable editing if password is correct
+            setIsModalOpen(false);
+            setErrorMessage('');
+        } else {
+            setErrorMessage('Mật khẩu không chính xác');
+        }
+    };
     return (
         <div className="ps36231-checkout-staff-1">
+
+            {isModalOpen && (
+                <div className="ps36231 modal fade show d-block" id="modalPin" tabIndex={-1} role="dialog">
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content p-4 text-center">
+                            <h5>Nhập mật khẩu nhân viên để tiếp tục</h5>
+                            <div className="input-field">
+                                <input
+                                    type="password"
+                                    onChange={(e) => setPasswordInput(e.target.value)}
+                                    placeholder="Mật khẩu"
+                                />
+                                {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+                            </div>
+                            <div className='d-flex justify-content-center align-items-center mt-2'>
+                                <button className="btn btn-secondary mt-2 me-4" onClick={() => setIsModalOpen(false)}>Hủy</button>
+                                <button onClick={handlePasswordSubmit} className="btn btn-primary mt-2">Xác nhận</button>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div className="modal-backdrop fade show" onClick={() => setIsModalOpen(false)}></div>
+                </div>
+            )}
             <div className="call-staff">
                 <div className="d-flex justify-content-between align-items-center">
                     <div className="turn-back">
@@ -58,6 +118,14 @@ const Checkout1: React.FC = () => {
             <div>
                 <div>
                     <h2 className="title-table">Bàn số {orderTableNum} | Xác nhận kiểm đồ</h2>
+                    {isEditing && (
+
+                        <h5 style={{cursor: 'pointer'}} onClick={handleSaveChanges} className="title-table fs-6 text-decoration-underline"><i className="bi bi-gear pe-2"></i>Lưu thay đổi</h5>
+                    )}
+                    {!isEditing && (
+                        <h5 style={{cursor: 'pointer'}} onClick={() => setIsEditing(true)} className="title-table fs-6 text-decoration-underline"><i className="bi bi-gear pe-2"></i>Chỉnh sửa</h5>
+                    )}
+
                 </div>
                 <div className="container-table">
                     <div>
@@ -72,7 +140,36 @@ const Checkout1: React.FC = () => {
                                 {orderDetails.map((orderDetail, index) => (
                                     <tr key={index}>
                                         <td>{orderDetail.productName}</td>
-                                        <td>{orderDetail.quantity}</td>
+                                        {isEditing ? (
+                                            <td className="text-end">
+                                                <button
+                                                    id="decrement"
+                                                    className="btn"
+                                                    onClick={() => handleQuantityChange(index, 'decrease')}
+                                                >
+                                                    <i className="bi bi-dash-lg"></i>
+                                                </button>
+
+                                                <span className="px-2 text-dark" style={{ width: '40px', display: 'inline-block', textAlign: 'center' }}>
+                                                    {orderDetail.quantity}
+                                                </span>
+
+                                                <button
+                                                    id="increment"
+                                                    className="btn"
+                                                    onClick={() => handleQuantityChange(index, 'increase')}
+                                                >
+                                                    <i className="bi bi-plus-lg"></i>
+                                                </button>
+                                            </td>
+                                        ) : (
+                                            <td className="text-end">
+                                                <span className="px-2 text-dark" style={{ width: '40px', display: 'inline-block', textAlign: 'center' }}>
+                                                    {orderDetail.quantity}
+                                                </span>
+                                            </td>
+                                        )}
+
                                     </tr>
                                 ))}
                             </tbody>
@@ -94,5 +191,6 @@ const Checkout1: React.FC = () => {
         </div>
     );
 };
+
 
 export default Checkout1;

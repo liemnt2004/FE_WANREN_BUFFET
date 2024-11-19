@@ -30,10 +30,7 @@ const SwitchTableModal: React.FC<SwitchTableModalProps> = ({ onClose, onConfirm 
         <div className="ps36231 modal fade show d-block" id="modalPin" tabIndex={-1} role="dialog">
             <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content p-4 text-center">
-                    <header>
-                        <i className="bi bi-patch-check-fill fs-2"></i>
-                    </header>
-                    <h5>Nhập mật khẩu nhân viên để tiếp tục</h5>
+                    <h5>Nhập mã PIN nhà hàng để tiếp tục</h5>
                     <form onSubmit={handleSubmit}>
                         <div className="input-field">
                             <input

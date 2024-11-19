@@ -14,7 +14,7 @@ const Checkout2: React.FC = () => {
     const styleOfA: React.CSSProperties = {
         marginRight: '10px',
         pointerEvents: disable ? "none" : "auto", // Vô hiệu hóa pointer events nếu bị disable
-        backgroundColor: disable ? "gray" : "blue", // Đổi màu nếu disable
+        backgroundColor: disable ? "gray" : "orange", // Đổi màu nếu disable
         cursor: disable ? "not-allowed" : "pointer",
     }
 

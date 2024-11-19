@@ -94,3 +94,98 @@ export async function updateTotalAmount(orderId: number, total_amount:number): P
         return 0;
     }
 }
+
+// ORDER ON TABLE
+
+const BASE_URL = "http://localhost:8080/api";
+
+const getHeaders = () => {
+  const employeeToken = localStorage.getItem("employeeToken");
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${employeeToken}`,
+  };
+};
+
+export const fetchOrderDetailsAPI = async (orderId: number) => {
+  const response = await fetch(`${BASE_URL}/orders_detail_staff/${orderId}`, {
+    method: "GET",
+    headers: getHeaders(),
+  });
+  if (!response.ok) throw new Error("Error fetching order details");
+  return response.json();
+};
+
+export const fetchOrderStatusAPI = async (orderId: number) => {
+    const response = await fetch(`${BASE_URL}/order_staff/status/${orderId}`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Error fetching order details");
+    return response.json();
+  };
+  
+
+export const fetchProductDetailsAPI = async (productId: number) => {
+  const response = await fetch(`${BASE_URL}/product/${productId}`, {
+    method: "GET",
+    headers: getHeaders(),
+  });
+  if (!response.ok) throw new Error(`Error fetching product ${productId}`);
+  return response.json();
+};
+
+export const fetchOrderIdByTableId = async (tableId: number) => {
+  const response = await fetch(`${BASE_URL}/order_staff/findOrderIdByTableId/${tableId}`, {
+    method: "GET",
+    headers: getHeaders(),
+  });
+  if (!response.ok) throw new Error("Error fetching order ID");
+  const text = await response.text();
+  return text ? Number(text) : null;
+};
+
+export const createNewOrder = async (tableId: number) => {
+  const response = await fetch(`${BASE_URL}/order_staff/add`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({
+      userId: 1,
+      address: "145 Phan Xích Long",
+      notes: "Order tại bàn",
+      orderStatus: "IN_TRANSIT",
+      totalAmount: 0,
+      tableId,
+    }),
+  });
+  if (!response.ok) throw new Error("Error creating new order");
+  return response.json();
+};
+
+export const updateOrderDetails = async (orderId: number, details: any) => {
+  const response = await fetch(`${BASE_URL}/orders_detail_staff/add_or_update/${orderId}`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify(details),
+  });
+  if (!response.ok) throw new Error("Error updating order details");
+  return response.json();
+};
+
+export const updateOrderAmount = async (orderId: number, amount: number) => {
+  const response = await fetch(`${BASE_URL}/order_staff/${orderId}`, {
+    method: "PUT",
+    headers: getHeaders(),
+    body: JSON.stringify({ totalAmount: amount }),
+  });
+  if (!response.ok) throw new Error("Error updating order amount");
+};
+
+export const updateTableStatus = async (tableId: number, status: string) => {
+  const response = await fetch(`${BASE_URL}/table/${tableId}`, {
+    method: "PUT",
+    headers: getHeaders(),
+    body: JSON.stringify({ tableStatus: status }),
+  });
+  if (!response.ok) throw new Error("Error updating table status");
+};
