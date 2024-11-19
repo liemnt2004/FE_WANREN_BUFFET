@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Offcanvas } from 'react-bootstrap';
-import ProductModel from '../../../../models/ProductModel';
-import '../../assets/css/menu.css';
+import '../../assets/css/styles.css'
 import { useNavigate, useParams } from 'react-router-dom';
+import ProductModel from '../../../../models/StaffModels/ProductModel';
+import { createNewOrder, fetchOrderDetailsAPI, fetchOrderIdByTableId, fetchOrderStatusAPI, fetchProductDetailsAPI, updateOrderAmount, updateOrderDetails, updateTableStatus } from '../../../../api/apiStaff/orderForStaffApi';
 
 interface OffcanvasCartProps {
   show: boolean;
@@ -10,7 +11,7 @@ interface OffcanvasCartProps {
   cartItems: { product: ProductModel; quantity: number; note: string }[];
   onConfirmOrder: (items: { product: ProductModel; quantity: number; note: string }[]) => void;
   onUpdateQuantity: (productId: number, newQuantity: number) => void;
-  onRemoveItem: (productId: number) => void;
+  onRemoveItem: (itemToRemove: { product: ProductModel; quantity: number; note: string }) => void;
   onUpdateSubtotal: (subtotal: number) => void;
 }
 
@@ -25,17 +26,21 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   const selectedItemsTax = selectedItemsSubtotal * 0.08;
   const selectedItemsTotal = selectedItemsSubtotal + selectedItemsTax;
   const [activeTab, setActiveTab] = useState('selecting');
+  const [order_id, setOrderId] = useState<any>(0);
 
   const fetchOrderDetails = useCallback(async (orderId: number) => {
-    const response = await fetch(`http://localhost:8080/api/orders_detail_staff/${orderId}`);
-    if (response.ok) {
-      const data = await response.json();
+    const data = await fetchOrderDetailsAPI(orderId);
+    console.log(data)
+    if (data) {
       const items = await Promise.all(data.map(async (item: any) => {
-        const productResponse = await fetch(`http://localhost:8080/api/product/${item.productId}`);
-        if (!productResponse.ok) throw new Error(`Failed to fetch product ${item.productId}`);
-        const productData = await productResponse.json();
+        // Fetch product details
+        const productData = await fetchProductDetailsAPI(item.productId);
+        console.log("productData: ", productData);
         return {
-          product: { ...productData },
+          product: {
+            ...productData,
+            price: item.unitPrice,
+          },
           quantity: item.quantity,
           note: item.itemNotes,
         };
@@ -48,44 +53,44 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
 
   useEffect(() => {
     const fetchOrderId = async () => {
-      const response = await fetch(`http://localhost:8080/api/order_staff/findOrderIdByTableId/${tableId}`);
-      if (!response.ok) throw new Error('Error fetching orderId');
-      const orderIdText = await response.text();
-      const orderId = orderIdText ? Number(orderIdText) : null;
-
-      if (orderId) {
-        fetchOrderDetails(orderId);
-      } else {
-        const newOrderResponse = await fetch('http://localhost:8080/api/order_staff/add', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: 1,
-            address: "145 Phan Xích Long",
-            notes: "Order tại bàn",
-            orderStatus: "IN_TRANSIT",
-            totalAmount: 0,
-            tableId: Number(tableId),
-          }),
-        });
-        if (!newOrderResponse.ok) throw new Error('Error creating order');
+      try {
+        const orderId = await fetchOrderIdByTableId(Number(tableId));
+        if (orderId) {
+          setOrderId(orderId);
+          const orderData = await fetchOrderStatusAPI(orderId);
+          if (orderData.orderStatus === "DELIVERED") {
+            await createNewOrder(Number(tableId));
+          }
+          fetchOrderDetails(orderId);
+        } else {
+          await createNewOrder(Number(tableId));
+        }
+      } catch (error) {
+        console.error(error);
       }
     };
 
-    fetchOrderId().catch(console.error);
-  }, [tableId, fetchOrderDetails]);
+    fetchOrderId();
+  }, []);
+
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      setActiveTab('selecting');
+    } else if (selectedItems.length > 0) {
+      setActiveTab('selected');
+    }
+  }, [cartItems, selectedItems]);
 
   useEffect(() => {
     onUpdateSubtotal(selectedItemsSubtotal);
   }, [selectedItemsSubtotal, onUpdateSubtotal]);
 
   const handleConfirmOrder = async () => {
-    try {
-      const response = await fetch(`http://localhost:8080/api/order_staff/findOrderIdByTableId/${tableId}`);
-      const orderIdText = await response.text();
-      const orderId = orderIdText ? Number(orderIdText) : null;
 
+    try {
+      const orderId = await fetchOrderIdByTableId(Number(tableId));
       if (!orderId) throw new Error('Order ID not found');
+      setOrderId(orderId);
 
       const orderDetails = cartItems.map(item => ({
         productId: item.product.productId,
@@ -96,24 +101,9 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
         createdDate: new Date().toISOString(),
       }));
 
-      const detailsResponse = await fetch(`http://localhost:8080/api/orders_detail_staff/add_or_update/${orderId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderDetails),
-      });
-      if (!detailsResponse.ok) throw new Error('Error adding or updating order details');
-
-      await fetch(`http://localhost:8080/api/order_staff/${tableId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ totalAmount: selectedItemsTotal }),
-      });
-      
-      await fetch(`http://localhost:8080/api/table/${tableId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tableStatus: 'OCCUPIED_TABLE' }),
-      });
+      await updateOrderDetails(orderId, orderDetails);
+      await updateOrderAmount(orderId, selectedItemsSubtotal + subtotal);
+      await updateTableStatus(Number(tableId), "OCCUPIED_TABLE");
 
       onConfirmOrder(cartItems);
       navigate(0);
@@ -121,7 +111,6 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
       console.error("Error confirming order:", error);
     }
   };
-
   return (
     <Offcanvas show={show} onHide={onHide} placement="end">
       <Offcanvas.Header closeButton>
@@ -162,7 +151,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
                         <div>
                           <p style={{ margin: 0, fontWeight: 'bold' }}>{item.product.productName}</p>
                           <p>{item.note || ''}</p>
-                          <button className="btn btn-link" onClick={() => onRemoveItem(item.product.productId)}>Remove</button>
+                          <button className="p-0 text-decoration-underline" onClick={() => onRemoveItem(item)}>Remove</button>
                         </div>
                       </td>
                       <td>
@@ -173,7 +162,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
                           onChange={e => onUpdateQuantity(item.product.productId, Number(e.target.value))}
                         />
                       </td>
-                      <td className="text-end">{(item.product.price * item.quantity).toLocaleString()} VND</td>
+                      <td className="text-end">{(item.product.price * item.quantity).toLocaleString()} VNĐ</td>
                     </tr>
                   ))}
                 </tbody>
@@ -183,8 +172,8 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
               <table className="table">
                 <tbody>
                   <tr>
-                  <td>Thông tin thanh toán trước VAT</td>
-                    <td className="text-end fw-bold" style={{ color: 'var(--colorPrimary)' }}>{subtotal.toLocaleString()} VND</td>
+                    <td>Thông tin thanh toán trước VAT</td>
+                    <td className="text-end fw-bold" style={{ color: 'var(--colorPrimary)' }}>{subtotal.toLocaleString()} VNĐ</td>
                   </tr>
                 </tbody>
               </table>
@@ -215,7 +204,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
                         </div>
                       </td>
                       <td className='align-middle'>{item.quantity}</td>
-                      <td className="text-end">{(item.product.price * item.quantity).toLocaleString()} VND</td>
+                      <td className="text-end">{(item.product.price * item.quantity).toLocaleString()} VNĐ</td>
                     </tr>
                   ))}
                 </tbody>
@@ -225,21 +214,21 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
               <table className="table">
                 <tbody>
                   <tr>
-                  <td>Thông tin thanh toán trước VAT</td>
-                    <td className="text-end fw-bold">{selectedItemsSubtotal.toLocaleString()} VND</td>
+                    <td>Thông tin thanh toán trước VAT</td>
+                    <td className="text-end fw-bold">{selectedItemsSubtotal.toLocaleString()} VNĐ</td>
                   </tr>
                   <tr>
                     <td>VAT</td>
-                    <td className="text-end fw-bold">{selectedItemsTax.toLocaleString()} VND</td>
+                    <td className="text-end fw-bold">{selectedItemsTax.toLocaleString()} VNĐ</td>
                   </tr>
                   <tr>
                     <td>Tổng thanh toán bao gồm VAT</td>
-                    <td className="text-end fw-bold" style={{ color: 'var(--colorPrimary)' }}>{selectedItemsTotal.toLocaleString()} VND</td>
+                    <td className="text-end fw-bold" style={{ color: 'var(--colorPrimary)' }}>{selectedItemsTotal.toLocaleString()} VNĐ</td>
                   </tr>
                 </tbody>
               </table>
             </div>
-            <button style={{ float: 'right' }} className="btn btn-danger">
+            <button onClick={() => navigate(`/checkout/order/${order_id}/step1`)} style={{ float: 'right' }} className="btn btn-danger">
               Thanh Toán
             </button>
           </div>

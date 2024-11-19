@@ -46,14 +46,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     src={product.image}
                     className="rounded-3"
                     alt={product.productName}
-                    onClick={onImageClick} // Open modal on image click
+                    onClick={onImageClick}
                     style={{ cursor: 'pointer' }}
                 />
                 <div className="card-body p-0 pt-2">
                     <h5 className="card-title fs-6 m-0 p-0 fw-bold">{product.productName}</h5>
                 </div>
                 <div className="mt-4 mb-2 d-flex justify-content-between align-items-center">
-                    <h6 className="card__price fw-bold">{product.price} đ</h6>
+                    <h6 className="card__price fw-bold">{product.price.toLocaleString('vi-VN')} VNĐ</h6>
                     <div className="input__septer d-flex justify-content-end align-items-center add-to-cart">
                         {cartQuantity > 0 ? (
                             <div>
