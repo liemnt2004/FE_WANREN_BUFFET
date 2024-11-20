@@ -47,15 +47,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal }) =>
             <div className="sidebar__list">
               {sidebarLinks.map(link => (
                 (link.value === 'hotpot' || link.value === 'meat' || link.value === 'mushroom' || link.value === 'seafood' || link.value === 'meatballs' || link.value === 'vegetables' || link.value === 'noodles') && (
-                  <a
+                  <p
                     key={link.value}
-                    className="sidebar__link"
+                    className="sidebar__link mb-0"
                     style={{ cursor: 'pointer' }}
                     onClick={() => onClickContent(link.value as 'hotpot' | 'meat' | 'mushroom' | 'seafood' | 'meatballs' | 'vegetables' | 'noodles')}
                   >
                     <i className="ri-pie-chart-2-fill"></i>
                     <span style={{ color: 'var(--firstColor)' }}>{link.label}</span>
-                  </a>
+                  </p>
                 )
               ))}
             </div>
@@ -66,15 +66,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal }) =>
             <div className="sidebar__list">
               {sidebarLinks.map(link => (
                 (link.value === 'buffet_tickets' || link.value === 'dessert') && (
-                  <a
+                  <p
                     key={link.value}
-                    className="sidebar__link"
+                    className="sidebar__link mb-0"
                     style={{ cursor: 'pointer' }}
                     onClick={() => onClickContent(link.value as 'buffet_tickets' | 'dessert')}
                   >
                     <i className="ri-pie-chart-2-fill"></i>
                     <span style={{ color: 'var(--firstColor)' }}>{link.label}</span>
-                  </a>
+                  </p>
                 )
               ))}
             </div>
@@ -84,15 +84,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal }) =>
             <div className="sidebar__list">
               {sidebarLinks.map(link => (
                 (link.value === 'mixers' || link.value === 'soft_drinks' || link.value === 'beer' || link.value === 'wine') && (
-                  <a
+                  <p
                     key={link.value}
-                    className="sidebar__link"
+                    className="sidebar__link mb-0"
                     style={{ cursor: 'pointer' }}
                     onClick={() => onClickContent(link.value as 'mixers' | 'soft_drinks' | 'beer' | 'wine')}
                   >
                     <i className="ri-pie-chart-2-fill"></i>
                     <span style={{ color: 'var(--firstColor)' }}>{link.label}</span>
-                  </a>
+                  </p>
                 )
               ))}
             </div>

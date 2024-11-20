@@ -139,16 +139,16 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
       setShowModal(true);
     } else {
       // Directly navigate to the order page for non-empty tables
-      navigate(`/orderOnTable/${table.tableId}`, { state: { adults: 2, children: 0, tableLocation: table.location} });
+      navigate(`/orderOnTable/${table.tableId}`, { state: { adults: 2, children: 0, tableLocation: table.location } });
     }
   };
 
-  const handleConfirm = (tableId: number ,tableNumber: number, adults: number, children: number) => {
+  const handleConfirm = (tableId: number, tableNumber: number, adults: number, children: number) => {
     if (tableNumber > 0 && adults > 0) { // Ensure at least one adult is selected
       console.log(`TableNumber: ${tableNumber}, Adults: ${adults}, Children: ${children}`);
 
-      // Navigate to the menu selection page with the table number in the URL path
-      navigate(`/orderOnTable/${tableId}`, { state: { adults, children } });
+      // Navigate to the menu selection page with the table number and location in the URL path
+      navigate(`/orderOnTable/${tableId}`, { state: { adults, children, tableLocation: selectedTable?.location } });
     } else {
       alert("Please enter valid numbers for adults and children.");
     }
@@ -165,7 +165,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
           <div className="col-md-3" key={table.tableId} onClick={() => handleTableClick(table)}>
             <div className={`card table-card ${table.tableStatus === 'EMPTY_TABLE' ? '' : 'table-card-active'}`}>
               <div className="card-body">
-                <h5 className="card-title text-center">Bàn {table.tableNumber} <span style={{fontWeight: 'bold'}}>{table.location === 'GDeli' ? '(Deli)' : ''}</span> </h5>
+                <h5 className="card-title text-center">Bàn {table.tableNumber} <span style={{ fontWeight: 'bold' }}>{table.location === 'GDeli' ? '(Deli)' : ''}</span> </h5>
                 {table.tableStatus !== 'EMPTY_TABLE' && (
                   <>
                     <p className="table-status">2h14'</p>

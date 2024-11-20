@@ -5,30 +5,35 @@ import ProductModel from '../../../../models/StaffModels/ProductModel';
 interface ProductModalProps {
     product: ProductModel;
     onClose: () => void;
-    onAddToCart: (item: {
+    incrementQuantity: (productId: number, note: string) => void;
+    decrementQuantity: (productId: number, note: string) => void;
+    cartItems: {
         product: ProductModel;
         quantity: number;
         note: string;
         totalPrice: number;
-    }) => void;
+    }[];
 }
 
 
-const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onAddToCart }) => {
-    const [quantity, setQuantity] = useState(1);
+const ProductModal: React.FC<ProductModalProps> = ({
+    product,
+    onClose,
+    incrementQuantity,
+    decrementQuantity,
+    cartItems,
+}) => {
     const [note, setNote] = useState('');
 
-    const handleIncrease = () => setQuantity((prev) => prev + 1);
-    const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+    // Tìm mục giỏ hàng dựa trên productId và note
+    const cartItem = cartItems.find(
+        (item) => item.product.productId === product.productId && item.note === note
+    );
 
-    const handleAddToCart = () => {
-        const totalPrice = product.price * quantity;
-        onAddToCart({
-            product,
-            quantity,
-            note,
-            totalPrice,
-        });
+    const quantity = cartItem ? cartItem.quantity : 0;
+
+    const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setNote(e.target.value);
     };
 
     return (
@@ -52,7 +57,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onAddToCa
                                     aria-label="With textarea"
                                     placeholder="Ghi chú"
                                     value={note}
-                                    onChange={(e) => setNote(e.target.value)}
+                                    onChange={handleNoteChange}
                                 ></textarea>
                             </div>
                             <div className="container-price-quantity mt-3">
@@ -61,17 +66,23 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onAddToCa
                                         <span>Giá: {product.price.toLocaleString()} ₫</span>
                                     </div>
                                     <div className="quantity-control d-flex align-items-center pt-2">
-                                        <button id="increment" className="btn btn-primary btn-sm" onClick={handleDecrease}>
+                                        <button
+                                            id="decrement"
+                                            className="btn btn-primary btn-sm"
+                                            onClick={() => decrementQuantity(product.productId, note)}
+                                            disabled={quantity <= 0}
+                                        >
                                             <i className="bi bi-dash-lg"></i>
                                         </button>
                                         <span className="mx-3 fs-5 text-dark">{quantity}</span>
-                                        <button id="increment" className="btn btn-primary btn-sm" onClick={handleIncrease}>
+                                        <button
+                                            id="increment"
+                                            className="btn btn-primary btn-sm"
+                                            onClick={() => incrementQuantity(product.productId, note)}
+                                        >
                                             <i className="bi bi-plus-lg"></i>
                                         </button>
                                     </div>
-                                </div>
-                                <div className="control-btn-add-to-cart mt-4 d-grid">
-                                    <button  className="btn btn-primary" onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
                                 </div>
                             </div>
                         </div>
@@ -84,3 +95,5 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onAddToCa
 };
 
 export default ProductModal;
+
+

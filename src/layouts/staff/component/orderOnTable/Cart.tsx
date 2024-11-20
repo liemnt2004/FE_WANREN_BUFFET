@@ -30,19 +30,21 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
 
   const fetchOrderDetails = useCallback(async (orderId: number) => {
     const data = await fetchOrderDetailsAPI(orderId);
-    console.log(data)
+    console.log(data);
     if (data) {
       const items = await Promise.all(data.map(async (item: any) => {
-        // Fetch product details
         const productData = await fetchProductDetailsAPI(item.productId);
         console.log("productData: ", productData);
+
+        const updatedProduct = {
+          ...productData,
+          price: item.unitPrice,
+        };
+
         return {
-          product: {
-            ...productData,
-            price: item.unitPrice,
-          },
+          product: updatedProduct,
           quantity: item.quantity,
-          note: item.itemNotes,
+          // note: item.itemNotes, Chỗ này không cần
         };
       }));
       setSelectedItems(items);
@@ -50,6 +52,8 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
       throw new Error('Error fetching selected items');
     }
   }, []);
+
+
 
   useEffect(() => {
     const fetchOrderId = async () => {
