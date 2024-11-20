@@ -27,7 +27,7 @@ type ContentType =
 
 const OrderOnTable: React.FC = () => {
     const { state } = useLocation();
-    const { tableLocation} = state || {};
+    const {tableLocation} = state || {};
     const [selectedContent, setSelectedContent] = useState<ContentType>('hotpot');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSwitchTableModalOpen, setIsSwitchTableModalOpen] = useState(false);

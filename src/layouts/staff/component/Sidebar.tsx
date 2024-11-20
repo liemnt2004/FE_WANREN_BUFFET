@@ -1,14 +1,12 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import logo from '../../customer/assets/img/warenbuffet.png';
 import '../assets/css/styles.css';
-import { AuthContext } from '../../customer/component/AuthContext';
 
 interface SidebarProps {
   onClickContent: (contentType: 'home' | '2nd_floor' | 'gdeli' | 'setting') => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ onClickContent }) => {
-  const { fullName } = useContext(AuthContext);
   const [activeLink, setActiveLink] = useState<'home' | '2nd_floor' | 'gdeli' | 'setting'>('home'); // Default link
 
   const handleClick = (contentType: 'home' | '2nd_floor' | 'gdeli' | 'setting') => {
