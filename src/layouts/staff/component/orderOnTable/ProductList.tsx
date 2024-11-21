@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import {getAllProduct} from '../../../../api/apiStaff/productApi';
+import React, { useEffect, useRef, useState } from 'react';
+import { getAllProduct } from '../../../../api/apiStaff/productApi';
 import ProductModel from '../../../../models/StaffModels/ProductModel';
 import ProductCard from './ProductCard';
 import ProductModal from './ProductModal';
@@ -55,7 +55,6 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
 
         loadProducts();
     }, [area]); // Thêm area vào dependencies
-
 
     const handleImageClick = (product: ProductModel) => {
         setSelectedProduct(product);
@@ -170,6 +169,39 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
         return groups;
     }, {} as { [key: string]: ProductModel[] });
 
+    const typeFoodMapping: { [key: string]: string } = {
+        hotpot: 'Nước lẩu',
+        meat: 'Thịt',
+        seafood: 'Hải sản',
+        meatballs: 'Hàng viên',
+        vegetables: 'Rau củ',
+        noodles: 'Mì - Bún',
+        buffet_tickets: 'Vé buffet',
+        dessert: 'Tráng miệng',
+        mixers: 'Nước pha chế',
+        cold_towel: 'Khăn lạnh',
+        soft_drinks: 'Nước giải khát',
+        beer: 'Bia',
+        mushroom: 'Nấm',
+        wine: 'Rượu',
+    };
+
+    const productRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+    // Scroll to the selected category
+    const scrollToCategory = (category: string) => {
+        const section = productRefs.current[category];
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    // Automatically scroll to the selected category
+    useEffect(() => {
+        if (category) {
+            scrollToCategory(category);
+        }
+    }, [category]);
 
     if (loading) {
         return <div style={{ paddingLeft: '20px' }}>Loading products...</div>;
@@ -184,30 +216,30 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
     }
 
     return (
-        <div style={{ margin: '0 18px 18px 18px' }}>
+        <div style={{ margin: '0 18px 18px 18px'}}>
             {Object.keys(groupedProducts).map((typeFood) => (
-                <div key={typeFood} className="content-section">
-                    <h3>{typeFood}</h3>
+                <div key={typeFood} className="content-section" style={{paddingTop: '15px'}} ref={(el) => productRefs.current[typeFood] = el}>
+                    <h4>{typeFoodMapping[typeFood] || typeFood}</h4>
                     <div className="row g-4 mb-5">
                         {groupedProducts[typeFood].map((product) => {
-                            const totalProductQuantity = getTotalProductQuantity(product.productId); // Get the total quantity for this product
+                            const totalProductQuantity = getTotalProductQuantity(product.productId);
                             return (
                                 <ProductCard
                                     onAddToCart={handleAddToCart}
                                     product={product}
-                                    cartQuantity={totalProductQuantity} 
+                                    cartQuantity={totalProductQuantity}
                                     onImageClick={() => handleImageClick(product)}
                                     incrementQuantity={() => {
                                         const cartItem = cartItems.find(
                                             (item) => item.product.productId === product.productId && item.note === ''
                                         );
-                                        incrementQuantity(product.productId, cartItem?.note || null); // Note mặc định là null
+                                        incrementQuantity(product.productId, cartItem?.note || null);
                                     }}
                                     decrementQuantity={() => {
                                         const cartItem = cartItems.find(
                                             (item) => item.product.productId === product.productId && item.note === ''
                                         );
-                                        decrementQuantity(product.productId, cartItem?.note || null); // Note mặc định là null
+                                        decrementQuantity(product.productId, cartItem?.note || null);
                                     }}
                                 />
                             );
@@ -225,6 +257,7 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
                 />
             )}
         </div>
+
     );
 };
 

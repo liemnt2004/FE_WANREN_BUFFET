@@ -50,23 +50,17 @@ const Checkout1: React.FC = () => {
         }
     };
 
-    const handleSaveChanges = async () => {
-        // Đây là nơi bạn có thể gọi API để lưu lại thay đổi
-        try {
-            // await saveOrderDetails(orderId, orderDetails);  // Giả sử có một API lưu dữ liệu
-            setIsModalOpen(true);
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : "Failed to save order details";
-            setError(errorMessage);
-        }
+    const handleOpenModal = async () => {
+        setIsModalOpen(true);
     };
 
-    const handlePasswordSubmit = () => {
+    const handleSaveChanges = () => {
         const currentPassword = '123'; // Replace with actual password fetching logic
 
         if (passwordInput === currentPassword) {
             setIsEditing(false); // Enable editing if password is correct
             setIsModalOpen(false);
+            // await saveOrderDetails(orderId, orderDetails);  // Giả sử có một API lưu dữ liệu 
             setErrorMessage('');
         } else {
             setErrorMessage('Mật khẩu không chính xác');
@@ -90,7 +84,7 @@ const Checkout1: React.FC = () => {
                             </div>
                             <div className='d-flex justify-content-center align-items-center mt-2'>
                                 <button className="btn btn-secondary mt-2 me-4" onClick={() => setIsModalOpen(false)}>Hủy</button>
-                                <button onClick={handlePasswordSubmit} className="btn btn-primary mt-2">Xác nhận</button>
+                                <button onClick={handleSaveChanges} className="btn btn-primary mt-2">Xác nhận</button>
                             </div>
 
                         </div>
@@ -120,10 +114,10 @@ const Checkout1: React.FC = () => {
                     <h2 className="title-table">Bàn số {orderTableNum} | Xác nhận kiểm đồ</h2>
                     {isEditing && (
 
-                        <h5 style={{cursor: 'pointer'}} onClick={handleSaveChanges} className="title-table fs-6 text-decoration-underline"><i className="bi bi-gear pe-2"></i>Lưu thay đổi</h5>
+                        <h5 style={{ cursor: 'pointer' }} onClick={handleOpenModal} className="title-table fs-6 text-decoration-underline"><i className="bi bi-gear pe-2"></i>Lưu thay đổi</h5>
                     )}
                     {!isEditing && (
-                        <h5 style={{cursor: 'pointer'}} onClick={() => setIsEditing(true)} className="title-table fs-6 text-decoration-underline"><i className="bi bi-gear pe-2"></i>Chỉnh sửa</h5>
+                        <h5 style={{ cursor: 'pointer' }} onClick={() => setIsEditing(true)} className="title-table fs-6 text-decoration-underline"><i className="bi bi-gear pe-2"></i>Chỉnh sửa</h5>
                     )}
 
                 </div>

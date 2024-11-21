@@ -36,6 +36,12 @@ const ProductModal: React.FC<ProductModalProps> = ({
         setNote(e.target.value);
     };
 
+    const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (e.target === e.currentTarget) {
+            onClose();
+        }
+    };
+
     return (
         <div className="ps36231 modal fade show d-block" tabIndex={-1} role="dialog">
             <div className="modal-dialog modal-dialog-centered">
@@ -89,11 +95,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     </div>
                 </div>
             </div>
-            <div className="modal-backdrop fade show"></div>
+            <div className="modal-backdrop fade show" onClick={handleBackdropClick}></div>
         </div>
     );
 };
 
 export default ProductModal;
-
-
