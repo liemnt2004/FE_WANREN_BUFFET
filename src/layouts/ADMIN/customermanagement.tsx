@@ -23,7 +23,17 @@ import {
   fetchCustomerList,
 } from "../../api/apiAdmin/customerApi";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
-
+function getEmployeeToken(): string {
+  const employeeToken = localStorage.getItem("employeeToken");
+  if (!employeeToken) {
+    notification.error({
+      message: "Authentication Error",
+      description: "Please log in to continue.",
+    });
+    throw new Error("Employee token is missing.");
+  }
+  return employeeToken;
+}
 const CustomerManagement: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -49,7 +59,6 @@ const CustomerManagement: React.FC = () => {
   >(null);
   const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] =
     useState(false);
-
   const openEditModal = (customer: CustomerModelAdmin) => {
     setEditCustomer(customer);
     setIsEditModalOpen(true);
@@ -76,11 +85,11 @@ const CustomerManagement: React.FC = () => {
     setTotalPages(null);
     loadMoreCustomers();
   }, [searchQuery]);
-
   const loadMoreCustomers = useCallback(async () => {
     if (loading || (totalPages !== null && page >= totalPages)) return;
     setLoading(true);
     try {
+      const token = getEmployeeToken();
       const response = await fetchCustomerList(page, searchQuery);
       const { data: newCustomers, totalPages: newTotalPages } = response;
 
@@ -98,6 +107,10 @@ const CustomerManagement: React.FC = () => {
       setPage((prevPage) => prevPage + 1);
       setTotalPages(newTotalPages);
     } catch (error) {
+      notification.error({
+        message: "Fetch Failed",
+        description: "Unable to fetch customer data.",
+      });
       console.error("Failed to fetch customers:", error);
     } finally {
       setLoading(false);
@@ -107,7 +120,6 @@ const CustomerManagement: React.FC = () => {
   useEffect(() => {
     loadMoreCustomers();
   }, [loadMoreCustomers]);
-
   const handleScroll = useCallback(() => {
     if (tableContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } =
@@ -148,7 +160,7 @@ const CustomerManagement: React.FC = () => {
     try {
       const updatedCustomerData = await editForm.validateFields();
       if (editCustomer?.customerId) {
-        await updateCustomer(editCustomer.customerId, updatedCustomerData);
+        await updateCustomer(editCustomer.customerId, updatedCustomerData); // `getEmployeeToken` sẽ được gọi bên trong hàm API
         notification.success({
           message: "Customer Updated",
           description: "The customer has been updated successfully!",
@@ -556,7 +568,7 @@ const CustomerManagement: React.FC = () => {
 
           {/* Customer Table */}
           <div className="table-container" ref={tableContainerRef}>
-            <table className="table table-striped">
+            <table className="table-admin table-striped">
               <thead>
                 <tr>
                   <th>CustomerID</th>

@@ -47,11 +47,16 @@ export const fetchOrderDetails = async (orderDetailsLink: string): Promise<Order
         };
       })
     );
-  } catch (error) {
+  } catch (error: any) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      // Không log lỗi nếu là 404
+      return [];
+    }
     console.error("Lỗi khi lấy dữ liệu chi tiết đơn hàng:", error);
     return [];
   }
 };
+
 
 const fetchProductInfo = async (productLink: string): Promise<{ image?: string; productName?: string } | undefined> => {
   try {
@@ -60,7 +65,11 @@ const fetchProductInfo = async (productLink: string): Promise<{ image?: string; 
       image: productResponse.data.image,
       productName: productResponse.data.productName,
     };
-  } catch (error) {
+  } catch (error: any) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      // Không log nếu là lỗi 404
+      return undefined;
+    }
     console.error("Lỗi khi lấy dữ liệu sản phẩm:", error);
     return undefined;
   }
@@ -69,39 +78,53 @@ const fetchProductInfo = async (productLink: string): Promise<{ image?: string; 
 
 
 
+
 // Hàm lấy orders từ API
 export const fetchOrders = async (): Promise<Order[]> => {
-  const response = await axios.get("http://localhost:8080/Orders");
-  const ordersData = response.data._embedded.orders;
-
-  return ordersData.map((order: any) => ({
-    orderId: order.orderId,
-    orderStatus: order.orderStatus,
-    totalAmount: order.totalAmount,
-    notes: order.notes,
-    address: order.address,
-    customerLink: order._links.customer.href,
-    tableLink: order._links?.tablee?.href,
-    orderDetailsLink: order._links.orderDetails.href,
-  }));
-};
-
-// Hàm lấy thông tin customer từ link
-export const fetchCustomerUsername = async (customerLink: string): Promise<string | undefined> => {
   try {
-    const customerResponse = await axios.get(customerLink);
-    return customerResponse.data.username;
-  } catch {
-    return undefined;  // Không cần báo lỗi nếu không tìm thấy customer
+    const response = await axios.get("http://localhost:8080/Orders");
+    const ordersData = response.data._embedded.orders;
+
+    return ordersData.map((order: any) => ({
+      orderId: order.orderId,
+      orderStatus: order.orderStatus,
+      totalAmount: order.totalAmount,
+      notes: order.notes,
+      address: order.address,
+      customerLink: order._links.customer?.href || undefined, // Dùng giá trị mặc định nếu không có link
+      tableLink: order._links?.tablee?.href || null,
+      orderDetailsLink: order._links.orderDetails?.href || undefined,
+    }));
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách đơn hàng:", error);
+    return [];
   }
 };
 
-// Hàm lấy thông tin table từ link
+
+export const fetchCustomerUsername = async (customerLink: string): Promise<string | undefined> => {
+  try {
+    const customerResponse = await axios.get(customerLink);
+    return customerResponse.data.fullName;
+  } catch (error: any) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      return undefined; // Không log lỗi nếu là 404
+    }
+    console.error("Lỗi khi lấy thông tin customer:", error);
+    return undefined;
+  }
+};
+
 export const fetchTableId = async (tableLink: string): Promise<number | null> => {
   try {
     const tableResponse = await axios.get(tableLink);
     return tableResponse.data.tableId;
-  } catch {
-    return null;  // Không cần báo lỗi nếu không tìm thấy table
+  } catch (error: any) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      return null; // Không log lỗi nếu là 404
+    }
+    console.error("Lỗi khi lấy thông tin table:", error);
+    return null;
   }
 };
+

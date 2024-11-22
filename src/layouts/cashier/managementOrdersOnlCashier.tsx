@@ -50,17 +50,36 @@ const ManagementOrdersOnlCashier = () => {
   // Hàm đóng popup
   const closePopup = () => {
     setSelectedOrder(null);
+    setOrderDetails([]); // Đảm bảo xóa thông tin chi tiết đơn hàng
   };
 
   const [orderDetails, setOrderDetails] = useState<OrderDetail[]>([]);
 
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [orderStatus, setOrderStatus] = useState(
+    selectedOrder?.orderStatus || ""
+  ); // Trạng thái được chọn
+
   useEffect(() => {
     const loadOrderDetails = async () => {
       if (selectedOrder && selectedOrder.orderDetailsLink) {
-        const details = await fetchOrderDetails(selectedOrder.orderDetailsLink);
-        setOrderDetails(details);
+        setIsLoading(true);
+        try {
+          const details = await fetchOrderDetails(
+            selectedOrder.orderDetailsLink
+          );
+          setOrderDetails(details);
+        } catch (error) {
+          console.error("Lỗi khi tải chi tiết đơn hàng:", error);
+        } finally {
+          setIsLoading(false); // Kết thúc trạng thái tải
+        }
+      } else {
+        setOrderDetails([]);
       }
     };
+
     loadOrderDetails();
   }, [selectedOrder]);
 
@@ -70,16 +89,21 @@ const ManagementOrdersOnlCashier = () => {
         {orders.map(
           (order) =>
             order.tableId === null && (
-              <CardOrdersOnlCashier
+              <div
+                className="d-flex justify-content-center"
                 key={order.orderId}
-                orderId={order.orderId}
-                orderStatus={order.orderStatus}
-                totalAmount={order.totalAmount}
-                notes={order.notes}
-                address={order.address}
-                username={order.username}
-                onClick={() => handleCardClick(order)} // Thêm sự kiện onClick
-              />
+              >
+                <CardOrdersOnlCashier
+                  key={order.orderId}
+                  orderId={order.orderId}
+                  orderStatus={order.orderStatus}
+                  totalAmount={order.totalAmount}
+                  notes={order.notes}
+                  address={order.address}
+                  username={order.username}
+                  onClick={() => handleCardClick(order)} // Thêm sự kiện onClick
+                />
+              </div>
             )
         )}
       </CardGrid>
@@ -91,57 +115,67 @@ const ManagementOrdersOnlCashier = () => {
             <div className="row">
               <div
                 className="col-6 border rounded p-2"
-                style={{
-                  height: "75vh",
-                  overflowY: "auto", // Enables vertical scrolling if content overflows
-                }}
+                style={{ height: "75vh", overflowY: "auto" }}
               >
-                {orderDetails.map((detail) => (
-                  <CardSpacing>
-                    <CardFoodOrderCashier
-                      // key={1}
-                      imageUrl={detail.productImage}
-                      productName={detail.productName}
-                      price={detail.unitPrice}
-                      quantity={detail.quantity}
-                    />
-                  </CardSpacing>
-                ))}
+                {isLoading ? (
+                  <p>Đang tải chi tiết đơn hàng...</p>
+                ) : orderDetails.length > 0 ? (
+                  orderDetails.map((detail) => (
+                    <CardSpacing key={detail.orderDetailId}>
+                      <CardFoodOrderCashier
+                        imageUrl={detail.productImage}
+                        productName={detail.productName}
+                        price={detail.unitPrice}
+                        quantity={detail.quantity}
+                      />
+                    </CardSpacing>
+                  ))
+                ) : (
+                  <p>Không có chi tiết đơn hàng.</p>
+                )}
               </div>
+
               <OrderContainer className="col-6">
                 <OrderTitle>Chi Tiết Đơn Hàng</OrderTitle>
-
                 <OrderDetailRow>
                   <OrderLabel>Mã Đơn Hàng:</OrderLabel>{" "}
                   <span>{selectedOrder.orderId}</span>
                 </OrderDetailRow>
-
                 <OrderDetailRow>
-                  <OrderLabel>Trạng Thái:</OrderLabel>{" "}
-                  <OrderBadge>{selectedOrder.orderStatus}</OrderBadge>
+                  <OrderLabel>Trạng Thái:</OrderLabel>
+                  <SelectStatus
+                    value={selectedOrder.orderStatus}
+                    onChange={(e) => setOrderStatus(e.target.value)} // Cập nhật trạng thái được chọn
+                  >
+                    <option value="WAITING">Đang đợi</option>
+                    <option value="PREPARING_ORDER">Đang chuẩn bị</option>
+                    <option value="DELIVERED">Đã hoàn thành</option>
+                  </SelectStatus>
                 </OrderDetailRow>
-
                 <OrderDetailRow>
                   <OrderLabel>Tổng Số Tiền:</OrderLabel>{" "}
                   <PriceText>{selectedOrder.totalAmount}đ</PriceText>
                 </OrderDetailRow>
-
                 <OrderDetailRow>
                   <OrderLabel>Địa Chỉ:</OrderLabel>{" "}
                   <span>{selectedOrder.address}</span>
                 </OrderDetailRow>
-
                 <OrderDetailRow>
                   <OrderLabel>Tên Người Dùng:</OrderLabel>{" "}
                   <span>{selectedOrder.username}</span>
                 </OrderDetailRow>
-
                 <OrderDetailRow>
                   <OrderLabel>Ghi Chú:</OrderLabel>{" "}
                   <NotesText>
                     {selectedOrder.notes || "Không có ghi chú thêm"}
                   </NotesText>
                 </OrderDetailRow>
+                {/* Nút Lưu */}
+                <SaveButton onClick={() => console.log("Lưu đơn hàng")}>
+                  Lưu
+                </SaveButton>
+                &emsp;
+                <SaveButton onClick={closePopup}>Thoát</SaveButton>
               </OrderContainer>
             </div>
           </PopupCard>
@@ -231,4 +265,35 @@ const PriceText = styled.span`
 const NotesText = styled.span`
   font-style: italic;
   color: #666;
+`;
+
+const SaveButton = styled.button`
+  background-color: #007bff;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+  }
+`;
+
+const SelectStatus = styled.select`
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #fff;
+  font-size: 14px;
+  color: #333;
+
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
 `;

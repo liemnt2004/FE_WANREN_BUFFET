@@ -291,6 +291,7 @@ const EmployeeManagement: React.FC = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
+                <i className="fas fa-search search-icon"></i>
               </div>
               <select className="form-select filter-select">
                 <option value="">Filter</option>
@@ -324,7 +325,7 @@ const EmployeeManagement: React.FC = () => {
                     <tr key={employee.userId}>
                       <td>{employee.userId}</td>
                       <td>{employee.username}</td>
-                      <td>{employee.fullName}</td>
+                      <td>{employee.fullname}</td>
                       <td>{employee.email}</td>
                       <td>{employee.phoneNumber}</td>
                       <td>{employee.address}</td>

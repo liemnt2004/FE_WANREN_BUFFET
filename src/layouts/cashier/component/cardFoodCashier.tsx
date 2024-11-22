@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import '../assets/css/cashierCardFood.css';
-
+import React, { useEffect, useState } from "react";
+import styled from "styled-components";
+import "../assets/css/cashierCardFood.css";
 
 type Props = {
   img?: string;
@@ -13,7 +12,15 @@ type Props = {
   onToggleStatus: (productId: number, currentStatus: string) => void;
 };
 
-const CardFoodCashier = ({ img, price, name, description, status, productId, onToggleStatus }: Props) => {
+const CardFoodCashier = ({
+  img,
+  price,
+  name,
+  description,
+  status,
+  productId,
+  onToggleStatus,
+}: Props) => {
   const [isOn, setIsOn] = useState(status);
 
   useEffect(() => {
@@ -27,10 +34,18 @@ const CardFoodCashier = ({ img, price, name, description, status, productId, onT
 
   return (
     <div className="flex flex-col bg-white w-72 h-80 rounded-md py-3 px-6 border">
-      <img src={img} alt={name} className="w-full h-32 object-cover rounded-md" />
-      <h3 className="text-center font-bold text-xl text-gray-800 m-0 pb-2">{price}đ</h3>
+      <img
+        src={img}
+        alt={name}
+        className="w-full h-32 object-cover rounded-md"
+      />
+      <h3 className="text-center font-bold text-xl text-gray-800 m-0 pb-2">
+        {price}đ
+      </h3>
       <h3 className="text-base font-semibold text-gray-900 m-0 p-0">{name}</h3>
-      <p className="text-sm text-gray-500 pb-3 p-0 m-0 truncate-description">{description}</p>
+      <p className="text-sm text-gray-500 pb-3 p-0 m-0 truncate-description">
+        {description}
+      </p>
       <div className="flex justify-around items-center py-3">
         <StyledWrapper>
           <label className="switch">
@@ -48,10 +63,6 @@ const CardFoodCashier = ({ img, price, name, description, status, productId, onT
     </div>
   );
 };
-
-
-
-
 
 const StyledWrapper = styled.div`
   .switch {
@@ -117,9 +128,7 @@ const StyledWrapper = styled.div`
   .toggle:checked + .slider:before {
     content: "on";
     transform: translateX(32px);
-  }`;
-
-
-
+  }
+`;
 
 export default CardFoodCashier;

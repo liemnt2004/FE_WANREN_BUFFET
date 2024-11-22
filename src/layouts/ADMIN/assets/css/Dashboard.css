@@ -1,0 +1,462 @@
+/* General Styles */
+
+
+
+/* Main Dashboard Container */
+.MainDash {
+    margin-left: 14%;
+    padding: 2rem;
+}
+
+/* Cards */
+.parentContainer {
+    display: flex;
+    gap: 10px;
+}
+
+/* Compact Card */
+.CompactCard {
+    width: 250px;
+    background: linear-gradient(rgb(187, 103, 255) 0%, rgb(196, 132, 243) 100%);
+    box-shadow: rgb(224, 198, 245) 0px 10px 20px;
+    border-radius: 0.7rem;
+    color: white;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+/* Radial Progress Bar */
+.radialBar {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.CircularProgressbar {
+    width: 4rem;
+    margin: 0 auto;
+}
+
+.CircularProgressbar-path {
+    stroke: white;
+    stroke-width: 12px;
+}
+
+.CircularProgressbar-trail {
+    stroke: rgba(255, 255, 255, 0.2);
+    stroke-width: 12px;
+}
+
+.CircularProgressbar-text {
+    fill: white;
+    font-size: 12px;
+    font-weight: bold;
+    text-anchor: middle;
+}
+
+/* Card Detail */
+.detail {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.detail > span:nth-child(1) {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.detail > span:nth-child(2) {
+    font-size: 12px;
+}
+
+/* Expanded Card */
+.ExpandedCard {
+    display: none;
+    position: absolute;
+    width: 70%;
+    height: 80vh;
+    background: linear-gradient(rgb(187, 103, 255) 0%, rgb(196, 132, 243) 100%);
+    box-shadow: rgb(224, 198, 245) 0px 10px 20px;
+    border-radius: 1rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    padding: 1rem;
+    z-index: 999;
+}
+
+.ExpandedCard > span:nth-of-type(1) {
+    color: white;
+    font-size: 26px;
+    font-weight: bold;
+    text-shadow: 0px 0px 15px white;
+}
+
+.chartContainer {
+    width: 100%;
+    height: 90%; /* Biểu đồ sẽ chiếm toàn bộ chiều rộng và chiều cao của container */
+    background-color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 1rem;
+}
+
+#chart {
+    width: 100%;
+    height: 100%; /* Biểu đồ sẽ mở rộng ra toàn bộ vùng chứa */
+}
+
+.close {
+    align-self: flex-end;
+    cursor: pointer;
+    font-size: 2rem;
+    color: white;
+}
+
+/* Media Queries */
+@media screen and (max-width: 1200px) {
+    .ExpandedCard {
+        top: 2rem;
+        height: 45vh;
+        left: 6rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .ExpandedCard {
+        top: 8rem;
+        height: 50%;
+        left: 25px;
+        width: 80%;
+    }
+}
+
+.chartContainer {
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 1rem;
+}
+
+#chart {
+    width: 100%;
+    height: 100%;
+}
+
+/* Cards */
+.cards {
+    display: flex;
+    gap: 20px;
+}
+
+.detail {
+    flex: 1 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+
+
+.card.sales {
+    background: linear-gradient(rgb(187, 103, 255) 0%, rgb(196, 132, 243) 100%);
+    box-shadow: rgb(224, 198, 245) 0px 10px 20px 0px;
+}
+
+.card.revenue {
+    background: linear-gradient(rgb(255, 145, 157) 0%, rgb(252, 146, 157) 100%);
+    box-shadow: rgb(253, 192, 199) 0px 10px 20px 0px;
+}
+
+.card.expenses {
+    background: linear-gradient(rgb(248, 212, 154) -146.42%, rgb(255, 202, 113) -46.42%);
+    box-shadow: rgb(249, 213, 155) 0px 10px 20px 0px;
+}
+
+.progress-circle {
+    flex: 1 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.progress-circle span {
+    font-size: 14px;
+    color: #030303;
+}
+
+.card h3 {
+    margin: 50px 0 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.card h1 {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.card span {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 24px;
+    opacity: 0.7;
+}
+
+/* Recent Orders */
+.recent-orders {
+    margin-top: 2rem;
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.recent-orders h2 {
+    margin-bottom: 1rem;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.orders-table th, .orders-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+}
+
+.orders-table th {
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+.orders-table tr {
+    border-bottom: 1px solid #f4f4f9;
+}
+
+.status {
+    padding: 0.4rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.9rem;
+}
+
+.status.approved {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status.pending {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status.delivered {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.details-link {
+    color: #007bff;
+    cursor: pointer;
+}
+
+/* Updates Section */
+.updates {
+    margin-top: 2rem;
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.update-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.update-item img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.update-info {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Chart Section */
+.customer-review {
+    margin-top: 2rem;
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+
+
+
+
+/* Activity and Payment */
+
+.chart-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.chart-card {
+    background:none; /* Dark background */
+    padding: 20px;
+    border-radius: 10px;
+    width: 48%;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.chart-card h3 {
+    color: rgb(0, 0, 0);
+    margin-bottom: 20px;
+}
+
+#activityChart, #paymentChart {
+    height: 300px; /* Set height for charts */
+}
+
+
+
+
+
+
+
+
+/* General card styling */
+.card.financial-overview {
+    /* background-color: #1e1e1e; */
+    background: none;
+    color: rgb(0, 0, 0);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    width: 51vh;
+    height: 87vh;
+}
+
+.progress-circle {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.circle {
+    position: relative;
+}
+
+.circular-chart {
+    width: 100px;
+    height: 100px;
+}
+
+.circle-bg {
+    fill: none;
+    stroke: #eaeaea;
+    stroke-width: 3.8;
+}
+
+.circle {
+    fill: none;
+    stroke-width: 2.8;
+    stroke: #ff4e50;
+    stroke-linecap: round;
+    animation: progress 1s ease-out forwards;
+}
+
+.percentage {
+    fill: rgb(0, 0, 0);
+    font-size: 10px;
+    text-anchor: middle;
+}
+
+.label, .balance-text {
+    display: block;
+    color: #aaa;
+    margin-top: 10px;
+}
+
+.available-balance h2 {
+    font-size: 32px;
+    margin: 0;
+}
+
+.available-balance p {
+    color: #bbb;
+}
+
+.categories {
+    margin-top: 20px;
+}
+
+.category-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #333;
+}
+
+.category-item .icon {
+    margin-right: 10px;
+}
+
+.amount {
+    color: #e94e77;
+}
+
+
+
+@keyframes progress {
+    0% {
+        stroke-dasharray: 0, 100;
+    }
+    100% {
+        stroke-dasharray: 68, 100;
+    }
+}
+
+
+/* General chart styling */
+.chart-container {
+    width: 100%;
+    height: 300px; /* Set the same height for all charts */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 1rem;
+}
+
+#chart, #revenueChart, #expensesChart, #activityChart, #paymentChart {
+    width: 100%;
+    height: 100%; /* Ensure charts take full height */
+}
+
+
