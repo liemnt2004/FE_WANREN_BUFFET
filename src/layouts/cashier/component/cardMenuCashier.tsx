@@ -12,9 +12,11 @@ const CardMenuCashier = ({ icon, title, color1, color2 }: Props) => {
     <StyledWrapper color1={color1} color2={color2}>
       <div className="card">
         <div className="card-details">
-          <p className="text-title"><i className={`bi ${icon}`}></i></p>
+          <p className="text-title">
+            <i className={`bi ${icon}`}></i>
+          </p>
         </div>
-        <button className="card-button">{title}</button>
+        <button className="card-button text-center w-auto">{title}</button>
       </div>
     </StyledWrapper>
   );
@@ -25,7 +27,11 @@ const StyledWrapper = styled.div<{ color1?: string; color2?: string }>`
     width: 190px;
     height: 254px;
     border-radius: 20px;
-    background: linear-gradient(135deg, ${({ color1 }) => color1 || "#ffffff"} 0%, ${({ color2 }) => color2 || "#ffffff"} 100%);
+    background: linear-gradient(
+      135deg,
+      ${({ color1 }) => color1 || "#ffffff"} 0%,
+      ${({ color2 }) => color2 || "#ffffff"} 100%
+    );
     position: relative;
     padding: 1.8rem;
     border: 2px solid #c3c6ce;
@@ -36,7 +42,7 @@ const StyledWrapper = styled.div<{ color1?: string; color2?: string }>`
   .card-details {
     color: black;
     height: 100%;
-    gap: .5em;
+    gap: 0.5em;
     display: grid;
     place-content: center;
   }
@@ -49,7 +55,7 @@ const StyledWrapper = styled.div<{ color1?: string; color2?: string }>`
     background-color: #008bf8;
     color: #fff;
     font-size: 1rem;
-    padding: .5rem 1rem;
+    padding: 0.5rem 1rem;
     position: absolute;
     left: 50%;
     bottom: 0;

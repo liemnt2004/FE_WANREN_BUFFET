@@ -1,40 +1,76 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { fetchProducts } from "../../../api/apiCashier/foodApi";
 
-// Định nghĩa kiểu Product
-interface Product{
-    productId?: number;
-    productName?: string;
-    description?: string;
-    price?: number;
-    createdDate?: string;
-    updatedDate?: string | null;
-    typeFood?: string;
-    image?: string;
-    productStatus?: string;
-    quantity?: number;
-  }
+interface Product {
+  productId?: number;
+  productName?: string;
+  description?: string;
+  price?: number;
+  createdDate?: string;
+  updatedDate?: string | null;
+  typeFood?: string;
+  image?: string;
+  productStatus?: string;
+  quantity?: number;
+}
 
-// Định nghĩa kiểu dữ liệu của Context
 interface ProductsContextType {
+  products: Product[];
   filteredProducts: Product[];
+  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   setFilteredProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 }
 
-// Tạo Context
-const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
+const ProductsContext = createContext<ProductsContextType | undefined>(
+  undefined
+);
 
-// Provider cho Context
-export const ProductsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const ProductsProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
 
+  // Tải dữ liệu từ API khi Provider khởi tạo
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const data = await fetchProducts();
+        setProducts(data);
+        setFilteredProducts(data); // Lọc ban đầu đồng bộ với products
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu sản phẩm:", error);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
+  // Cập nhật filteredProducts mỗi khi products thay đổi
+  useEffect(() => {
+    setFilteredProducts(products);
+  }, [products]);
+
   return (
-    <ProductsContext.Provider value={{ filteredProducts, setFilteredProducts }}>
+    <ProductsContext.Provider
+      value={{
+        products,
+        filteredProducts,
+        setProducts,
+        setFilteredProducts,
+      }}
+    >
       {children}
     </ProductsContext.Provider>
   );
 };
 
-// Hook để sử dụng Context
 export const useProducts = () => {
   const context = useContext(ProductsContext);
   if (!context) {

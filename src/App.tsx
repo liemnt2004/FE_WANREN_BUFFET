@@ -1,5 +1,11 @@
-import React, { useContext } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useContext, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import MenuCustomer from "./layouts/customer/menuCustomer";
 import MenuProductCustomer from "./layouts/customer/menuProductCustomer";
 import IndexCustomer from "./layouts/customer/indexCustomer";
@@ -36,6 +42,13 @@ import Checkout1 from "./layouts/staff/component/checkout/Checkout1";
 import Checkout2 from "./layouts/staff/component/checkout/Checkout2";
 import Checkout3 from "./layouts/staff/component/checkout/Checkout3";
 import Order from "./layouts/staff/component/orderOnTable/Order";
+import { ProductsProvider } from "./layouts/cashier/component/ProductsContext";
+import MainLayoutCashier from "./layouts/cashier/mainLayoutCashier";
+import DashboardCashier from "./layouts/cashier/dashboardCashier";
+import ManagementTableCashier from "./layouts/cashier/managementTableCashier";
+import ManagementFoodCashier from "./layouts/cashier/managementFoodCashier";
+import ManagementOrdersOnlCashier from "./layouts/cashier/managementOrdersOnlCashier";
+import LoginCashier from "./layouts/cashier/loginCashier";
 
 function App() {
   return (
@@ -51,6 +64,8 @@ function App() {
 export default App;
 
 export function Routing() {
+  const location = useLocation();
+
   const isHiddenRoute = (pathname: string) => {
     // Kiểm tra nếu đường dẫn chính xác hoặc khớp với "/orderOnTable/:tableId" hoặc "/checkout/order/:orderId/:step"
     return hiddenRoutes.some(
@@ -77,6 +92,70 @@ export function Routing() {
     "/orderOnTable",
     "/checkout/order",
   ];
+
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+
+  const cashierRoutes = [
+    "/cashier",
+    "/cashier/orders",
+    "/cashier/dashboard",
+    "/cashier/table",
+    "/cashier/food",
+    "/cashier/ordersOnline",
+  ];
+  const cashierExcludedRoutes = ["/cashier/login"];
+
+  // Kiểm tra nếu đường dẫn là /cashier/login thì không hiển thị menu nào
+  if (cashierExcludedRoutes.includes(location.pathname)) {
+    return (
+      <Routes>
+        <Route
+          path="/cashier/login"
+          element={
+            !isLoggedIn ? (
+              <LoginCashier
+                onLoginSuccess={function (): void {
+                  setIsLoggedIn(true);
+                  <Navigate to="/cashier" />;
+                  throw new Error("Function not implemented.");
+                }}
+              />
+            ) : (
+              <Navigate to="/cashier" />
+            )
+          }
+        />
+      </Routes>
+    );
+  }
+
+  if (cashierRoutes.includes(location.pathname)) {
+    return (
+      <ProductsProvider>
+        <Routes>
+          <Route
+            path="/cashier"
+            element={
+              isLoggedIn ? (
+                <MainLayoutCashier />
+              ) : (
+                <Navigate to="/cashier/login" />
+              )
+            }
+          >
+            <Route index element={<DashboardCashier />} />
+            {/* Thêm các tuyến khác cho cashier */}
+            <Route path="table" element={<ManagementTableCashier />} />
+            <Route path="food" element={<ManagementFoodCashier />} />
+            <Route
+              path="ordersOnline"
+              element={<ManagementOrdersOnlCashier />}
+            />
+          </Route>
+        </Routes>
+      </ProductsProvider>
+    );
+  }
 
   return (
     <>
