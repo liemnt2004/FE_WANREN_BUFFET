@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import MenuCustomer from "./layouts/customer/menuCustomer";
 import MenuProductCustomer from "./layouts/customer/menuProductCustomer";
@@ -28,22 +29,26 @@ import PrivateRoute from "./layouts/PrivateRoute";
 import EmployeeLoginComponent from "./layouts/EmployeeLoginComponent";
 import EmployeePublicRoute from "./layouts/EmployeePublicRoute";
 import CustomerManagement from "./layouts/ADMIN/customermanagement";
-import MenuAdmin from "./layouts/ADMIN/menuAdmin";
 import StaffLayout from "./layouts/ADMIN/StaffLayout";
 import EmployeeManagement from "./layouts/ADMIN/employeemanagement";
 import MainDash from "./layouts/ADMIN/Dashboard";
 import NotFoundPage from "./layouts/404";
 import Management from "./layouts/ADMIN/manager";
 import PromotionManagement from "./layouts/ADMIN/promotionManagement";
-import WorkShift from "./layouts/ADMIN/workshiftManagement";
-import LoginCashier from "./layouts/cashier/loginCashier";
+import WorkShift from "./layouts/ADMIN/WorkShift";
+import StaffIndex from "./layouts/staff/component/StaffIndex";
+import CheckoutLayout from "./layouts/staff/component/checkout/CheckoutLayout";
+import Checkout1 from "./layouts/staff/component/checkout/Checkout1";
+import Checkout2 from "./layouts/staff/component/checkout/Checkout2";
+import Checkout3 from "./layouts/staff/component/checkout/Checkout3";
+import Order from "./layouts/staff/component/orderOnTable/Order";
+import { ProductsProvider } from "./layouts/cashier/component/ProductsContext";
 import MainLayoutCashier from "./layouts/cashier/mainLayoutCashier";
 import DashboardCashier from "./layouts/cashier/dashboardCashier";
 import ManagementTableCashier from "./layouts/cashier/managementTableCashier";
 import ManagementFoodCashier from "./layouts/cashier/managementFoodCashier";
 import ManagementOrdersOnlCashier from "./layouts/cashier/managementOrdersOnlCashier";
-import { useLocation } from "react-router-dom";
-import { ProductsProvider } from "./layouts/cashier/component/ProductsContext";
+import LoginCashier from "./layouts/cashier/loginCashier";
 
 function App() {
   return (
@@ -61,6 +66,16 @@ export default App;
 export function Routing() {
   const location = useLocation();
 
+  const isHiddenRoute = (pathname: string) => {
+    // Kiểm tra nếu đường dẫn chính xác hoặc khớp với "/orderOnTable/:tableId" hoặc "/checkout/order/:orderId/:step"
+    return hiddenRoutes.some(
+      (route) =>
+        pathname === route ||
+        (route === "/orderOnTable" && /^\/orderOnTable\/\d+$/.test(pathname)) ||
+        (route === "/checkout/order" &&
+          /^\/checkout\/order\/\d+\/step\d+$/.test(pathname)) // Kiểm tra "/checkout/order/:orderId/:step"
+    );
+  };
   const hiddenRoutes = [
     "/admin",
     "/login",
@@ -74,6 +89,8 @@ export function Routing() {
     "/admin/customers",
     "/admin/employees",
     "/admin/dashboard",
+    "/orderOnTable",
+    "/checkout/order",
   ];
 
   const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -143,7 +160,7 @@ export function Routing() {
   return (
     <>
       {/* Hiển thị MenuCustomer trừ khi ở các routes ẩn */}
-      {!hiddenRoutes.includes(window.location.pathname) && <MenuCustomer />}
+      {!isHiddenRoute(window.location.pathname) && <MenuCustomer />}
 
       <Routes>
         {/* Các route công khai */}
@@ -187,11 +204,17 @@ export function Routing() {
         />
 
         {/* Route dành cho nhân viên */}
+        <Route path="/orderOnTable/:tableId" element={<Order />} />
+        <Route path="/checkout/order/:orderId" element={<CheckoutLayout />}>
+          <Route path="step1" element={<Checkout1 />} />
+          <Route path="step2" element={<Checkout2 />} />
+          <Route path="step3" element={<Checkout3 />} />
+        </Route>
         <Route
           path="/staff"
           element={
             <PrivateRoute allowedRoles={["STAFF", "ADMIN"]}>
-              <IndexCustomer />
+              <StaffIndex />
             </PrivateRoute>
           }
         />

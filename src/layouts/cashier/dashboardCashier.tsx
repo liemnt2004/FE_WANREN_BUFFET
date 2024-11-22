@@ -19,7 +19,7 @@ const DashboardCashier = () => {
         <Link to="food" className="d-flex justify-content-center">
           <CardMenuCashier
             icon="bi-egg-fried"
-            title="Món Ăn"
+            title="Món&#160;Ăn"
             color1="#a1c4fd"
             color2="#c2e9fb"
           />
@@ -27,7 +27,7 @@ const DashboardCashier = () => {
         <Link to="ordersOnline" className="d-flex justify-content-center">
           <CardMenuCashier
             icon="bi-basket"
-            title="Đơn Online"
+            title="Đơn&#160;Online"
             color1="#84fab0"
             color2="#8fd3f4"
           />
@@ -35,7 +35,7 @@ const DashboardCashier = () => {
         <Link to="ordersOnline" className="d-flex justify-content-center">
           <CardMenuCashier
             icon="bi-calendar-check"
-            title="Đặt Bàn"
+            title="Đặt&#160;Bàn"
             color1="#C2649A"
             color2="#E4C7B7"
           />
@@ -46,7 +46,7 @@ const DashboardCashier = () => {
 };
 
 const StyledWrapper = styled.div`
-.card-container {
+  .card-container {
     display: grid;
     grid-template-columns: repeat(
       auto-fit,

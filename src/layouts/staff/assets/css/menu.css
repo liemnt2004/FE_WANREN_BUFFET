@@ -1,0 +1,45 @@
+
+span {
+    color: var(--colorFont);
+    padding: 0 !important;
+}
+
+.total-price .table {
+    margin-top: 10px;
+    border-top: 3px solid var(--colorPrimary);
+}
+
+td input {
+    width: 50px;
+    height: 30px;
+    padding: 5px;
+}
+
+td a {
+    color: var(--colorPrimary);
+    font-size: 15px;
+    padding-top: 30px;
+    text-decoration: underline;
+}
+
+.cart-info img {
+    margin-right: 10px;
+}
+
+.btn-danger {
+    color: var(--first-color);
+    border: 2px solid var(--first-color);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    background: none;
+}
+
+#quantity-controls {
+    display: flex;
+    align-items: center;
+}
+
+#quantity {
+    font-size: 1rem;
+}
