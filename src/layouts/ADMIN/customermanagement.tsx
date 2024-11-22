@@ -23,17 +23,6 @@ import {
   fetchCustomerList,
 } from "../../api/apiAdmin/customerApi";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
-function getEmployeeToken(): string {
-  const employeeToken = localStorage.getItem("employeeToken");
-  if (!employeeToken) {
-    notification.error({
-      message: "Authentication Error",
-      description: "Please log in to continue.",
-    });
-    throw new Error("Employee token is missing.");
-  }
-  return employeeToken;
-}
 const CustomerManagement: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
