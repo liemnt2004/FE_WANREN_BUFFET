@@ -1,6 +1,7 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import logo from '../../../customer/assets/img/warenbuffet.png';
+import TransferTableModal from '../TransferTableModal';
 
 interface SidebarProps {
   toggleId: string;
@@ -11,6 +12,14 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal }) => {
   const { tableId } = useParams<{ tableId: string }>();
+  const [showTransferModal, setShowTransferModal] = useState<boolean>(false);
+  const navigate = useNavigate();
+
+  const handleTransfer = (orderId: number, newTableId: number) => {
+    alert(`Chuyển bàn thành công!`);
+    navigate(`/orderOnTable/${newTableId}`);
+    setShowTransferModal(false);
+  };
 
   const sidebarLinks = [
     { label: 'Nước lẩu', value: 'hotpot' },
@@ -26,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal }) =>
     { label: 'Nước giải khát', value: 'soft_drinks' },
     { label: 'Bia', value: 'beer' },
     { label: 'Rượu', value: 'wine' },
-    { label: 'Tráng miệng', value: 'dessert' }, // Thêm mục dessert cho ALACARTE
+    { label: 'Tráng miệng', value: 'dessert' },
   ];
 
   return (
@@ -99,11 +108,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal }) =>
           </div>
         </div>
         <div className="sidebar__actions">
-          <button>
+          <button onClick={() => setShowTransferModal(true)}>
             <i className="ri-moon-clear-fill sidebar__link sidebar__theme" id="theme-button">
-              <span style={{ color: 'var(--firstColor)' }}>Giao diện</span>
+              <span style={{ color: 'var(--firstColor)' }}>Chuyển bàn</span>
             </i>
           </button>
+          {showTransferModal && (
+            <TransferTableModal
+              currentTableId={Number(tableId)}
+              onClose={() => setShowTransferModal(false)}
+              onTransfer={handleTransfer}
+            />
+          )}
           <button className="sidebar__link" onClick={onOpenExitModal} >
             <i className="ri-logout-box-r-fill"></i>
             <span style={{ color: 'var(--firstColor)' }}>Thoát</span>

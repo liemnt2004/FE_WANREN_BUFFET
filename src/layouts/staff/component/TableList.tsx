@@ -143,6 +143,12 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
     }
   };
 
+  const handleTransferTable = (orderId: number, newTableId: number) => {
+    // Gọi API chuyển bàn và cập nhật thông tin
+    console.log(`Chuyển đơn hàng ${orderId} sang bàn ${newTableId}`);
+    // Sau khi chuyển bàn, cập nhật trạng thái bàn hoặc điều hướng
+  };
+
   const handleConfirm = (tableId: number, tableNumber: number, adults: number, children: number) => {
     if (tableNumber > 0 && adults > 0) { // Ensure at least one adult is selected
       console.log(`TableNumber: ${tableNumber}, Adults: ${adults}, Children: ${children}`);

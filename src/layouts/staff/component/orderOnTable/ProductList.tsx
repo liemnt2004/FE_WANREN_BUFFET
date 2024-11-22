@@ -25,15 +25,15 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
                 const fetchedProducts = await getAllProduct();
 
                 const adjustProductPrice = (product: ProductModel, area: string): ProductModel => {
-                    if (area === 'Table' && product.typeFood !== 'buffet_tickets' && product.typeFood !== 'mixers' && product.typeFood !== 'soft_drinks') {
+                    if (area === 'Table' && product.typeFood !== 'buffet_tickets' && product.typeFood !== 'mixers' && product.typeFood !== 'soft_drinks' && product.typeFood !== 'beer' && product.typeFood !== 'wine') {
                         const adjustedProduct = new ProductModel(
-                            product.productId,         // Sử dụng getter để lấy thông tin
+                            product.productId,
                             product.productName,
                             product.description,
-                            0,                         // Đặt giá thành 0
+                            0,                       
                             product.typeFood,
                             product.image,
-                            product.quantity || 0,     // Đảm bảo có quantity
+                            product.quantity || 0,    
                             product.productStatus,
                             product.category
                         );
@@ -42,9 +42,13 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
                     return product;
                 };
 
-                const adjustedProducts = fetchedProducts.map((product) => adjustProductPrice(product, area));
+                const filteredProducts = fetchedProducts.filter(
+                    (product) => product.productStatus === 'IN_STOCK'
+                );
 
-                setProducts(adjustedProducts); // Đảm bảo kiểu dữ liệu
+                const adjustedProducts = filteredProducts.map((product) => adjustProductPrice(product, area));
+
+                setProducts(adjustedProducts); 
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Failed to fetch products';
                 setError(errorMessage);

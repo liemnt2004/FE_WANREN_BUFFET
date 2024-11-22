@@ -82,6 +82,7 @@ const OrderOnTable: React.FC = () => {
         setSelectedItemsSubtotal(subtotal);
     };
 
+    
 
     return (
         <div>

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import '../../assets/css/styles.css'
 import ProductModel from '../../../../models/StaffModels/ProductModel';
+import { fetchOrderDetailsAPI, fetchOrderIdByTableId, fetchProductDetailsAPI } from '../../../../api/apiStaff/orderForStaffApi';
+import { useParams } from 'react-router-dom';
 
 interface ProductCardProps {
     product: ProductModel;
@@ -26,7 +28,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
     const [quantity, setQuantity] = useState(1);
     const [note, setNote] = useState('');
-
+    const [selectedItems, setSelectedItems] = useState<{ product: ProductModel; quantity: number; note: string }[]>([]);
+    const { tableId } = useParams<{ tableId: string }>();
     const handleAddToCart = () => {
         const totalPrice = product.price * 1;
         onAddToCart({
@@ -36,12 +39,62 @@ const ProductCard: React.FC<ProductCardProps> = ({
             totalPrice,
         });
     };
+
+    const fetchOrderDetails = useCallback(async (orderId: number) => {
+        const data = await fetchOrderDetailsAPI(orderId);
+        console.log(data);
+        if (data) {
+            const items = await Promise.all(data.map(async (item: any) => {
+                const productData = await fetchProductDetailsAPI(item.productId);
+                console.log("productData: ", productData);
+
+                const updatedProduct = {
+                    ...productData,
+                    price: item.unitPrice,
+                };
+
+                return {
+                    product: updatedProduct,
+                    quantity: item.quantity,
+                };
+            }));
+            setSelectedItems(items);
+        } else {
+            throw new Error('Error fetching selected items');
+        }
+    }, []);
+
+    useEffect(() => {
+        const fetchOrderId = async () => {
+            try {
+                const orderId = await fetchOrderIdByTableId(Number(tableId));
+                if (orderId) {
+                    fetchOrderDetails(orderId);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        fetchOrderId();
+    }, [fetchOrderDetails, tableId]);
+
+    const isProductOrdered = selectedItems.some(item => item.product.productId === product.productId);
+
     return (
         <div className="col-6 col-md-3">
             <div
-                className="card border border-0 p-3 card-custom"
+                className="card border border-0 p-3 card-custom position-relative"
                 style={{ boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px' }}
             >
+                {isProductOrdered && (
+                    <div
+                        className="position-absolute top-0 end-0 bg-danger text-white fw-bold rounded-pill px-2 py-1"
+                        style={{ fontSize: '0.75rem', zIndex: 10 }}
+                    >
+                        Đã gọi
+                    </div>
+                )}
                 <img
                     src={product.image}
                     className="rounded-3"
@@ -58,17 +111,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
                         {cartQuantity > 0 ? (
                             <div>
                                 <button id="increment"
-                            type="button"
-                            className="btn btn-danger" onClick={decrementQuantity}><i className="bi bi-dash-lg"></i></button>
+                                    type="button"
+                                    className="btn btn-danger" onClick={decrementQuantity}><i className="bi bi-dash-lg"></i></button>
                                 <span className='px-2 text-dark fw-bold'>{cartQuantity}</span>
                                 <button id="increment"
-                            type="button"
-                            className="btn btn-danger" onClick={incrementQuantity}><i className="bi bi-plus-lg"></i></button>
+                                    type="button"
+                                    className="btn btn-danger" onClick={incrementQuantity}><i className="bi bi-plus-lg"></i></button>
                             </div>
                         ) : (
                             <button id="increment"
-                            type="button"
-                            className="btn btn-danger" onClick={handleAddToCart}><i className="bi bi-plus-lg"></i></button>
+                                type="button"
+                                className="btn btn-danger" onClick={handleAddToCart}><i className="bi bi-plus-lg"></i></button>
                         )}
                     </div>
                 </div>
