@@ -127,16 +127,16 @@ const Checkout3: React.FC = () => {
                             {orderDetails.map((orderDetail, index) => (
                                 <tr key={index}>
                                     <td>{orderDetail.quantity + " x " + orderDetail.productName}</td>
-                                    <td>{orderDetail.price + " đ"}</td>
+                                    <td>{orderDetail.price?.toLocaleString() + " đ"}</td>
                                 </tr>
                             ))}
                             <tr>
                                 <td>Tổng tiền hàng</td>
-                                <td>{amount + " đ"}</td>
+                                <td>{amount.toLocaleString() + " đ"}</td>
                             </tr>
                             <tr>
                                 <td>VAT</td>
-                                <td>{vat + " đ"}</td>
+                                <td>{vat.toLocaleString() + " đ"}</td>
                             </tr>
                         </table>
                     </div>
@@ -146,7 +146,7 @@ const Checkout3: React.FC = () => {
                         <table className="price-all-sp">
                             <thead>
                                 <th>Tổng tiền cần thanh toán</th>
-                                <th>{lastAmount + " đ"}</th>
+                                <th>{lastAmount.toLocaleString() + " VNĐ"}</th>
                             </thead>
                         </table>
                     </div>

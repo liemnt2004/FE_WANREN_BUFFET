@@ -215,6 +215,8 @@
     position: absolute;
     width: 120px;
     bottom: 1px;
+    top: 50%;
+    transform: translateY(-50%);
   }
 
   .sidebar__info h3 {
@@ -255,6 +257,7 @@
   }
 
   .sidebar__link {
+    cursor: pointer;
     position: relative;
     display: grid;
     grid-template-columns: repeat(2, max-content);

@@ -8,9 +8,9 @@ interface MainContentProps {
 const MainContent: React.FC<MainContentProps> = ({ content }) => {
   return (
     <main className="main" id='main'>
-     {content === 'home' && <TableList area="home" />}
-     {content === '2nd_floor' && <TableList area="2nd_floor" />}
-      {content === 'gdeli' && <h1>Welcome to G-Deli</h1>}
+      {content === 'home' && <TableList area="home" />}
+      {content === '2nd_floor' && <TableList area="2nd_floor" />}
+      {content === 'gdeli' && <TableList area="gdeli" />}
       {content === 'setting' && <h1>Cài Đặt</h1>}
     </main>
   );

@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 import banerPrice from '../assets/img/cothaygia_t11.png';
 import { Tables } from '../../../models/StaffModels/Tables';
 
 const TableModal: React.FC<{
   table: Tables | null;
   onClose: () => void;
-  onConfirm: (tableNumber: number, adults: number, children: number) => void;
+  onConfirm: (tableId: number, tableNumber: number, adults: number, children: number) => void;
 }> = ({ table, onClose, onConfirm }) => {
   const [adults, setAdults] = useState<number>(2);
   const [children, setChildren] = useState<number>(0);
 
   const handleConfirm = () => {
     if (table) {
-      onConfirm(table.tableNumber, adults, children);
+      onConfirm(table.tableId, table.tableNumber, adults, children);
     }
     onClose();
   };
@@ -72,7 +72,7 @@ const TableModal: React.FC<{
 };
 
 interface TableListProps {
-  area: 'home' | '2nd_floor';
+  area: 'home' | '2nd_floor' | 'gdeli';
 }
 
 const TableList: React.FC<TableListProps> = ({ area }) => {
@@ -103,9 +103,15 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
   }, []);
 
   const filteredTables = tables.filter((table) => {
-    if (area === 'home') return table.tableNumber <= 25;
-    if (area === '2nd_floor') return table.tableNumber > 25 && table.tableNumber <= 50;
-    return true;
+    // Lọc bàn theo location
+    if (table.location === 'GDeli') {
+      return area === 'gdeli';
+    } else if (table.location === 'Table') {
+      // Chia bàn số theo tầng
+      if (area === 'home') return table.tableNumber <= 25;
+      if (area === '2nd_floor') return table.tableNumber > 25 && table.tableNumber <= 50;
+    }
+    return false; // Không hiển thị bàn ngoài điều kiện
   });
 
   const handleCheckout = async (tableId: number) => {
@@ -133,16 +139,22 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
       setShowModal(true);
     } else {
       // Directly navigate to the order page for non-empty tables
-      navigate(`/orderOnTable/${table.tableNumber}`, { state: { adults: 2, children: 0 } });
+      navigate(`/orderOnTable/${table.tableId}`, { state: { adults: 2, children: 0, tableLocation: table.location } });
     }
   };
 
-  const handleConfirm = (tableNumber: number, adults: number, children: number) => {
+  const handleTransferTable = (orderId: number, newTableId: number) => {
+    // Gọi API chuyển bàn và cập nhật thông tin
+    console.log(`Chuyển đơn hàng ${orderId} sang bàn ${newTableId}`);
+    // Sau khi chuyển bàn, cập nhật trạng thái bàn hoặc điều hướng
+  };
+
+  const handleConfirm = (tableId: number, tableNumber: number, adults: number, children: number) => {
     if (tableNumber > 0 && adults > 0) { // Ensure at least one adult is selected
       console.log(`TableNumber: ${tableNumber}, Adults: ${adults}, Children: ${children}`);
 
-      // Navigate to the menu selection page with the table number in the URL path
-      navigate(`/orderOnTable/${tableNumber}`, { state: { adults, children } });
+      // Navigate to the menu selection page with the table number and location in the URL path
+      navigate(`/orderOnTable/${tableId}`, { state: { adults, children, tableLocation: selectedTable?.location } });
     } else {
       alert("Please enter valid numbers for adults and children.");
     }
@@ -159,7 +171,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
           <div className="col-md-3" key={table.tableId} onClick={() => handleTableClick(table)}>
             <div className={`card table-card ${table.tableStatus === 'EMPTY_TABLE' ? '' : 'table-card-active'}`}>
               <div className="card-body">
-                <h5 className="card-title text-center">Bàn {table.tableNumber}</h5>
+                <h5 className="card-title text-center">Bàn {table.tableNumber} <span style={{ fontWeight: 'bold' }}>{table.location === 'GDeli' ? '(Deli)' : ''}</span> </h5>
                 {table.tableStatus !== 'EMPTY_TABLE' && (
                   <>
                     <p className="table-status">2h14'</p>

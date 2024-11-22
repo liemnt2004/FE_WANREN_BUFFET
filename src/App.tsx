@@ -32,11 +32,11 @@ import Management from "./layouts/ADMIN/manager";
 import PromotionManagement from "./layouts/ADMIN/promotionManagement";
 import WorkShift from "./layouts/ADMIN/workshiftManagement";
 import StaffIndex from "./layouts/staff/component/StaffIndex";
-import OrderOnTable from "./layouts/staff/component/orderOnTable/orderOnTable";
 import CheckoutLayout from "./layouts/staff/component/checkout/CheckoutLayout";
 import Checkout1 from "./layouts/staff/component/checkout/Checkout1";
 import Checkout2 from "./layouts/staff/component/checkout/Checkout2";
 import Checkout3 from "./layouts/staff/component/checkout/Checkout3";
+import Order from "./layouts/staff/component/orderOnTable/Order";
 
 function App() {
   return (
@@ -126,7 +126,7 @@ export function Routing() {
         />
 
         {/* Route dành cho nhân viên */}
-        <Route path="/orderOnTable/:tableId" element={<OrderOnTable />} />
+        <Route path="/orderOnTable/:tableId" element={<Order />} />
         <Route path="/checkout/order/:orderId" element={<CheckoutLayout />}>
           <Route path="step1" element={<Checkout1 />} />
           <Route path="step2" element={<Checkout2 />} />
