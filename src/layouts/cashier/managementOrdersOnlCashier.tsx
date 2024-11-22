@@ -18,6 +18,7 @@ type Order = {
 
 const ManagementOrdersOnlCashier = () => {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>(""); // Khai báo state `searchQuery`
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -45,6 +46,7 @@ const ManagementOrdersOnlCashier = () => {
       }
     };
 
+    // Hàm lấy thông tin bổ sung từ các link
     const fetchUsernamesAndTableIds = async (orders: Order[]) => {
       const updatedOrders = await Promise.all(
         orders.map(async (order) => {
@@ -56,7 +58,6 @@ const ManagementOrdersOnlCashier = () => {
               const customerResponse = await axios.get(order.customerLink);
               username = customerResponse.data.username;
             } catch (error) {
-            //   console.error(`Lỗi khi lấy customer cho order ${order.orderId}:`, error);
               username = '';
             }
           }
@@ -67,7 +68,7 @@ const ManagementOrdersOnlCashier = () => {
               const tableResponse = await axios.get(order.tableLink);
               tableId = tableResponse.data.tableId;
             } catch (error) {
-                tableId = null;
+              tableId = null;
             }
           }
 
@@ -81,28 +82,58 @@ const ManagementOrdersOnlCashier = () => {
     fetchOrders();
   }, []);
 
+  // Hàm xử lý thay đổi trong ô tìm kiếm
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+
+  // Lọc đơn hàng theo giá trị tìm kiếm
+  const filteredOrders = orders.filter(order =>
+    order.orderId?.toString().includes(searchQuery)
+  );
+
   return (
-    <CardGrid>
-{orders.map((order) => (
-  order.tableId === null && (
-    <CardOrdersOnlCashier
-      key={order.orderId}
-      orderId={order.orderId}
-      orderStatus={order.orderStatus}
-      totalAmount={order.totalAmount}
-      notes={order.notes}
-      address={order.address}
-      username={order.username}
-    />
-  )
-))}
-    </CardGrid>
+    <>
+      {/* Ô tìm kiếm */}
+      <SearchInput
+        type="text"
+        placeholder="Tìm kiếm theo mã đơn hàng"
+        value={searchQuery}
+        onChange={handleSearchChange}
+      />
+
+      {/* Hiển thị danh sách đơn hàng */}
+      <CardGrid>
+        {filteredOrders.map((order) => (
+          order.tableId === null && (
+            <CardOrdersOnlCashier
+              key={order.orderId}
+              orderId={order.orderId}
+              orderStatus={order.orderStatus}
+              totalAmount={order.totalAmount}
+              notes={order.notes}
+              address={order.address}
+              username={order.username}
+            />
+          )
+        ))}
+      </CardGrid>
+    </>
   );
 };
 
 export default ManagementOrdersOnlCashier;
 
-// Styled components
+// Styled components cho ô tìm kiếm và lưới hiển thị thẻ
+const SearchInput = styled.input`
+  margin: 16px;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  width: calc(100% - 32px);
+  font-size: 16px;
+`;
+
 const CardGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -115,4 +146,5 @@ const CardGrid = styled.div`
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-  }`
+  }
+`;
