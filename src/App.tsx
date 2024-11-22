@@ -23,14 +23,13 @@ import PrivateRoute from "./layouts/PrivateRoute";
 import EmployeeLoginComponent from "./layouts/EmployeeLoginComponent";
 import EmployeePublicRoute from "./layouts/EmployeePublicRoute";
 import CustomerManagement from "./layouts/ADMIN/customermanagement";
-import MenuAdmin from "./layouts/ADMIN/menuAdmin";
 import StaffLayout from "./layouts/ADMIN/StaffLayout";
 import EmployeeManagement from "./layouts/ADMIN/employeemanagement";
 import MainDash from "./layouts/ADMIN/Dashboard";
 import NotFoundPage from "./layouts/404";
 import Management from "./layouts/ADMIN/manager";
 import PromotionManagement from "./layouts/ADMIN/promotionManagement";
-import WorkShift from "./layouts/ADMIN/workshiftManagement";
+import WorkShift from "./layouts/ADMIN/WorkShift";
 import StaffIndex from "./layouts/staff/component/StaffIndex";
 import CheckoutLayout from "./layouts/staff/component/checkout/CheckoutLayout";
 import Checkout1 from "./layouts/staff/component/checkout/Checkout1";
@@ -54,10 +53,12 @@ export default App;
 export function Routing() {
   const isHiddenRoute = (pathname: string) => {
     // Kiểm tra nếu đường dẫn chính xác hoặc khớp với "/orderOnTable/:tableId" hoặc "/checkout/order/:orderId/:step"
-    return hiddenRoutes.some(route => 
-      pathname === route || 
-      (route === "/orderOnTable" && /^\/orderOnTable\/\d+$/.test(pathname)) || 
-      (route === "/checkout/order" && /^\/checkout\/order\/\d+\/step\d+$/.test(pathname)) // Kiểm tra "/checkout/order/:orderId/:step"
+    return hiddenRoutes.some(
+      (route) =>
+        pathname === route ||
+        (route === "/orderOnTable" && /^\/orderOnTable\/\d+$/.test(pathname)) ||
+        (route === "/checkout/order" &&
+          /^\/checkout\/order\/\d+\/step\d+$/.test(pathname)) // Kiểm tra "/checkout/order/:orderId/:step"
     );
   };
   const hiddenRoutes = [
@@ -74,12 +75,10 @@ export function Routing() {
     "/admin/employees",
     "/admin/dashboard",
     "/orderOnTable",
-    "/checkout/order"
+    "/checkout/order",
   ];
 
   return (
-
-
     <>
       {/* Hiển thị MenuCustomer trừ khi ở các routes ẩn */}
       {!isHiddenRoute(window.location.pathname) && <MenuCustomer />}
