@@ -1,11 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import {
-  Tabs,
-  TabsProps,
-  theme,
   Calendar,
   Popover,
   Button,
@@ -14,14 +11,25 @@ import {
   Input,
   Select,
   Table,
-  message,
 } from "antd";
-import StickyBox from "react-sticky-box";
 import dayjs, { Dayjs } from "dayjs";
 import classNames from "classnames";
 import FormItem from "antd/es/form/FormItem";
-import WorkShiftModel from "../../models/AdminModels/WorkShiftModel";
-import { ListWorkShift, updateWorkShift } from "../../api/apiAdmin/workshif";
+import WorkScheduleModel from "../../models/AdminModels/WorkScheduleModel";
+import {
+  createWorkSchedule,
+  getWorkSchedulesByDate,
+} from "../../api/apiAdmin/workschedulesApi";
+
+const shiftOptions = [
+  { value: 1, label: "Ca sáng: ( 8:30 - 16:00 )" },
+  { value: 2, label: "Ca tối: ( 16:00 - 22:30 )" },
+  { value: 3, label: "Gãy: ( 8:30 - 22:30 )" },
+  { value: 4, label: "Thẳng sáng: ( 8:30 - 20:30 )" },
+  { value: 5, label: "Thẳng tối: ( 11:00 - 16:00 )" },
+  { value: 6, label: "Giữa 1: ( 11:00 - 16:00 )" },
+  { value: 7, label: "Giữa 2: ( 11:00 - 20:00 )" },
+];
 
 const Scheduleworkshifts: React.FC = () => {
   const [visibleDate, setVisibleDate] = useState<string | null>(null);
@@ -29,7 +37,10 @@ const Scheduleworkshifts: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
   const [username, setUsername] = useState<string>("");
+
   const [shiftId, setShiftId] = useState<number | null>(null);
+  const [dataForSelectedDate, setDataForSelectedDate] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false); // Trạng thái tải dữ liệu
 
   const openAddModal = (date: Dayjs) => {
     setSelectedDate(date);
@@ -43,30 +54,35 @@ const Scheduleworkshifts: React.FC = () => {
     setShiftId(null);
   };
 
-  const openEditModal = (date: Dayjs) => {
+  const openEditModal = async (date: Dayjs) => {
     setSelectedDate(date);
+    setIsLoading(true);
     setIsEditModalOpen(true);
+    try {
+      // Gọi API để lấy danh sách công việc theo ngày
+      const schedules = await getWorkSchedulesByDate(date.format("YYYY-MM-DD"));
+      setDataForSelectedDate(
+        schedules.map((schedule, index) => ({
+          key: index,
+          username: schedule.username,
+          fullName: schedule.fullName,
+          userType: schedule.userType,
+          shiftId: schedule.shiftId,
+          workDate: schedule.workDate.toLocaleDateString(),
+        }))
+      );
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách công việc:", error);
+      alert("Không thể lấy danh sách công việc. Vui lòng thử lại.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const closeEditModal = () => {
     setIsEditModalOpen(false);
     setSelectedDate(null);
-  };
-
-  // Hàm xử lý khi nhấn nút "Xác nhận" trong modal "Thêm"
-  const handleAddShift = async () => {
-    if (!username || !shiftId || !selectedDate) {
-      message.error("Vui lòng nhập đầy đủ thông tin");
-      return;
-    }
-
-    try {
-      await updateWorkShift(username, shiftId, selectedDate.toDate());
-      message.success("Đã cập nhật ca làm việc thành công");
-      closeAddModal();
-    } catch (error: any) {
-      message.error(error.message || "Đã xảy ra lỗi khi cập nhật ca làm việc");
-    }
+    setDataForSelectedDate([]);
   };
 
   const dateFullCellRender = (date: Dayjs) => {
@@ -131,6 +147,28 @@ const Scheduleworkshifts: React.FC = () => {
     );
   };
 
+  const handleAddWorkSchedule = async () => {
+    if (!selectedDate || !username || !shiftId) {
+      alert("Vui lòng nhập đầy đủ thông tin.");
+      return;
+    }
+
+    const workSchedule = new WorkScheduleModel(
+      username,
+      shiftId,
+      selectedDate.toDate()
+    );
+
+    try {
+      await createWorkSchedule(workSchedule);
+      alert("Thêm ca thành công!");
+      closeAddModal();
+    } catch (error) {
+      console.error("Lỗi khi thêm ca:", error);
+      alert("Thêm ca thất bại. Vui lòng thử lại.");
+    }
+  };
+
   return (
     <div
       onClick={() => {
@@ -185,7 +223,7 @@ const Scheduleworkshifts: React.FC = () => {
           <Button key="cancel" onClick={closeAddModal}>
             Hủy
           </Button>,
-          <Button key="submit" type="primary" onClick={handleAddShift}>
+          <Button key="submit" type="primary" onClick={handleAddWorkSchedule}>
             Xác nhận
           </Button>,
         ]}
@@ -210,36 +248,7 @@ const Scheduleworkshifts: React.FC = () => {
                   .toLowerCase()
                   .includes(input.toLowerCase())
               }
-              options={[
-                {
-                  value: 1,
-                  label: "Ca sáng: ( 8:30 - 16:00 )",
-                },
-                {
-                  value: 2,
-                  label: "Ca tối: ( 16:00 - 22:30 )",
-                },
-                {
-                  value: 3,
-                  label: "Gãy: ( 8:30 - 22:30 )",
-                },
-                {
-                  value: 4,
-                  label: "Thẳng sáng: ( 8:30 - 20:30 )",
-                },
-                {
-                  value: 5,
-                  label: "Thẳng tối: ( 11:00 - 16:00 )",
-                },
-                {
-                  value: 6,
-                  label: "Giữa 1: ( 11:00 - 16:00 )",
-                },
-                {
-                  value: 7,
-                  label: "Giữa 2: ( 11:00 - 20:00 )",
-                },
-              ]}
+              options={shiftOptions}
             />
           </FormItem>
         </Form>
@@ -254,173 +263,46 @@ const Scheduleworkshifts: React.FC = () => {
         width={1250}
         onCancel={closeEditModal}
         footer={null}
-        style={{ width: "10000px" }}
       >
-        <Table columns={columns}></Table>
+        {isLoading ? (
+          <p>Loading...</p>
+        ) : dataForSelectedDate.length === 0 ? (
+          <p>Không có dữ liệu cho ngày này.</p>
+        ) : (
+          <Table
+            columns={[
+              {
+                title: "STT",
+                key: "index",
+                render: (text: any, record: any, index: number) => index + 1,
+              },
+              { title: "Username", dataIndex: "username", key: "username" },
+              { title: "Full Name", dataIndex: "fullName", key: "fullName" },
+              { title: "User Type", dataIndex: "userType", key: "userType" },
+              { title: "Shift ID", dataIndex: "shiftId", key: "shiftId" },
+              { title: "Work Date", dataIndex: "workDate", key: "workDate" },
+              {
+                title: "Chức năng",
+                key: "actions",
+                render: (_, record) => (
+                  <Button
+                    type="link"
+                    onClick={() => {
+                      alert(`Chỉnh sửa cho: ${record.username}`);
+                    }}
+                  >
+                    Sửa
+                  </Button>
+                ),
+              },
+            ]}
+            dataSource={dataForSelectedDate}
+            rowKey="username"
+          />
+        )}
       </Modal>
     </div>
   );
 };
 
-const columns = [
-  {
-    title: "STT",
-    key: "index",
-    render: (text: any, record: any, index: number) => index + 1,
-  },
-  {
-    title: "Username",
-    dataIndex: "username",
-    key: "username",
-  },
-  {
-    title: "Full Name",
-    dataIndex: "fullName",
-    key: "fullName",
-  },
-  {
-    title: "Location",
-    dataIndex: "location",
-    key: "location",
-  },
-  {
-    title: "Ca làm",
-    dataIndex: "shift",
-    key: "shift",
-  },
-  {
-    title: "Chức năng",
-    key: "actions",
-    render: () => <Button type="link">Sửa</Button>,
-  },
-];
-
-const WorkShiftCalendar: React.FC = () => {
-  const [data, setData] = useState<WorkShiftModel[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [selectedMonth, setSelectedMonth] = useState<number>(
-    new Date().getMonth() + 1
-  );
-  const [currentYear] = useState<number>(new Date().getFullYear());
-
-  const fetchData = async (month: number, year: number) => {
-    setLoading(true);
-    try {
-      const shifts = await ListWorkShift(month, year);
-      setData(shifts);
-    } catch (error) {
-      console.error("Failed to fetch work shifts:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData(selectedMonth, currentYear);
-  }, [selectedMonth, currentYear]);
-
-  return (
-    <div>
-      <div
-        style={{ marginBottom: "16px", display: "flex", alignItems: "center" }}
-      >
-        <label style={{ marginRight: "8px" }}>Chọn tháng:</label>
-        <Select
-          style={{ width: 120 }}
-          value={selectedMonth}
-          onChange={(value) => setSelectedMonth(value)}
-          options={Array.from({ length: 12 }, (_, i) => ({
-            label: `Tháng ${i + 1}`,
-            value: i + 1,
-          }))}
-        />
-      </div>
-      <Table
-        columns={columnsTab1}
-        dataSource={data}
-        loading={loading}
-        rowKey="userId"
-      />
-    </div>
-  );
-};
-
-const columnsTab1 = [
-  {
-    title: "STT",
-    dataIndex: "userId",
-    key: "userId",
-    sorter: (a: WorkShiftModel, b: WorkShiftModel) =>
-      Number(a.userId) - Number(b.userId),
-    defaultSortOrder: "ascend" as "ascend",
-  },
-  {
-    title: "Username",
-    dataIndex: "username",
-    key: "username",
-  },
-  {
-    title: "Full Name",
-    dataIndex: "fullName",
-    key: "fullName",
-  },
-  {
-    title: "Position",
-    dataIndex: "position",
-    key: "position",
-  },
-  {
-    title: "Total Hours",
-    dataIndex: "totalHours",
-    key: "totalHours",
-  },
-  {
-    title: "Thao tác",
-    key: "actions",
-    render: () => <Button type="link">Chi tiết</Button>,
-  },
-];
-
-const items = [
-  {
-    label: "Danh sách nhân viên",
-    key: "1",
-    children: <WorkShiftCalendar />,
-  },
-  {
-    label: "Lịch làm việc",
-    key: "2",
-    children: <Scheduleworkshifts />,
-  },
-];
-
-const WorkShift: React.FC = () => {
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
-
-  const renderTabBar: TabsProps["renderTabBar"] = (
-    props,
-    DefaultTabBar: React.ComponentType<any>
-  ) => (
-    <StickyBox offsetTop={5} offsetBottom={0} style={{ zIndex: 1 }}>
-      <DefaultTabBar {...props} style={{ background: colorBgContainer }} />
-    </StickyBox>
-  );
-
-  return (
-    <React.Fragment>
-      <div className="container-fluid">
-        <div className="main-content">
-          <Tabs
-            defaultActiveKey="1"
-            renderTabBar={renderTabBar}
-            items={items}
-          />
-        </div>
-      </div>
-    </React.Fragment>
-  );
-};
-
-export default WorkShift;
+export default Scheduleworkshifts;

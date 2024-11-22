@@ -30,7 +30,7 @@ import MainDash from "./layouts/ADMIN/Dashboard";
 import NotFoundPage from "./layouts/404";
 import Management from "./layouts/ADMIN/manager";
 import PromotionManagement from "./layouts/ADMIN/promotionManagement";
-import WorkShift from "./layouts/ADMIN/workshiftManagement";
+import WorkShift from "./layouts/ADMIN/WorkShift";
 
 function App() {
   return (
