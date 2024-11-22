@@ -89,7 +89,6 @@ const CustomerManagement: React.FC = () => {
     if (loading || (totalPages !== null && page >= totalPages)) return;
     setLoading(true);
     try {
-      const token = getEmployeeToken();
       const response = await fetchCustomerList(page, searchQuery);
       const { data: newCustomers, totalPages: newTotalPages } = response;
 
