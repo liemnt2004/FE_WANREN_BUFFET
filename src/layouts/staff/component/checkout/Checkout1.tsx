@@ -1,31 +1,50 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import "../../assets/css/checkout_for_staff.css";
-import { useParams, useNavigate } from "react-router-dom";
-import OrderDetailsWithNameProduct from "../../../../models/StaffModels/OrderDetailsWithNameProduct";
-import { getOrderDetailWithNameProduct, getTableNumberByOrderId } from "../../../../api/apiStaff/orderForStaffApi";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { fetchOrderDetailsAPI, fetchProductDetailsAPI, getTableNumberByOrderId, updateOrderAmount, updateQuantityOrderDetails } from "../../../../api/apiStaff/orderForStaffApi";
+import ProductModel from "../../../../models/StaffModels/ProductModel";
 
 const Checkout1: React.FC = () => {
+    const location = useLocation();
+    const { tableId } = location.state || {};
     const { orderId } = useParams<{ orderId: string }>();
     const [error, setError] = useState<string | null>(null);
     const [orderTableNum, setOrderTableNum] = useState<number>(0);
-    const [orderDetails, setOrderDetails] = useState<OrderDetailsWithNameProduct[]>([]);
+    const [orderDetails, setOrderDetails] = useState<{ orderDetailId: number, product: ProductModel; quantity: number; note: string }[]>([]);
     const [isEditing, setIsEditing] = useState<boolean>(false);  // Trạng thái chỉnh sửa
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [passwordInput, setPasswordInput] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const loadOrderDetails = async () => {
-            try {
-                const fetchedOrderDetails = await getOrderDetailWithNameProduct(Number(orderId));
-                setOrderDetails(fetchedOrderDetails);
-            } catch (err) {
-                const errorMessage = err instanceof Error ? err.message : "Failed to fetch orderDetails";
-                setError(errorMessage);
-            }
-        };
+    const fetchOrderDetails = useCallback(async (orderId: number) => {
+        const data = await fetchOrderDetailsAPI(orderId);
+        if (data) {
+            const items = await Promise.all(data.map(async (item: any) => {
+                const productData = await fetchProductDetailsAPI(item.productId);
+                console.log("productData: ", productData);
 
+                const updatedProduct = {
+                    ...productData,
+                    price: item.unitPrice,
+                };
+
+                return {
+                    orderDetailId: item.orderDetailId,
+                    product: updatedProduct,
+                    quantity: item.quantity,
+                };
+            }));
+            // console.log(items);
+            setOrderDetails(items);
+        } else {
+            throw new Error('Error fetching selected items');
+        }
+    }, []);
+
+
+    useEffect(() => {
+        fetchOrderDetails(Number(orderId));
         const loadTableNum = async () => {
             try {
                 const fetchedTableNum = await getTableNumberByOrderId(Number(orderId));
@@ -37,8 +56,7 @@ const Checkout1: React.FC = () => {
         };
 
         loadTableNum();
-        loadOrderDetails();
-    }, [orderId]);
+    }, [fetchOrderDetails, orderId]);
 
     const handleQuantityChange = (index: number, operation: 'increase' | 'decrease') => {
         const updatedOrderDetails = [...orderDetails];
@@ -50,22 +68,59 @@ const Checkout1: React.FC = () => {
         }
     };
 
+
+    const saveOrderDetails = async (orderDetails: { orderDetailId: number, product: ProductModel; quantity: number }[]) => {
+        const updatePayload = orderDetails.map((item) => ({
+            id: item.orderDetailId,
+            quantity: item.quantity,
+        }));
+
+        try {
+            const updatedOrderDetails = await updateQuantityOrderDetails(updatePayload);
+            console.log('Updated OrderDetails:', updatedOrderDetails);
+            let totalAmount = 0;
+            orderDetails.forEach((item: { quantity: number, product: ProductModel }) => {
+                totalAmount += item.quantity * item.product.price;
+            });
+            await updateOrderAmount(Number(orderId), totalAmount);
+            console.log(totalAmount);
+            return updatedOrderDetails;
+        } catch (error) {
+            console.error('Error updating order details:', error);
+            throw error;
+        }
+    };
+
+
     const handleOpenModal = async () => {
         setIsModalOpen(true);
     };
 
-    const handleSaveChanges = () => {
-        const currentPassword = '123'; // Replace with actual password fetching logic
+    const handleSaveChanges = async () => {
+        const currentPassword = '123';
 
         if (passwordInput === currentPassword) {
-            setIsEditing(false); // Enable editing if password is correct
-            setIsModalOpen(false);
-            // await saveOrderDetails(orderId, orderDetails);  // Giả sử có một API lưu dữ liệu 
-            setErrorMessage('');
+            try {
+                await saveOrderDetails(orderDetails);
+                setIsEditing(false);
+                setIsModalOpen(false);
+                setErrorMessage('');
+            } catch (error) {
+                setErrorMessage('Failed to save changes. Please try again.');
+            }
         } else {
             setErrorMessage('Mật khẩu không chính xác');
         }
     };
+
+    const handleContinue = () => {
+        if (isEditing) {
+            handleOpenModal();
+        } else {
+            navigate(`/checkout/order/${orderId}/step2`, { state: { tableId: tableId } });
+        }
+    }
+
     return (
         <div className="ps36231-checkout-staff-1">
 
@@ -133,7 +188,7 @@ const Checkout1: React.FC = () => {
                             <tbody>
                                 {orderDetails.map((orderDetail, index) => (
                                     <tr key={index}>
-                                        <td>{orderDetail.productName}</td>
+                                        <td>{orderDetail.product.productName}</td>
                                         {isEditing ? (
                                             <td className="text-end">
                                                 <button
@@ -172,14 +227,14 @@ const Checkout1: React.FC = () => {
                 </div>
                 <div className="container-method-checkout"></div>
                 <div className="container-button">
-                    <button onClick={() => navigate(`/checkout/order/${orderId}/step2`)}>Tiếp tục</button>
+                    <button onClick={handleContinue}>Tiếp tục</button>
                 </div>
             </div>
             <div className="step-checkout">
                 <div>
-                    <button onClick={() => navigate(`/checkout/order/${orderId}/step1`)}>1</button>
-                    <button onClick={() => navigate(`/checkout/order/${orderId}/step2`)}>2</button>
-                    <button onClick={() => navigate(`/checkout/order/${orderId}/step3`)}>3</button>
+                    <button style={{backgroundColor: '#bd4242'}}>1</button>
+                    <button>2</button>
+                    <button>3</button>
                 </div>
             </div>
         </div>

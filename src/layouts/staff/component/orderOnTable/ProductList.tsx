@@ -30,10 +30,10 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
                             product.productId,
                             product.productName,
                             product.description,
-                            0,                       
+                            0,
                             product.typeFood,
                             product.image,
-                            product.quantity || 0,    
+                            product.quantity || 0,
                             product.productStatus,
                             product.category
                         );
@@ -48,7 +48,7 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
 
                 const adjustedProducts = filteredProducts.map((product) => adjustProductPrice(product, area));
 
-                setProducts(adjustedProducts); 
+                setProducts(adjustedProducts);
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Failed to fetch products';
                 setError(errorMessage);
@@ -192,13 +192,17 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
 
     const productRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-    // Scroll to the selected category
     const scrollToCategory = (category: string) => {
         const section = productRefs.current[category];
         if (section) {
-            section.scrollIntoView({ behavior: 'smooth' });
+            const headerHeight = document.querySelector('header')?.clientHeight || 0;
+            window.scrollTo({
+                top: section.offsetTop - headerHeight - 10,
+                behavior: 'smooth',
+            });
         }
     };
+
 
     // Automatically scroll to the selected category
     useEffect(() => {
@@ -220,9 +224,9 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
     }
 
     return (
-        <div style={{ margin: '0 18px 18px 18px'}}>
+        <div style={{ margin: '0 18px 18px 18px' }}>
             {Object.keys(groupedProducts).map((typeFood) => (
-                <div key={typeFood} className="content-section" style={{paddingTop: '15px'}} ref={(el) => productRefs.current[typeFood] = el}>
+                <div key={typeFood} className="content-section" style={{ paddingTop: '15px' }} ref={(el) => productRefs.current[typeFood] = el}>
                     <h4>{typeFoodMapping[typeFood] || typeFood}</h4>
                     <div className="row g-4 mb-5">
                         {groupedProducts[typeFood].map((product) => {

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Tables } from '../../../models/StaffModels/Tables';
 import { fetchOrderIdByTableId } from '../../../api/apiStaff/orderForStaffApi';
+import { notification } from 'antd';
+import { CloseCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 
 const TransferTableModal: React.FC<{
     currentTableId: number | null;  // Thay currentTable thành currentTableId
@@ -11,14 +13,30 @@ const TransferTableModal: React.FC<{
     const [loading, setLoading] = useState<boolean>(true);
     const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
     const [orderId, setOrderId] = useState<number>();
-    const [selectedFloor, setSelectedFloor] = useState<'floor1' | 'floor2'>('floor1'); // Trạng thái để chọn khu vực
+    const [selectedFloor, setSelectedFloor] = useState<'floor1' | 'floor2'>('floor1');
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [passwordInput, setPasswordInput] = useState<string>('');
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [api, contextHolder] = notification.useNotification();
+
+    const openNotification = (message: string, description: string, icon: React.ReactNode, pauseOnHover: boolean = true) => {
+        api.open({
+            message,
+            description,
+            showProgress: true,
+            pauseOnHover,
+            placement: 'topRight',
+            duration: 3,
+            icon,
+        });
+    };
 
     const handleOpenModal = () => {
         if (!selectedTableId) {
-            alert('Vui lòng chọn bàn mới để chuyển!');
+            openNotification(
+                'Chuyển bàn',
+                'Vui lòng chọn bàn mới để chuyển!',
+                <InfoCircleOutlined style={{ color: '#1890ff' }} />
+            );
             return;
         }
         setIsModalOpen(true);
@@ -68,7 +86,7 @@ const TransferTableModal: React.FC<{
         };
 
         fetchOrderId();
-    }, []);
+    }, [currentTableId]);
 
     const handleSaveChanges = () => {
         const currentPassword = '123';
@@ -76,9 +94,12 @@ const TransferTableModal: React.FC<{
         if (passwordInput === currentPassword) {
             handleTransfer();
             setIsModalOpen(false);
-            setErrorMessage('');
         } else {
-            setErrorMessage('Mật khẩu không chính xác');
+            openNotification(
+                'Xác nhận',
+                'Mật khẩu không chính xác!',
+                <CloseCircleOutlined style={{ color: '#f5222d' }} />
+            );
         }
     };
 
@@ -104,10 +125,18 @@ const TransferTableModal: React.FC<{
                 onClose();
             } catch (error) {
                 console.error('Error transferring table:', error);
-                alert('Có lỗi xảy ra khi chuyển bàn!');
+                openNotification(
+                    'Chuyển bàn',
+                    'Có lỗi xảy ra khi chuyển bàn!',
+                    <CloseCircleOutlined style={{ color: '#f5222d' }} />
+                );
             }
         } else {
-            alert('Vui lòng chọn bàn mới để chuyển!');
+            openNotification(
+                'Chuyển bàn',
+                'Vui lòng chọn bàn mới để chuyển!',
+                <InfoCircleOutlined style={{ color: '#1890ff' }} />
+            );
         }
     };
 
@@ -117,93 +146,95 @@ const TransferTableModal: React.FC<{
     }
 
     return (
-        <div className="modal fade show" style={{ display: 'block' }} tabIndex={-1} role="dialog">
-            {isModalOpen && (
-                <div className="ps36231 modal fade show d-block" id="modalPin" tabIndex={-1} role="dialog">
-                    <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content p-4 text-center">
-                            <h5>Nhập mật khẩu nhân viên để tiếp tục</h5>
-                            <div className="input-field">
-                                <input
-                                    type="password"
-                                    onChange={(e) => setPasswordInput(e.target.value)}
-                                    placeholder="Mật khẩu"
-                                />
-                                {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-                            </div>
-                            <div className='d-flex justify-content-center align-items-center mt-2'>
-                                <button className="btn btn-secondary mt-2 me-4" onClick={handleExitModal}>Hủy</button>
-                                <button onClick={handleSaveChanges} className="btn btn-primary mt-2">Xác nhận</button>
-                            </div>
+        <>
+            {contextHolder}
+            <div className="modal fade show" style={{ display: 'block' }} tabIndex={-1} role="dialog">
+                {isModalOpen && (
+                    <div className="ps36231 modal fade show d-block" id="modalPin" tabIndex={-1} role="dialog">
+                        <div className="modal-dialog modal-dialog-centered">
+                            <div className="modal-content p-4 text-center">
+                                <h5>Nhập mật khẩu nhân viên để tiếp tục</h5>
+                                <div className="input-field">
+                                    <input
+                                        type="password"
+                                        onChange={(e) => setPasswordInput(e.target.value)}
+                                        placeholder="Mật khẩu"
+                                    />
+                                </div>
+                                <div className='d-flex justify-content-center align-items-center mt-2'>
+                                    <button className="btn btn-secondary mt-2 me-4" onClick={handleExitModal}>Hủy</button>
+                                    <button onClick={handleSaveChanges} className="btn btn-primary mt-2">Xác nhận</button>
+                                </div>
 
-                        </div>
-                    </div>
-                    <div className="modal-backdrop fade show" onClick={onClose}></div>
-                </div>
-            )}
-            <div className="modal-dialog modal-dialog-centered" role="document">
-                <div className="modal-content">
-                    <div className="modal-header d-flex justify-content-between">
-                        <h5 className="modal-title">Chuyển Bàn</h5>
-                        <button type="button" className="close" onClick={onClose}>
-                            <span className="fs-3">&times;</span>
-                        </button>
-                    </div>
-                    <div className="modal-body">
-                        <p>Bàn hiện tại: <span className='fw-bold'> Bàn {currentTableId}</span></p>
-                        <h6>Chọn khu vực để chuyển tới:</h6>
-                        <div className="d-flex">
-                            <div className="form-check me-2">
-                                <input
-                                    type="radio"
-                                    id="floor1"
-                                    name="floor"
-                                    value="floor1"
-                                    checked={selectedFloor === 'floor1'}
-                                    onChange={() => setSelectedFloor('floor1')}
-                                    className="form-check-input"
-                                />
-                                <label htmlFor="floor1" className="form-check-label">Tầng 1</label>
-                            </div>
-                            <div className="form-check">
-                                <input
-                                    type="radio"
-                                    id="floor2"
-                                    name="floor"
-                                    value="floor2"
-                                    checked={selectedFloor === 'floor2'}
-                                    onChange={() => setSelectedFloor('floor2')}
-                                    className="form-check-input"
-                                />
-                                <label htmlFor="floor2" className="form-check-label">Tầng 2</label>
                             </div>
                         </div>
-                        <h6 className='mt-3'>Chọn bàn cần chuyển tới:</h6>
-                        <select
-                            className="form-select"
-                            aria-label="Select a table"
-                            value={selectedTableId || ''}
-                            onChange={(e) => setSelectedTableId(Number(e.target.value))}
-                        >
-                            <option value="">Chọn bàn</option>
-                            {filteredTables.map((table) => (
-                                <option key={table.tableId} value={table.tableId}>
-                                    Bàn {table.tableNumber}
-                                </option>
-                            ))}
-                        </select>
+                        <div className="modal-backdrop fade show" onClick={onClose}></div>
                     </div>
-                    <div className="modal-footer">
-                        <button type="button" className="btn btn-secondary" onClick={onClose}>
-                            Đóng
-                        </button>
-                        <button type="button" className="btn btn-danger" onClick={handleOpenModal}>
-                            Chuyển bàn
-                        </button>
+                )}
+                <div className="modal-dialog modal-dialog-centered" role="document">
+                    <div className="modal-content">
+                        <div className="modal-header d-flex justify-content-between">
+                            <h5 className="modal-title">Chuyển Bàn</h5>
+                            <button type="button" className="close" onClick={onClose}>
+                                <span className="fs-3">&times;</span>
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <p>Bàn hiện tại: <span className='fw-bold'> Bàn {currentTableId}</span></p>
+                            <h6>Chọn khu vực để chuyển tới:</h6>
+                            <div className="d-flex">
+                                <div className="form-check me-2">
+                                    <input
+                                        type="radio"
+                                        id="floor1"
+                                        name="floor"
+                                        value="floor1"
+                                        checked={selectedFloor === 'floor1'}
+                                        onChange={() => setSelectedFloor('floor1')}
+                                        className="form-check-input"
+                                    />
+                                    <label htmlFor="floor1" className="form-check-label">Tầng 1</label>
+                                </div>
+                                <div className="form-check">
+                                    <input
+                                        type="radio"
+                                        id="floor2"
+                                        name="floor"
+                                        value="floor2"
+                                        checked={selectedFloor === 'floor2'}
+                                        onChange={() => setSelectedFloor('floor2')}
+                                        className="form-check-input"
+                                    />
+                                    <label htmlFor="floor2" className="form-check-label">Tầng 2</label>
+                                </div>
+                            </div>
+                            <h6 className='mt-3'>Chọn bàn cần chuyển tới:</h6>
+                            <select
+                                className="form-select"
+                                aria-label="Select a table"
+                                value={selectedTableId || ''}
+                                onChange={(e) => setSelectedTableId(Number(e.target.value))}
+                            >
+                                <option value="">Chọn bàn</option>
+                                {filteredTables.map((table) => (
+                                    <option key={table.tableId} value={table.tableId}>
+                                        Bàn {table.tableNumber}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={onClose}>
+                                Đóng
+                            </button>
+                            <button type="button" className="btn btn-danger" onClick={handleOpenModal}>
+                                Chuyển bàn
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 
