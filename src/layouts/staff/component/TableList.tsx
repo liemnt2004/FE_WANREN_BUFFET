@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 import banerPrice from '../assets/img/cothaygia_t11.png';
 import { Tables } from '../../../models/StaffModels/Tables';
 
 const TableModal: React.FC<{
   table: Tables | null;
   onClose: () => void;
-  onConfirm: (tableNumber: number, adults: number, children: number) => void;
+  onConfirm: (tableId: number, tableNumber: number, adults: number, children: number) => void;
 }> = ({ table, onClose, onConfirm }) => {
   const [adults, setAdults] = useState<number>(2);
   const [children, setChildren] = useState<number>(0);
 
   const handleConfirm = () => {
     if (table) {
-      onConfirm(table.tableNumber, adults, children);
+      onConfirm(table.tableId, table.tableNumber, adults, children);
     }
     onClose();
   };
@@ -72,7 +72,7 @@ const TableModal: React.FC<{
 };
 
 interface TableListProps {
-  area: 'home' | '2nd_floor';
+  area: 'home' | '2nd_floor' | 'gdeli';
 }
 
 const TableList: React.FC<TableListProps> = ({ area }) => {
@@ -80,6 +80,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedTable, setSelectedTable] = useState<Tables | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [orderId, setOrderId] = useState<number>();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -103,12 +104,18 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
   }, []);
 
   const filteredTables = tables.filter((table) => {
-    if (area === 'home') return table.tableNumber <= 25;
-    if (area === '2nd_floor') return table.tableNumber > 25 && table.tableNumber <= 50;
-    return true;
+    // Lọc bàn theo location
+    if (table.location === 'GDeli') {
+      return area === 'gdeli';
+    } else if (table.location === 'Table') {
+      // Chia bàn số theo tầng
+      if (area === 'home') return table.tableNumber <= 25;
+      if (area === '2nd_floor') return table.tableNumber > 25 && table.tableNumber <= 50;
+    }
+    return false; // Không hiển thị bàn ngoài điều kiện
   });
 
-  const handleCheckout = async (tableId: number) => {
+  const handleCheckoutStep = async (tableId: number, step: number) => {
     try {
       const responseOrderId = await fetch(`http://localhost:8080/api/order_staff/findOrderIdByTableId/${tableId}`);
       if (!responseOrderId.ok) throw new Error('Error fetching orderId');
@@ -117,8 +124,8 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
       const orderId = orderIdText ? Number(orderIdText) : null;
 
       if (orderId !== null) {
-        // Navigate to checkout page with the fetched orderId
-        navigate(`/checkout/order/${orderId}/step1`);
+        setOrderId(orderId);
+        navigate(`/checkout/order/${orderId}/step${step}`, { state: { tableId: tableId } });
       } else {
         console.error('No orderId found for this table');
       }
@@ -131,18 +138,18 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
     if (table.tableStatus === 'EMPTY_TABLE') {
       setSelectedTable(table);
       setShowModal(true);
+    } else if (table.tableStatus === 'LOCKED_TABLE') {
+      handleCheckoutStep(table.tableId, 3);
     } else {
-      // Directly navigate to the order page for non-empty tables
-      navigate(`/orderOnTable/${table.tableNumber}`, { state: { adults: 2, children: 0 } });
+      navigate(`/orderOnTable/${table.tableId}`, { state: { adults: 2, children: 0, tableLocation: table.location } });
     }
   };
 
-  const handleConfirm = (tableNumber: number, adults: number, children: number) => {
-    if (tableNumber > 0 && adults > 0) { // Ensure at least one adult is selected
+  const handleConfirm = (tableId: number, tableNumber: number, adults: number, children: number) => {
+    if (tableNumber > 0 && adults > 0) {
       console.log(`TableNumber: ${tableNumber}, Adults: ${adults}, Children: ${children}`);
 
-      // Navigate to the menu selection page with the table number in the URL path
-      navigate(`/orderOnTable/${tableNumber}`, { state: { adults, children } });
+      navigate(`/orderOnTable/${tableId}`, { state: { adults, children, tableLocation: selectedTable?.location } });
     } else {
       alert("Please enter valid numbers for adults and children.");
     }
@@ -157,13 +164,20 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
       {filteredTables.length > 0 ? (
         filteredTables.map((table) => (
           <div className="col-md-3" key={table.tableId} onClick={() => handleTableClick(table)}>
-            <div className={`card table-card ${table.tableStatus === 'EMPTY_TABLE' ? '' : 'table-card-active'}`}>
+            <div className={`card table-card position-relative ${table.tableStatus === 'EMPTY_TABLE' ? '' : 'table-card-active'}`}>
+              {table.tableStatus === 'LOCKED_TABLE' && (
+                <>
+                  <p className="position-absolute start-100 translate-middle">
+                    <i className="bi bi-wallet-fill fs-3 text-danger"></i>
+                  </p>
+                </>)
+              }
               <div className="card-body">
-                <h5 className="card-title text-center">Bàn {table.tableNumber}</h5>
-                {table.tableStatus !== 'EMPTY_TABLE' && (
+                <h5 className="card-title text-center">Bàn {table.tableNumber} <span style={{ fontWeight: 'bold' }}>{table.location === 'GDeli' ? '(Deli)' : ''}</span> </h5>
+                {table.tableStatus !== 'EMPTY_TABLE' && table.tableStatus !== 'LOCKED_TABLE' && (
                   <>
                     <p className="table-status">2h14'</p>
-                    <p key={table.tableId} onClick={() => handleCheckout(table.tableId)} className="btn btn-danger rounder-0 mt-4">Thanh toán</p>
+                    <p key={table.tableId} onClick={() => handleCheckoutStep(table.tableId, 1)} className="btn btn-danger rounder-0 mt-4">Thanh toán</p>
                   </>
                 )}
               </div>

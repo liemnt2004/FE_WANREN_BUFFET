@@ -23,7 +23,7 @@ const ExitModal: React.FC<ExitModalProps> = ({ onClose, onCheckout, onSwitchTabl
                             <i className="bi bi-credit-card pe-2"></i>Thanh toán ngay
                         </button>
                         <button className="btn btn-primary" onClick={onSwitchTable}>
-                            <i className="bi bi-box-arrow-right pe-2"></i>Chuyển bàn
+                            <i className="bi bi-box-arrow-right pe-2"></i>Thoát bàn
                         </button>
                     </div>
                 </div>

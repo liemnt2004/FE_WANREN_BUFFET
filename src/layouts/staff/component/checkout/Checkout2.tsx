@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import '../../assets/css/checkout_for_staff.css'
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getOrderAmount, updateLoyaltyPoint } from "../../../../api/apiStaff/orderForStaffApi";
 
 const Checkout2: React.FC = () => {
+    const location = useLocation();
+    const { tableId } = location.state || {};
     const { orderId } = useParams<{ orderId: string }>();
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -13,8 +15,8 @@ const Checkout2: React.FC = () => {
     const navigate = useNavigate();
     const styleOfA: React.CSSProperties = {
         marginRight: '10px',
-        pointerEvents: disable ? "none" : "auto", // Vô hiệu hóa pointer events nếu bị disable
-        backgroundColor: disable ? "gray" : "blue", // Đổi màu nếu disable
+        pointerEvents: disable ? "none" : "auto",
+        backgroundColor: disable ? "gray" : "orange",
         cursor: disable ? "not-allowed" : "pointer",
     }
 
@@ -93,14 +95,14 @@ const Checkout2: React.FC = () => {
                 </div>
                 <div className="container-button">
                     <button style={styleOfA} onClick={handleClick} disabled={disable} >Áp dụng</button>
-                    <button onClick={() => navigate(`/checkout/order/${orderId}/step3`)}>Tiếp tục</button>
+                    <button onClick={() => navigate(`/checkout/order/${orderId}/step3`, { state: { tableId: tableId } })}>Tiếp tục</button>
                 </div>
             </div>
             <div className="step-checkout">
                 <div>
-                    <button onClick={() => navigate(`/checkout/order/${orderId}/step1`)}>1</button>
-                    <button onClick={() => navigate(`/checkout/order/${orderId}/step2`)}>2</button>
-                    <button onClick={() => navigate(`/checkout/order/${orderId}/step3`)}>3</button>
+                    <button style={{backgroundColor: '#bd4242'}}>1</button>
+                    <button style={{backgroundColor: '#bd4242'}}>2</button>
+                    <button>3</button>
                 </div>
             </div>
         </div>

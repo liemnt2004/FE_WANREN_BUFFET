@@ -39,7 +39,7 @@ function MenuAdmin() {
       </div>
 
       {/* Sidebar */}
-      <div className="sidebar">
+      <div className="sidebar_admin">
         <div className="logo">
           <img src={logo} alt="Shop Logo" />
         </div>

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import '../../assets/css/checkout_for_staff.css'
-import { useNavigate, useParams } from "react-router-dom";
-import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount } from "../../../../api/apiStaff/orderForStaffApi";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus } from "../../../../api/apiStaff/orderForStaffApi";
 import OrderDetailsWithNameProduct from "../../../../models/StaffModels/OrderDetailsWithNameProduct";
 
 const Checkout3: React.FC = () => {
+    const location = useLocation();
+    const { tableId } = location.state || {};
     const { orderId } = useParams<{ orderId: string }>();
     const [error, setError] = useState<string | null>(null);
     const [amount, setAmount] = useState<number>(0);
@@ -15,7 +17,7 @@ const Checkout3: React.FC = () => {
     const navigate = useNavigate();
     const styleOfA: React.CSSProperties = {
         cursor: "pointer",
-        color: "black"
+        color: "white"
     }
 
     useEffect(() => {
@@ -23,6 +25,7 @@ const Checkout3: React.FC = () => {
             try {
                 const fetchedOrderDetails = await getOrderDetailWithNameProduct(Number(orderId));
                 setOrderDetails(fetchedOrderDetails);
+                await updateTableStatus(Number(tableId), "LOCKED_TABLE");
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Failed to fetch orderDetails';
                 setError(errorMessage);
@@ -127,16 +130,16 @@ const Checkout3: React.FC = () => {
                             {orderDetails.map((orderDetail, index) => (
                                 <tr key={index}>
                                     <td>{orderDetail.quantity + " x " + orderDetail.productName}</td>
-                                    <td>{orderDetail.price + " đ"}</td>
+                                    <td>{orderDetail.price?.toLocaleString() + " đ"}</td>
                                 </tr>
                             ))}
                             <tr>
                                 <td>Tổng tiền hàng</td>
-                                <td>{amount + " đ"}</td>
+                                <td>{amount.toLocaleString() + " đ"}</td>
                             </tr>
                             <tr>
                                 <td>VAT</td>
-                                <td>{vat + " đ"}</td>
+                                <td>{vat.toLocaleString() + " đ"}</td>
                             </tr>
                         </table>
                     </div>
@@ -146,7 +149,7 @@ const Checkout3: React.FC = () => {
                         <table className="price-all-sp">
                             <thead>
                                 <th>Tổng tiền cần thanh toán</th>
-                                <th>{lastAmount + " đ"}</th>
+                                <th>{lastAmount.toLocaleString() + " VNĐ"}</th>
                             </thead>
                         </table>
                     </div>
@@ -154,7 +157,7 @@ const Checkout3: React.FC = () => {
                 <div className="container-method-checkout">
                     <div>
                         <div className="title-all-method-payment">
-                            <div><i className="bi bi-wallet-fill"></i></div>
+                            <div><i className="bi bi-wallet-fill text-white"></i></div>
                             <h3>Tất cả các hình thức thanh toán</h3>
                         </div>
                         <div className="all-div-method-payment">
@@ -182,9 +185,9 @@ const Checkout3: React.FC = () => {
             </div>
             <div className="step-checkout">
                 <div>
-                    <button onClick={() => navigate(`/checkout/order/${orderId}/step1`)}>1</button>
-                    <button onClick={() => navigate(`/checkout/order/${orderId}/step2`)}>2</button>
-                    <button onClick={() => navigate(`/checkout/order/${orderId}/step3`)}>3</button>
+                    <button style={{ backgroundColor: '#bd4242' }}>1</button>
+                    <button style={{ backgroundColor: '#bd4242' }}>2</button>
+                    <button style={{ backgroundColor: '#bd4242' }}>3</button>
                 </div>
             </div>
         </div>

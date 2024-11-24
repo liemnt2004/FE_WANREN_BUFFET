@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ProductModel from '../../../../models/StaffModels/ProductModel';
 import Header from './Header';
-import OffcanvasCart from './OffcanvasCart';
+import OffcanvasCart from './Cart';
 import Sidebar from './Sidebar';
 import MainContent from './MainContent';
 import ExitModal from './ExitModal';
@@ -26,6 +26,8 @@ type ContentType =
     | 'wine';
 
 const OrderOnTable: React.FC = () => {
+    const { state } = useLocation();
+    const {tableLocation} = state || {};
     const [selectedContent, setSelectedContent] = useState<ContentType>('hotpot');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSwitchTableModalOpen, setIsSwitchTableModalOpen] = useState(false);
@@ -59,7 +61,7 @@ const OrderOnTable: React.FC = () => {
     };
 
     const handleConfirmSwitchTable = () => {
-        navigate('/');
+        navigate('/staff');
         setIsSwitchTableModalOpen(false);
     };
 
@@ -72,8 +74,6 @@ const OrderOnTable: React.FC = () => {
     };
 
     const handleConfirmOrder = () => {
-        // Here, add logic to save the order to the database
-        console.log('Order confirmed:', cartItems);
         setCartItems([]);
         setShowCart(false);
     };
@@ -82,6 +82,7 @@ const OrderOnTable: React.FC = () => {
         setSelectedItemsSubtotal(subtotal);
     };
 
+    
 
     return (
         <div>
@@ -93,8 +94,11 @@ const OrderOnTable: React.FC = () => {
                     )
                 );
             }}
-                onRemoveItem={(productId) => {
-                    setCartItems((prevItems) => prevItems.filter((item) => item.product.productId !== productId));
+                onRemoveItem={(itemToRemove: { product: ProductModel; quantity: number; note: string }) => {
+                    const updatedCartItems = cartItems.filter(item => 
+                        item.product.productId !== itemToRemove.product.productId || item.note !== itemToRemove.note
+                      );
+                    setCartItems(updatedCartItems);
                 }} />
             <Sidebar
                 toggleId="header-toggle"
@@ -102,7 +106,7 @@ const OrderOnTable: React.FC = () => {
                 onOpenExitModal={handleOpenExitModal}
                 onOpenSwitchTableModal={handleOpenSwitchTableModal}
             />
-            <MainContent content={selectedContent} cartItems={cartItems} setCartItems={setCartItems} />
+            <MainContent content={selectedContent} cartItems={cartItems} setCartItems={setCartItems} area={tableLocation} />
             {isModalOpen && (
                 <ExitModal
                     onClose={handleCloseModal}

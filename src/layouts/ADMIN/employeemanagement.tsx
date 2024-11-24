@@ -97,7 +97,7 @@ const EmployeeManagement: React.FC = () => {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 500); // Adjust the delay as needed
+    }, 500);
 
     return () => {
       clearTimeout(handler);
@@ -181,7 +181,7 @@ const EmployeeManagement: React.FC = () => {
       const createdEmployee = await createUser(newEmployee);
 
       if (createdEmployee) {
-        setEmployees((prev) => [createdEmployee, ...prev]); // Add to the top of the list
+        setEmployees((prev) => [createdEmployee, ...prev]);
         message.success("Employee added successfully.");
         setIsAddEmployeeModalOpen(false);
         form.resetFields();
@@ -443,7 +443,12 @@ const EmployeeManagement: React.FC = () => {
                 name="userType"
                 rules={[{ required: true, message: "Please enter user type" }]}
               >
-                <Input placeholder="Enter user type" />
+                <Select placeholder="Select UserType">
+                  <Select.Option value="Bếp trưởng">Bếp trưởng</Select.Option>
+                  <Select.Option value="Bếp phó">Bếp phó</Select.Option>
+                  <Select.Option value="Thu ngân">Thu ngân</Select.Option>
+                  <Select.Option value="Phục vụ">Phục vụ</Select.Option>
+                </Select>
               </Form.Item>
             </Col>
             <Col span={12}>
