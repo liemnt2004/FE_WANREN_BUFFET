@@ -13,9 +13,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent }) => {
     setActiveLink(contentType); // Update the active link state
     onClickContent(contentType); // Call the passed function
   };
+
   const handleLogout = () => {
     localStorage.clear();
-    window.location.href = "http://localhost:3000/employee/login";
+    window.location.href = "/employee/login";
   };
 
   return (

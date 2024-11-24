@@ -1,18 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Offcanvas } from "react-bootstrap";
-import "../../assets/css/styles.css";
-import { useNavigate, useParams } from "react-router-dom";
-import ProductModel from "../../../../models/StaffModels/ProductModel";
-import {
-  createNewOrder,
-  fetchOrderDetailsAPI,
-  fetchOrderIdByTableId,
-  fetchOrderStatusAPI,
-  fetchProductDetailsAPI,
-  updateOrderAmount,
-  updateOrderDetails,
-  updateTableStatus,
-} from "../../../../api/apiStaff/orderForStaffApi";
+import React, { useState, useEffect, useCallback } from 'react';
+import { Offcanvas } from 'react-bootstrap';
+import '../../assets/css/styles.css'
+import { useNavigate, useParams } from 'react-router-dom';
+import ProductModel from '../../../../models/StaffModels/ProductModel';
+import { createNewOrder, fetchOrderDetailsAPI, fetchOrderIdByTableId, fetchOrderStatusAPI, fetchProductDetailsAPI, updateOrderAmount, updateOrderDetails, updateTableStatus } from '../../../../api/apiStaff/orderForStaffApi';
+import { notification } from 'antd';
+import { CheckCircleOutlined } from '@ant-design/icons';
 
 interface OffcanvasCartProps {
   show: boolean;
@@ -57,6 +50,20 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   const [activeTab, setActiveTab] = useState("selecting");
   const [order_id, setOrderId] = useState<any>(0);
 
+  const [api, contextHolder] = notification.useNotification();
+
+  const openNotification = (pauseOnHover: boolean) => () => {
+    api.open({
+      message: 'Xác nhận gọi món',
+      description: 'Gọi món thành công!',
+      showProgress: true,
+      pauseOnHover,
+      placement: 'topRight',
+      duration: 3,
+      icon: <CheckCircleOutlined style={{ color: '#52c41a' }} />,
+    });
+  };
+
   const fetchOrderDetails = useCallback(async (orderId: number) => {
     const data = await fetchOrderDetailsAPI(orderId);
     console.log(data);
@@ -83,6 +90,12 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
       throw new Error("Error fetching selected items");
     }
   }, []);
+
+  useEffect(() => {
+    if (selectedItems.length >= 0) {
+      fetchOrderDetails(order_id);
+    }
+  }, [selectedItems, fetchOrderDetails, order_id]);
 
   useEffect(() => {
     const fetchOrderId = async () => {
@@ -138,227 +151,143 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
       await updateTableStatus(Number(tableId), "OCCUPIED_TABLE");
 
       onConfirmOrder(cartItems);
-      navigate(0);
+      openNotification(false)();
     } catch (error) {
       console.error("Error confirming order:", error);
+      api.error({
+        message: 'Order Failed',
+        description: 'There was an issue confirming your order. Please try again.',
+      });
     }
   };
+
   return (
-    <Offcanvas show={show} onHide={onHide} placement="end">
-      <Offcanvas.Header closeButton>
-        <Offcanvas.Title>Giỏ Hàng</Offcanvas.Title>
-      </Offcanvas.Header>
-      <Offcanvas.Body>
-        <ul className="nav nav-tabs" id="cartTabs" role="tablist">
-          <li className="nav-item" role="presentation">
-            <button
-              className={`nav-link ${
-                activeTab === "selecting" ? "active" : ""
-              }`}
-              id="selecting-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#selecting"
-              type="button"
-              role="tab"
-              aria-controls="selecting"
-              aria-selected={activeTab === "selecting"}
-              onClick={() => setActiveTab("selecting")}
-            >
-              Danh sách đang chọn
-            </button>
-          </li>
-          <li className="nav-item" role="presentation">
-            <button
-              className={`nav-link ${activeTab === "selected" ? "active" : ""}`}
-              id="selected-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#selected"
-              type="button"
-              role="tab"
-              aria-controls="selected"
-              aria-selected={activeTab === "selecting"}
-              onClick={() => setActiveTab("selecting")}
-            >
-              Các món đã gọi
-            </button>
-          </li>
-        </ul>
+    <>
+      {contextHolder}
+      <Offcanvas show={show} onHide={onHide} placement="end">
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title>Giỏ Hàng</Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body>
+          <ul className="nav nav-tabs" id="cartTabs" role="tablist">
+            <li className="nav-item" role="presentation">
+              <button className={`nav-link ${activeTab === 'selecting' ? 'active' : ''}`} id="selecting-tab" data-bs-toggle="tab" data-bs-target="#selecting" type="button" role="tab" aria-controls="selecting" aria-selected={activeTab === 'selecting'}
+                onClick={() => setActiveTab('selecting')}>
+                Danh sách đang chọn
+              </button>
+            </li>
+            <li className="nav-item" role="presentation">
+              <button className={`nav-link ${activeTab === 'selected' ? 'active' : ''}`} id="selected-tab" data-bs-toggle="tab" data-bs-target="#selected" type="button" role="tab" aria-controls="selected" aria-selected={activeTab === 'selecting'}
+                onClick={() => setActiveTab('selecting')}>
+                Các món đã gọi
+              </button>
+            </li>
+          </ul>
 
-        <div className="tab-content mt-3" id="cartTabContent">
-          <div
-            className={`tab-pane fade ${
-              activeTab === "selecting" ? "show active" : ""
-            }`}
-            id="selecting"
-            role="tabpanel"
-            aria-labelledby="selecting-tab"
-          >
-            <div
-              className="cart-page"
-              style={{ height: "350px", overflowY: "auto" }}
-            >
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Sản Phẩm</th>
-                    <th>Số Lượng</th>
-                    <th className="text-end">Thành Tiền</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cartItems.map((item) => (
-                    <tr key={item.product.productId}>
-                      <td className="cart-info d-flex align-items-center">
-                        <img
-                          src={item.product.image}
-                          className="rounded"
-                          alt=""
-                          width="80"
-                        />
-                        <div>
-                          <p style={{ margin: 0, fontWeight: "bold" }}>
-                            {item.product.productName}
-                          </p>
-                          <p>{item.note || ""}</p>
-                          <button
-                            className="p-0 text-decoration-underline"
-                            onClick={() => onRemoveItem(item)}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </td>
-                      <td>
-                        <input
-                          type="number"
-                          defaultValue={item.quantity}
-                          min={1}
-                          onChange={(e) =>
-                            onUpdateQuantity(
-                              item.product.productId,
-                              Number(e.target.value)
-                            )
-                          }
-                        />
-                      </td>
-                      <td className="text-end">
-                        {(item.product.price * item.quantity).toLocaleString()}{" "}
-                        VNĐ
-                      </td>
+          <div className="tab-content mt-3" id="cartTabContent">
+            <div className={`tab-pane fade ${activeTab === 'selecting' ? 'show active' : ''}`} id="selecting" role="tabpanel" aria-labelledby="selecting-tab">
+              <div className="cart-page" style={{ height: '350px', overflowY: 'auto' }}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Sản Phẩm</th>
+                      <th>Số Lượng</th>
+                      <th className="text-end">Thành Tiền</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {cartItems.map((item) => (
+                      <tr key={item.product.productId}>
+                        <td className="cart-info d-flex align-items-center">
+                          <img src={item.product.image} className="rounded" alt="" width="80" />
+                          <div>
+                            <p style={{ margin: 0, fontWeight: 'bold' }}>{item.product.productName}</p>
+                            <p>{item.note || ''}</p>
+                            <button className="p-0 text-decoration-underline" onClick={() => onRemoveItem(item)}>Remove</button>
+                          </div>
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            defaultValue={item.quantity}
+                            min={1}
+                            onChange={e => onUpdateQuantity(item.product.productId, Number(e.target.value))}
+                          />
+                        </td>
+                        <td className="text-end">{(item.product.price * item.quantity).toLocaleString()} VNĐ</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="total-price d-flex justify-content-end">
+                <table className="table">
+                  <tbody>
+                    <tr>
+                      <td>Thông tin thanh toán trước VAT</td>
+                      <td className="text-end fw-bold" style={{ color: 'var(--colorPrimary)' }}>{subtotal.toLocaleString()} VNĐ</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button style={{ float: 'right' }} className="btn btn-danger" onClick={handleConfirmOrder}>
+                Xác nhận gọi món
+              </button>
             </div>
-            <div className="total-price d-flex justify-content-end">
-              <table className="table">
-                <tbody>
-                  <tr>
-                    <td>Thông tin thanh toán trước VAT</td>
-                    <td
-                      className="text-end fw-bold"
-                      style={{ color: "var(--colorPrimary)" }}
-                    >
-                      {subtotal.toLocaleString()} VNĐ
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <button
-              style={{ float: "right" }}
-              className="btn btn-danger"
-              onClick={handleConfirmOrder}
-            >
-              Xác nhận gọi món
-            </button>
-          </div>
 
-          <div
-            className={`tab-pane fade ${
-              activeTab === "selected" ? "show active" : ""
-            }`}
-            id="selected"
-            role="tabpanel"
-            aria-labelledby="selected-tab"
-          >
-            <div
-              className="cart-page"
-              style={{ height: "350px", overflowY: "auto" }}
-            >
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Sản Phẩm</th>
-                    <th>Số Lượng</th>
-                    <th className="text-end">Thành Tiền</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedItems.map((item) => (
-                    <tr key={item.product.productId}>
-                      <td className="cart-info d-flex align-items-center">
-                        <img
-                          src={item.product.image}
-                          className="rounded"
-                          alt=""
-                          width="80"
-                        />
-                        <div>
-                          <p style={{ margin: 0, fontWeight: "bold" }}>
-                            {item.product.productName}
-                          </p>
-                          <p>{item.note || ""}</p>
-                        </div>
-                      </td>
-                      <td className="align-middle">{item.quantity}</td>
-                      <td className="text-end">
-                        {(item.product.price * item.quantity).toLocaleString()}{" "}
-                        VNĐ
-                      </td>
+            <div className={`tab-pane fade ${activeTab === 'selected' ? 'show active' : ''}`} id="selected" role="tabpanel" aria-labelledby="selected-tab">
+              <div className="cart-page" style={{ height: '350px', overflowY: 'auto' }}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Sản Phẩm</th>
+                      <th>Số Lượng</th>
+                      <th className="text-end">Thành Tiền</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {selectedItems.map((item) => (
+                      <tr key={item.product.productId}>
+                        <td className="cart-info d-flex align-items-center">
+                          <img src={item.product.image} className="rounded" alt="" width="80" />
+                          <div>
+                            <p style={{ margin: 0, fontWeight: 'bold' }}>{item.product.productName}</p>
+                            <p>{item.note || ''}</p>
+                          </div>
+                        </td>
+                        <td className='align-middle'>{item.quantity}</td>
+                        <td className="text-end">{(item.product.price * item.quantity).toLocaleString()} VNĐ</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="total-price d-flex justify-content-end">
+                <table className="table">
+                  <tbody>
+                    <tr>
+                      <td>Thông tin thanh toán trước VAT</td>
+                      <td className="text-end fw-bold">{selectedItemsSubtotal.toLocaleString()} VNĐ</td>
+                    </tr>
+                    <tr>
+                      <td>VAT</td>
+                      <td className="text-end fw-bold">{selectedItemsTax.toLocaleString()} VNĐ</td>
+                    </tr>
+                    <tr>
+                      <td>Tổng thanh toán bao gồm VAT</td>
+                      <td className="text-end fw-bold" style={{ color: 'var(--colorPrimary)' }}>{selectedItemsTotal.toLocaleString()} VNĐ</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button onClick={() => navigate(`/checkout/order/${order_id}/step1`, { state: { tableId: tableId } })} style={{ float: 'right' }} className="btn btn-danger">
+                Thanh Toán
+              </button>
             </div>
-            <div className="total-price d-flex justify-content-end">
-              <table className="table">
-                <tbody>
-                  <tr>
-                    <td>Thông tin thanh toán trước VAT</td>
-                    <td className="text-end fw-bold">
-                      {selectedItemsSubtotal.toLocaleString()} VNĐ
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>VAT</td>
-                    <td className="text-end fw-bold">
-                      {selectedItemsTax.toLocaleString()} VNĐ
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Tổng thanh toán bao gồm VAT</td>
-                    <td
-                      className="text-end fw-bold"
-                      style={{ color: "var(--colorPrimary)" }}
-                    >
-                      {selectedItemsTotal.toLocaleString()} VNĐ
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <button
-              onClick={() => navigate(`/checkout/order/${order_id}/step1`)}
-              style={{ float: "right" }}
-              className="btn btn-danger"
-            >
-              Thanh Toán
-            </button>
           </div>
-        </div>
-      </Offcanvas.Body>
-    </Offcanvas>
+        </Offcanvas.Body>
+      </Offcanvas>
+    </>
   );
 };
 

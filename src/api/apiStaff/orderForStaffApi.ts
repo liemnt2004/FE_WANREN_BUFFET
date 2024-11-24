@@ -95,6 +95,8 @@ export async function updateTotalAmount(orderId: number, total_amount:number): P
     }
 }
 
+
+
 // ORDER ON TABLE
 
 const BASE_URL = "http://localhost:8080/api";
@@ -188,4 +190,14 @@ export const updateTableStatus = async (tableId: number, status: string) => {
     body: JSON.stringify({ tableStatus: status }),
   });
   if (!response.ok) throw new Error("Error updating table status");
+};
+
+export const updateQuantityOrderDetails = async (details: any) => {
+  const response = await fetch(`${BASE_URL}/orders_detail_staff/quantity-update`, {
+    method: "PUT",
+    headers: getHeaders(),
+    body: JSON.stringify(details),
+  });
+  if (!response.ok) throw new Error("Error updating order amount");
+  return response.json();
 };

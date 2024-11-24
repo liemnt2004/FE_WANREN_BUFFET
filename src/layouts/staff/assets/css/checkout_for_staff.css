@@ -124,7 +124,7 @@
 .ps36231-checkout-staff-1 .step-checkout div button{
     width: 40px;
     height: 40px;
-    background-color: #bd4242;
+    background-color: #8b8989;
     border: 3px solid white;
     display: grid;
     place-items: center;
@@ -167,7 +167,7 @@
 .ps36231-checkout-staff-1 .container-method-checkout{
     display: flex;
     justify-content: center;
-    height: 200px;
+    height: 150px;
 }
 
 .ps36231-checkout-staff-1 .container-method-checkout > div{
