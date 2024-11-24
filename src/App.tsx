@@ -37,6 +37,7 @@ import CheckoutLayout from "./layouts/staff/component/checkout/CheckoutLayout";
 import Checkout1 from "./layouts/staff/component/checkout/Checkout1";
 import Checkout2 from "./layouts/staff/component/checkout/Checkout2";
 import Checkout3 from "./layouts/staff/component/checkout/Checkout3";
+import ProductManagement from "./layouts/ADMIN/ProductManagement";
 
 function App() {
   return (
@@ -74,7 +75,8 @@ export function Routing() {
     "/admin/employees",
     "/admin/dashboard",
     "/orderOnTable",
-    "/checkout/order"
+    "/checkout/order",
+      "/admin/manage-product"
   ];
 
   return (
@@ -166,6 +168,10 @@ export function Routing() {
           <Route
             path="/admin/manage-promotions"
             element={<PromotionManagement />}
+          />
+          <Route
+              path="/admin/manage-product"
+              element={<ProductManagement />}
           />
           <Route path="/admin/manage-accounts" element={<Management />} />
           <Route path="/admin/manage-work-shifts" element={<WorkShift />} />

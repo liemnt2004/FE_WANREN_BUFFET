@@ -43,7 +43,7 @@ const PromotionDetail = () => {
   }
 
   return (
-    <div className="ps36231-promotion-detail mt-5 mb-5">
+    <div className="p36231-promotion-details">
       <div className="container">
         <div className="inner-container">
           {/* Header Section */}

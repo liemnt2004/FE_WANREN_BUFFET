@@ -54,7 +54,7 @@ function MenuAdmin() {
             <i className="fas fa-home"></i> Home
           </NavLink>
           <NavLink
-            to="/admin/manage-dishes"
+            to="/admin/manage-product"
             className={({ isActive }) =>
               isActive ? "menuItem active" : "menuItem"
             }

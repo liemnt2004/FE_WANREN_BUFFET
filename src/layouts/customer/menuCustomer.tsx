@@ -6,8 +6,11 @@ import { AuthContext } from "./component/AuthContext";
 import './assets/css/menu.css';
 function MenuCustomer() {
     const { fullName } = useContext(AuthContext);
-
+    function  login() {
+        window.location.href = "http://localhost:3000/login"
+    }
     return (
+
         <nav className="menu-bar d-flex align-items-center">
             {/* Menu Icon */}
             <i
@@ -47,9 +50,9 @@ function MenuCustomer() {
                     </>
                 ) : (
                     <>
-                        <Link to="/login" className="btn-user">
+                        <a  onClick={login} className="btn-user">
                             <i className="bi bi-box-arrow-in-right"></i>
-                        </Link>
+                        </a>
                         <p style={{ margin: 0 }}>Xin chào, Khách</p>
                     </>
                 )}

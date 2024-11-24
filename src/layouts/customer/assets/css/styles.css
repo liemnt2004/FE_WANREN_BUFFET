@@ -276,14 +276,7 @@ span {
     font-family: 'Montserrat', sans-serif;
 }
 
-body {
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    height: 100vh;
-}
 
 .ps28277 .container {
     background-color: #fff;
@@ -291,10 +284,9 @@ body {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
     position: relative;
     overflow: hidden;
-    width: 768px;
-    max-width: 100%;
-    min-height: 480px;
-    margin-top:10% ;
+    width: 900px;
+    height: 600px;
+    margin-top:5% ;
 }
 
 .ps28277 .container p {

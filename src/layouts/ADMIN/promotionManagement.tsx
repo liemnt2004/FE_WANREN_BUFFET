@@ -21,19 +21,21 @@ import {
   getAllPromotions,
   createPromotion,
   updatePromotion,
-  deletePromotion,
+  deletePromotion, searchPromotionByName,
 } from "../../api/apiAdmin/promotionApi";
+import useDebounce from "../customer/component/useDebounce";
 const { confirm } = Modal;
 const PromotionManagement: React.FC = () => {
   const [promotions, setPromotions] = useState<PromotionAdmin[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [searchQuery, setSearchQuery] = useState<string>(""); // Search query state
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
   const [editingPromotion, setEditingPromotion] =
     useState<PromotionAdmin | null>(null);
-
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const showModal = () => setIsModalVisible(true);
   const handleCancel = () => {
     setIsModalVisible(false);
@@ -43,6 +45,27 @@ const PromotionManagement: React.FC = () => {
   useEffect(() => {
     fetchPromotions();
   }, []);
+
+  useEffect(() => {
+    if (debouncedSearchQuery.trim()) {
+      handleSearch();
+    } else {
+      fetchPromotions(); // If search query is empty, fetch all promotions
+    }
+  }, [debouncedSearchQuery]);
+
+  const handleSearch = async () => {
+    setLoading(true);
+    try {
+      const results = await searchPromotionByName(debouncedSearchQuery);
+      setPromotions(results);
+    } catch (error) {
+      console.error("Search failed:", error);
+      message.error("Failed to search promotions.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchPromotions = async () => {
     if (loading || !hasMore) return;
@@ -173,6 +196,8 @@ const PromotionManagement: React.FC = () => {
                 <Input
                   className="search-input"
                   placeholder="Search for promotions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)} // Update search query state
                 />
                 <i className="fas fa-search search-icon"></i>
               </div>

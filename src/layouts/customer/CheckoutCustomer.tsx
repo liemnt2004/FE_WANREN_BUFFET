@@ -240,7 +240,7 @@ const CheckoutCustomer: React.FC = () => {
 
         if (!showNewAddressForm && decoded) {
             // Sử dụng địa chỉ đã lưu từ token
-            address22 = `${decoded.roles}`;
+            address22 = `${decoded.address}`;
         } else {
             // Sử dụng địa chỉ mới nhập
             if (!formData.quan || !formData.phuong || !formData.detail_address) {
@@ -299,6 +299,7 @@ const CheckoutCustomer: React.FC = () => {
                 }
                 cartContext?.clearCart()
                 // Chuyển hướng người dùng tới URL thanh toán VN PAY
+                console.log(paymentResponse.url)
                 window.location.href = paymentResponse.url;
 
             } else if (formData.payment === "Check Payment") {
@@ -366,7 +367,7 @@ const CheckoutCustomer: React.FC = () => {
                                         <label>Địa Chỉ Đã Lưu</label>
                                         <div className="saved-address">
                                             <p><strong>Họ và Tên:</strong> {decoded.fullName}</p>
-                                            <p><strong>Địa chỉ:</strong> {`${decoded.email}`}</p>
+                                            <p><strong>Địa chỉ:</strong> {`${decoded.address}`}</p>
                                         </div>
                                     </div>
                                 )}
