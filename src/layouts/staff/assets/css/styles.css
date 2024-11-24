@@ -649,10 +649,10 @@
   }
 
   .btn-link.disabled-link {
-    background-color: #ccc; /* Màu xám khi chưa đủ input */
+    background-color: #ccc;
+    /* Màu xám khi chưa đủ input */
   }
 
   .btn-link:not(.disabled-link):hover {
     background-color: #973737;
   }
-

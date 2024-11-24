@@ -11,23 +11,43 @@ interface OffcanvasCartProps {
   show: boolean;
   onHide: () => void;
   cartItems: { product: ProductModel; quantity: number; note: string }[];
-  onConfirmOrder: (items: { product: ProductModel; quantity: number; note: string }[]) => void;
+  onConfirmOrder: (
+    items: { product: ProductModel; quantity: number; note: string }[]
+  ) => void;
   onUpdateQuantity: (productId: number, newQuantity: number) => void;
-  onRemoveItem: (itemToRemove: { product: ProductModel; quantity: number; note: string }) => void;
+  onRemoveItem: (itemToRemove: {
+    product: ProductModel;
+    quantity: number;
+    note: string;
+  }) => void;
   onUpdateSubtotal: (subtotal: number) => void;
 }
 
 const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
-  show, onHide, cartItems, onConfirmOrder, onUpdateQuantity, onRemoveItem, onUpdateSubtotal,
+  show,
+  onHide,
+  cartItems,
+  onConfirmOrder,
+  onUpdateQuantity,
+  onRemoveItem,
+  onUpdateSubtotal,
 }) => {
   const navigate = useNavigate();
   const { tableId } = useParams<{ tableId: string }>();
-  const [selectedItems, setSelectedItems] = useState<{ product: ProductModel; quantity: number; note: string }[]>([]);
-  const subtotal = cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
-  const selectedItemsSubtotal = selectedItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+  const [selectedItems, setSelectedItems] = useState<
+    { product: ProductModel; quantity: number; note: string }[]
+  >([]);
+  const subtotal = cartItems.reduce(
+    (acc, item) => acc + item.product.price * item.quantity,
+    0
+  );
+  const selectedItemsSubtotal = selectedItems.reduce(
+    (acc, item) => acc + item.product.price * item.quantity,
+    0
+  );
   const selectedItemsTax = selectedItemsSubtotal * 0.08;
   const selectedItemsTotal = selectedItemsSubtotal + selectedItemsTax;
-  const [activeTab, setActiveTab] = useState('selecting');
+  const [activeTab, setActiveTab] = useState("selecting");
   const [order_id, setOrderId] = useState<any>(0);
 
   const [api, contextHolder] = notification.useNotification();
@@ -48,24 +68,26 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
     const data = await fetchOrderDetailsAPI(orderId);
     console.log(data);
     if (data) {
-      const items = await Promise.all(data.map(async (item: any) => {
-        const productData = await fetchProductDetailsAPI(item.productId);
-        console.log("productData: ", productData);
+      const items = await Promise.all(
+        data.map(async (item: any) => {
+          const productData = await fetchProductDetailsAPI(item.productId);
+          console.log("productData: ", productData);
 
-        const updatedProduct = {
-          ...productData,
-          price: item.unitPrice,
-        };
+          const updatedProduct = {
+            ...productData,
+            price: item.unitPrice,
+          };
 
-        return {
-          product: updatedProduct,
-          quantity: item.quantity,
-          // note: item.itemNotes, Chỗ này không cần
-        };
-      }));
+          return {
+            product: updatedProduct,
+            quantity: item.quantity,
+            // note: item.itemNotes, Chỗ này không cần
+          };
+        })
+      );
       setSelectedItems(items);
     } else {
-      throw new Error('Error fetching selected items');
+      throw new Error("Error fetching selected items");
     }
   }, []);
 
@@ -99,9 +121,9 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
 
   useEffect(() => {
     if (cartItems.length > 0) {
-      setActiveTab('selecting');
+      setActiveTab("selecting");
     } else if (selectedItems.length > 0) {
-      setActiveTab('selected');
+      setActiveTab("selected");
     }
   }, [cartItems, selectedItems]);
 
@@ -112,10 +134,10 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   const handleConfirmOrder = async () => {
     try {
       const orderId = await fetchOrderIdByTableId(Number(tableId));
-      if (!orderId) throw new Error('Order ID not found');
+      if (!orderId) throw new Error("Order ID not found");
       setOrderId(orderId);
 
-      const orderDetails = cartItems.map(item => ({
+      const orderDetails = cartItems.map((item) => ({
         productId: item.product.productId,
         quantity: item.quantity,
         unitPrice: item.product.price,

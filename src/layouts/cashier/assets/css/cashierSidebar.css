@@ -9,6 +9,7 @@
 
     .card button {
         padding: 8px;
+        width: 25% !important;
         /* Điều chỉnh khoảng cách cho phù hợp */
     }
 
