@@ -215,7 +215,7 @@ const IndexCustomer: React.FC = () => {
                         <section className="what-can-we-do mt-3 pb-4">
                             <div className="container">
                                 <div className="row">
-                                    <div className="col-md-6 help" style={{paddingLeft: 0}}>
+                                    <div className="col-md-6 help" style={{paddingLeft: 0, paddingRight: '50px'}}>
                                         <h4 className="fw-bold pb-4">CHÚNG TÔI CÓ THỂ GIÚP GÌ CHO BẠN ?</h4>
                                         <div className="accordion" id="accordionExample">
                                             <div className="accordion-item my-3 mt-0 rounded-0">

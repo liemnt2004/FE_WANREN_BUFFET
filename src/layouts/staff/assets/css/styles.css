@@ -88,7 +88,7 @@
   }
 
   /*=============== REUSABLE CSS CLASSES ===============*/
-  .container {
+  .container_staff {
     margin-inline: 1.5rem;
   }
 
@@ -561,14 +561,14 @@
     background-color: #973737;
   }
 
-  :where(.container, form, .input-field, header) {
+  :where(.container_staff, form, .input-field, header) {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
   }
 
-  .container {
+  .container_staff {
     background: #fff;
     padding: 30px 35px;
     border-radius: 12px;
@@ -576,7 +576,7 @@
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
   }
 
-  .container header {
+  .container_staff header {
     height: 65px;
     width: 65px;
     background: var(--first-color);
@@ -585,7 +585,7 @@
     border-radius: 50%;
   }
 
-  .container h4 {
+  .container_staff h4 {
     font-size: 1.25rem;
     color: #333;
     font-weight: 500;
