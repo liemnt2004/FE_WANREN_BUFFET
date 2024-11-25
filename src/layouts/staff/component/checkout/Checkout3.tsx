@@ -6,8 +6,7 @@ import OrderDetailsWithNameProduct from "../../../../models/StaffModels/OrderDet
 
 const Checkout3: React.FC = () => {
     const location = useLocation();
-    const { tableId } = location.state || {};
-    const { orderId } = useParams<{ orderId: string }>();
+    const { tableId, orderId } = location.state || {};
     const [error, setError] = useState<string | null>(null);
     const [amount, setAmount] = useState<number>(0);
     const [vat, setVat] = useState<number>(0);
@@ -24,7 +23,8 @@ const Checkout3: React.FC = () => {
         const loadOrderDetails = async () => {
             try {
                 const fetchedOrderDetails = await getOrderDetailWithNameProduct(Number(orderId));
-                setOrderDetails(fetchedOrderDetails);
+                const validOrderDetails = fetchedOrderDetails.filter((item: any) => item.quantity > 0 && item.price > 0);
+                setOrderDetails(validOrderDetails);
                 await updateTableStatus(Number(tableId), "LOCKED_TABLE");
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Failed to fetch orderDetails';

@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import "../../assets/css/checkout_for_staff.css";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { fetchOrderDetailsAPI, fetchProductDetailsAPI, getTableNumberByOrderId, updateOrderAmount, updateQuantityOrderDetails } from "../../../../api/apiStaff/orderForStaffApi";
 import ProductModel from "../../../../models/StaffModels/ProductModel";
 
 const Checkout1: React.FC = () => {
     const location = useLocation();
-    const { tableId } = location.state || {};
-    const { orderId } = useParams<{ orderId: string }>();
+    const { tableId, orderId } = location.state || {};
     const [error, setError] = useState<string | null>(null);
     const [orderTableNum, setOrderTableNum] = useState<number>(0);
     const [orderDetails, setOrderDetails] = useState<{ orderDetailId: number, product: ProductModel; quantity: number; note: string }[]>([]);
@@ -117,7 +116,7 @@ const Checkout1: React.FC = () => {
         if (isEditing) {
             handleOpenModal();
         } else {
-            navigate(`/checkout/order/${orderId}/step2`, { state: { tableId: tableId } });
+            navigate(`/checkout/step2`, { state: { tableId: tableId, orderId: orderId } });
         }
     }
 
@@ -232,7 +231,7 @@ const Checkout1: React.FC = () => {
             </div>
             <div className="step-checkout">
                 <div>
-                    <button style={{backgroundColor: '#bd4242'}}>1</button>
+                    <button style={{ backgroundColor: '#bd4242' }}>1</button>
                     <button>2</button>
                     <button>3</button>
                 </div>
