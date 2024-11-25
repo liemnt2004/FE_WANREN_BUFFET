@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import '../../assets/css/checkout_for_staff.css'
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus } from "../../../../api/apiStaff/orderForStaffApi";
 import OrderDetailsWithNameProduct from "../../../../models/StaffModels/OrderDetailsWithNameProduct";
+import { request } from "../../../../api/Request";
+import { AuthContext } from "../../../customer/component/AuthContext";
 
 const Checkout3: React.FC = () => {
     const location = useLocation();
@@ -13,6 +15,7 @@ const Checkout3: React.FC = () => {
     const [lastAmount, setLastAmount] = useState<number>(0);
     const [choicePayment, setChoicePayment] = useState<string | undefined>(undefined);
     const [orderDetails, setOrderDetails] = useState<OrderDetailsWithNameProduct[]>([]);
+    const {employeeUserId} = useContext(AuthContext);
     const navigate = useNavigate();
     const styleOfA: React.CSSProperties = {
         cursor: "pointer",
@@ -72,7 +75,7 @@ const Checkout3: React.FC = () => {
                     paymentMethod: "CASH",
                     paymentStatus: false,
                     orderId: orderId,
-                    userId: 4
+                    userId: employeeUserId
                 })
             });
         } catch (error) {
@@ -82,7 +85,14 @@ const Checkout3: React.FC = () => {
 
     const checkoutClick = async () => {
         try {
-            if (choicePayment === "3") {
+            if (choicePayment === "1") {
+                const paymentResponse = await request(`http://localhost:8080/api/payment/create_payment?price=${lastAmount}`);
+                if (!paymentResponse || !paymentResponse.url) {
+                    throw new Error("Tạo thanh toán VN PAY thất bại.");
+                }
+                // Chuyển hướng người dùng tới URL thanh toán VN PAY
+                window.location.href = paymentResponse.url;
+            } else if (choicePayment === "2") {
                 // const payment = new PaymentForStaffModel(
                 //     lastAmount, //amountPaid
                 //     "CASH", //paymentMethod
@@ -163,15 +173,10 @@ const Checkout3: React.FC = () => {
                         <div className="all-div-method-payment">
                             <div data-id="1" onClick={choiceClick} className={choicePayment === '1' ? 'selected' : ''}>
                                 <div className="control-img">
-                                    <img src="https://developers.momo.vn/v3/assets/images/icon-52bd5808cecdb1970e1aeec3c31a3ee1.png" alt="" />
-                                </div>
-                            </div>
-                            <div data-id="2" onClick={choiceClick} className={choicePayment === '2' ? 'selected' : ''}>
-                                <div className="control-img">
                                     <img src="https://vinadesign.vn/uploads/images/2023/05/vnpay-logo-vinadesign-25-12-57-55.jpg" alt="" />
                                 </div>
                             </div>
-                            <div data-id="3" onClick={choiceClick} className={choicePayment === '3' ? 'selected' : ''}>
+                            <div data-id="2" onClick={choiceClick} className={choicePayment === '2' ? 'selected' : ''}>
                                 <div className="control-img">
                                     <img src="https://static.vecteezy.com/system/resources/previews/004/309/804/non_2x/stack-bills-money-cash-isolated-icon-free-vector.jpg" alt="" />
                                 </div>
