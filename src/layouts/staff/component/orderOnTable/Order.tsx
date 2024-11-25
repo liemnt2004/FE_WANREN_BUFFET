@@ -106,7 +106,7 @@ const OrderOnTable: React.FC = () => {
                 onOpenExitModal={handleOpenExitModal}
                 onOpenSwitchTableModal={handleOpenSwitchTableModal}
             />
-            <MainContent content={selectedContent} cartItems={cartItems} setCartItems={setCartItems} area={tableLocation} />
+            <MainContent tableId={tableId} content={selectedContent} cartItems={cartItems} setCartItems={setCartItems} area={tableLocation} />
             {isModalOpen && (
                 <ExitModal
                     onClose={handleCloseModal}
