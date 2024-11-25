@@ -369,7 +369,7 @@ a{
 }
 
 .table-container {
-  max-height: 490px;
+  max-height: 450px;
   overflow-y: auto;
   overflow-x: auto;
   border-radius: 10px;

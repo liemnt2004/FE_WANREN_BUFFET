@@ -1,4 +1,3 @@
-// src/components/ProductManagement.tsx
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
     Form,
@@ -32,12 +31,21 @@ import {
     deleteProduct,
 } from "../../api/apiAdmin/productApiAdmin";
 import axios from "axios";
+import * as XLSX from 'xlsx';
+
+
+
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+
 
 const { Option } = Select;
 
 // Cấu hình Cloudinary
 const CLOUDINARY_CLOUD_NAME = 'dn2ot5mo6'; // Thay thế bằng Cloud name của bạn
 const CLOUDINARY_UPLOAD_PRESET = 'urvibegs'; // Thay thế bằng Upload preset của bạn
+
 
 export interface Product {
     productId: number;
@@ -57,7 +65,6 @@ const ProductManagement: React.FC = () => {
     const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
     const [editProduct, setEditProduct] = useState<Product | null>(null);
     const [confirmDeleteProductId, setConfirmDeleteProductId] = useState<number | null>(null);
-
     // Trạng thái dữ liệu
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState<boolean>(false); // Trạng thái tải dữ liệu
@@ -104,7 +111,8 @@ const ProductManagement: React.FC = () => {
         try {
             const { data, totalPages, totalElements } = await fetchProductList(
                 currentPage,
-                debouncedSearchText,
+                debouncedSearchText
+                // Bạn có thể thêm filterType vào đây nếu API hỗ trợ
             );
             setProducts(data);
             setTotalProducts(totalElements);
@@ -345,7 +353,7 @@ const ProductManagement: React.FC = () => {
                 dataIndex: "price",
                 key: "price",
                 sorter: (a, b) => a.price - b.price,
-                render: (price: number) => `$${price.toFixed(2)}`,
+                render: (price: number) => `\$${price.toFixed(2)}`,
                 width: 120,
             },
             {
@@ -444,6 +452,104 @@ const ProductManagement: React.FC = () => {
         [currentPage, filterType]
     );
 
+    // Các hàm xuất dữ liệu
+    const exportToExcel = () => {
+        const worksheet = XLSX.utils.json_to_sheet(products);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
+
+        // Tạo buffer
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+
+        // Lưu file
+        const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+        const url = window.URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'products.xlsx');
+        document.body.appendChild(link);
+        link.click();
+    };
+
+    const exportToCSV = () => {
+        const csvContent =
+            'data:text/csv;charset=utf-8,' +
+            [
+                ['Mã sản phẩm', 'Tên sản phẩm', 'Mô tả', 'Giá', 'Loại món ăn', 'Số lượng', 'Trạng thái'],
+                ...products.map((item) => [
+                    item.productId,
+                    item.productName,
+                    item.description,
+                    item.price,
+                    item.typeFood,
+                    item.quantity,
+                    item.productStatus,
+                ]),
+            ]
+                .map((e) => e.join(','))
+                .join('\n');
+
+        const link = document.createElement('a');
+        link.setAttribute('href', encodeURI(csvContent));
+        link.setAttribute('download', 'products.csv');
+        document.body.appendChild(link);
+        link.click();
+    };
+
+    const exportToPDF = () => {
+        const doc = new jsPDF();
+        doc.addFont("font-times-new-roman-normal.ttf", "font-times-new-roman", "normal");
+        doc.setFont("font-times-new-roman", "normal");
+
+
+        const tableColumn = [
+            'Mã sản phẩm',
+            'Tên sản phẩm',
+            'Mô tả',
+            'Giá',
+            'Loại món ăn',
+            'Số lượng',
+            'Trạng thái',
+        ];
+
+
+
+        // Thiết lập font chữ
+        doc.setFont("PTSans-Regular", "normal");
+
+        const tableRows: any[] = [];
+
+        products.forEach((item) => {
+            const rowData = [
+                item.productId,
+                item.productName,
+                item.description,
+                item.price,
+                item.typeFood,
+                item.quantity,
+                item.productStatus,
+            ];
+            tableRows.push(rowData);
+        });
+
+
+
+
+
+
+        autoTable(doc,{
+            head: [tableColumn],
+            body: tableRows,
+            startY: 20,
+
+        });
+
+
+
+        doc.save('products.pdf');
+    };
+
+
     return (
         <div className="container-fluid">
             <div className="main-content">
@@ -468,6 +574,17 @@ const ProductManagement: React.FC = () => {
                                 style={{ width: 300, marginRight: 16 }}
                             />
                             {/* Nếu muốn thêm bộ lọc bên ngoài, có thể thêm Select ở đây */}
+                        </div>
+                        <div className="btn-export-excel" style={{ display: 'flex', alignItems: 'center' }}>
+                            <Button onClick={exportToExcel} style={{ marginRight: 8 }}>
+                                Xuất Excel
+                            </Button>
+                            <Button onClick={exportToPDF} style={{ marginRight: 8 }}>
+                                Xuất PDF
+                            </Button>
+                            <Button onClick={exportToCSV}>
+                                Xuất CSV
+                            </Button>
                         </div>
                         <Button
                             onClick={openAddModal}
@@ -777,9 +894,7 @@ const ProductManagement: React.FC = () => {
                         width={400}
                     >
                         <div style={{ textAlign: "center" }}>
-                            <ExclamationCircleOutlined
-                                style={{ fontSize: "48px", color: "#ff4d4f" }}
-                            />
+                            <ExclamationCircleOutlined style={{ fontSize: "48px", color: "#ff4d4f" }} />
                             <h3 style={{ fontWeight: "bold", marginTop: "16px" }}>Xác nhận xóa</h3>
                             <p style={{ fontSize: "16px" }}>
                                 Bạn có chắc chắn muốn xóa sản phẩm này không?

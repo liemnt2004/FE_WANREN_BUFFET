@@ -30,14 +30,14 @@ import MainDash from "./layouts/ADMIN/Dashboard";
 import NotFoundPage from "./layouts/404";
 import Management from "./layouts/ADMIN/manager";
 import PromotionManagement from "./layouts/ADMIN/promotionManagement";
-import WorkShift from "./layouts/ADMIN/workshiftManagement";
 import StaffIndex from "./layouts/staff/component/StaffIndex";
-import OrderOnTable from "./layouts/staff/component/orderOnTable/orderOnTable";
 import CheckoutLayout from "./layouts/staff/component/checkout/CheckoutLayout";
 import Checkout1 from "./layouts/staff/component/checkout/Checkout1";
 import Checkout2 from "./layouts/staff/component/checkout/Checkout2";
 import Checkout3 from "./layouts/staff/component/checkout/Checkout3";
 import ProductManagement from "./layouts/ADMIN/ProductManagement";
+import OrderOnTable from "./layouts/staff/component/orderOnTable/Order";
+import WorkShift from "./layouts/ADMIN/WorkShift";
 
 function App() {
   return (
