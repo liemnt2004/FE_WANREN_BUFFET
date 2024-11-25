@@ -9,9 +9,10 @@ interface ProductListProps {
     area: string;
     cartItems: { product: ProductModel; quantity: number; note: string; totalPrice: number }[];
     setCartItems: React.Dispatch<React.SetStateAction<{ product: ProductModel; quantity: number; note: string; totalPrice: number }[]>>;
+    tableId: number;
 }
 
-const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, setCartItems }) => {
+const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, setCartItems, tableId }) => {
     const [products, setProducts] = useState<ProductModel[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -236,6 +237,7 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
                             const totalProductQuantity = getTotalProductQuantity(product.productId);
                             return (
                                 <ProductCard
+                                    tableId={tableId}
                                     onAddToCart={handleAddToCart}
                                     product={product}
                                     cartQuantity={totalProductQuantity}

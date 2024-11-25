@@ -10,7 +10,7 @@ const Header: React.FC<{ toggleId: string }> = ({ toggleId }) => {
           <i className="ri-cloud-fill"></i>
           {employeeFullName ? (<span>{employeeFullName}</span>): (<span>None employee</span>)}        
         </a>
-        <button className="header__toggle" id={toggleId}>
+        <button className="header__toggle">
           <i className="ri-menu-line"></i>
         </button>
       </div>

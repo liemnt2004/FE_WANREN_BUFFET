@@ -173,8 +173,8 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
             <div className={`card table-card position-relative ${table.tableStatus === 'EMPTY_TABLE' ? '' : 'table-card-active'}`}>
               {table.tableStatus === 'LOCKED_TABLE' && (
                 <>
-                  <p className="position-absolute start-100 translate-middle">
-                    <i className="bi bi-wallet-fill fs-3 text-danger"></i>
+                  <p className="position-absolute translate-middle" style={{top: '10px', right:'-25px'}}>
+                    <i className="bi bi-shield-lock-fill fs-3 text-danger"></i>
                   </p>
                 </>)
               }

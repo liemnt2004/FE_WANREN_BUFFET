@@ -18,6 +18,14 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
   const [showTransferModal, setShowTransferModal] = useState<boolean>(false);
   const navigate = useNavigate();
   const [api, contextHolder] = notification.useNotification();
+  const [activeLink, setActiveLink] = useState<LinkValue>('hotpot');
+  type LinkValue = 'hotpot' | 'meat' | 'seafood' | 'meatballs' | 'vegetables' | 'mushroom' | 'noodles' | 'buffet_tickets' | 'cold_towel' | 'mixers' | 'soft_drinks' | 'beer' | 'wine' | 'dessert';
+
+
+  const handleLinkClick = (value: string) => {
+    onClickContent(value as LinkValue);
+    setActiveLink(value as LinkValue); 
+  };
 
   const openNotification = (message: string, description: string, icon: React.ReactNode, pauseOnHover: boolean = true) => {
     api.open({
@@ -77,12 +85,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
               <h3 className="sidebar__title">BUFFET</h3>
               <div className="sidebar__list">
                 {sidebarLinks.map(link => (
-                  (link.value === 'hotpot' || link.value === 'meat' || link.value === 'mushroom' || link.value === 'seafood' || link.value === 'meatballs' || link.value === 'vegetables' || link.value === 'noodles') && (
+                  (link.value === 'hotpot' ||
+                    link.value === 'meat' ||
+                    link.value === 'mushroom' ||
+                    link.value === 'seafood' ||
+                    link.value === 'meatballs' ||
+                    link.value === 'vegetables' ||
+                    link.value === 'noodles') && (
                     <p
                       key={link.value}
-                      className="sidebar__link mb-0"
+                      className={`sidebar__link mb-0 ${activeLink === link.value ? 'active-link' : ''}`} 
                       style={{ cursor: 'pointer' }}
-                      onClick={() => onClickContent(link.value as 'hotpot' | 'meat' | 'mushroom' | 'seafood' | 'meatballs' | 'vegetables' | 'noodles')}
+                      onClick={() => handleLinkClick(link.value)}
                     >
                       <i className="ri-pie-chart-2-fill"></i>
                       <span style={{ color: 'var(--firstColor)' }}>{link.label}</span>
@@ -99,9 +113,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
                   ((link.value === 'buffet_tickets' && tableLocation !== 'GDeli') || link.value === 'dessert') && (
                     <p
                       key={link.value}
-                      className="sidebar__link mb-0"
+                      className={`sidebar__link mb-0 ${activeLink === link.value ? 'active-link' : ''}`} 
                       style={{ cursor: 'pointer' }}
-                      onClick={() => onClickContent(link.value as 'buffet_tickets' | 'dessert')}
+                      onClick={() => handleLinkClick(link.value)}
                     >
                       <i className="ri-pie-chart-2-fill"></i>
                       <span style={{ color: 'var(--firstColor)' }}>{link.label}</span>
@@ -117,9 +131,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
                   (link.value === 'mixers' || link.value === 'soft_drinks' || link.value === 'beer' || link.value === 'wine') && (
                     <p
                       key={link.value}
-                      className="sidebar__link mb-0"
+                      className={`sidebar__link mb-0 ${activeLink === link.value ? 'active-link' : ''}`} 
                       style={{ cursor: 'pointer' }}
-                      onClick={() => onClickContent(link.value as 'mixers' | 'soft_drinks' | 'beer' | 'wine')}
+                      onClick={() => handleLinkClick(link.value)}
                     >
                       <i className="ri-pie-chart-2-fill"></i>
                       <span style={{ color: 'var(--firstColor)' }}>{link.label}</span>

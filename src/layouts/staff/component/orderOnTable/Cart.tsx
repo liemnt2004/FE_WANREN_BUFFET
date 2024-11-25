@@ -52,7 +52,6 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   const [orderId, setOrderId] = useState<any>(0);
 
   const [api, contextHolder] = notification.useNotification();
-  console.log(tableId);
   const openNotification = (pauseOnHover: boolean) => () => {
     api.open({
       message: 'Xác nhận gọi món',
@@ -90,12 +89,6 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
       throw new Error("Error fetching selected items");
     }
   }, []);
-
-  useEffect(() => {
-    if (selectedItems.length >= 0) {
-      fetchOrderDetails(orderId);
-    }
-  }, [selectedItems, fetchOrderDetails, orderId]);
 
   useEffect(() => {
     const fetchOrderId = async () => {
@@ -146,9 +139,20 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
         createdDate: new Date().toISOString(),
       }));
 
-      await updateOrderDetails(orderId, orderDetails);
-      await updateOrderAmount(orderId, selectedItemsSubtotal + subtotal);
-      await updateTableStatus(Number(tableId), "OCCUPIED_TABLE");
+      await Promise.all([
+        updateOrderDetails(orderId, orderDetails),
+        updateOrderAmount(orderId, selectedItemsSubtotal + subtotal),
+        updateTableStatus(Number(tableId), "OCCUPIED_TABLE"),
+      ]);
+
+      setSelectedItems((prev) => [
+        ...prev,
+        ...cartItems.map((item) => ({
+          product: item.product,
+          quantity: item.quantity,
+          note: item.note,
+        })),
+      ]);
 
       onConfirmOrder(cartItems);
       openNotification(false)();
@@ -280,7 +284,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
                   </tbody>
                 </table>
               </div>
-              <button onClick={() => navigate(`/checkout/step1`, { state: { tableId: tableId, orderId: orderId} })} style={{ float: 'right' }} className="btn btn-danger">
+              <button onClick={() => navigate(`/checkout/step1`, { state: { tableId: tableId, orderId: orderId } })} style={{ float: 'right' }} className="btn btn-danger">
                 Thanh Toán
               </button>
             </div>
