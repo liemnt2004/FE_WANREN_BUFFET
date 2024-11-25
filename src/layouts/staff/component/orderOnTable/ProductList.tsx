@@ -42,9 +42,12 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
                     return product;
                 };
 
-                const filteredProducts = fetchedProducts.filter(
-                    (product) => product.productStatus === 'IN_STOCK'
-                );
+                // Lọc sản phẩm theo điều kiện
+                const filteredProducts = fetchedProducts.filter((product) => {
+                    const isInStock = product.productStatus === 'IN_STOCK';
+                    const isNotBuffetTicketForGDeli = !(area === 'GDeli' && product.typeFood === 'buffet_tickets');
+                    return isInStock && isNotBuffetTicketForGDeli;
+                });
 
                 const adjustedProducts = filteredProducts.map((product) => adjustProductPrice(product, area));
 
