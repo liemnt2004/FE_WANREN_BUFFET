@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import '../../assets/css/checkout_for_staff.css'
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getOrderAmount, updateLoyaltyPoint } from "../../../../api/apiStaff/orderForStaffApi";
 
 const Checkout2: React.FC = () => {
     const location = useLocation();
-    const { tableId } = location.state || {};
-    const { orderId } = useParams<{ orderId: string }>();
+    const { tableId, orderId } = location.state || {};
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [error1, setError1] = useState<string | null>(null);
@@ -95,7 +94,7 @@ const Checkout2: React.FC = () => {
                 </div>
                 <div className="container-button">
                     <button style={styleOfA} onClick={handleClick} disabled={disable} >Áp dụng</button>
-                    <button onClick={() => navigate(`/checkout/order/${orderId}/step3`, { state: { tableId: tableId } })}>Tiếp tục</button>
+                    <button onClick={() => navigate(`/checkout/step3`, { state: { tableId: tableId, orderId: orderId } })}>Tiếp tục</button>
                 </div>
             </div>
             <div className="step-checkout">

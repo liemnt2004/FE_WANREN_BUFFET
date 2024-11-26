@@ -67,15 +67,15 @@ export function Routing() {
   const location = useLocation();
 
   const isHiddenRoute = (pathname: string) => {
-    // Kiểm tra nếu đường dẫn chính xác hoặc khớp với "/orderOnTable/:tableId" hoặc "/checkout/order/:orderId/:step"
     return hiddenRoutes.some(
       (route) =>
         pathname === route ||
         (route === "/orderOnTable" && /^\/orderOnTable\/\d+$/.test(pathname)) ||
-        (route === "/checkout/order" &&
-          /^\/checkout\/order\/\d+\/step\d+$/.test(pathname)) // Kiểm tra "/checkout/order/:orderId/:step"
+        (route === "/checkout" && /^\/checkout\/step[1-3]$/.test(pathname))
     );
   };
+
+
   const hiddenRoutes = [
     "/admin",
     "/login",
@@ -90,7 +90,7 @@ export function Routing() {
     "/admin/employees",
     "/admin/dashboard",
     "/orderOnTable",
-    "/checkout/order",
+    "/checkout",
   ];
 
   const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -204,8 +204,8 @@ export function Routing() {
         />
 
         {/* Route dành cho nhân viên */}
-        <Route path="/orderOnTable/:tableId" element={<Order />} />
-        <Route path="/checkout/order/:orderId" element={<CheckoutLayout />}>
+        <Route path="/orderOnTable" element={<Order />} />
+        <Route path="/checkout" element={<CheckoutLayout />}>
           <Route path="step1" element={<Checkout1 />} />
           <Route path="step2" element={<Checkout2 />} />
           <Route path="step3" element={<Checkout3 />} />

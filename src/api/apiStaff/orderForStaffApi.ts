@@ -2,6 +2,8 @@ import axios from "axios";
 import { request } from "./Request";
 import OrderDetailsWithNameProduct from "../../models/StaffModels/OrderDetailsWithNameProduct";
 import OrderDetailModel from "../../models/StaffModels/OrderDetaitModel";
+import { AuthContext } from "../../layouts/customer/component/AuthContext";
+import { useContext } from "react";
 
 export async function getAllOrderDetailsByOrderId(orderId: number): Promise<OrderDetailModel[]>{
     const rs: OrderDetailModel[] = [];
@@ -147,12 +149,13 @@ export const fetchOrderIdByTableId = async (tableId: number) => {
   return text ? Number(text) : null;
 };
 
-export const createNewOrder = async (tableId: number) => {
+
+export const CreateNewOrder = async (userId: number, tableId: number) => {
   const response = await fetch(`${BASE_URL}/order_staff/add`, {
     method: "POST",
     headers: getHeaders(),
     body: JSON.stringify({
-      userId: 1,
+      userId,
       address: "145 Phan Xích Long",
       notes: "Order tại bàn",
       orderStatus: "IN_TRANSIT",

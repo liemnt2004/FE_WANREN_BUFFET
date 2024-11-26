@@ -6,14 +6,14 @@ import { Tables } from '../../../models/StaffModels/Tables';
 const TableModal: React.FC<{
   table: Tables | null;
   onClose: () => void;
-  onConfirm: (tableId: number, tableNumber: number, adults: number, children: number) => void;
+  onConfirm: (tableId: number, tableNumber: number, adults: number, children: number, tableLocation: string) => void;
 }> = ({ table, onClose, onConfirm }) => {
   const [adults, setAdults] = useState<number>(2);
   const [children, setChildren] = useState<number>(0);
 
   const handleConfirm = () => {
     if (table) {
-      onConfirm(table.tableId, table.tableNumber, adults, children);
+      onConfirm(table.tableId, table.tableNumber, 2, 0, table.location);
     }
     onClose();
   };
@@ -124,8 +124,8 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
       const orderId = orderIdText ? Number(orderIdText) : null;
 
       if (orderId !== null) {
-        setOrderId(orderId);
-        navigate(`/checkout/order/${orderId}/step${step}`, { state: { tableId: tableId } });
+        console.log(orderId)
+        navigate(`/checkout/step${step}`, { state: { tableId: tableId , orderId: orderId} });
       } else {
         console.error('No orderId found for this table');
       }
@@ -141,15 +141,21 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
     } else if (table.tableStatus === 'LOCKED_TABLE') {
       handleCheckoutStep(table.tableId, 3);
     } else {
-      navigate(`/orderOnTable/${table.tableId}`, { state: { adults: 2, children: 0, tableLocation: table.location } });
+      navigate(`/orderOnTable`, { state: { tableId: table.tableId, tableNumber: table.tableNumber, adults: 2, children: 0, tableLocation: table.location } });
     }
   };
 
   const handleConfirm = (tableId: number, tableNumber: number, adults: number, children: number) => {
-    if (tableNumber > 0 && adults > 0) {
-      console.log(`TableNumber: ${tableNumber}, Adults: ${adults}, Children: ${children}`);
+    if (!selectedTable) {
+      alert("No table selected.");
+      return;
+    }
 
-      navigate(`/orderOnTable/${tableId}`, { state: { adults, children, tableLocation: selectedTable?.location } });
+    if (tableNumber > 0 && adults > 0) {
+      console.log(`TableNumber: ${tableId}, Adults: ${adults}, Children: ${children}`);
+      navigate(`/orderOnTable`, {
+        state: { tableId: tableId, tableNumber, adults, children, tableLocation: selectedTable.location },
+      });
     } else {
       alert("Please enter valid numbers for adults and children.");
     }
@@ -167,8 +173,8 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
             <div className={`card table-card position-relative ${table.tableStatus === 'EMPTY_TABLE' ? '' : 'table-card-active'}`}>
               {table.tableStatus === 'LOCKED_TABLE' && (
                 <>
-                  <p className="position-absolute start-100 translate-middle">
-                    <i className="bi bi-wallet-fill fs-3 text-danger"></i>
+                  <p className="position-absolute translate-middle" style={{top: '10px', right:'-25px'}}>
+                    <i className="bi bi-shield-lock-fill fs-3 text-danger"></i>
                   </p>
                 </>)
               }
