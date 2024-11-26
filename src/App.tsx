@@ -50,6 +50,7 @@ import ManagementFoodCashier from "./layouts/cashier/managementFoodCashier";
 import ManagementOrdersOnlCashier from "./layouts/cashier/managementOrdersOnlCashier";
 import LoginCashier from "./layouts/cashier/loginCashier";
 import CheckoutSucess from "./layouts/staff/component/checkout/CheckoutSucess";
+import ManagementReservationCashier from "./layouts/cashier/managementReservationCashier";
 
 function App() {
   return (
@@ -104,6 +105,7 @@ export function Routing() {
     "/cashier/table",
     "/cashier/food",
     "/cashier/ordersOnline",
+    "/cashier/reservation",
   ];
   const cashierExcludedRoutes = ["/cashier/login"];
 
@@ -152,6 +154,10 @@ export function Routing() {
             <Route
               path="ordersOnline"
               element={<ManagementOrdersOnlCashier />}
+            />
+            <Route
+              path="reservation"
+              element={<ManagementReservationCashier />}
             />
           </Route>
         </Routes>

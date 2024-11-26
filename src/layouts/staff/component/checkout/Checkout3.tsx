@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import '../../assets/css/checkout_for_staff.css'
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus } from "../../../../api/apiStaff/orderForStaffApi";
+import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus, payWithVNPay } from "../../../../api/apiStaff/orderForStaffApi";
 import OrderDetailsWithNameProduct from "../../../../models/StaffModels/OrderDetailsWithNameProduct";
 import { request } from "../../../../api/Request";
 import { AuthContext } from "../../../customer/component/AuthContext";
@@ -109,12 +109,7 @@ const Checkout3: React.FC = () => {
     const checkoutClick = async () => {
         try {
             if (choicePayment === "1") {
-                const paymentResponse = await request(`http://localhost:8080/api/payment/create_payment?price=${lastAmount}`);
-                if (!paymentResponse || !paymentResponse.url) {
-                    throw new Error("Tạo thanh toán VN PAY thất bại.");
-                }
-                // Chuyển hướng người dùng tới URL thanh toán VN PAY
-                window.location.href = paymentResponse.url;
+                payWithVNPay(lastAmount, Number(employeeUserId), orderId);
             } else if (choicePayment === "2") {
                 setQrPopupVisible(true);
             } else if (choicePayment === "3") {

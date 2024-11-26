@@ -204,3 +204,24 @@ export const updateQuantityOrderDetails = async (details: any) => {
   if (!response.ok) throw new Error("Error updating order amount");
   return response.json();
 };
+
+export const payWithVNPay = async (total_amount: number, user_id: number, order_id: number) => {
+      try {
+          const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+          const formData = new URLSearchParams();
+          formData.append('amount', String(total_amount));
+          formData.append('orderInfo', 'Pay for the bill at the table by ' + String(user_id) + ' ' + String(order_id));
+          // formData.append('baseUrl', baseUrl);
+          const response = await axios.post('http://localhost:8080/api/payment/submit_order_vnpay', formData, {
+              headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded'
+              }
+          });
+          const paymentUrl = response.data;
+          console.log(response.data);
+          
+          window.location.href = paymentUrl; // Redirect to VNPay payment gateway
+      } catch (error) {
+          console.error('Error creating payment:', error);
+      }
+}
