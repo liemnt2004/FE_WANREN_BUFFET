@@ -18,12 +18,15 @@ export type Order = {
 
 // Định nghĩa kiểu OrderDetail
 export type OrderDetail = {
+  createdDate?: string;
+  itemNotes?: string;
   orderDetailId: number;
   quantity?: number;
   unitPrice?: number;
   productLink?: string;  // Link đến thông tin sản phẩm
   productImage?: string; // Hình ảnh sản phẩm
   productName?: string;  // Tên sản phẩm
+  productId?: number;
 };
 
 // Hàm lấy thông tin chi tiết đơn hàng từ link
@@ -44,6 +47,9 @@ export const fetchOrderDetails = async (orderDetailsLink: string): Promise<Order
           productLink,
           productImage: productData?.image,
           productName: productData?.productName,
+          productId: productData?.productId,
+          itemNotes: detail.itemNotes,
+          createdDate: detail.createdDate,
         };
       })
     );
@@ -58,12 +64,13 @@ export const fetchOrderDetails = async (orderDetailsLink: string): Promise<Order
 };
 
 
-const fetchProductInfo = async (productLink: string): Promise<{ image?: string; productName?: string } | undefined> => {
+const fetchProductInfo = async (productLink: string): Promise<{ image?: string; productName?: string; productId?: number } | undefined> => {
   try {
     const productResponse = await axios.get(productLink);
     return {
       image: productResponse.data.image,
       productName: productResponse.data.productName,
+      productId: productResponse.data.productId,
     };
   } catch (error: any) {
     if (axios.isAxiosError(error) && error.response?.status === 404) {
@@ -127,4 +134,29 @@ export const fetchTableId = async (tableLink: string): Promise<number | null> =>
     return null;
   }
 };
+
+
+// Hàm cập nhật trạng thái sản phẩm
+export const updateOrderStatus = async (orderId: number, newStatus: string) => {
+  try {
+    await axios.patch(`http://localhost:8080/Orders/${orderId}`, {
+      orderStatus: newStatus
+    });
+  } catch (error) {
+    console.error("Lỗi khi cập nhật trạng thái sản phẩm:", error);
+    throw error;
+  }
+};
+
+
+// Hàm cập nhật trạng thái sản phẩm
+export const updateOrderDetails = async (orderId: number, details: any[]) => {
+  try {
+    await axios.put(`http://localhost:8080/Orders/${orderId}/updateOrder`, details); // Gửi danh sách đơn giản
+  } catch (error) {
+    console.error("Lỗi khi cập nhật chi tiết đơn hàng:", error);
+    throw error;
+  }
+};
+
 

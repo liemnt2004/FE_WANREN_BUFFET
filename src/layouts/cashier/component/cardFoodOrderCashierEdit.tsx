@@ -5,13 +5,17 @@ type Props = {
   productName?: string;
   price?: number;
   quantity?: number;
+  onchangeQuantity: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  deleteDetail: () => void;
 };
 
-const CardFoodOrderCashier = ({
+const CardFoodOrderCashierEdit = ({
   imageUrl,
   productName,
   price,
   quantity,
+  onchangeQuantity,
+  deleteDetail,
 }: Props) => {
   return (
     <div className="d-flex justify-content-center">
@@ -49,7 +53,27 @@ const CardFoodOrderCashier = ({
             {/* Phần số lượng */}
             <div className="">
               <div className="card-body">
-                <p className="card-text mb-0">SL: {quantity}</p>
+                <input
+                  type="number"
+                  value={quantity}
+                  min={1}
+                  onChange={onchangeQuantity}
+                  className="card-text mb-0 w-100"
+                  style={{
+                    outline: "none", // Ẩn border khi focus
+                    border: "none", // Đảm bảo border bị loại bỏ
+                    boxShadow: "none", // Xóa shadow của border khi focus
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Phần số lượng */}
+            <div className="">
+              <div className="card-body">
+                <a onClick={deleteDetail}>
+                  <i className="bi bi-x-lg"></i>
+                </a>
               </div>
             </div>
           </div>
@@ -58,12 +82,12 @@ const CardFoodOrderCashier = ({
     </div>
   );
 };
-export default CardFoodOrderCashier;
+export default CardFoodOrderCashierEdit;
 
 const Responsive = styled.div`
   .grid-responsive {
     display: grid;
-    grid-template-columns: 2fr 5fr 3fr 2fr; /* Chia kích thước theo tỷ lệ */
+    grid-template-columns: 2fr 4fr 2fr 3fr 1fr; /* Chia kích thước theo tỷ lệ */
     gap: 10px; /* Khoảng cách giữa các phần tử */
     align-items: center;
   }

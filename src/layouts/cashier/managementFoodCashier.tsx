@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import CardFoodCashier from "./component/cardFoodCashier";
 import styled from "styled-components";
 import axios from "axios";
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4_1 } from "uuid";
 import {
   fetchProducts,
   updateProductStatus,
@@ -36,7 +36,7 @@ const ManagementFoodCashier = () => {
       );
       // alert v
       const newAlert = {
-        id: uuidv4(), // Tạo ID duy nhất cho mỗi alert
+        id: uuidv4_1(), // Tạo ID duy nhất cho mỗi alert
         message:
           newStatus === "HIDDEN"
             ? "Ẩn món ăn thành công!"
@@ -91,6 +91,6 @@ export default ManagementFoodCashier;
 // Styled components
 const CardGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
 `;
