@@ -45,7 +45,7 @@ export async function getWorkSchedulesByDate(
     // Gửi request với token
     const response = await axios.get(`${API_URL}/${date}`, {
       headers: {
-        Authorization: `Bearer ${getEmployeeToken()}`, // Đính kèm token trong header
+        Authorization: `Bearer ${getEmployeeToken()}`,
         "Content-Type": "application/json",
       },
     });
@@ -58,7 +58,8 @@ export async function getWorkSchedulesByDate(
           schedule.fullName,
           schedule.userType,
           schedule.shiftId,
-          new Date(schedule.workDate) // Chuyển đổi chuỗi ngày thành đối tượng Date
+          schedule.shiftName,
+          new Date(schedule.workDate)
         )
     );
   } catch (error: any) {
