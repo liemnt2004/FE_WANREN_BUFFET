@@ -32,7 +32,7 @@ const DashboardCashier = () => {
             color2="#8fd3f4"
           />
         </Link>
-        <Link to="ordersOnline" className="d-flex justify-content-center">
+        <Link to="reservation" className="d-flex justify-content-center">
           <CardMenuCashier
             icon="bi-calendar-check"
             title="Đặt&#160;Bàn"
