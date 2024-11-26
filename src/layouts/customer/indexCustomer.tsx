@@ -119,7 +119,7 @@ const IndexCustomer: React.FC = () => {
                         </section>
 
                         {/* Hiển thị Hot Deal */}
-                        <section className="hot-deal">
+                        <section className="hot-deal" style={{ backgroundColor: 'white' }}>
                             <h4 className="fw-bold">HOT DEAL</h4>
                             {loading ? (
                                 <div>Đang tải sản phẩm...</div>
@@ -212,10 +212,10 @@ const IndexCustomer: React.FC = () => {
                                 </div>
                             )}
                         </section>
-                        <section className="what-can-we-do mt-3 pb-4">
+                        <section className="what-can-we-do mt-3 pb-4" style={{ backgroundColor: 'white' }}>
                             <div className="container">
                                 <div className="row">
-                                    <div className="col-md-6 help" style={{paddingLeft: 0}}>
+                                    <div className="col-md-6 help" style={{paddingLeft: 0, paddingRight: '50px'}}>
                                         <h4 className="fw-bold pb-4">CHÚNG TÔI CÓ THỂ GIÚP GÌ CHO BẠN ?</h4>
                                         <div className="accordion" id="accordionExample">
                                             <div className="accordion-item my-3 mt-0 rounded-0">

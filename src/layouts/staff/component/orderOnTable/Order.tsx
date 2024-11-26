@@ -26,8 +26,8 @@ type ContentType =
     | 'wine';
 
 const OrderOnTable: React.FC = () => {
-    const { state } = useLocation();
-    const {tableLocation} = state || {};
+    const location = useLocation();
+    const { tableId, tableNumber, adults, children, tableLocation } = location.state || {};
     const [selectedContent, setSelectedContent] = useState<ContentType>('hotpot');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSwitchTableModalOpen, setIsSwitchTableModalOpen] = useState(false);
@@ -82,12 +82,10 @@ const OrderOnTable: React.FC = () => {
         setSelectedItemsSubtotal(subtotal);
     };
 
-    
-
     return (
         <div>
             <Header onCartClick={handleCartClick} selectedItemsSubtotal={selectedItemsSubtotal} totalCartQuantity={getTotalQuantity()} />
-            <OffcanvasCart onUpdateSubtotal={handleUpdateSubtotal} show={showCart} onHide={handleCloseCart} cartItems={cartItems} onConfirmOrder={handleConfirmOrder} onUpdateQuantity={(productId, newQuantity) => {
+            <OffcanvasCart tableId={tableId} onUpdateSubtotal={handleUpdateSubtotal} show={showCart} onHide={handleCloseCart} cartItems={cartItems} onConfirmOrder={handleConfirmOrder} onUpdateQuantity={(productId, newQuantity) => {
                 setCartItems((prevItems) =>
                     prevItems.map((item) =>
                         item.product.productId === productId ? { ...item, quantity: newQuantity } : item
@@ -95,18 +93,20 @@ const OrderOnTable: React.FC = () => {
                 );
             }}
                 onRemoveItem={(itemToRemove: { product: ProductModel; quantity: number; note: string }) => {
-                    const updatedCartItems = cartItems.filter(item => 
+                    const updatedCartItems = cartItems.filter(item =>
                         item.product.productId !== itemToRemove.product.productId || item.note !== itemToRemove.note
-                      );
+                    );
                     setCartItems(updatedCartItems);
                 }} />
             <Sidebar
-                toggleId="header-toggle"
+                tableNumber={tableNumber}
+                tableId={tableId}
+                tableLocation={tableLocation}
                 onClickContent={handleSidebarClick}
                 onOpenExitModal={handleOpenExitModal}
                 onOpenSwitchTableModal={handleOpenSwitchTableModal}
             />
-            <MainContent content={selectedContent} cartItems={cartItems} setCartItems={setCartItems} area={tableLocation} />
+            <MainContent tableId={tableId} content={selectedContent} cartItems={cartItems} setCartItems={setCartItems} area={tableLocation} />
             {isModalOpen && (
                 <ExitModal
                     onClose={handleCloseModal}
