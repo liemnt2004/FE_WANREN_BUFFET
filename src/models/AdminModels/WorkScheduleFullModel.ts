@@ -6,6 +6,7 @@ class WorkScheduleFullModel {
     public fullName: string,
     public userType: number,
     public shiftId: number,
+    public shiftName: string,
     public workDate: Date
   ) {}
 }
