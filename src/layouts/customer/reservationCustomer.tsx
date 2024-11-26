@@ -54,7 +54,7 @@ const ReservationForm: React.FC = () => {
     };
 
     return (
-        <div className="container-fluid">
+        <div className="container-fluid" style={{ backgroundColor: 'white' }}>
             <div className="row mobile-layout">
                 {/* Left Section: Main Image */}
                 <div className="col-md-8 position-relative left-section" style={{ paddingBottom: 0 }}>
