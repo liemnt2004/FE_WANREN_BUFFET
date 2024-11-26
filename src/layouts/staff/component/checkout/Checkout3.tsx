@@ -1,28 +1,34 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import '../../assets/css/checkout_for_staff.css'
-import { useNavigate, useParams } from "react-router-dom";
-import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount } from "../../../../api/apiStaff/orderForStaffApi";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus, payWithVNPay } from "../../../../api/apiStaff/orderForStaffApi";
 import OrderDetailsWithNameProduct from "../../../../models/StaffModels/OrderDetailsWithNameProduct";
+import { request } from "../../../../api/Request";
+import { AuthContext } from "../../../customer/component/AuthContext";
 
 const Checkout3: React.FC = () => {
-    const { orderId } = useParams<{ orderId: string }>();
+    const location = useLocation();
+    const { tableId, orderId } = location.state || {};
     const [error, setError] = useState<string | null>(null);
     const [amount, setAmount] = useState<number>(0);
     const [vat, setVat] = useState<number>(0);
     const [lastAmount, setLastAmount] = useState<number>(0);
     const [choicePayment, setChoicePayment] = useState<string | undefined>(undefined);
     const [orderDetails, setOrderDetails] = useState<OrderDetailsWithNameProduct[]>([]);
+    const {employeeUserId} = useContext(AuthContext);
     const navigate = useNavigate();
     const styleOfA: React.CSSProperties = {
         cursor: "pointer",
-        color: "black"
+        color: "white"
     }
 
     useEffect(() => {
         const loadOrderDetails = async () => {
             try {
                 const fetchedOrderDetails = await getOrderDetailWithNameProduct(Number(orderId));
-                setOrderDetails(fetchedOrderDetails);
+                const validOrderDetails = fetchedOrderDetails.filter((item: any) => item.quantity > 0 && item.price > 0);
+                setOrderDetails(validOrderDetails);
+                await updateTableStatus(Number(tableId), "LOCKED_TABLE");
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Failed to fetch orderDetails';
                 setError(errorMessage);
@@ -69,7 +75,7 @@ const Checkout3: React.FC = () => {
                     paymentMethod: "CASH",
                     paymentStatus: false,
                     orderId: orderId,
-                    userId: 4
+                    userId: employeeUserId
                 })
             });
         } catch (error) {
@@ -79,7 +85,9 @@ const Checkout3: React.FC = () => {
 
     const checkoutClick = async () => {
         try {
-            if (choicePayment === "3") {
+            if (choicePayment === "1") {
+                payWithVNPay(lastAmount, Number(employeeUserId), orderId);
+            } else if (choicePayment === "2") {
                 // const payment = new PaymentForStaffModel(
                 //     lastAmount, //amountPaid
                 //     "CASH", //paymentMethod
@@ -154,21 +162,16 @@ const Checkout3: React.FC = () => {
                 <div className="container-method-checkout">
                     <div>
                         <div className="title-all-method-payment">
-                            <div><i className="bi bi-wallet-fill"></i></div>
+                            <div><i className="bi bi-wallet-fill text-white"></i></div>
                             <h3>Tất cả các hình thức thanh toán</h3>
                         </div>
                         <div className="all-div-method-payment">
                             <div data-id="1" onClick={choiceClick} className={choicePayment === '1' ? 'selected' : ''}>
                                 <div className="control-img">
-                                    <img src="https://developers.momo.vn/v3/assets/images/icon-52bd5808cecdb1970e1aeec3c31a3ee1.png" alt="" />
-                                </div>
-                            </div>
-                            <div data-id="2" onClick={choiceClick} className={choicePayment === '2' ? 'selected' : ''}>
-                                <div className="control-img">
                                     <img src="https://vinadesign.vn/uploads/images/2023/05/vnpay-logo-vinadesign-25-12-57-55.jpg" alt="" />
                                 </div>
                             </div>
-                            <div data-id="3" onClick={choiceClick} className={choicePayment === '3' ? 'selected' : ''}>
+                            <div data-id="2" onClick={choiceClick} className={choicePayment === '2' ? 'selected' : ''}>
                                 <div className="control-img">
                                     <img src="https://static.vecteezy.com/system/resources/previews/004/309/804/non_2x/stack-bills-money-cash-isolated-icon-free-vector.jpg" alt="" />
                                 </div>
@@ -182,9 +185,9 @@ const Checkout3: React.FC = () => {
             </div>
             <div className="step-checkout">
                 <div>
-                    <button onClick={() => navigate(`/checkout/order/${orderId}/step1`)}>1</button>
-                    <button onClick={() => navigate(`/checkout/order/${orderId}/step2`)}>2</button>
-                    <button onClick={() => navigate(`/checkout/order/${orderId}/step3`)}>3</button>
+                    <button style={{ backgroundColor: '#bd4242' }}>1</button>
+                    <button style={{ backgroundColor: '#bd4242' }}>2</button>
+                    <button style={{ backgroundColor: '#bd4242' }}>3</button>
                 </div>
             </div>
         </div>

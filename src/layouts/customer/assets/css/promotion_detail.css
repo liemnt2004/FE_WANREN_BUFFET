@@ -60,6 +60,7 @@
     margin: 0;
 }
 
+
 @media screen and (max-width: 991px) {
     .ps36231-promotion-detail .container-img > img{
         border-radius: unset;

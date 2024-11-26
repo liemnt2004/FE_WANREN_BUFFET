@@ -1,5 +1,11 @@
-import React, { useContext } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useContext, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import MenuCustomer from "./layouts/customer/menuCustomer";
 import MenuProductCustomer from "./layouts/customer/menuProductCustomer";
 import IndexCustomer from "./layouts/customer/indexCustomer";
@@ -36,6 +42,14 @@ import Checkout1 from "./layouts/staff/component/checkout/Checkout1";
 import Checkout2 from "./layouts/staff/component/checkout/Checkout2";
 import Checkout3 from "./layouts/staff/component/checkout/Checkout3";
 import Order from "./layouts/staff/component/orderOnTable/Order";
+import { ProductsProvider } from "./layouts/cashier/component/ProductsContext";
+import MainLayoutCashier from "./layouts/cashier/mainLayoutCashier";
+import DashboardCashier from "./layouts/cashier/dashboardCashier";
+import ManagementTableCashier from "./layouts/cashier/managementTableCashier";
+import ManagementFoodCashier from "./layouts/cashier/managementFoodCashier";
+import ManagementOrdersOnlCashier from "./layouts/cashier/managementOrdersOnlCashier";
+import LoginCashier from "./layouts/cashier/loginCashier";
+import ManagementReservationCashier from "./layouts/cashier/managementReservationCashier";
 
 function App() {
   return (
@@ -51,16 +65,18 @@ function App() {
 export default App;
 
 export function Routing() {
+  const location = useLocation();
+
   const isHiddenRoute = (pathname: string) => {
-    // Kiểm tra nếu đường dẫn chính xác hoặc khớp với "/orderOnTable/:tableId" hoặc "/checkout/order/:orderId/:step"
     return hiddenRoutes.some(
       (route) =>
         pathname === route ||
         (route === "/orderOnTable" && /^\/orderOnTable\/\d+$/.test(pathname)) ||
-        (route === "/checkout/order" &&
-          /^\/checkout\/order\/\d+\/step\d+$/.test(pathname)) // Kiểm tra "/checkout/order/:orderId/:step"
+        (route === "/checkout" && /^\/checkout\/step[1-3]$/.test(pathname))
     );
   };
+
+
   const hiddenRoutes = [
     "/admin",
     "/login",
@@ -75,8 +91,77 @@ export function Routing() {
     "/admin/employees",
     "/admin/dashboard",
     "/orderOnTable",
-    "/checkout/order",
+    "/checkout",
   ];
+
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+
+  const cashierRoutes = [
+    "/cashier",
+    "/cashier/orders",
+    "/cashier/dashboard",
+    "/cashier/table",
+    "/cashier/food",
+    "/cashier/ordersOnline",
+    "/cashier/reservation",
+  ];
+  const cashierExcludedRoutes = ["/cashier/login"];
+
+  // Kiểm tra nếu đường dẫn là /cashier/login thì không hiển thị menu nào
+  if (cashierExcludedRoutes.includes(location.pathname)) {
+    return (
+      <Routes>
+        <Route
+          path="/cashier/login"
+          element={
+            !isLoggedIn ? (
+              <LoginCashier
+                onLoginSuccess={function (): void {
+                  setIsLoggedIn(true);
+                  <Navigate to="/cashier" />;
+                  throw new Error("Function not implemented.");
+                }}
+              />
+            ) : (
+              <Navigate to="/cashier" />
+            )
+          }
+        />
+      </Routes>
+    );
+  }
+
+  if (cashierRoutes.includes(location.pathname)) {
+    return (
+      <ProductsProvider>
+        <Routes>
+          <Route
+            path="/cashier"
+            element={
+              isLoggedIn ? (
+                <MainLayoutCashier />
+              ) : (
+                <Navigate to="/cashier/login" />
+              )
+            }
+          >
+            <Route index element={<DashboardCashier />} />
+            {/* Thêm các tuyến khác cho cashier */}
+            <Route path="table" element={<ManagementTableCashier />} />
+            <Route path="food" element={<ManagementFoodCashier />} />
+            <Route
+              path="ordersOnline"
+              element={<ManagementOrdersOnlCashier />}
+            />
+            <Route
+              path="reservation"
+              element={<ManagementReservationCashier />}
+            />
+          </Route>
+        </Routes>
+      </ProductsProvider>
+    );
+  }
 
   return (
     <>
@@ -125,8 +210,8 @@ export function Routing() {
         />
 
         {/* Route dành cho nhân viên */}
-        <Route path="/orderOnTable/:tableId" element={<Order />} />
-        <Route path="/checkout/order/:orderId" element={<CheckoutLayout />}>
+        <Route path="/orderOnTable" element={<Order />} />
+        <Route path="/checkout" element={<CheckoutLayout />}>
           <Route path="step1" element={<Checkout1 />} />
           <Route path="step2" element={<Checkout2 />} />
           <Route path="step3" element={<Checkout3 />} />
