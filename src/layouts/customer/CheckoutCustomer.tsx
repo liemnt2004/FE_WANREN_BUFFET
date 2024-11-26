@@ -341,7 +341,7 @@ const CheckoutCustomer: React.FC = () => {
     return (
         <section className="checkout spad container-fluid">
             <div className="container">
-                <div className="checkout__form">
+                <div className="checkout__form mt-3">
                     <h4>Thông Tin Thanh Toán</h4>
                     <form onSubmit={handleSubmit}>
                         <div className="row">
@@ -591,13 +591,15 @@ const CheckoutCustomer: React.FC = () => {
                                             <span className="checkmark"></span>
                                         </label>
                                     </div>
+                                    <div className='checkoyt_submit'>
                                     <button
                                         type="submit"
-                                        className="site-btn w-100"
+                                        className="site-btn"
                                         disabled={listCart.length === 0 || isSubmitting}
                                     >
                                         {isSubmitting ? 'Đang xử lý...' : 'ĐẶT HÀNG'}
                                     </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
