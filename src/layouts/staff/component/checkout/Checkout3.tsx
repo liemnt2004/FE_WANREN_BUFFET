@@ -47,9 +47,9 @@ const Checkout3: React.FC = () => {
         const getAmount = async () => {
             try {
                 const amountOfRs = await getOrderAmount(Number(orderId));
-                setAmount(amountOfRs);
-                setVat((amountOfRs * 0.08));
-                setLastAmount(amountOfRs + (amountOfRs * 0.08));
+                setAmount(Math.floor(amountOfRs));
+                setVat(Math.floor(amountOfRs * 0.08));
+                setLastAmount(Math.floor(amountOfRs + (amountOfRs * 0.08)));
             } catch (err) { 
                 const errorMessage = err instanceof Error ? err.message : 'Failed to get amount';
                 setError(errorMessage);
@@ -165,7 +165,7 @@ const Checkout3: React.FC = () => {
                         navigate("/checkout/sucessful")
                         setIsSucess(true);
                     } else {
-                        console.log("Chưa thành công")
+                        console.log("Thanh toán đang cập nhật!")
                     }
                 } else {
                     console.log("No data or data is not an array.");
@@ -180,8 +180,6 @@ const Checkout3: React.FC = () => {
         const interval = setInterval(async () => {
             if (!isUpdating) {
                 setIsUpdating(true);
-                console.log(lastAmount);
-                console.log(description);
                 await checkPaid(lastAmount, String(description));
                 setIsUpdating(false);
             }
@@ -266,7 +264,7 @@ const Checkout3: React.FC = () => {
                             <table className="price-all-sp">
                                 <thead>
                                     <th>Tổng tiền cần thanh toán</th>
-                                    <th>{Math.floor(lastAmount).toLocaleString() + " VNĐ"}</th>
+                                    <th>{lastAmount.toLocaleString() + " VNĐ"}</th>
                                 </thead>
                             </table>
                         </div>
