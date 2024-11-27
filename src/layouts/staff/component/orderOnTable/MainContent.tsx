@@ -21,12 +21,13 @@ interface MainContentProps {
   cartItems: { product: ProductModel; quantity: number; note: string; totalPrice: number }[];
   setCartItems: React.Dispatch<React.SetStateAction<{ product: ProductModel; quantity: number; note: string; totalPrice: number }[]>>;
   area: 'Table' | 'GDeli';
+  tableId: number;
 }
 
-const MainContent: React.FC<MainContentProps> = ({ content, cartItems, setCartItems, area }) => {
+const MainContent: React.FC<MainContentProps> = ({ content, cartItems, setCartItems, area , tableId}) => {
   return (
     <main className="main" id="main">
-      <ProductList category={content} cartItems={cartItems} setCartItems={setCartItems} area={area} />
+      <ProductList tableId={tableId} category={content} cartItems={cartItems} setCartItems={setCartItems} area={area} />
     </main>
   );
 };

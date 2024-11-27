@@ -2,6 +2,8 @@ import axios from "axios";
 import { request } from "./Request";
 import OrderDetailsWithNameProduct from "../../models/StaffModels/OrderDetailsWithNameProduct";
 import OrderDetailModel from "../../models/StaffModels/OrderDetaitModel";
+import { AuthContext } from "../../layouts/customer/component/AuthContext";
+import { useContext } from "react";
 
 export async function getAllOrderDetailsByOrderId(orderId: number): Promise<OrderDetailModel[]>{
     const rs: OrderDetailModel[] = [];
@@ -147,12 +149,13 @@ export const fetchOrderIdByTableId = async (tableId: number) => {
   return text ? Number(text) : null;
 };
 
-export const createNewOrder = async (tableId: number) => {
+
+export const CreateNewOrder = async (userId: number, tableId: number) => {
   const response = await fetch(`${BASE_URL}/order_staff/add`, {
     method: "POST",
     headers: getHeaders(),
     body: JSON.stringify({
-      userId: 1,
+      userId,
       address: "145 Phan Xích Long",
       notes: "Order tại bàn",
       orderStatus: "IN_TRANSIT",
@@ -201,3 +204,24 @@ export const updateQuantityOrderDetails = async (details: any) => {
   if (!response.ok) throw new Error("Error updating order amount");
   return response.json();
 };
+
+export const payWithVNPay = async (total_amount: number, user_id: number, order_id: number) => {
+      try {
+          const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+          const formData = new URLSearchParams();
+          formData.append('amount', String(total_amount));
+          formData.append('orderInfo', 'Pay for the bill at the table by ' + String(user_id) + ' ' + String(order_id));
+          // formData.append('baseUrl', baseUrl);
+          const response = await axios.post('http://localhost:8080/api/payment/submit_order_vnpay', formData, {
+              headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded'
+              }
+          });
+          const paymentUrl = response.data;
+          console.log(response.data);
+          
+          window.location.href = paymentUrl; // Redirect to VNPay payment gateway
+      } catch (error) {
+          console.error('Error creating payment:', error);
+      }
+}

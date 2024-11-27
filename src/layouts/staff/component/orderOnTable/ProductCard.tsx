@@ -16,6 +16,7 @@ interface ProductCardProps {
         note: string;
         totalPrice: number;
     }) => void;
+    tableId: number
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -24,14 +25,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
     onImageClick,
     decrementQuantity,
     incrementQuantity,
-    onAddToCart
+    onAddToCart,
+    tableId
 }) => {
     const [quantity, setQuantity] = useState(1);
     const [note, setNote] = useState('');
     const [selectedItems, setSelectedItems] = useState<{ product: ProductModel; quantity: number; note: string }[]>([]);
-    const { tableId } = useParams<{ tableId: string }>();
     const handleAddToCart = () => {
         const totalPrice = product.price * 1;
+        
         onAddToCart({
             product,
             quantity,
@@ -42,11 +44,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
     const fetchOrderDetails = useCallback(async (orderId: number) => {
         const data = await fetchOrderDetailsAPI(orderId);
-        console.log(data);
         if (data) {
             const items = await Promise.all(data.map(async (item: any) => {
                 const productData = await fetchProductDetailsAPI(item.productId);
-                console.log("productData: ", productData);
 
                 const updatedProduct = {
                     ...productData,

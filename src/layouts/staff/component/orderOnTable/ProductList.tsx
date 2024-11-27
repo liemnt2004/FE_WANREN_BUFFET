@@ -9,9 +9,10 @@ interface ProductListProps {
     area: string;
     cartItems: { product: ProductModel; quantity: number; note: string; totalPrice: number }[];
     setCartItems: React.Dispatch<React.SetStateAction<{ product: ProductModel; quantity: number; note: string; totalPrice: number }[]>>;
+    tableId: number;
 }
 
-const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, setCartItems }) => {
+const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, setCartItems, tableId }) => {
     const [products, setProducts] = useState<ProductModel[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -42,9 +43,12 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
                     return product;
                 };
 
-                const filteredProducts = fetchedProducts.filter(
-                    (product) => product.productStatus === 'IN_STOCK'
-                );
+                // Lọc sản phẩm theo điều kiện
+                const filteredProducts = fetchedProducts.filter((product) => {
+                    const isInStock = product.productStatus === 'IN_STOCK';
+                    const isNotBuffetTicketForGDeli = !(area === 'GDeli' && product.typeFood === 'buffet_tickets');
+                    return isInStock && isNotBuffetTicketForGDeli;
+                });
 
                 const adjustedProducts = filteredProducts.map((product) => adjustProductPrice(product, area));
 
@@ -233,6 +237,7 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
                             const totalProductQuantity = getTotalProductQuantity(product.productId);
                             return (
                                 <ProductCard
+                                    tableId={tableId}
                                     onAddToCart={handleAddToCart}
                                     product={product}
                                     cartQuantity={totalProductQuantity}

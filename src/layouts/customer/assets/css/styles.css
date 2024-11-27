@@ -9,7 +9,7 @@
     --colorPrimary: #bd4242;
     --colorBoder: #ffffff1d;
     --colorFont: #1e1e2f;
-    --color1: #f2f2f2;
+    --color1: #ffffff;
     --container_lg: 76%;
     --container_md: 90%;
     --container_sm: 94%;
@@ -203,36 +203,6 @@ span {
     font-weight: bold;
 }
 
-/* src/layouts/customer/assets/css/styles.css */
-
-/* CSS cho nút Google Sign-In */
-.google-button {
-    width: 100%;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #4285F4; /* Màu xanh của Google */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 16px;
-}
-
-.google-button:hover {
-    background-color: #357ae8;
-    color: white;
-}
-
-/* Thêm khoảng cách giữa các nút và các phần tử khác nếu cần */
-.social-icons {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-
 .menu-bar .btn-book:hover {
     background-color: var(--colorFont);
     color: white;
@@ -306,7 +276,14 @@ span {
     font-family: 'Montserrat', sans-serif;
 }
 
+body {
 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    /* height: 100vh; */
+}
 
 .ps28277 .container {
     background-color: #fff;
@@ -314,9 +291,10 @@ span {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
     position: relative;
     overflow: hidden;
-    width: 900px;
-    height: 600px;
-    margin-top:5% ;
+    width: 768px;
+    max-width: 100%;
+    min-height: 480px;
+    margin-top:10% ;
 }
 
 .ps28277 .container p {
@@ -553,7 +531,7 @@ span {
     }
 
     .nav-link {
-        display: none;
+        display: none !important;
     }
 
     .about img {
@@ -565,15 +543,13 @@ span {
         text-align: center;
     }
     .nav-link-menu{
-        display: block ;
+        display: block !important ;
     }
 
     .btn-book{
-        height: 50px;
+        /* height: 50px; */
         font-size: 15px;
     }
-
-
 
     .about p {
         font-size: 0.9rem;
@@ -603,10 +579,299 @@ span {
         display: none;
     }
 
-    .hot-deal .row {
+    /* .hot-deal .row {
         display: inline;
+    } */
+
+    .hot-deal .col-6 {
+        flex: 1 1 auto;
+        max-width: 100%;
     }
 
-    .card-custom {
+    /*Phần HOT DEAL trang chủ Customer */
+    .hot-deal .card {
+        background-color: var(--light-color);
+        border-radius: 6px; /* Bo góc nhẹ */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Tạo bóng nhẹ */
+        padding: 0.75rem; /* Giảm padding trong card */
+        max-width: 100%; /* Đảm bảo card không vượt quá 100% chiều rộng */
     }
+
+    .hot-deal img {
+        width: 100%; /* Đảm bảo hình ảnh chiếm toàn bộ chiều ngang card */
+        height: 150px; /* Đặt chiều cao cố định cho hình ảnh */
+        object-fit: cover; /* Giữ tỷ lệ hình ảnh */
+        border-radius: 5px; /* Bo góc nhẹ cho hình ảnh */
+    }
+
+    .hot-deal .card h5 {
+        font-size: 0.9rem; /* Giảm kích thước chữ */
+        margin-top: 0.5rem;
+    }
+
+    .hot-deal .card h6 {
+        font-size: 0.85rem; /* Giảm kích thước chữ của giá */
+        margin-top: 0.3rem;
+    }
+
+    .hot-deal .card__price {
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+
+
+    .hot-deal .col-6 {
+        flex: 1 1 auto;
+        max-width: 100%;
+    }
+
+    .hot-deal .card {
+        background-color: var(--light-color);
+        border-radius: 6px; /* Bo góc nhẹ */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Tạo bóng nhẹ */
+        padding: 0.75rem; /* Giảm padding trong card */
+        max-width: 100%; /* Đảm bảo card không vượt quá 100% chiều rộng */
+        height: 29vh;
+    }
+
+    .hot-deal img {
+        /* Đảm bảo hình ảnh chiếm toàn bộ chiều ngang card */
+        height: 150px; /* Đặt chiều cao cố định cho hình ảnh */
+        object-fit: cover; /* Giữ tỷ lệ hình ảnh */
+        border-radius: 5px; /* Bo góc nhẹ cho hình ảnh */
+    }
+
+    .hot-deal .card h5 {
+        font-size: 0.9rem; /* Giảm kích thước chữ */
+        margin-top: 0.5rem;
+    }
+
+    .hot-deal .card h6 {
+        font-size: 0.85rem; /* Giảm kích thước chữ của giá */
+        margin-top: 0.3rem;
+    }
+
+    .hot-deal .card__price {
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    .checkout.spad {
+        display: flex;
+        justify-content: center; /* Căn giữa theo chiều ngang */
+        align-items: center; /* Căn giữa theo chiều dọc */
+        min-height: 100vh; /* Chiều cao tối thiểu 100% màn hình */
+        padding: 1rem; /* Khoảng cách xung quanh */
+        box-sizing: border-box;
+      }
+    
+      .checkout .container {
+        width: 100%; /* Chiếm 100% không gian container */
+        max-width: 500px; /* Giới hạn chiều rộng tối đa */
+        margin: 0 auto; /* Đặt container ở giữa */
+      }
+    
+      .checkout .row {
+        display: flex;
+        flex-direction: column; /* Hiển thị theo cột trên màn hình nhỏ */
+        align-items: center; /* Căn giữa nội dung bên trong theo chiều ngang */
+        justify-content: center; /* Căn giữa nội dung theo chiều dọc */
+        gap: 1rem; /* Khoảng cách giữa các phần tử */
+        padding: 0; /* Loại bỏ khoảng cách thừa */
+      }
+    
+      .checkout .col-lg-8,
+      .checkout .col-lg-4 {
+        width: 100%; /* Đảm bảo cột chiếm hết chiều ngang */
+        
+      }
+      .checkout .col-lg-8.col-md-6 {
+        width: 100%; /* Chiếm toàn bộ chiều ngang */
+        max-width: 500px; /* Giới hạn chiều rộng */
+        background-color: #fff; /* Màu nền trắng */
+        border-radius: 8px; /* Bo góc nhẹ */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Bóng nhẹ */
+        box-sizing: border-box; /* Tính toán không bị tràn */
+      }
+    
+      .checkout .checkout__form {
+        padding: 1rem; /* Khoảng cách bên trong */
+        border-radius: 8px; /* Bo góc form */
+        background-color: #fff; /* Màu nền */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Bóng nổi bật */
+      }
+    
+      
+      .checkout__order {
+        height: 60vh !important;
+        width: 36vh !important; /* Chiếm toàn bộ chiều ngang */
+        padding: 1rem; /* Khoảng cách bên trong */
+        background-color: var(--light-color);
+        border-radius: 6px; /* Bo góc nhẹ */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Tạo bóng nhẹ */
+        box-sizing: border-box; /* Tính toán đúng kích thước */
+      }
+    
+      /* Các thành phần bên trong .checkout__order */
+      .checkout__order h4 {
+        text-align: center; /* Canh giữa tiêu đề */
+        margin-bottom: 1rem; /* Tạo khoảng cách bên dưới */
+      }
+    
+      .checkout__order ul {
+        padding-left: 2px;
+        margin: 0;
+        list-style: none; /* Loại bỏ gạch đầu dòng */
+      }
+    
+      .checkout__order li {
+        font-size: 0.9rem; /* Giảm kích thước chữ */
+        padding: 0.5rem 0; /* Tạo khoảng cách giữa các dòng */
+        border-bottom: 1px solid #eee; /* Đường kẻ ngăn cách */
+        padding-left: 10px;
+      }
+    
+      .checkout__order__subtotal, .checkout__order__total {
+        font-size: 1rem; /* Điều chỉnh kích thước chữ */
+        margin-top: 1rem; /* Khoảng cách phía trên */
+        display: flex;
+        justify-content: space-between; /* Canh đều hai đầu */
+      }
+    
+      /* Nút bấm đặt hàng */
+      .checkout__order .site-btn {
+        width: 75%; /* Đảm bảo nút bấm chiếm hết chiều ngang */
+        padding: 0.75rem; /* Khoảng cách bên trong nút */
+        text-align: center;
+        background-color: var(--primary-color) !important;
+        color: #fff;
+        border: none;
+        border-radius: 6px; /* Bo góc nút */
+        cursor: pointer;
+      }
+    
+      .checkout__order .site-btn:disabled {
+        background-color: #ccc !important; /* Màu xám khi bị disabled */
+        cursor: not-allowed; /* Trạng thái không thể nhấn */
+      }
+
+      .checkout_submit button {
+        background-color: var(--primary-color) !important; /* Màu nền chính */
+        color:var(--colorPrimary) !important; /* Màu chữ trắng */
+        padding: 0.75rem; /* Khoảng cách bên trong nút */
+        font-size: 1rem; /* Kích thước chữ */
+        border: none !important; /* Xóa đường viền */
+        border-radius: 6px; /* Bo góc nút */
+        cursor: pointer; /* Con trỏ chuột */
+        transition: all 0.3s ease; /* Thêm hiệu ứng chuyển đổi mượt */
+        width: 100%; /* Chiếm toàn bộ chiều ngang */
+        text-align: center;
+
+      }
+      .checkout__order button{
+        font-size: 18px;
+        padding: 10px 10px;
+        border-radius: 20px !important;
+        letter-spacing: 2px !important;
+        width: 100%;
+        margin-top: 10px;
+        color: var(--colorPrimary) !important;
+        border: 2px solid var(--colorPrimary) !important;
+        font-weight: bold;
+        background: none;
+        width: 16rem;
+        display: flex !important;
+        justify-content: center !important;
+      }
+      
+      .checkout_submit button:hover {
+        background-color: var(--primary-color-hover); /* Màu nền khi hover */
+        box-shadow: 0 4px 6px rgba(253, 0, 0, 0.15) !important; /* Tạo bóng khi hover */
+        transform: translateY(-2px) ; /* Nhấn mạnh nút nổi lên */
+        color: #fff; /* Đảm bảo chữ vẫn trắng khi hover */
+      }
+      
+      .checkout_submit button:active {
+        transform: translateY(0) !important; /* Hiệu ứng ấn nút */
+        box-shadow: 0 2px 4px rgba(255, 0, 0, 0.1) !important; /* Bóng nhỏ hơn khi ấn */
+        background-color: var(--primary-color) !important; /* Quay lại màu ban đầu */
+      }
+      
+      .checkout_submit button:disabled {
+        background-color: #ccc; /* Màu xám khi bị disabled */
+        color: #666; /* Màu chữ nhạt hơn */
+        cursor: not-allowed; /* Không thể nhấn */
+        box-shadow: none; /* Không có bóng */
+      }
+
+        .checkout__order {
+        background-color: var(--light-color); /* Màu nền gốc */
+        border-radius: 6px; /* Bo góc cho vùng */
+        padding: 1.5rem; /* Khoảng cách bên trong */
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Bóng mờ mặc định */
+        transition: all 0.3s ease; /* Hiệu ứng chuyển đổi mượt */
+        transform: translateY(0); /* Vị trí ban đầu */
+        }
+
+        .checkout__order:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Bóng đậm hơn khi hover */
+        transform: translateY(-5px) !important; /* Đẩy vùng nhô lên nhẹ */
+        background-color: var(--light-hover-color) !important; /* Thay đổi màu nền khi hover */
+        border: 1px solid var(--primary-color) !important; /* Thêm viền nổi bật */
+        }
+
+        .checkout__order h4:hover {
+        color: var(--primary-color) !important; /* Thay đổi màu tiêu đề khi hover */
+        text-decoration: underline; /* Gạch chân tiêu đề */
+        }
+
+
+
+
+
+
+
+
+
+
+
+.checkout__order {
+    background-color: var(--light-color); /* Màu nền gốc */
+    border-radius: 6px; /* Bo góc cho vùng */
+    padding: 1.5rem; /* Khoảng cách bên trong */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Bóng mờ mặc định */
+    transition: all 0.3s ease; /* Hiệu ứng chuyển đổi mượt */
+    transform: translateY(0); /* Vị trí ban đầu */
+  }
+  
+  .checkout__order:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Bóng đậm hơn khi hover */
+    transform: translateY(-5px); /* Đẩy vùng nhô lên nhẹ */
+    background-color: var(--light-hover-color); /* Thay đổi màu nền khi hover */
+    border: 1px solid var(--primary-color); /* Thêm viền nổi bật */
+  }
+  
+  .checkout__order h4:hover {
+    color: var(--primary-color); /* Thay đổi màu tiêu đề khi hover */
+    text-decoration: underline; /* Gạch chân tiêu đề */
+  }
+  
+      
+
 }

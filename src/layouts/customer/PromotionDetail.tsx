@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import PromotionModel from "../../models/PromotionModel";
 import { GetPromotionById } from "../../api/apiCustommer/promotionApi";
 import bannerHome from "./assets/img/Banner-Hompage-_1500W-x-700H_px.jpg";
+import './assets/css/promotion_detail.css'
 
 const PromotionDetail = () => {
   const { id: promotionId } = useParams(); // Destructure to get the ID directly
@@ -49,7 +50,7 @@ const PromotionDetail = () => {
           {/* Header Section */}
           <div className="row">
             {/* Image Section */}
-            <div className="control-img col-12 col-md-6">
+            <div className="control-img col-12 fix-col-12 col-md-6">
               <div className="container-img">
                 <img
                   src={bannerHome || "https://via.placeholder.com/150"} // Replace with actual image property if available
@@ -60,7 +61,7 @@ const PromotionDetail = () => {
             </div>
 
             {/* Information and Time Section */}
-            <div className="all-infor-time col-12 col-md-6">
+            <div className="all-infor-time col-12 col-md-6 mt-32">
               <h1>{promotion.promotionName}</h1>
               <table className="w-100">
                 <tbody>

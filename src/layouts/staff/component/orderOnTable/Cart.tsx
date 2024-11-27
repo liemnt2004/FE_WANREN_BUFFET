@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { Offcanvas } from 'react-bootstrap';
 import '../../assets/css/styles.css'
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import ProductModel from '../../../../models/StaffModels/ProductModel';
-import { createNewOrder, fetchOrderDetailsAPI, fetchOrderIdByTableId, fetchOrderStatusAPI, fetchProductDetailsAPI, updateOrderAmount, updateOrderDetails, updateTableStatus } from '../../../../api/apiStaff/orderForStaffApi';
+import { CreateNewOrder, fetchOrderDetailsAPI, fetchOrderIdByTableId, fetchOrderStatusAPI, fetchProductDetailsAPI, updateOrderAmount, updateOrderDetails, updateTableStatus } from '../../../../api/apiStaff/orderForStaffApi';
 import { notification } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
-
+import { AuthContext } from "../../../customer/component/AuthContext";
 interface OffcanvasCartProps {
   show: boolean;
   onHide: () => void;
@@ -21,6 +21,7 @@ interface OffcanvasCartProps {
     note: string;
   }) => void;
   onUpdateSubtotal: (subtotal: number) => void;
+  tableId: number;
 }
 
 const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
@@ -31,9 +32,9 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   onUpdateQuantity,
   onRemoveItem,
   onUpdateSubtotal,
+  tableId
 }) => {
   const navigate = useNavigate();
-  const { tableId } = useParams<{ tableId: string }>();
   const [selectedItems, setSelectedItems] = useState<
     { product: ProductModel; quantity: number; note: string }[]
   >([]);
@@ -48,10 +49,9 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   const selectedItemsTax = selectedItemsSubtotal * 0.08;
   const selectedItemsTotal = selectedItemsSubtotal + selectedItemsTax;
   const [activeTab, setActiveTab] = useState("selecting");
-  const [order_id, setOrderId] = useState<any>(0);
-
+  const [orderId, setOrderId] = useState<any>(0);
+  const {employeeUserId} = useContext(AuthContext);
   const [api, contextHolder] = notification.useNotification();
-
   const openNotification = (pauseOnHover: boolean) => () => {
     api.open({
       message: 'Xác nhận gọi món',
@@ -66,7 +66,6 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
 
   const fetchOrderDetails = useCallback(async (orderId: number) => {
     const data = await fetchOrderDetailsAPI(orderId);
-    console.log(data);
     if (data) {
       const items = await Promise.all(
         data.map(async (item: any) => {
@@ -92,12 +91,6 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   }, []);
 
   useEffect(() => {
-    if (selectedItems.length >= 0) {
-      fetchOrderDetails(order_id);
-    }
-  }, [selectedItems, fetchOrderDetails, order_id]);
-
-  useEffect(() => {
     const fetchOrderId = async () => {
       try {
         const orderId = await fetchOrderIdByTableId(Number(tableId));
@@ -105,11 +98,11 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
           setOrderId(orderId);
           const orderData = await fetchOrderStatusAPI(orderId);
           if (orderData.orderStatus === "DELIVERED") {
-            await createNewOrder(Number(tableId));
+            await CreateNewOrder(Number(employeeUserId),Number(tableId));
           }
           fetchOrderDetails(orderId);
         } else {
-          await createNewOrder(Number(tableId));
+          await CreateNewOrder(Number(employeeUserId),Number(tableId));
         }
       } catch (error) {
         console.error(error);
@@ -118,6 +111,12 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
 
     fetchOrderId();
   }, []);
+
+  useEffect(() =>{
+    if (selectedItems.length >= 0) {
+      fetchOrderDetails(orderId);
+    }
+  }, [fetchOrderDetails, orderId, selectedItems.length]);
 
   useEffect(() => {
     if (cartItems.length > 0) {
@@ -146,9 +145,20 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
         createdDate: new Date().toISOString(),
       }));
 
-      await updateOrderDetails(orderId, orderDetails);
-      await updateOrderAmount(orderId, selectedItemsSubtotal + subtotal);
-      await updateTableStatus(Number(tableId), "OCCUPIED_TABLE");
+      await Promise.all([
+        updateOrderDetails(orderId, orderDetails),
+        updateOrderAmount(orderId, selectedItemsSubtotal + subtotal),
+        updateTableStatus(Number(tableId), "OCCUPIED_TABLE"),
+      ]);
+
+      setSelectedItems((prev) => [
+        ...prev,
+        ...cartItems.map((item) => ({
+          product: item.product,
+          quantity: item.quantity,
+          note: item.note,
+        })),
+      ]);
 
       onConfirmOrder(cartItems);
       openNotification(false)();
@@ -280,7 +290,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
                   </tbody>
                 </table>
               </div>
-              <button onClick={() => navigate(`/checkout/order/${order_id}/step1`, { state: { tableId: tableId } })} style={{ float: 'right' }} className="btn btn-danger">
+              <button onClick={() => navigate(`/checkout/step1`, { state: { tableId: tableId, orderId: orderId } })} style={{ float: 'right' }} className="btn btn-danger">
                 Thanh Toán
               </button>
             </div>
