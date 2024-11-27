@@ -15,7 +15,7 @@ const Checkout3: React.FC = () => {
     const [lastAmount, setLastAmount] = useState<number>(0);
     const [choicePayment, setChoicePayment] = useState<string | undefined>(undefined);
     const [orderDetails, setOrderDetails] = useState<OrderDetailsWithNameProduct[]>([]);
-    const { employeeUserId } = useContext(AuthContext);
+    const { employeeUsername } = useContext(AuthContext);
     const [isQrPopupVisible, setQrPopupVisible] = useState(false);
     const [qrCode, setQrCode] = useState<string>();
     const [description, setDescription] = useState<string>();
@@ -79,7 +79,7 @@ const Checkout3: React.FC = () => {
                     paymentMethod: "CASH",
                     paymentStatus: false,
                     orderId: orderId,
-                    userId: employeeUserId
+                    userId: employeeUsername
                 })
             });
         } catch (error) {
@@ -109,7 +109,7 @@ const Checkout3: React.FC = () => {
     const checkoutClick = async () => {
         try {
             if (choicePayment === "1") {
-                payWithVNPay(lastAmount, Number(employeeUserId), orderId);
+                payWithVNPay(lastAmount, Number(employeeUsername), orderId);
             } else if (choicePayment === "2") {
                 setQrPopupVisible(true);
             } else if (choicePayment === "3") {

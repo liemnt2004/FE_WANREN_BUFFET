@@ -50,7 +50,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   const selectedItemsTotal = selectedItemsSubtotal + selectedItemsTax;
   const [activeTab, setActiveTab] = useState("selecting");
   const [orderId, setOrderId] = useState<any>(0);
-  const {employeeUserId} = useContext(AuthContext);
+  const {employeeUsername} = useContext(AuthContext);
   const [api, contextHolder] = notification.useNotification();
   const openNotification = (pauseOnHover: boolean) => () => {
     api.open({
@@ -98,11 +98,11 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
           setOrderId(orderId);
           const orderData = await fetchOrderStatusAPI(orderId);
           if (orderData.orderStatus === "DELIVERED") {
-            await CreateNewOrder(Number(employeeUserId),Number(tableId));
+            await CreateNewOrder(Number(employeeUsername),Number(tableId));
           }
           fetchOrderDetails(orderId);
         } else {
-          await CreateNewOrder(Number(employeeUserId),Number(tableId));
+          await CreateNewOrder(Number(employeeUsername),Number(tableId));
         }
       } catch (error) {
         console.error(error);
