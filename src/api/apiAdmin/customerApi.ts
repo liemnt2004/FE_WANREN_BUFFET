@@ -19,7 +19,7 @@ export async function fetchCustomerList(
     const response = await fetch(url, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
+        "Contentn-Type": "application/json",
         Authorization: `Bearer ${employeeToken}`,
       },
     });
