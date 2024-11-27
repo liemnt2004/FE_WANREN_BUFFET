@@ -9,7 +9,7 @@ function MenuCustomer() {
     function  login() {
         window.location.href = "http://localhost:3000/login"
     }
-    useEffect(() => {
+   useEffect(() => {
         const handleOffcanvasClose = () => {
             const backdrops = document.querySelectorAll('.offcanvas-backdrop');
             backdrops.forEach((backdrop) => backdrop.remove());
