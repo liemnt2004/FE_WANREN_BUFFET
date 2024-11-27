@@ -358,7 +358,7 @@ const CheckoutCustomer: React.FC = () => {
                 // Redirect user to VN PAY payment URL
                 window.location.href = paymentResponse.url;
 
-            } else if (formData.payment === "Check Payment") {
+            } else if (formData.payment === "CASH") {
                 // Handle other payment methods, e.g., Cash on Delivery
                 const createOrderResponse = await fetch('http://localhost:8080/api/orders', {
                     method: 'POST',

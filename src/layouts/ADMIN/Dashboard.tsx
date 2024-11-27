@@ -434,7 +434,7 @@ const MainDash: React.FC = () => {
                           <ReactApexChart
                               options={chartConfigs.chart3.options}
                               series={chartConfigs.chart3.series}
-                            
+
                               height={chartConfigs.chart3.height}
                           />
                           <span>Last 24 hours</span>

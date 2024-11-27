@@ -82,7 +82,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
             const decoded: DecodedToken = jwtDecode<DecodedToken>(token);
 
-            console.log(decoded)
             if (isEmployee) {
                 setEmployeeUsername(decoded.sub || null);
                 setEmployeeFullName(decoded.fullName || null);
