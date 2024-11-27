@@ -168,20 +168,51 @@ export const CreateNewOrder = async (userId: number, tableId: number) => {
 };
 
 export const updateOrderDetails = async (orderId: number, details: any) => {
-  const response = await fetch(`${BASE_URL}/orders_detail_staff/add_or_update/${orderId}`, {
-    method: "POST",
-    headers: getHeaders(),
-    body: JSON.stringify(details),
-  });
-  if (!response.ok) throw new Error("Error updating order details");
-  return response.json();
+  try {
+    if (!orderId || orderId <= 0) {
+      throw new Error("Invalid orderId passed to updateOrderDetails");
+    }
+
+    console.log("Sending update for orderId:", orderId); // Kiểm tra orderId
+
+    const response = await fetch(`${BASE_URL}/orders_detail_staff/add_or_update/${orderId}`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(details),
+    });
+
+    if (!response.ok) {
+      const errorMessage = `Failed to update order details: ${response.status} - ${response.statusText}`;
+      console.error(errorMessage);
+      throw new Error(errorMessage);
+    }
+
+    const responseData = await response.json();
+    console.log("API response:", responseData);
+    return responseData;
+  } catch (error) {
+    console.error("Fetch error:", error);
+    throw error;
+  }
 };
+
+
 
 export const updateOrderAmount = async (orderId: number, amount: number) => {
   const response = await fetch(`${BASE_URL}/order_staff/${orderId}`, {
     method: "PUT",
     headers: getHeaders(),
     body: JSON.stringify({ totalAmount: amount }),
+  });
+  if (!response.ok) throw new Error("Error updating order amount");
+};
+
+
+export const updateOrderStatus  = async (orderId: number, status: string) => {
+  const response = await fetch(`${BASE_URL}/api/order_staff/updateStatus/${orderId}`, {
+    method: "PUT",
+    headers: getHeaders(),
+    body: JSON.stringify({orderStatus: status}),
   });
   if (!response.ok) throw new Error("Error updating order amount");
 };
