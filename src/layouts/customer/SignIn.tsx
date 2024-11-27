@@ -4,7 +4,8 @@ import React, { useState, FormEvent, ChangeEvent, useContext } from 'react';
 import './assets/css/styles.css';
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { AuthContext } from "./component/AuthContext";
-import { notification, Spin } from "antd";
+import { notification, Spin, Button } from "antd";
+import { GoogleOutlined } from '@ant-design/icons'; // Sử dụng biểu tượng Google từ Ant Design
 
 const LoginRegisterComponent: React.FC = () => {
     const navigate = useNavigate();
@@ -58,6 +59,11 @@ const LoginRegisterComponent: React.FC = () => {
             placement: 'topRight', // Vị trí hiển thị: topLeft, topRight, bottomLeft, bottomRight
             duration: 3, // Thời gian hiển thị (giây)
         });
+    };
+
+    // Hàm xử lý khi người dùng nhấp vào nút Google Sign-In
+    const handleGoogleSignIn = () => {
+        window.location.href = 'http://localhost:8080/oauth2/authorization/google';
     };
 
     // Xử lý sự thay đổi input cho form đăng ký
@@ -266,7 +272,15 @@ const LoginRegisterComponent: React.FC = () => {
                     <form id="signup-form" onSubmit={handleSignUpSubmit}>
                         <h1>Tạo tài khoản</h1>
                         <div className="social-icons">
-                            {/* Social icons (optional) */}
+                            {/* Nút Đăng Ký bằng Google */}
+                            <Button
+                                type="primary"
+                                icon={<GoogleOutlined />}
+                                onClick={handleGoogleSignIn}
+                                className="google-button"
+                            >
+                                Đăng ký bằng Google
+                            </Button>
                         </div>
                         <span>hoặc sử dụng email của bạn để đăng ký</span>
                         <input
@@ -344,7 +358,15 @@ const LoginRegisterComponent: React.FC = () => {
                     <form id="signin-form" onSubmit={handleSignInSubmit}>
                         <h1>Đăng nhập</h1>
                         <div className="social-icons">
-                            {/* Social icons (optional) */}
+                            {/* Nút Đăng Nhập bằng Google */}
+                            <Button
+                                type="primary"
+                                icon={<GoogleOutlined />}
+                                onClick={handleGoogleSignIn}
+                                className="google-button"
+                            >
+                                Đăng nhập bằng Google
+                            </Button>
                         </div>
                         <span>hoặc sử dụng username của bạn để đăng nhập</span>
                         <input
@@ -363,7 +385,6 @@ const LoginRegisterComponent: React.FC = () => {
                             onChange={handleSignInChange}
                             required
                         />
-                        {/* Terms & Policies checkbox */}
 
                         <Link to={"/forgot-password"} className="forget-your-password">
                             Quên mật khẩu?

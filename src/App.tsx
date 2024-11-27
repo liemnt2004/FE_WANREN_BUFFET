@@ -38,6 +38,7 @@ import Checkout3 from "./layouts/staff/component/checkout/Checkout3";
 import ProductManagement from "./layouts/ADMIN/ProductManagement";
 import OrderOnTable from "./layouts/staff/component/orderOnTable/Order";
 import WorkShift from "./layouts/ADMIN/WorkShift";
+import LoginSuccess from "./layouts/customer/LoginSuccess";
 
 function App() {
   return (
@@ -98,6 +99,7 @@ export function Routing() {
         <Route path="/promotion_detail/:id" element={<PromotionDetail />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/profile" element={<MenuProfile />} />
+        <Route path="/login-success" element={<LoginSuccess />} />
 
         {/* Bảo vệ route login và register cho khách hàng */}
         <Route

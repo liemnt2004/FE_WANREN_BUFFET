@@ -1,5 +1,5 @@
 // src/layouts/customer/MenuCustomer.tsx
-import React, { useContext } from "react";
+import React, {useContext, useEffect} from "react";
 import { Link } from "react-router-dom";
 import logo from './assets/img/warenbuffet.png';
 import { AuthContext } from "./component/AuthContext";
@@ -9,6 +9,18 @@ function MenuCustomer() {
     function  login() {
         window.location.href = "http://localhost:3000/login"
     }
+    useEffect(() => {
+        const handleOffcanvasClose = () => {
+            const backdrops = document.querySelectorAll('.offcanvas-backdrop');
+            backdrops.forEach((backdrop) => backdrop.remove());
+        };
+
+        document.addEventListener("hidden.bs.offcanvas", handleOffcanvasClose);
+
+        return () => {
+            document.removeEventListener("hidden.bs.offcanvas", handleOffcanvasClose);
+        };
+    }, []);
     return (
 
         <nav className="menu-bar d-flex align-items-center">

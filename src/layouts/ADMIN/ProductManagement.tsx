@@ -32,12 +32,11 @@ import {
 } from "../../api/apiAdmin/productApiAdmin";
 import axios from "axios";
 import * as XLSX from 'xlsx';
+import fontkit from '@pdf-lib/fontkit';
 
 
 
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 
 const { Option } = Select;
@@ -496,58 +495,98 @@ const ProductManagement: React.FC = () => {
         link.click();
     };
 
-    const exportToPDF = () => {
-        const doc = new jsPDF();
-        doc.addFont("font-times-new-roman-normal.ttf", "font-times-new-roman", "normal");
-        doc.setFont("font-times-new-roman", "normal");
+    const exportToPDF = async () => {
+        const fontUrl = '/fonts/Roboto-Black.ttf';
+        try {
+            console.log('Creating PDF...');
+            const pdfDoc = await PDFDocument.create();
+            pdfDoc.registerFontkit(fontkit); // Đăng ký fontkit
+            const fontBytes = await fetch(fontUrl).then((res) => res.arrayBuffer());
+            const customFont = await pdfDoc.embedFont(fontBytes);
 
+            let page = pdfDoc.addPage([595.28, 841.89]); // A4 size
+            const { width, height } = page.getSize();
+            const margin = 50;
 
-        const tableColumn = [
-            'Mã sản phẩm',
-            'Tên sản phẩm',
-            'Mô tả',
-            'Giá',
-            'Loại món ăn',
-            'Số lượng',
-            'Trạng thái',
-        ];
+            // Tiêu đề
+            page.drawText('Danh Sách Sản Phẩm', {
+                x: margin,
+                y: height - margin,
+                size: 18,
+                font: customFont,
+                color: rgb(0, 0.53, 0.71),
+            });
 
+            // Bảng dữ liệu
+            const tableHeader = ['Mã SP', 'Tên SP', 'Giá', 'Loại', 'Số Lượng', 'Trạng Thái'];
+            let yPosition = height - margin - 40;
+            const cellWidth = [50, 150, 70, 100, 70, 100];
 
+            // Header row
+            tableHeader.forEach((header, i) => {
+                page.drawText(header, {
+                    x: margin + cellWidth.slice(0, i).reduce((a, b) => a + b, 0),
+                    y: yPosition,
+                    size: 10,
+                    font: customFont,
+                    color: rgb(0, 0, 0),
+                });
+            });
 
-        // Thiết lập font chữ
-        doc.setFont("PTSans-Regular", "normal");
+            yPosition -= 20;
 
-        const tableRows: any[] = [];
+            // Data rows
+            for (const product of products) {
+                const rowData = [
+                    product.productId?.toString() || 'N/A',
+                    product.productName || 'N/A',
+                    product.price ? `$${product.price.toFixed(2)}` : 'N/A',
+                    product.typeFood || 'N/A',
+                    product.quantity?.toString() || 'N/A',
+                    product.productStatus || 'N/A',
+                ];
 
-        products.forEach((item) => {
-            const rowData = [
-                item.productId,
-                item.productName,
-                item.description,
-                item.price,
-                item.typeFood,
-                item.quantity,
-                item.productStatus,
-            ];
-            tableRows.push(rowData);
-        });
+                console.log('Drawing row:', rowData);
 
+                rowData.forEach((data, i) => {
+                    page.drawText(data, {
+                        x: margin + cellWidth.slice(0, i).reduce((a, b) => a + b, 0),
+                        y: yPosition,
+                        size: 10,
+                        font: customFont,
+                        color: rgb(0, 0, 0),
+                    });
+                });
 
+                yPosition -= 20;
+                if (yPosition < 50) {
+                    console.log('Adding new page...');
+                    yPosition = height - margin - 40;
+                    page = pdfDoc.addPage([595.28, 841.89]);
+                }
+            }
 
+            const pdfBytes = await pdfDoc.save();
 
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'DanhSachSanPham.pdf';
+            link.click();
 
-
-        autoTable(doc,{
-            head: [tableColumn],
-            body: tableRows,
-            startY: 20,
-
-        });
-
-
-
-        doc.save('products.pdf');
+            notification.success({
+                message: 'Xuất PDF thành công',
+                description: 'File PDF đã được tải xuống.',
+            });
+        } catch (error) {
+            console.error('Error during PDF generation:', error);
+            notification.error({
+                message: 'Lỗi xuất PDF',
+                description: 'Đã xảy ra lỗi khi tạo file PDF.',
+            });
+        }
     };
+
 
 
     return (

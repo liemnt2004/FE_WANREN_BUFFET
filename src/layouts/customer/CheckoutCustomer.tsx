@@ -17,6 +17,7 @@ import { request } from "../../api/Request";
 import { DecodedToken } from "./component/AuthContext";
 import { getAllPromotion } from "../../api/apiCustommer/promotionApi";
 import PromotionModel from "../../models/PromotionModel";
+import {userInfo} from "node:os";
 
 interface OrderDetailData {
     productId: number;
@@ -277,7 +278,7 @@ const CheckoutCustomer: React.FC = () => {
 
         if (!showNewAddressForm && decoded) {
             // Use saved address from token
-            address22 = `${decoded.address}`;
+            address22 = decoded.address || ""
         } else {
             // Use new address entered
             if (!formData.quan || !formData.phuong || !formData.detail_address) {
@@ -312,7 +313,7 @@ const CheckoutCustomer: React.FC = () => {
 
         try {
             // If VN PAY is selected
-            if (formData.payment === "VN PAY") {
+            if (formData.payment === "VNPAY") {
                 const createOrderResponse = await fetch('http://localhost:8080/api/orders', {
                     method: 'POST',
                     headers: {
@@ -322,6 +323,8 @@ const CheckoutCustomer: React.FC = () => {
                     body: JSON.stringify(orderData),
                 });
 
+                console.log(createOrderResponse)
+
                 if (!createOrderResponse.ok) {
                     const errorData = await createOrderResponse.json();
                     throw new Error(errorData.message || "Đặt hàng thất bại.");
@@ -330,12 +333,28 @@ const CheckoutCustomer: React.FC = () => {
                 const createOrderResult = await createOrderResponse.json();
                 const orderId = createOrderResult.orderId;
 
+                // Kiểm tra và lưu token mới nếu có
+                if (createOrderResult.jwtToken) {
+                    localStorage.setItem("token", createOrderResult.jwtToken);
+                    const newDecoded = jwtDecode<DecodedToken>(createOrderResult.jwtToken);
+
+                    // Cập nhật formData với thông tin mới từ token
+                    setFormData(prev => ({
+                        ...prev,
+                        username: newDecoded.sub || "",
+                        emailCheckout: newDecoded.email || "",
+                        phoneCheckout: newDecoded.phone || "",
+                        // Bạn có thể cập nhật thêm các trường khác nếu cần
+                    }));
+                }
+
                 // Create payment URL
                 const paymentResponse = await request(`http://localhost:8080/api/payment/create_payment?price=${total}`);
                 if (!paymentResponse || !paymentResponse.url) {
                     throw new Error("Tạo thanh toán VN PAY thất bại.");
                 }
                 cartContext?.clearCart();
+
                 // Redirect user to VN PAY payment URL
                 window.location.href = paymentResponse.url;
 
@@ -350,12 +369,29 @@ const CheckoutCustomer: React.FC = () => {
                     body: JSON.stringify(orderData),
                 });
 
+                console.log(createOrderResponse)
+
                 if (!createOrderResponse.ok) {
                     const errorData = await createOrderResponse.json();
                     throw new Error(errorData.message || "Đặt hàng thất bại.");
                 }
 
                 const createOrderResult = await createOrderResponse.json();
+
+                // Kiểm tra và lưu token mới nếu có
+                if (createOrderResult.jwtToken) {
+                    localStorage.setItem("token", createOrderResult.jwtToken);
+
+                    const newDecoded = jwtDecode<DecodedToken>(createOrderResult.jwtToken);
+                    // Cập nhật formData với thông tin mới từ token
+                    setFormData(prev => ({
+                        ...prev,
+                        username: newDecoded.sub || "",
+                        emailCheckout: newDecoded.email || "",
+                        phoneCheckout: newDecoded.phone || "",
+                        // Bạn có thể cập nhật thêm các trường khác nếu cần
+                    }));
+                }
 
                 setModalMessage("Đặt hàng thành công. Chúng tôi sẽ liên hệ với bạn sớm.");
                 setModalType('success');
@@ -677,8 +713,8 @@ const CheckoutCustomer: React.FC = () => {
                                             <input
                                                 type="radio"
                                                 name="payment"
-                                                value="VN PAY"
-                                                checked={formData.payment === 'VN PAY'}
+                                                value="VNPAY"
+                                                checked={formData.payment === 'VNPAY'}
                                                 onChange={handleChange}
                                                 required
                                             />

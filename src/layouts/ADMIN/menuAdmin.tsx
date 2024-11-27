@@ -15,12 +15,7 @@ function MenuAdmin() {
           </span>
           <span>Categories</span>
         </div>
-        <div className="time-button">
-          <button className="time-btn">Day</button>
-          <button className="time-btn active">Week</button>
-          <button className="time-btn">Month</button>
-          <button className="time-btn">Year</button>
-        </div>
+
         <div className="search-bar">
           <input type="text" placeholder="Search..." />
           <button>
