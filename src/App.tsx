@@ -51,6 +51,7 @@ import ManagementOrdersOnlCashier from "./layouts/cashier/managementOrdersOnlCas
 import LoginCashier from "./layouts/cashier/loginCashier";
 import CheckoutSucess from "./layouts/staff/component/checkout/CheckoutSucess";
 import ManagementReservationCashier from "./layouts/cashier/managementReservationCashier";
+import CheckoutFailed from "./layouts/staff/component/checkout/CheckoutFailed";
 
 function App() {
   return (
@@ -74,7 +75,8 @@ export function Routing() {
         pathname === route ||
         (route === "/orderOnTable" && /^\/orderOnTable\/\d+$/.test(pathname)) ||
         (route === "/checkout" && /^\/checkout\/step[1-3]$/.test(pathname)) ||
-        (route === "/checkout" && /^\/checkout\/sucessful/.test(pathname))
+        (route === "/checkout" && /^\/checkout\/sucessful/.test(pathname)) ||
+        (route === "/checkout" && /^\/checkout\/failed/.test(pathname))
     );
   };
 
@@ -218,6 +220,7 @@ export function Routing() {
           <Route path="step2" element={<Checkout2 />} />
           <Route path="step3" element={<Checkout3 />} />
           <Route path="sucessful" element={<CheckoutSucess />} />
+          <Route path="failed" element={<CheckoutFailed />} />
         </Route>
         <Route
           path="/staff"

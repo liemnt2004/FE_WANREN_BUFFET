@@ -50,7 +50,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   const selectedItemsTotal = selectedItemsSubtotal + selectedItemsTax;
   const [activeTab, setActiveTab] = useState("selecting");
   const [orderId, setOrderId] = useState<any>(0);
-  const {employeeUserId} = useContext(AuthContext);
+  const { employeeUserId } = useContext(AuthContext);
   const [api, contextHolder] = notification.useNotification();
   const openNotification = (pauseOnHover: boolean) => () => {
     api.open({
@@ -98,11 +98,12 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
           setOrderId(orderId);
           const orderData = await fetchOrderStatusAPI(orderId);
           if (orderData.orderStatus === "DELIVERED") {
-            await CreateNewOrder(Number(employeeUserId),Number(tableId));
+            await CreateNewOrder(Number(employeeUserId), Number(tableId));
+          } else {
+            fetchOrderDetails(orderId);
           }
-          fetchOrderDetails(orderId);
         } else {
-          await CreateNewOrder(Number(employeeUserId),Number(tableId));
+          await CreateNewOrder(Number(employeeUserId), Number(tableId));
         }
       } catch (error) {
         console.error(error);
@@ -110,11 +111,22 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
     };
 
     fetchOrderId();
-  }, []);
+  }, [employeeUserId, fetchOrderDetails, tableId]);
 
-  useEffect(() =>{
-    if (selectedItems.length >= 0) {
-      fetchOrderDetails(orderId);
+  useEffect(() => {
+    const fetchOrderStatusAndDetails = async () => {
+      try {
+        const orderData = await fetchOrderStatusAPI(orderId);
+        if (orderData && orderData.orderStatus !== "DELIVERED" && selectedItems.length > 0) {
+          fetchOrderDetails(orderId);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    if (orderId) {
+      fetchOrderStatusAndDetails();
     }
   }, [fetchOrderDetails, orderId, selectedItems.length]);
 
