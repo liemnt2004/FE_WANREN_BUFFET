@@ -98,13 +98,16 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
           setOrderId(orderId);
           const orderData = await fetchOrderStatusAPI(orderId);
           if (orderData.orderStatus === "DELIVERED") {
-            await CreateNewOrder(Number(1), Number(tableId));
+            // await CreateNewOrder(Number(1), Number(tableId));
+            setOrderId(null);
           } else {
             fetchOrderDetails(orderId);
           }
         } else {
-          await CreateNewOrder(Number(1), Number(tableId));
+          // await CreateNewOrder(Number(1), Number(tableId));
+          setOrderId(null);
         }
+        console.log("id Ban đầu: ", orderId)
       } catch (error) {
         console.error(error);
       }
@@ -144,22 +147,30 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
 
   const handleConfirmOrder = async () => {
     try {
-      const orderId = await fetchOrderIdByTableId(Number(tableId));
-      if (!orderId) throw new Error("Order ID not found");
-      setOrderId(orderId);
+      let orderIdToUse = orderId;
+      console.log("orderIdToUse trước: ", orderIdToUse)
+      if (orderId === null) {
+        const newOrderId = await CreateNewOrder(1, tableId);
+        console.log("newOrderId: ", newOrderId);
+        if (newOrderId) {
+          setOrderId(newOrderId.id);
+          orderIdToUse = newOrderId.id;
+          console.log("orderIdToUse: ", orderIdToUse);
+        }
+      }
 
       const orderDetails = cartItems.map((item) => ({
         productId: item.product.productId,
         quantity: item.quantity,
         unitPrice: item.product.price,
         itemNotes: item.note,
-        orderId,
+        orderIdToUse,
         createdDate: new Date().toISOString(),
       }));
 
       await Promise.all([
-        updateOrderDetails(orderId, orderDetails),
-        updateOrderAmount(orderId, selectedItemsSubtotal + subtotal),
+        updateOrderDetails(orderIdToUse, orderDetails),
+        updateOrderAmount(orderIdToUse, selectedItemsSubtotal + subtotal),
         updateTableStatus(Number(tableId), "OCCUPIED_TABLE"),
       ]);
 
