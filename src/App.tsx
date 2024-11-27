@@ -39,6 +39,8 @@ import ProductManagement from "./layouts/ADMIN/ProductManagement";
 import OrderOnTable from "./layouts/staff/component/orderOnTable/Order";
 import WorkShift from "./layouts/ADMIN/WorkShift";
 import LoginSuccess from "./layouts/customer/LoginSuccess";
+import CheckoutSucess from "./layouts/staff/component/checkout/CheckoutSucess";
+import CheckoutFailed from "./layouts/staff/component/checkout/CheckoutFailed";
 
 function App() {
   return (
@@ -55,11 +57,13 @@ export default App;
 
 export function Routing() {
   const isHiddenRoute = (pathname: string) => {
-    // Kiểm tra nếu đường dẫn chính xác hoặc khớp với "/orderOnTable/:tableId" hoặc "/checkout/order/:orderId/:step"
-    return hiddenRoutes.some(route => 
-      pathname === route || 
-      (route === "/orderOnTable" && /^\/orderOnTable\/\d+$/.test(pathname)) || 
-      (route === "/checkout/order" && /^\/checkout\/order\/\d+\/step\d+$/.test(pathname)) // Kiểm tra "/checkout/order/:orderId/:step"
+    return hiddenRoutes.some(
+      (route) =>
+        pathname === route ||
+        (route === "/orderOnTable" && /^\/orderOnTable\/\d+$/.test(pathname)) ||
+        (route === "/checkout" && /^\/checkout\/step[1-3]$/.test(pathname)) ||
+        (route === "/checkout" && /^\/checkout\/sucessful/.test(pathname)) ||
+        (route === "/checkout" && /^\/checkout\/failed/.test(pathname))
     );
   };
   const hiddenRoutes = [
@@ -76,8 +80,8 @@ export function Routing() {
     "/admin/employees",
     "/admin/dashboard",
     "/orderOnTable",
-    "/checkout/order",
-      "/admin/manage-product"
+    "/checkout",
+    "/admin/manage-product"
   ];
 
   return (
@@ -130,11 +134,13 @@ export function Routing() {
         />
 
         {/* Route dành cho nhân viên */}
-        <Route path="/orderOnTable/:tableId" element={<OrderOnTable />} />
-        <Route path="/checkout/order/:orderId" element={<CheckoutLayout />}>
+        <Route path="/orderOnTable" element={<OrderOnTable />} />
+        <Route path="/checkout" element={<CheckoutLayout />}>
           <Route path="step1" element={<Checkout1 />} />
           <Route path="step2" element={<Checkout2 />} />
           <Route path="step3" element={<Checkout3 />} />
+          <Route path="sucessful" element={<CheckoutSucess />} />
+          <Route path="failed" element={<CheckoutFailed />} />
         </Route>
         <Route
           path="/staff"
@@ -172,8 +178,8 @@ export function Routing() {
             element={<PromotionManagement />}
           />
           <Route
-              path="/admin/manage-product"
-              element={<ProductManagement />}
+            path="/admin/manage-product"
+            element={<ProductManagement />}
           />
           <Route path="/admin/manage-accounts" element={<Management />} />
           <Route path="/admin/manage-work-shifts" element={<WorkShift />} />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import logo from '../../customer/assets/img/warenbuffet.png';
 import '../assets/css/styles.css';
+import { useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
   onClickContent: (contentType: 'home' | '2nd_floor' | 'gdeli' | 'setting') => void;
@@ -8,6 +9,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ onClickContent }) => {
   const [activeLink, setActiveLink] = useState<'home' | '2nd_floor' | 'gdeli' | 'setting'>('home'); // Default link
+  const navigate = useNavigate();
 
   const handleClick = (contentType: 'home' | '2nd_floor' | 'gdeli' | 'setting') => {
     setActiveLink(contentType); // Update the active link state
@@ -74,9 +76,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent }) => {
           </div>
         </div>
         <div className="sidebar__actions">
-          <button>
-            <i className="ri-moon-clear-fill sidebar__link sidebar__theme" id="theme-button">
-              <span style={{ color: 'var(--firstColor)' }}>Giao diện</span>
+          <button onClick={() => navigate(0)}>
+            <i className="ri-refresh-line sidebar__link sidebar__theme" id="theme-button">
+              <span style={{ color: 'var(--firstColor)' }}>Đồng Bộ</span>
             </i>
           </button>
           <button className="sidebar__link" onClick={handleLogout}>

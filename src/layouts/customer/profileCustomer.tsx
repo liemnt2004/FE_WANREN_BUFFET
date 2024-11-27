@@ -171,7 +171,7 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
 
     return (
         <div className="col-12 col-sm-4 ">
-            <h4 className="py-3">Thông tin cá nhân</h4>F
+            <h4 className="py-3">Thông tin cá nhân</h4>
             {!editing ? (
                 <div id="personalInfo">
                     <span className="tinh-fs12" id="nameDisplay">
@@ -182,7 +182,7 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                         {userInfo.phoneNumber}
                     </span>
                     <br/>
-                    <span className="tinh-fs12" id="phoneDisplay">
+                    <span className="tinh-fs12" id="email">
                         {userInfo.email}
                     </span>
                     <br/>

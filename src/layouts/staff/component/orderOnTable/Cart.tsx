@@ -6,7 +6,7 @@ import ProductModel from '../../../../models/StaffModels/ProductModel';
 import { CreateNewOrder, fetchOrderDetailsAPI, fetchOrderIdByTableId, fetchOrderStatusAPI, fetchProductDetailsAPI, updateOrderAmount, updateOrderDetails, updateTableStatus } from '../../../../api/apiStaff/orderForStaffApi';
 import { notification } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
-import { AuthContext } from "../../../customer/component/AuthContext";
+import { AuthContext } from '../../../customer/component/AuthContext';
 interface OffcanvasCartProps {
   show: boolean;
   onHide: () => void;
@@ -50,7 +50,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   const selectedItemsTotal = selectedItemsSubtotal + selectedItemsTax;
   const [activeTab, setActiveTab] = useState("selecting");
   const [orderId, setOrderId] = useState<any>(0);
-  const {employeeUsername} = useContext(AuthContext);
+  // const { employeeUserId } = useContext(AuthContext);
   const [api, contextHolder] = notification.useNotification();
   const openNotification = (pauseOnHover: boolean) => () => {
     api.open({
@@ -98,11 +98,12 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
           setOrderId(orderId);
           const orderData = await fetchOrderStatusAPI(orderId);
           if (orderData.orderStatus === "DELIVERED") {
-            await CreateNewOrder(Number(employeeUsername),Number(tableId));
+            await CreateNewOrder(Number(1), Number(tableId));
+          } else {
+            fetchOrderDetails(orderId);
           }
-          fetchOrderDetails(orderId);
         } else {
-          await CreateNewOrder(Number(employeeUsername),Number(tableId));
+          await CreateNewOrder(Number(1), Number(tableId));
         }
       } catch (error) {
         console.error(error);
@@ -110,11 +111,22 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
     };
 
     fetchOrderId();
-  }, []);
+  }, [fetchOrderDetails, tableId]);
 
-  useEffect(() =>{
-    if (selectedItems.length >= 0) {
-      fetchOrderDetails(orderId);
+  useEffect(() => {
+    const fetchOrderStatusAndDetails = async () => {
+      try {
+        const orderData = await fetchOrderStatusAPI(orderId);
+        if (orderData && orderData.orderStatus !== "DELIVERED" && selectedItems.length > 0) {
+          fetchOrderDetails(orderId);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    if (orderId) {
+      fetchOrderStatusAndDetails();
     }
   }, [fetchOrderDetails, orderId, selectedItems.length]);
 
