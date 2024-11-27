@@ -7,6 +7,7 @@ import { request } from "../../../../api/Request";
 // import { AuthContext } from "../../../customer/component/AuthContext";
 import { notification } from 'antd';
 import { InfoCircleOutlined } from "@ant-design/icons";
+import { AuthContext } from "../../../customer/component/AuthContext";
 
 const Checkout3: React.FC = () => {
     const location = useLocation();
@@ -17,7 +18,7 @@ const Checkout3: React.FC = () => {
     const [lastAmount, setLastAmount] = useState<number>(0);
     const [choicePayment, setChoicePayment] = useState<string | undefined>(undefined);
     const [orderDetails, setOrderDetails] = useState<OrderDetailsWithNameProduct[]>([]);
-    // const { employeeUsername } = useContext(AuthContext);
+    const {employeeUserId} = useContext(AuthContext);
     const [isQrPopupVisible, setQrPopupVisible] = useState(false);
     const [qrCode, setQrCode] = useState<string>();
     const [description, setDescription] = useState<string>();
@@ -113,13 +114,13 @@ const Checkout3: React.FC = () => {
     const checkoutClick = async () => {
         try {
             if (choicePayment === "1") {
-                payWithVNPay(lastAmount, Number(1), orderId);
+                payWithVNPay(lastAmount, Number(employeeUserId), orderId);
             } else if (choicePayment === "2") {
                 setQrPopupVisible(true);
             } else if (choicePayment === "3") {
                 updateAmount(Number(orderId), lastAmount);
                 createPayment("CASH", false);
-                navigate("/checkout/sucessful", { state: { paymentMethod: "CASH", orderId: orderId, lastAmount: lastAmount, employeeUserId: 1 } })
+                navigate("/checkout/sucessful", { state: { paymentMethod: "CASH", orderId: orderId, lastAmount: lastAmount, employeeUserId: employeeUserId } })
             }
         } catch (error) {
             console.error("Cannot checkout");
