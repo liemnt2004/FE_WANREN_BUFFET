@@ -699,8 +699,8 @@ const CheckoutCustomer: React.FC = () => {
                                             <input
                                                 type="radio"
                                                 name="payment"
-                                                value="Check Payment"
-                                                checked={formData.payment === 'Check Payment'}
+                                                value="CASH"
+                                                checked={formData.payment === 'CASH'}
                                                 onChange={handleChange}
                                                 required
                                             />
