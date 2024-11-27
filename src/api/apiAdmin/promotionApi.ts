@@ -28,19 +28,19 @@ export const getAllPromotions = async (): Promise<PromotionAdmin[]> => {
 
       const promotionsData = response.data?._embedded?.promotions || [];
       const promotions = promotionsData.map(
-        (promotion: any) =>
-          new PromotionAdmin(
-            promotion.createdDate,
-            promotion.updatedDate,
-            promotion.promotionName,
-            promotion.description,
-            promotion.promotionType,
-            promotion.promotionValue,
-            promotion.startDate,
-            promotion.endDate,
-            promotion.promotionStatus,
-            promotion.promotion
-          )
+          (promotion: any) =>
+              new PromotionAdmin(
+                  promotion.createdDate,
+                  promotion.updatedDate,
+                  promotion.promotionName,
+                  promotion.description,
+                  promotion.promotionType,
+                  promotion.promotionValue,
+                  promotion.startDate,
+                  promotion.endDate,
+                  promotion.promotionStatus,
+                  promotion.promotion
+              )
       );
 
       allPromotions = [...allPromotions, ...promotions];
@@ -57,13 +57,13 @@ export const getAllPromotions = async (): Promise<PromotionAdmin[]> => {
 
 // Create a new promotion
 export async function createPromotion(
-  newPromotion: Partial<PromotionAdmin>
+    newPromotion: Partial<PromotionAdmin>
 ): Promise<void> {
   try {
     const response = await axios.post(`${API_BASE_URL}/create`, newPromotion, {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${getEmployeeToken()}`, // Add token to headers
+        Authorization: `Bearer ${getEmployeeToken()}`,
       },
     });
 
@@ -79,19 +79,19 @@ export async function createPromotion(
 
 // Update an existing promotion
 export const updatePromotion = async (
-  id: number,
-  promotionUpdates: Partial<PromotionAdmin>
+    id: number,
+    promotionUpdates: Partial<PromotionAdmin>
 ): Promise<PromotionAdmin> => {
   try {
     const response = await axios.patch(
-      `${API_BASE_URL}/update/${id}`,
-      promotionUpdates,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getEmployeeToken()}`, // Add token to headers
-        },
-      }
+        `${API_BASE_URL}/update/${id}`,
+        promotionUpdates,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getEmployeeToken()}`,
+          },
+        }
     );
 
     return response.data;
@@ -106,12 +106,49 @@ export const deletePromotion = async (id: number): Promise<void> => {
   try {
     await axios.delete(`${API_BASE_URL}/delete/${id}`, {
       headers: {
-        Authorization: `Bearer ${getEmployeeToken()}`, // Add token to headers
+        Authorization: `Bearer ${getEmployeeToken()}`,
       },
     });
     console.log(`Promotion with ID ${id} has been deleted successfully.`);
   } catch (error) {
     console.error(`Error deleting promotion with ID ${id}:`, error);
+    throw error;
+  }
+};
+
+// Search promotions by name
+export const searchPromotionByName = async (
+    promotionName: string
+): Promise<PromotionAdmin[]> => {
+  try {
+    const response = await axios.get(
+        `${API_BASE_URL}/search/findByPromotionNameContaining`,
+        {
+          params: { promotionName },
+          headers: {
+            Authorization: `Bearer ${getEmployeeToken()}`,
+          },
+        }
+    );
+
+    const promotionsData = response.data?._embedded?.promotions || [];
+    return promotionsData.map(
+        (promotion: any) =>
+            new PromotionAdmin(
+                promotion.createdDate,
+                promotion.updatedDate,
+                promotion.promotionName,
+                promotion.description,
+                promotion.promotionType,
+                promotion.promotionValue,
+                promotion.startDate,
+                promotion.endDate,
+                promotion.promotionStatus,
+                promotion.promotion
+            )
+    );
+  } catch (error) {
+    console.error("Error searching promotions by name:", error);
     throw error;
   }
 };

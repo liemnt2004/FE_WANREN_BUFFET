@@ -1,3 +1,4 @@
+// src/components/MainDash.tsx
 import React, { useState, useEffect, useContext } from "react";
 import './assets/css/styles.css';
 import './assets/css/product_detail.css';
@@ -17,15 +18,25 @@ import khichi from './assets/img/Kichi.svg';
 import loginfooter from './assets/img/Cream and Black Simple Illustration Catering Logo.png';
 import ProductModel from "../../models/ProductModel";
 import { getProductHot } from "../../api/apiCustommer/productApi";
-import {CartContext, CartItem} from "./component/CartContext";
+import {CartItem, useCart} from "./component/CartContext"; // Sử dụng custom hook
 import formatMoney from "./component/FormatMoney";
+import { AuthContext } from "./component/AuthContext";
+import { useNavigate } from "react-router-dom";
+
 const IndexCustomer: React.FC = () => {
     const [listProduct, setListProduct] = useState<ProductModel[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const cartContext = useContext(CartContext);
+    const { cartItems, addToCart, addMultipleToCart, buyAgain, updateQuantity, removeFromCart, clearCart, subtotal } = useCart();
+    const authContext = useContext(AuthContext);
+    const navigate = useNavigate();
 
 
+
+    const { fullName, logout } = authContext;
+
+    // State để quản lý số lượng trong từng modal
+    const [modalQuantities, setModalQuantities] = useState<{ [key: number]: number }>({});
 
     // Lấy sản phẩm hot khi component được render
     useEffect(() => {
@@ -33,6 +44,13 @@ const IndexCustomer: React.FC = () => {
             .then(product => {
                 setListProduct(product);
                 setLoading(false);
+
+                // Khởi tạo số lượng mặc định là 1 cho từng sản phẩm
+                const initialQuantities: { [key: number]: number } = {};
+                product.forEach(p => {
+                    initialQuantities[p.productId] = 1;
+                });
+                setModalQuantities(initialQuantities);
             })
             .catch(err => {
                 setError("Không thể tải sản phẩm hot.");
@@ -40,24 +58,54 @@ const IndexCustomer: React.FC = () => {
             });
     }, []);
 
-    if (!cartContext) {
-        return <div>Đang tải giỏ hàng...</div>;
-    }
+    // Hàm để thêm sản phẩm vào giỏ hàng với số lượng cụ thể
+    function addProductToCart(product: ProductModel) {
+        if (!fullName) {
+            // Nếu người dùng chưa đăng nhập, thông báo và chuyển hướng đến trang đăng nhập
+            alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
+            navigate("/login"); // Đảm bảo bạn đã định nghĩa route /login
+            return;
+        }
 
-    const { addToCart } = cartContext;
+        const quantity = modalQuantities[product.productId] || 1;
 
-
-    function addProduct(id: number, name: string, price: number, image: string) {
         const cartItem: CartItem = {
-            productId: id,
-            productName: name,
-            price: price,
-            image: image,
-            quantity: 1, // Số lượng mặc định là 1 khi thêm sản phẩm
+            productId: product.productId,
+            productName: product.productName,
+            price: product.price,
+            image: product.image,
+            quantity: quantity, // Sử dụng số lượng đã chọn
         };
 
-        addToCart(cartItem); // Gọi hàm addToCart để thêm sản phẩm vào giỏ hàng
+        addToCart(cartItem); // Thêm sản phẩm vào giỏ hàng
     }
+
+    // Hàm để thêm nhiều sản phẩm vào giỏ hàng
+    function addMultipleProductsToCart(products: CartItem[]) {
+        if (!fullName) {
+            alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
+            navigate("/login");
+            return;
+        }
+
+        addMultipleToCart(products);
+    }
+
+    // Hàm để tăng số lượng trong modal
+    const incrementQuantity = (productId: number) => {
+        setModalQuantities(prev => ({
+            ...prev,
+            [productId]: prev[productId] + 1,
+        }));
+    };
+
+    // Hàm để giảm số lượng trong modal
+    const decrementQuantity = (productId: number) => {
+        setModalQuantities(prev => ({
+            ...prev,
+            [productId]: prev[productId] > 1 ? prev[productId] - 1 : 1, // Giữ số lượng tối thiểu là 1
+        }));
+    };
 
     return (
         <div className="container-fluid">
@@ -65,6 +113,7 @@ const IndexCustomer: React.FC = () => {
                 <div className="col-md-9 position-relative left-section"
                      style={{ overflowY: "auto", maxHeight: "100vh", scrollbarWidth: "none", msOverflowStyle: "none" }}>
                     <div style={{height: "2000px"}} className="about-left">
+                        {/* Banner Section */}
                         <section className="banner">
                             <div id="carouselExampleIndicators" className="carousel slide">
                                 <div className="carousel-indicators">
@@ -89,9 +138,6 @@ const IndexCustomer: React.FC = () => {
                                         <img src={image1500x700} className="d-block w-100 img-fluid" alt="..."/>
                                     </div>
                                 </div>
-                                {
-
-                                }
                                 <button className="carousel-control-prev" type="button"
                                         data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
                                     <span className="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -104,7 +150,11 @@ const IndexCustomer: React.FC = () => {
                                 </button>
                             </div>
                         </section>
+
+                        {/* Main Dish Image */}
                         <img src={bannerBuffet} alt="Main Dish Image" className="img-fluid"/>
+
+                        {/* About Section */}
                         <section className="bg-white row pb-5 about-section">
                             <div className="col-md-6">
                                 <div className="about">
@@ -118,8 +168,8 @@ const IndexCustomer: React.FC = () => {
                             </div>
                         </section>
 
-                        {/* Hiển thị Hot Deal */}
-                        <section className="hot-deal">
+                        {/* Hot Deal Section */}
+                        <section className="hot-deal" style={{ backgroundColor: 'white' }}>
                             <h4 className="fw-bold">HOT DEAL</h4>
                             {loading ? (
                                 <div>Đang tải sản phẩm...</div>
@@ -128,14 +178,18 @@ const IndexCustomer: React.FC = () => {
                             ) : (
                                 <div className="d-flex justify-content-center">
                                     <div className="row g-4 mb-5">
-                                        {listProduct.map((product, index) => (
-                                            <React.Fragment key={index}>
+                                        {listProduct.map((product) => (
+                                            <React.Fragment key={product.productId}>
                                                 <div className="col-6 col-md-3">
                                                     <div className="card border border-0 p-3 card-custom text-center">
-                                                        <img src={product.image || lau3} className="rounded-3"
-                                                             alt={product.productName || 'Product Image'}
-                                                             style={{height: 200, width: 250}} data-bs-toggle="modal"
-                                                             data-bs-target={`#productModal${product.productId}`}/>
+                                                        <img
+                                                            src={product.image || lau3}
+                                                            className="rounded-3"
+                                                            alt={product.productName || 'Product Image'}
+                                                            style={{ height: 200, width: 250 }}
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target={`#productModal${product.productId}`}
+                                                        />
                                                         <div className="card-body p-0">
                                                             <h5 className="card-title fs-6 m-0 p-0">{product.productName}</h5>
                                                         </div>
@@ -144,7 +198,9 @@ const IndexCustomer: React.FC = () => {
                                                             <h6 className="card__price fw-bold">{formatMoney(product.price)}</h6>
                                                             <button
                                                                 id="increment"
-                                                                onClick={() => addProduct(product.productId, product.productName, product.price, product.image)}
+                                                                onClick={() => addProductToCart(product)}
+                                                                disabled={!fullName} // Vô hiệu hóa nếu chưa đăng nhập
+                                                                title={fullName ? "Thêm vào giỏ hàng" : "Vui lòng đăng nhập để thêm vào giỏ hàng"}
                                                             >
                                                                 <i className="bi bi-plus-lg"></i>
                                                             </button>
@@ -153,10 +209,10 @@ const IndexCustomer: React.FC = () => {
                                                 </div>
 
                                                 {/* Modal cho mỗi sản phẩm */}
-                                                <div className="modal fade ps36231"
-                                                     id={`productModal${product.productId}`}
+                                                <div className="modal fade" id={`productModal${product.productId}`}
                                                      tabIndex={-1}
-                                                     aria-labelledby="productModalLabel" aria-hidden="true">
+                                                     aria-labelledby={`productModalLabel${product.productId}`}
+                                                     aria-hidden="true">
                                                     <div className="modal-dialog modal-dialog-centered">
                                                         <div className="modal-content">
                                                             <div className="container-modal">
@@ -172,32 +228,42 @@ const IndexCustomer: React.FC = () => {
                                                                     </div>
                                                                 </div>
                                                                 <div className="container-modal-footer">
-                                                                    <div
-                                                                        className="name-item">{product.productName}</div>
+                                                                    <div className="name-item">{product.productName}</div>
                                                                     <div className="capacity-item">900 ml</div>
                                                                     <div className="container-price-quantity">
                                                                         <div className="price-quantity">
                                                                             <div className="price">
                                                                                 <span>Giá: {formatMoney(product.price)}</span>
                                                                             </div>
-                                                                            <div className="quantity-control">
-                                                                                <div className="minus"><span><i
-                                                                                    className="bi bi-dash-lg"></i></span>
-                                                                                </div>
-                                                                                <div className="quantity">1</div>
-                                                                                <div className="plus"><span><i
-                                                                                    className="bi bi-plus-lg"></i></span>
-                                                                                </div>
+                                                                            <div className="quantity-control d-flex align-items-center">
+                                                                                <button
+                                                                                    className="btn btn-outline-secondary btn-sm me-2"
+                                                                                    onClick={() => decrementQuantity(product.productId)}
+                                                                                >
+                                                                                    <i className="bi bi-dash-lg"></i>
+                                                                                </button>
+                                                                                <div className="quantity">{modalQuantities[product.productId]}</div>
+                                                                                <button
+                                                                                    className="btn btn-outline-secondary btn-sm ms-2"
+                                                                                    onClick={() => incrementQuantity(product.productId)}
+                                                                                >
+                                                                                    <i className="bi bi-plus-lg"></i>
+                                                                                </button>
                                                                             </div>
                                                                         </div>
-                                                                        <div className="control-btn-add-to-cart">
-                                                                            <button onClick={() => addToCart({
-                                                                                productId: product.productId,
-                                                                                productName: product.productName,
-                                                                                price: product.price,
-                                                                                quantity: 1,
-                                                                                image: product.image
-                                                                            })}>Thêm vào giỏ hàng
+                                                                        <div className="control-btn-add-to-cart mt-3">
+                                                                            <button
+                                                                                className="btn btn-primary w-100"
+                                                                                onClick={() => {
+                                                                                    addProductToCart(product);
+                                                                                    // Đóng modal sau khi thêm vào giỏ hàng
+                                                                                    const modalElement = document.getElementById(`productModal${product.productId}`)!;
+                                                                                    const modal = window.bootstrap.Modal.getInstance(modalElement);
+
+                                                                                }}
+                                                                                disabled={!fullName} // Vô hiệu hóa nếu chưa đăng nhập
+                                                                            >
+                                                                                Thêm vào giỏ hàng
                                                                             </button>
                                                                         </div>
                                                                     </div>
@@ -208,16 +274,23 @@ const IndexCustomer: React.FC = () => {
                                                 </div>
                                             </React.Fragment>
                                         ))}
+
+                                        {/* Ví dụ thêm một button để thêm nhiều sản phẩm cùng lúc */}
+                                        {/* Bạn có thể tùy chỉnh theo nhu cầu */}
+                                        {/* <button onClick={() => addMultipleProductsToCart([{...}, {...}])}>Thêm Nhiều Sản Phẩm</button> */}
                                     </div>
                                 </div>
                             )}
                         </section>
-                        <section className="what-can-we-do mt-3 pb-4">
+
+                        {/* What Can We Do Section */}
+                        <section className="what-can-we-do mt-3 pb-4" style={{ backgroundColor: 'white' }}>
                             <div className="container">
                                 <div className="row">
-                                    <div className="col-md-6 help" style={{paddingLeft: 0}}>
+                                    <div className="col-md-6 help" style={{ paddingLeft: 0, paddingRight: '50px' }}>
                                         <h4 className="fw-bold pb-4">CHÚNG TÔI CÓ THỂ GIÚP GÌ CHO BẠN ?</h4>
                                         <div className="accordion" id="accordionExample">
+                                            {/* Accordion Item 1 */}
                                             <div className="accordion-item my-3 mt-0 rounded-0">
                                                 <h2 className="accordion-header rounded-0">
                                                     <button
@@ -236,6 +309,7 @@ const IndexCustomer: React.FC = () => {
                                                     </div>
                                                 </div>
                                             </div>
+                                            {/* Accordion Item 2 */}
                                             <div className="accordion-item my-3 rounded-0">
                                                 <h2 className="accordion-header rounded-0">
                                                     <button
@@ -254,6 +328,7 @@ const IndexCustomer: React.FC = () => {
                                                     </div>
                                                 </div>
                                             </div>
+                                            {/* Accordion Item 3 */}
                                             <div className="accordion-item my-3 rounded-0">
                                                 <h2 className="accordion-header rounded-0">
                                                     <button
@@ -272,6 +347,7 @@ const IndexCustomer: React.FC = () => {
                                                     </div>
                                                 </div>
                                             </div>
+                                            {/* Accordion Item 4 */}
                                             <div className="accordion-item my-3 rounded-0">
                                                 <h2 className="accordion-header rounded-0">
                                                     <button
@@ -292,7 +368,7 @@ const IndexCustomer: React.FC = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="col-md-6" style={{paddingRight: 0}}>
+                                    <div className="col-md-6" style={{ paddingRight: 0 }}>
                                         <h4 className="fw-bold pb-4">KHÁCH HÀNG NÓI GÌ?</h4>
                                         <div id="carouselExampleCaptions" className="carousel slide"
                                              data-bs-ride="carousel">
@@ -332,7 +408,7 @@ const IndexCustomer: React.FC = () => {
                                                                 width="70"
                                                                 height="70"
                                                                 className="img-fluid"
-                                                                style={{borderRadius: '50%'}}
+                                                                style={{ borderRadius: '50%' }}
                                                             />
                                                         </div>
                                                         <div className="comment py-5">
@@ -359,7 +435,7 @@ const IndexCustomer: React.FC = () => {
                                                                 width="70"
                                                                 height="70"
                                                                 className="img-fluid"
-                                                                style={{borderRadius: '50%'}}
+                                                                style={{ borderRadius: '50%' }}
                                                             />
                                                         </div>
                                                         <div className="comment py-5">
@@ -386,7 +462,7 @@ const IndexCustomer: React.FC = () => {
                                                                 width="70"
                                                                 height="70"
                                                                 className="img-fluid"
-                                                                style={{borderRadius: '50%'}}
+                                                                style={{ borderRadius: '50%' }}
                                                             />
                                                         </div>
                                                         <div className="comment py-5">
@@ -428,13 +504,14 @@ const IndexCustomer: React.FC = () => {
                                 </div>
                             </div>
                         </section>
+
+                        {/* Footer */}
                         <footer className="text-center text-lg-start bg-body-tertiary text-muted">
                             <section className="pt-3">
                                 <div className="container text-center text-md-start mt-5 pb-5 border-bottom">
                                     <div className="row mt-3">
                                         <div className="col-md-5">
-                                            <img src="assets/img/Cream and Black Simple Illustration Catering Logo.png"
-                                                 width="100" alt=""/>
+                                            <img src={loginfooter} width="100" alt="Logo Footer"/>
                                             <p className="mt-3 mb-4">WANREN BUFFET là nhà hàng chuyên về Buffet lẩu hàng
                                                 đầu Việt Nam</p>
                                             <h6 className="fw-bold">Theo dõi chúng tôi trên mạng xã hội:</h6>
@@ -456,7 +533,7 @@ const IndexCustomer: React.FC = () => {
                                             <section className="ratio ratio-16x9">
                                                 <iframe
                                                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.177875756147!2d106.68670197570356!3d10.79768475879993!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135adedecb7bc5f%3A0xa3f78f8a3e35f1b0!2zTOG6qXUgQsSDbmcgQ2h1eeG7gW4gS2ljaGkgS2ljaGk!5e0!3m2!1svi!2s!4v1727163707823!5m2!1svi!2s"
-                                                    width="300" height="200" style={{border: 0}}
+                                                    width="300" height="200" style={{ border: 0 }}
                                                     loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                                             </section>
                                         </div>
@@ -474,31 +551,28 @@ const IndexCustomer: React.FC = () => {
                     <div className="row d-flex align-items-center justify-content-center">
                         <div className="col-12 image-card text-center">
                             <a href="/menu"><img src={cothaygia} alt="Menu" className="img-fluid"/></a>
-                            <a href="/menu" className="btn btn-outline-light">Thực Đơn →</a>
+                            <a href="/menu" className="btn btn-outline-light mt-2">Thực Đơn →</a>
                         </div>
                     </div>
                     <div className="row d-flex align-items-center justify-content-center">
                         <div className="col-12 image-card text-center">
                             <a href="/reservation"><img src={bannerHome} alt="Reservation" className="img-fluid"/></a>
-                            <a href="/reservation" className="btn btn-outline-light">Đặt Bàn →</a>
+                            <a href="/reservation" className="btn btn-outline-light mt-2">Đặt Bàn →</a>
                         </div>
                     </div>
                     <div className="row d-flex align-items-center justify-content-center">
                         <div className="col-12 image-card text-center">
                             <a href="/promotion"><img src={publicAvif} alt="Promotion" className="img-fluid"/></a>
-                            <a href="/promotion" className="btn btn-outline-light">Ưu Đãi →</a>
+                            <a href="/promotion" className="btn btn-outline-light mt-2">Ưu Đãi →</a>
                         </div>
                     </div>
                 </div>
-
             </div>
 
-            {/* Modals */}
-
-
-
+            {/* Các Modal khác nếu có thể thêm ở đây */}
         </div>
     );
-}
+
+};
 
 export default IndexCustomer;

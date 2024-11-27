@@ -9,15 +9,16 @@ import bannerBuffet from './assets/img/banner-gia-buffet-kich-kichi-160824.jpg';
 
 import ProductModel from "../../models/ProductModel";
 import useDebounce from "./component/useDebounce";
-import { fetchProductsByType, SearchProduct } from "../../api/apiCustommer/productApi";
+import { fetchProductsByCategory, SearchProduct } from "../../api/apiCustommer/productApi";
 import ProductMenu from "./component/productMenu";
 import { CartContext } from "./component/CartContext";
 
+
 // Định nghĩa loại Category
-type Category = 'Mains' | 'Desserts' | 'Drinks';
+type Category = 'mains' | 'desserts' | 'soft_drinks';
 
 const MenuProductCustomer: React.FC = () => {
-    const [selectedCategory, setSelectedCategory] = useState<Category>('Mains');
+    const [selectedCategory, setSelectedCategory] = useState<Category>('mains');
     const [listProduct, setListProduct] = useState<ProductModel[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -42,7 +43,7 @@ const MenuProductCustomer: React.FC = () => {
                 if (debouncedSearchTerm.trim() !== "") {
                     products = await SearchProduct( debouncedSearchTerm);
                 } else {
-                    products = await fetchProductsByType(selectedCategory);
+                    products = await fetchProductsByCategory(selectedCategory);
                 }
 
                 setListProduct(products);
@@ -87,6 +88,7 @@ const MenuProductCustomer: React.FC = () => {
         ));
     };
 
+    console.log(selectedCategory)
     return (
         <>
             <div className="container-fluid row mobile-layout">
@@ -120,22 +122,22 @@ const MenuProductCustomer: React.FC = () => {
                         <div className="row d-flex justify-content-center mb-3">
                             <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall"
                                style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}
-                               onClick={() => setSelectedCategory('Mains')}>Món Chính</a>
+                               onClick={() => setSelectedCategory('mains')}>Món Chính</a>
                             <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall"
                                style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}
-                               onClick={() => setSelectedCategory('Desserts')}>Tráng Miệng</a>
+                               onClick={() => setSelectedCategory('desserts')}>Tráng Miệng</a>
                             <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall"
                                style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}
-                               onClick={() => setSelectedCategory('Drinks')}>Nước</a>
+                               onClick={() => setSelectedCategory('soft_drinks')}>Nước</a>
                         </div>
                         <div>
                             {/* Category Header */}
                             <div className="row" style={{height: '12.5%', marginLeft: '0px', paddingBottom: '20px'}}>
                                 <span className="text-center fs-4" style={{color: 'var(--colorPrimary)', fontWeight: 'bold'}}>
                                     {searchTerm ? "Tìm Kiếm" :
-                                        (selectedCategory === 'Mains' ? 'Món Chính'
-                                            : selectedCategory === 'Desserts' ? 'Tráng Miệng'
-                                                : selectedCategory === 'Drinks' ? 'Đồ Uống'
+                                        (selectedCategory === 'mains' ? 'Món Chính'
+                                            : selectedCategory === 'desserts' ? 'Tráng Miệng'
+                                                : selectedCategory === 'soft_drinks' ? 'Đồ Uống'
                                                     : selectedCategory)}
                                 </span>
                             </div>

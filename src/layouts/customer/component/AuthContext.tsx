@@ -51,7 +51,7 @@ interface AuthProviderProps {
 
 export interface DecodedToken {
     sub: string;
-    userId?: number; // Thêm userId
+    userId?: string; // Thêm userId
     address?: string; // Thêm address
     fullName?: string;
     email?: string;
@@ -76,20 +76,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [employeePhone, setEmployeePhone] = useState<string | null>(null);
     const [employeeRoles, setEmployeeRoles] = useState<string[] | null>(null);
 
+
+
     const decodeToken = (token: string, isEmployee: boolean = false) => {
         try {
             const decoded: DecodedToken = jwtDecode<DecodedToken>(token);
-            console.log(decoded);
+
             if (isEmployee) {
                 setEmployeeUsername(decoded.sub || null);
                 setEmployeeFullName(decoded.fullName || null);
                 setEmployeeEmail(decoded.email || null);
                 setEmployeePhone(decoded.phone || null);
                 setEmployeeRoles(decoded.roles || null);
+
                 setUserId(null);
                 setAddress(null);
             } else {
-                setUserId(decoded.userId ? decoded.userId.toString() : null); // Lưu userId
+                setUserId(decoded.userId || "")// Lưu userId
                 setUsername(decoded.sub || null);
                 setFullName(decoded.fullName || null);
                 setEmail(decoded.email || null);
@@ -97,6 +100,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 setRoles(decoded.roles || null);
                 setAddress(decoded.address || null); // Lưu address
             }
+
 
         } catch (error) {
             console.error("Invalid token:", error);

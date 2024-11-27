@@ -4,8 +4,8 @@
 
 /* Main Dashboard Container */
 .MainDash {
-    margin-left: 14%;
-    padding: 2rem;
+    margin-left: 15%;
+    padding: 1.5rem;
 }
 
 /* Cards */
@@ -157,6 +157,7 @@
 .cards {
     display: flex;
     gap: 20px;
+
 }
 
 .detail {
@@ -324,14 +325,15 @@
 .chart-row {
     display: flex;
     justify-content: space-between;
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
 .chart-card {
     background:none; /* Dark background */
-    padding: 20px;
+    padding: 15px;
     border-radius: 10px;
     width: 48%;
+    height: 500px;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
@@ -345,12 +347,6 @@
 }
 
 
-
-
-
-
-
-
 /* General card styling */
 .card.financial-overview {
     /* background-color: #1e1e1e; */
@@ -360,7 +356,7 @@
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     width: 51vh;
-    height: 87vh;
+    height: 84.5vh;
 }
 
 .progress-circle {

@@ -30,7 +30,15 @@ import MainDash from "./layouts/ADMIN/Dashboard";
 import NotFoundPage from "./layouts/404";
 import Management from "./layouts/ADMIN/manager";
 import PromotionManagement from "./layouts/ADMIN/promotionManagement";
+import StaffIndex from "./layouts/staff/component/StaffIndex";
+import CheckoutLayout from "./layouts/staff/component/checkout/CheckoutLayout";
+import Checkout1 from "./layouts/staff/component/checkout/Checkout1";
+import Checkout2 from "./layouts/staff/component/checkout/Checkout2";
+import Checkout3 from "./layouts/staff/component/checkout/Checkout3";
+import ProductManagement from "./layouts/ADMIN/ProductManagement";
+import OrderOnTable from "./layouts/staff/component/orderOnTable/Order";
 import WorkShift from "./layouts/ADMIN/WorkShift";
+import LoginSuccess from "./layouts/customer/LoginSuccess";
 
 function App() {
   return (
@@ -46,6 +54,14 @@ function App() {
 export default App;
 
 export function Routing() {
+  const isHiddenRoute = (pathname: string) => {
+    // Kiểm tra nếu đường dẫn chính xác hoặc khớp với "/orderOnTable/:tableId" hoặc "/checkout/order/:orderId/:step"
+    return hiddenRoutes.some(route => 
+      pathname === route || 
+      (route === "/orderOnTable" && /^\/orderOnTable\/\d+$/.test(pathname)) || 
+      (route === "/checkout/order" && /^\/checkout\/order\/\d+\/step\d+$/.test(pathname)) // Kiểm tra "/checkout/order/:orderId/:step"
+    );
+  };
   const hiddenRoutes = [
     "/admin",
     "/login",
@@ -59,12 +75,17 @@ export function Routing() {
     "/admin/customers",
     "/admin/employees",
     "/admin/dashboard",
+    "/orderOnTable",
+    "/checkout/order",
+      "/admin/manage-product"
   ];
 
   return (
+
+
     <>
       {/* Hiển thị MenuCustomer trừ khi ở các routes ẩn */}
-      {!hiddenRoutes.includes(window.location.pathname) && <MenuCustomer />}
+      {!isHiddenRoute(window.location.pathname) && <MenuCustomer />}
 
       <Routes>
         {/* Các route công khai */}
@@ -78,6 +99,7 @@ export function Routing() {
         <Route path="/promotion_detail/:id" element={<PromotionDetail />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/profile" element={<MenuProfile />} />
+        <Route path="/login-success" element={<LoginSuccess />} />
 
         {/* Bảo vệ route login và register cho khách hàng */}
         <Route
@@ -108,11 +130,17 @@ export function Routing() {
         />
 
         {/* Route dành cho nhân viên */}
+        <Route path="/orderOnTable/:tableId" element={<OrderOnTable />} />
+        <Route path="/checkout/order/:orderId" element={<CheckoutLayout />}>
+          <Route path="step1" element={<Checkout1 />} />
+          <Route path="step2" element={<Checkout2 />} />
+          <Route path="step3" element={<Checkout3 />} />
+        </Route>
         <Route
           path="/staff"
           element={
             <PrivateRoute allowedRoles={["STAFF", "ADMIN"]}>
-              <IndexCustomer />
+              <StaffIndex />
             </PrivateRoute>
           }
         />
@@ -142,6 +170,10 @@ export function Routing() {
           <Route
             path="/admin/manage-promotions"
             element={<PromotionManagement />}
+          />
+          <Route
+              path="/admin/manage-product"
+              element={<ProductManagement />}
           />
           <Route path="/admin/manage-accounts" element={<Management />} />
           <Route path="/admin/manage-work-shifts" element={<WorkShift />} />

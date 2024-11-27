@@ -15,12 +15,7 @@ function MenuAdmin() {
           </span>
           <span>Categories</span>
         </div>
-        <div className="time-button">
-          <button className="time-btn">Day</button>
-          <button className="time-btn active">Week</button>
-          <button className="time-btn">Month</button>
-          <button className="time-btn">Year</button>
-        </div>
+
         <div className="search-bar">
           <input type="text" placeholder="Search..." />
           <button>
@@ -39,7 +34,7 @@ function MenuAdmin() {
       </div>
 
       {/* Sidebar */}
-      <div className="sidebar">
+      <div className="sidebar_admin">
         <div className="logo">
           <img src={logo} alt="Shop Logo" />
         </div>
@@ -54,7 +49,7 @@ function MenuAdmin() {
             <i className="fas fa-home"></i> Home
           </NavLink>
           <NavLink
-            to="/admin/manage-dishes"
+            to="/admin/manage-product"
             className={({ isActive }) =>
               isActive ? "menuItem active" : "menuItem"
             }

@@ -13,7 +13,7 @@ export async function fetchCustomerList(
 
   try {
     const url = fullName
-      ? `${API_URL}/Customer/search?fullName=${encodeURIComponent(fullName)}`
+      ? `${API_URL}/Customer/search/findByFullNameContaining?FullName=${encodeURIComponent(fullName)}`
       : `${API_URL}/Customer?page=${page}`;
 
     const response = await fetch(url, {

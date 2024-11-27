@@ -9,9 +9,9 @@ a{
   display: flex;
 }
 
-.sidebar {
+.sidebar_admin {
   background-color: #f7f7f9;
-  width: 14%;
+  width: 14.5%;
   position: fixed;
   top: 2%;
   left: 1%;
@@ -31,6 +31,7 @@ a{
   align-items: center;
 
 }
+
 
 .sidebar .logo img {
   width: 70%;
@@ -64,7 +65,7 @@ a{
   justify-content: space-between;
   width: calc(100% - 20%);
   height: 60px;
-  margin-left: 15%;
+  margin-left: 16%;
   background-color: #ffffff;
   padding: 0 2rem;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
@@ -290,7 +291,7 @@ a{
 
 .employee-management {
   background-color: #fff;
-  padding: 2rem;
+  padding: 0.8rem;
   border-radius: 10px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -367,8 +368,17 @@ a{
   color: white;
 }
 
+.sidebar_admin .logo{
+  height: 100px;
+  width: 200px;
+}
+
+.search-input{
+  width: 300px;
+}
+
 .table-container {
-  max-height: 400px;
+  max-height: 450px;
   overflow-y: auto;
   overflow-x: auto;
   border-radius: 10px;
