@@ -12,6 +12,7 @@ interface AuthContextType {
     address: string | null; // Thêm address
 
     // Thông tin nhân viên
+    employeeUserId: string | null;
     employeeUsername: string | null;
     employeeFullName: string | null;
     employeeEmail: string | null;
@@ -34,6 +35,7 @@ export const AuthContext = createContext<AuthContextType>({
     address: null,
 
     // Nhân viên
+    employeeUserId: null,
     employeeUsername: null,
     employeeFullName: null,
     employeeEmail: null,
@@ -70,6 +72,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [address, setAddress] = useState<string | null>(null); // Thêm address
 
     // State cho nhân viên
+    const [employeeUserId, setEmployeeUserId] = useState<string | null>(null);
     const [employeeUsername, setEmployeeUsername] = useState<string | null>(null);
     const [employeeFullName, setEmployeeFullName] = useState<string | null>(null);
     const [employeeEmail, setEmployeeEmail] = useState<string | null>(null);
@@ -83,6 +86,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const decoded: DecodedToken = jwtDecode<DecodedToken>(token);
 
             if (isEmployee) {
+                setEmployeeUserId(decoded.userId || "");
                 setEmployeeUsername(decoded.sub || null);
                 setEmployeeFullName(decoded.fullName || null);
                 setEmployeeEmail(decoded.email || null);
@@ -132,6 +136,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const logout = (isEmployee: boolean = false) => {
         if (isEmployee) {
             localStorage.removeItem("employeeToken");
+            setEmployeeUserId(null)
             setEmployeeUsername(null);
             setEmployeeFullName(null);
             setEmployeeEmail(null);
@@ -161,6 +166,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 roles,
                 address,
                 // Nhân viên
+                employeeUserId,
                 employeeUsername,
                 employeeFullName,
                 employeeEmail,

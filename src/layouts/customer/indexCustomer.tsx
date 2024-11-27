@@ -235,32 +235,12 @@ const IndexCustomer: React.FC = () => {
                                                                             <div className="price">
                                                                                 <span>Giá: {formatMoney(product.price)}</span>
                                                                             </div>
-                                                                            <div className="quantity-control d-flex align-items-center">
-                                                                                <button
-                                                                                    className="btn btn-outline-secondary btn-sm me-2"
-                                                                                    onClick={() => decrementQuantity(product.productId)}
-                                                                                >
-                                                                                    <i className="bi bi-dash-lg"></i>
-                                                                                </button>
-                                                                                <div className="quantity">{modalQuantities[product.productId]}</div>
-                                                                                <button
-                                                                                    className="btn btn-outline-secondary btn-sm ms-2"
-                                                                                    onClick={() => incrementQuantity(product.productId)}
-                                                                                >
-                                                                                    <i className="bi bi-plus-lg"></i>
-                                                                                </button>
-                                                                            </div>
+
                                                                         </div>
                                                                         <div className="control-btn-add-to-cart mt-3">
                                                                             <button
                                                                                 className="btn btn-primary w-100"
-                                                                                onClick={() => {
-                                                                                    addProductToCart(product);
-                                                                                    // Đóng modal sau khi thêm vào giỏ hàng
-                                                                                    const modalElement = document.getElementById(`productModal${product.productId}`)!;
-                                                                                    const modal = window.bootstrap.Modal.getInstance(modalElement);
-
-                                                                                }}
+                                                                                onClick={() => addProductToCart(product)}
                                                                                 disabled={!fullName} // Vô hiệu hóa nếu chưa đăng nhập
                                                                             >
                                                                                 Thêm vào giỏ hàng

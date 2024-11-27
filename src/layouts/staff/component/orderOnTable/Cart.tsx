@@ -50,7 +50,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   const selectedItemsTotal = selectedItemsSubtotal + selectedItemsTax;
   const [activeTab, setActiveTab] = useState("selecting");
   const [orderId, setOrderId] = useState<any>(0);
-  // const { employeeUserId } = useContext(AuthContext);
+  const { employeeUserId } = useContext(AuthContext);
   const [api, contextHolder] = notification.useNotification();
   const openNotification = (pauseOnHover: boolean) => () => {
     api.open({

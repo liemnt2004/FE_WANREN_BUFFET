@@ -118,10 +118,7 @@ const LoginRegisterComponent: React.FC = () => {
         }
 
         // Kiểm tra định dạng mật khẩu
-        if (!passwordRegex.test(signUpData.password)) {
-            newErrors.password = 'Mật khẩu không hợp lệ. Ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.';
-            valid = false;
-        }
+
 
         // Kiểm tra đồng ý với điều khoản
         if (!signUpData.agree) {
@@ -137,7 +134,7 @@ const LoginRegisterComponent: React.FC = () => {
 
         try {
             // Kiểm tra username
-            const checkUsernameResponse = await fetch(`http://localhost:8080/api/customer/existsByUsername?username=${encodeURIComponent(signUpData.username)}`);
+            const checkUsernameResponse = await fetch(`http://localhost:8080/Customer/search/existsByUsername?username=${encodeURIComponent(signUpData.username)}`);
             if (!checkUsernameResponse.ok) {
                 throw new Error('Failed to check username');
             }
@@ -148,7 +145,7 @@ const LoginRegisterComponent: React.FC = () => {
             }
 
             // Kiểm tra email
-            const checkEmailResponse = await fetch(`http://localhost:8080/api/customer/existsByEmail?email=${encodeURIComponent(signUpData.email)}`);
+            const checkEmailResponse = await fetch(`http://localhost:8080/Customer/search/existsByEmail?email=${encodeURIComponent(signUpData.email)}`);
             if (!checkEmailResponse.ok) {
                 throw new Error('Failed to check email');
             }
@@ -159,7 +156,7 @@ const LoginRegisterComponent: React.FC = () => {
             }
 
             // Kiểm tra số điện thoại
-            const checkPhoneResponse = await fetch(`http://localhost:8080/api/customer/existsByPhoneNumber?phoneNumber=${encodeURIComponent(signUpData.phoneNumber)}`);
+            const checkPhoneResponse = await fetch(`http://localhost:8080/Customer/search/existsByPhoneNumber?phoneNumber=${encodeURIComponent(signUpData.phoneNumber)}`);
             if (!checkPhoneResponse.ok) {
                 throw new Error('Failed to check phone number');
             }

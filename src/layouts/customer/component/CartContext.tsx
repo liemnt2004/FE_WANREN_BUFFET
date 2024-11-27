@@ -50,7 +50,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
             if (existingProduct) {
                 return prevItems.map(item =>
                     item.productId === product.productId
-                        ? { ...item, quantity: item.quantity + product.quantity }
+                        ? { ...item, quantity: item.quantity + 1 }
                         : item
                 );
             } else {
@@ -61,7 +61,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
                         productName: product.productName,
                         price: product.price,
                         image: product.image,
-                        quantity: product.quantity,
+                        quantity: 1,
                     },
                 ];
             }
