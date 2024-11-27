@@ -6,7 +6,7 @@ import ProductModel from '../../../../models/StaffModels/ProductModel';
 import { CreateNewOrder, fetchOrderDetailsAPI, fetchOrderIdByTableId, fetchOrderStatusAPI, fetchProductDetailsAPI, updateOrderAmount, updateOrderDetails, updateTableStatus } from '../../../../api/apiStaff/orderForStaffApi';
 import { notification } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
-import { AuthContext } from "../../../customer/component/AuthContext";
+import { AuthContext } from '../../../customer/component/AuthContext';
 interface OffcanvasCartProps {
   show: boolean;
   onHide: () => void;
@@ -50,7 +50,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   const selectedItemsTotal = selectedItemsSubtotal + selectedItemsTax;
   const [activeTab, setActiveTab] = useState("selecting");
   const [orderId, setOrderId] = useState<any>(0);
-  const { employeeUserId } = useContext(AuthContext);
+  // const { employeeUserId } = useContext(AuthContext);
   const [api, contextHolder] = notification.useNotification();
   const openNotification = (pauseOnHover: boolean) => () => {
     api.open({
@@ -98,12 +98,12 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
           setOrderId(orderId);
           const orderData = await fetchOrderStatusAPI(orderId);
           if (orderData.orderStatus === "DELIVERED") {
-            await CreateNewOrder(Number(employeeUserId), Number(tableId));
+            await CreateNewOrder(Number(1), Number(tableId));
           } else {
             fetchOrderDetails(orderId);
           }
         } else {
-          await CreateNewOrder(Number(employeeUserId), Number(tableId));
+          await CreateNewOrder(Number(1), Number(tableId));
         }
       } catch (error) {
         console.error(error);
@@ -111,7 +111,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
     };
 
     fetchOrderId();
-  }, [employeeUserId, fetchOrderDetails, tableId]);
+  }, [fetchOrderDetails, tableId]);
 
   useEffect(() => {
     const fetchOrderStatusAndDetails = async () => {

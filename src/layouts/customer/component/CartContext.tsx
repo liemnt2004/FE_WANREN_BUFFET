@@ -1,3 +1,4 @@
+// src/components/CartContext.tsx
 import React, { createContext, useState, useEffect, ReactNode, useContext } from 'react';
 
 export interface CartItem {
@@ -11,6 +12,7 @@ export interface CartItem {
 interface CartContextType {
     cartItems: CartItem[];
     addToCart: (product: CartItem) => void;
+    addMultipleToCart: (products: CartItem[]) => void; // Thêm hàm mới
     buyAgain: (product: CartItem, quantity: number) => void;
     updateQuantity: (productId: number, quantity: number) => void;
     removeFromCart: (productId: number) => void;
@@ -48,7 +50,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
             if (existingProduct) {
                 return prevItems.map(item =>
                     item.productId === product.productId
-                        ? { ...item, quantity: item.quantity + 1 }
+                        ? { ...item, quantity: item.quantity + product.quantity }
                         : item
                 );
             } else {
@@ -59,10 +61,26 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
                         productName: product.productName,
                         price: product.price,
                         image: product.image,
-                        quantity: 1,
+                        quantity: product.quantity,
                     },
                 ];
             }
+        });
+    };
+
+    // Hàm mới để thêm nhiều sản phẩm vào giỏ hàng
+    const addMultipleToCart = (products: CartItem[]) => {
+        setCartItems(prevItems => {
+            const updatedItems = [...prevItems];
+            products.forEach(product => {
+                const existingProduct = updatedItems.find(item => item.productId === product.productId);
+                if (existingProduct) {
+                    existingProduct.quantity += product.quantity;
+                } else {
+                    updatedItems.push({ ...product });
+                }
+            });
+            return updatedItems;
         });
     };
 
@@ -107,7 +125,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
     return (
-        <CartContext.Provider value={{ cartItems, addToCart, buyAgain, updateQuantity, removeFromCart, clearCart, subtotal }}>
+        <CartContext.Provider value={{ cartItems, addToCart, addMultipleToCart, buyAgain, updateQuantity, removeFromCart, clearCart, subtotal }}>
             {children}
         </CartContext.Provider>
     );

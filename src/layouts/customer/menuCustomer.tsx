@@ -1,13 +1,28 @@
 // src/layouts/customer/MenuCustomer.tsx
-import React, { useContext } from "react";
+import React, {useContext, useEffect} from "react";
 import { Link } from "react-router-dom";
 import logo from './assets/img/warenbuffet.png';
 import { AuthContext } from "./component/AuthContext";
 import './assets/css/menu.css';
 function MenuCustomer() {
     const { fullName } = useContext(AuthContext);
+    function  login() {
+        window.location.href = "http://localhost:3000/login"
+    }
+   useEffect(() => {
+        const handleOffcanvasClose = () => {
+            const backdrops = document.querySelectorAll('.offcanvas-backdrop');
+            backdrops.forEach((backdrop) => backdrop.remove());
+        };
 
+        document.addEventListener("hidden.bs.offcanvas", handleOffcanvasClose);
+
+        return () => {
+            document.removeEventListener("hidden.bs.offcanvas", handleOffcanvasClose);
+        };
+    }, []);
     return (
+
         <nav className="menu-bar d-flex align-items-center">
             {/* Menu Icon */}
             <i
@@ -47,9 +62,9 @@ function MenuCustomer() {
                     </>
                 ) : (
                     <>
-                        <Link to="/login" className="btn-user">
+                        <a  onClick={login} className="btn-user">
                             <i className="bi bi-box-arrow-in-right"></i>
-                        </Link>
+                        </a>
                         <p style={{ margin: 0 }}>Xin chào, Khách</p>
                     </>
                 )}

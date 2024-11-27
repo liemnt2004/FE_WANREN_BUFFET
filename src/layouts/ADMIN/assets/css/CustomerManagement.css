@@ -368,8 +368,17 @@ a{
   color: white;
 }
 
+.sidebar_admin .logo{
+  height: 100px;
+  width: 200px;
+}
+
+.search-input{
+  width: 300px;
+}
+
 .table-container {
-  max-height: 490px;
+  max-height: 450px;
   overflow-y: auto;
   overflow-x: auto;
   border-radius: 10px;

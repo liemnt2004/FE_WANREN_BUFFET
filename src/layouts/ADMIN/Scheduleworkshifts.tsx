@@ -40,8 +40,10 @@ const Scheduleworkshifts: React.FC = () => {
 
   const [shiftId, setShiftId] = useState<number | null>(null);
   const [dataForSelectedDate, setDataForSelectedDate] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false); // Trạng thái tải dữ liệu
+  const [isLoading, setIsLoading] = useState(false);
+  const [filterUsername, setFilterUsername] = useState<string>("");
   const [filterShiftId, setFilterShiftId] = useState<number | null>(null);
+  const [filterUserType, setFilterUserType] = useState<string>("");
 
   const openAddModal = (date: Dayjs) => {
     setSelectedDate(date);
@@ -92,6 +94,7 @@ const Scheduleworkshifts: React.FC = () => {
     const dateString = date.format("YYYY-MM-DD");
     const todayString = dayjs().format("YYYY-MM-DD");
     const isToday = dateString === todayString;
+    const isPast = date.isBefore(dayjs(), "day"); // Kiểm tra ngày trong quá khứ
 
     const cellClass = classNames("ant-picker-cell-inner", {
       "ant-picker-cell-today": isToday,
@@ -107,6 +110,7 @@ const Scheduleworkshifts: React.FC = () => {
           position: "relative",
           width: "100%",
           height: "100%",
+          opacity: isPast ? 0.5 : 1,
         }}
       >
         <div className={cellClass}>{date.date()}</div>
@@ -114,19 +118,21 @@ const Scheduleworkshifts: React.FC = () => {
           <Popover
             content={
               <div style={{ display: "flex", gap: 10 }}>
-                <Button
-                  style={{ width: 105 }}
-                  className="bg-blue-600"
-                  onClick={() => openAddModal(date)}
-                >
-                  Thêm
-                </Button>
+                {!isPast && (
+                  <Button
+                    style={{ width: 105 }}
+                    className="bg-blue-600"
+                    onClick={() => openAddModal(date)}
+                  >
+                    Thêm
+                  </Button>
+                )}
                 <Button
                   style={{ width: 105 }}
                   className="bg-green-500"
                   onClick={() => openEditModal(date)}
                 >
-                  Chỉnh sửa
+                  Xem ca làm
                 </Button>
               </div>
             }
@@ -186,6 +192,24 @@ const Scheduleworkshifts: React.FC = () => {
 
     return matchesShiftId && matchesPosition && matchesName;
   });
+
+  const getFilteredData = () => {
+    return dataForSelectedDate.filter((item) => {
+      const matchesUsername = filterUsername
+        ? item.username.toLowerCase().includes(filterUsername.toLowerCase())
+        : true;
+
+      const matchesShiftId = filterShiftId
+        ? item.shiftId === filterShiftId
+        : true;
+
+      const matchesUserType = filterUserType
+        ? item.userType.toLowerCase() === filterUserType.toLowerCase()
+        : true;
+
+      return matchesUsername && matchesShiftId && matchesUserType;
+    });
+  };
 
   return (
     <div
@@ -302,7 +326,7 @@ const Scheduleworkshifts: React.FC = () => {
         </div>
         {isLoading ? (
           <p>Loading...</p>
-        ) : dataForSelectedDate.length === 0 ? (
+        ) : getFilteredData().length === 0 ? (
           <p>Không có dữ liệu cho ngày này.</p>
         ) : (
           <Table

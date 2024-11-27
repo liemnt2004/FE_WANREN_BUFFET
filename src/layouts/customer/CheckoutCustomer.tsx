@@ -15,6 +15,9 @@ import {jwtDecode} from 'jwt-decode';
 import FormatMoney from "./component/FormatMoney";
 import { request } from "../../api/Request";
 import { DecodedToken } from "./component/AuthContext";
+import { getAllPromotion } from "../../api/apiCustommer/promotionApi";
+import PromotionModel from "../../models/PromotionModel";
+import {userInfo} from "node:os";
 
 interface OrderDetailData {
     productId: number;
@@ -111,7 +114,6 @@ const CheckoutCustomer: React.FC = () => {
     });
 
     // New States for Address Selection
-    const [useExistingAddress, setUseExistingAddress] = useState<boolean>(true); // Mặc định sử dụng địa chỉ đã lưu
     const [showNewAddressForm, setShowNewAddressForm] = useState<boolean>(false);
 
     // Locations State
@@ -123,9 +125,15 @@ const CheckoutCustomer: React.FC = () => {
     const [loadingWards, setLoadingWards] = useState<boolean>(false);
     const [errorDistricts, setErrorDistricts] = useState<string>('');
     const [errorWards, setErrorWards] = useState<string>('');
-    const [errorSavedAddress, setErrorSavedAddress] = useState<string>('');
 
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+    // State Variables for Promotion Code Modal
+    const [promotions, setPromotions] = useState<PromotionModel[]>([]);
+    const [selectedPromotion, setSelectedPromotion] = useState<PromotionModel | null>(null);
+    const [showPromotionModal, setShowPromotionModal] = useState<boolean>(false);
+    const [loadingPromotions, setLoadingPromotions] = useState<boolean>(false);
+    const [errorPromotions, setErrorPromotions] = useState<string>('');
 
     // Fetch Districts
     useEffect(() => {
@@ -207,6 +215,21 @@ const CheckoutCustomer: React.FC = () => {
         };
     }, [formData.quan]);
 
+    // Fetch Promotions when Modal Opens
+    const fetchPromotions = async () => {
+        setLoadingPromotions(true);
+        setErrorPromotions('');
+        try {
+            const promotionsData = await getAllPromotion();
+            setPromotions(promotionsData);
+        } catch (error: any) {
+            console.error('Error fetching promotions:', error);
+            setErrorPromotions(error.message || 'Có lỗi xảy ra khi tải mã giảm giá.');
+        } finally {
+            setLoadingPromotions(false);
+        }
+    };
+
     // Handle Input Changes
     const handleChange = (
         e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -221,7 +244,22 @@ const CheckoutCustomer: React.FC = () => {
     // Calculate Totals
     const subtotal = listCart.reduce((total, item) => total + item.price * item.quantity, 0);
     const shippingFee = 15000; // Example shipping fee
-    const total = subtotal + shippingFee;
+
+    // Calculate Discounted Total
+    let total = subtotal + shippingFee;
+    let discountDisplay = null;
+    if (selectedPromotion) {
+        if (selectedPromotion.promotionType === 'DISCOUNT') {
+            const discountValue = (subtotal * selectedPromotion.promotionValue) / 100;
+            total = subtotal - discountValue + shippingFee;
+            discountDisplay = `Giảm ${selectedPromotion.promotionValue}% (-${FormatMoney(discountValue)})`;
+        } else if (selectedPromotion.promotionType === 'DISCOUNT') {
+            total = subtotal - selectedPromotion.promotionValue + shippingFee;
+            discountDisplay = `Giảm trực tiếp (-${FormatMoney(selectedPromotion.promotionValue)})`;
+        }
+        // Ensure total is not negative
+        total = Math.max(total, 0);
+    }
 
     // Handle Form Submission
     const handleSubmit = async (e: FormEvent) => {
@@ -239,10 +277,10 @@ const CheckoutCustomer: React.FC = () => {
         let address22 = '';
 
         if (!showNewAddressForm && decoded) {
-            // Sử dụng địa chỉ đã lưu từ token
-            address22 = `${decoded.roles}`;
+            // Use saved address from token
+            address22 = decoded.address || ""
         } else {
-            // Sử dụng địa chỉ mới nhập
+            // Use new address entered
             if (!formData.quan || !formData.phuong || !formData.detail_address) {
                 setModalMessage('Vui lòng điền đầy đủ thông tin địa chỉ.');
                 setModalType('error');
@@ -264,6 +302,7 @@ const CheckoutCustomer: React.FC = () => {
             payment: formData.payment,
             notes: formData.note,
             totalAmount: total,
+            promotionCode: selectedPromotion ? selectedPromotion.promotionName : null,
             orderDetails: listCart.map(item => ({
                 productId: item.productId,
                 quantity: item.quantity,
@@ -273,8 +312,8 @@ const CheckoutCustomer: React.FC = () => {
         };
 
         try {
-            // Nếu chọn VN PAY
-            if (formData.payment === "VN PAY") {
+            // If VN PAY is selected
+            if (formData.payment === "VNPAY") {
                 const createOrderResponse = await fetch('http://localhost:8080/api/orders', {
                     method: 'POST',
                     headers: {
@@ -283,6 +322,8 @@ const CheckoutCustomer: React.FC = () => {
                     },
                     body: JSON.stringify(orderData),
                 });
+
+                console.log(createOrderResponse)
 
                 if (!createOrderResponse.ok) {
                     const errorData = await createOrderResponse.json();
@@ -292,17 +333,33 @@ const CheckoutCustomer: React.FC = () => {
                 const createOrderResult = await createOrderResponse.json();
                 const orderId = createOrderResult.orderId;
 
-                // Tạo URL thanh toán
+                // Kiểm tra và lưu token mới nếu có
+                if (createOrderResult.jwtToken) {
+                    localStorage.setItem("token", createOrderResult.jwtToken);
+                    const newDecoded = jwtDecode<DecodedToken>(createOrderResult.jwtToken);
+
+                    // Cập nhật formData với thông tin mới từ token
+                    setFormData(prev => ({
+                        ...prev,
+                        username: newDecoded.sub || "",
+                        emailCheckout: newDecoded.email || "",
+                        phoneCheckout: newDecoded.phone || "",
+                        // Bạn có thể cập nhật thêm các trường khác nếu cần
+                    }));
+                }
+
+                // Create payment URL
                 const paymentResponse = await request(`http://localhost:8080/api/payment/create_payment?price=${total}`);
                 if (!paymentResponse || !paymentResponse.url) {
                     throw new Error("Tạo thanh toán VN PAY thất bại.");
                 }
-                cartContext?.clearCart()
-                // Chuyển hướng người dùng tới URL thanh toán VN PAY
+                cartContext?.clearCart();
+
+                // Redirect user to VN PAY payment URL
                 window.location.href = paymentResponse.url;
 
-            } else if (formData.payment === "Check Payment") {
-                // Xử lý phương thức thanh toán khác, ví dụ: Cash on Delivery
+            } else if (formData.payment === "CASH") {
+                // Handle other payment methods, e.g., Cash on Delivery
                 const createOrderResponse = await fetch('http://localhost:8080/api/orders', {
                     method: 'POST',
                     headers: {
@@ -312,6 +369,8 @@ const CheckoutCustomer: React.FC = () => {
                     body: JSON.stringify(orderData),
                 });
 
+                console.log(createOrderResponse)
+
                 if (!createOrderResponse.ok) {
                     const errorData = await createOrderResponse.json();
                     throw new Error(errorData.message || "Đặt hàng thất bại.");
@@ -319,11 +378,26 @@ const CheckoutCustomer: React.FC = () => {
 
                 const createOrderResult = await createOrderResponse.json();
 
+                // Kiểm tra và lưu token mới nếu có
+                if (createOrderResult.jwtToken) {
+                    localStorage.setItem("token", createOrderResult.jwtToken);
+
+                    const newDecoded = jwtDecode<DecodedToken>(createOrderResult.jwtToken);
+                    // Cập nhật formData với thông tin mới từ token
+                    setFormData(prev => ({
+                        ...prev,
+                        username: newDecoded.sub || "",
+                        emailCheckout: newDecoded.email || "",
+                        phoneCheckout: newDecoded.phone || "",
+                        // Bạn có thể cập nhật thêm các trường khác nếu cần
+                    }));
+                }
+
                 setModalMessage("Đặt hàng thành công. Chúng tôi sẽ liên hệ với bạn sớm.");
                 setModalType('success');
                 setShowModal(true);
-                cartContext?.clearCart()
-                navigate('/checkout'); // Chuyển hướng tới trang đơn hàng
+                cartContext?.clearCart();
+                navigate('/checkout'); // Redirect to the order page
             }
         } catch (error: any) {
             console.error("Đặt hàng thất bại:", error);
@@ -335,8 +409,27 @@ const CheckoutCustomer: React.FC = () => {
         }
     };
 
-    // Close Modal Handler
-    const handleCloseModal = () => setShowModal(false);
+    // Open Promotion Modal
+    const handleOpenPromotionModal = () => {
+        setShowPromotionModal(true);
+        fetchPromotions();
+    };
+
+    // Close Promotion Modal
+    const handleClosePromotionModal = () => {
+        setShowPromotionModal(false);
+    };
+
+    // Handle Promotion Selection
+    const handleSelectPromotion = (promotion: PromotionModel) => {
+        setSelectedPromotion(promotion);
+        setShowPromotionModal(false);
+    };
+
+    // Remove Selected Promotion
+    const handleRemovePromotion = () => {
+        setSelectedPromotion(null);
+    };
 
     return (
         <section className="checkout spad container-fluid">
@@ -360,18 +453,18 @@ const CheckoutCustomer: React.FC = () => {
                                     </button>
                                 </div>
 
-                                {/* Nếu sử dụng địa chỉ đã lưu */}
+                                {/* If using saved address */}
                                 {!showNewAddressForm && decoded && (
                                     <div className="checkout__input mb-3">
                                         <label>Địa Chỉ Đã Lưu</label>
                                         <div className="saved-address">
                                             <p><strong>Họ và Tên:</strong> {decoded.fullName}</p>
-                                            <p><strong>Địa chỉ:</strong> {`${decoded.email}`}</p>
+                                            <p><strong>Địa chỉ:</strong> {`${decoded.address}`}</p>
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Nếu thêm địa chỉ mới */}
+                                {/* If adding a new address */}
                                 {showNewAddressForm && (
                                     <>
                                         {/* Province Selection (Hidden/Disabled) */}
@@ -392,7 +485,7 @@ const CheckoutCustomer: React.FC = () => {
                                             </select>
                                         </div>
 
-                                        {/* Quận/Huyện Selection */}
+                                        {/* District Selection */}
                                         <div className="checkout__input mb-3">
                                             <label htmlFor="quan" className="form-label">
                                                 Quận/Huyện<span className="text-danger">*</span>
@@ -426,7 +519,7 @@ const CheckoutCustomer: React.FC = () => {
                                             )}
                                         </div>
 
-                                        {/* Phường/Xã Selection */}
+                                        {/* Ward Selection */}
                                         <div className="checkout__input mb-3">
                                             <label htmlFor="phuong" className="form-label">
                                                 Phường/Xã<span className="text-danger">*</span>
@@ -553,6 +646,43 @@ const CheckoutCustomer: React.FC = () => {
                                         <span>Tạm Tính</span>
                                         <span>{FormatMoney(subtotal)}</span>
                                     </div>
+
+                                    {/* Promotion Code Selection */}
+                                    {listCart.length > 0 && (
+                                        <div className="checkout__input mb-3">
+                                            <label>Mã Giảm Giá</label>
+                                            <div className="d-flex align-items-center">
+                                                {selectedPromotion ? (
+                                                    <>
+                                                        <span>{selectedPromotion.promotionName}</span>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-danger ms-2"
+                                                            onClick={handleRemovePromotion}
+                                                        >
+                                                            Xóa
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-primary"
+                                                        onClick={handleOpenPromotionModal}
+                                                    >
+                                                        Chọn Mã Giảm Giá
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Display Discount if Applied */}
+                                    {discountDisplay && (
+                                        <div className="checkout__order__discount d-flex justify-content-between mt-2">
+                                            <span>{discountDisplay}</span>
+                                        </div>
+                                    )}
+
                                     <div className="checkout__order__subtotal d-flex justify-content-between mt-2">
                                         <span>Phí Giao Hàng</span>
                                         <span>{FormatMoney(shippingFee)}</span>
@@ -583,8 +713,8 @@ const CheckoutCustomer: React.FC = () => {
                                             <input
                                                 type="radio"
                                                 name="payment"
-                                                value="VN PAY"
-                                                checked={formData.payment === 'VN PAY'}
+                                                value="VNPAY"
+                                                checked={formData.payment === 'VNPAY'}
                                                 onChange={handleChange}
                                                 required
                                             />
@@ -606,6 +736,45 @@ const CheckoutCustomer: React.FC = () => {
                     </form>
                 </div>
             </div>
+
+            {/* Promotion Code Modal */}
+            {showPromotionModal && (
+                <div className="modal-overlay" onClick={handleClosePromotionModal}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h5 className="modal-title">Chọn Mã Giảm Giá</h5>
+                        {loadingPromotions ? (
+                            <p>Đang tải mã giảm giá...</p>
+                        ) : errorPromotions ? (
+                            <p className="text-danger">{errorPromotions}</p>
+                        ) : promotions.length > 0 ? (
+                            <ul className="list-group">
+                                {promotions.map((promo) => (
+                                    <li
+                                        key={promo.PromotionId}
+                                        className="list-group-item d-flex justify-content-between align-items-center"
+                                    >
+                                        <div>
+                                            <strong>{promo.promotionName}</strong> - {promo.description}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary"
+                                            onClick={() => handleSelectPromotion(promo)}
+                                        >
+                                            Chọn
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>Không có mã giảm giá khả dụng.</p>
+                        )}
+                        <button className="btn btn-secondary mt-3" onClick={handleClosePromotionModal}>
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Modal */}
             {showModal && (

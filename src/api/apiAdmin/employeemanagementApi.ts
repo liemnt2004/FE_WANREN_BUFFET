@@ -5,7 +5,7 @@ export async function getListUser(page: number = 1): Promise<{
 }> {
   const employeeToken = localStorage.getItem("employeeToken");
   try {
-    const response = await fetch(`http://localhost:3000/User?page=${page}`, {
+    const response = await fetch(`http://localhost:8080/User?page=${page}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -29,7 +29,7 @@ export async function createUser(
 ): Promise<EmployeeAdmin | null> {
   const employeeToken = localStorage.getItem("employeeToken");
   try {
-    const response = await fetch(`http://localhost:3000/User/create`, {
+    const response = await fetch(`http://localhost:8080/User/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -57,7 +57,7 @@ export async function updateUser(
 ): Promise<EmployeeAdmin | null> {
   const employeeToken = localStorage.getItem("employeeToken");
   try {
-    const response = await fetch(`http://localhost:3000/User/update/${id}`, {
+    const response = await fetch(`http://localhost:8080/User/update/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -86,7 +86,7 @@ export async function updateAccountStatus(
   const employeeToken = localStorage.getItem("employeeToken");
   try {
     const response = await fetch(
-      `http://localhost:3000/User/updateAccountStatus/${id}`,
+      `http://localhost:8080/User/updateAccountStatus/${id}`,
       {
         method: "PATCH",
         headers: {
@@ -113,7 +113,7 @@ export async function updateAccountStatus(
 export async function deleteUser(id: number): Promise<void> {
   const employeeToken = localStorage.getItem("employeeToken");
   try {
-    const response = await fetch(`http://localhost:3000/User/delete/${id}`, {
+    const response = await fetch(`http://localhost:8080/User/delete/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -155,7 +155,7 @@ export async function searchUsers(
     queryParams.append("size", (searchParams.size || 10).toString());
 
     const response = await fetch(
-      `http://localhost:3000/User/search?${queryParams}`,
+      `http://localhost:8080/User/search/findByFullNameContaining?${queryParams}`,
       {
         method: "GET",
         headers: {
