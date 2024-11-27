@@ -38,10 +38,10 @@ const EmployeeManagement: React.FC = () => {
   const [hasMore, setHasMore] = useState(true);
   const [form] = Form.useForm();
   const [isUpdateEmployeeModalOpen, setIsUpdateEmployeeModalOpen] =
-      useState(false);
+    useState(false);
   const [updateForm] = Form.useForm();
   const [currentEmployee, setCurrentEmployee] =
-      useState<Partial<EmployeeAdmin> | null>(null);
+    useState<Partial<EmployeeAdmin> | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -58,9 +58,9 @@ const EmployeeManagement: React.FC = () => {
       }
 
       if (
-          response &&
-          response._embedded &&
-          Array.isArray(response._embedded.users)
+        response &&
+        response._embedded &&
+        Array.isArray(response._embedded.users)
       ) {
         newEmployees = response._embedded.users;
       } else {
@@ -77,8 +77,8 @@ const EmployeeManagement: React.FC = () => {
         setEmployees((prev) => [
           ...prev,
           ...newEmployees.filter(
-              (emp) =>
-                  !prev.some((existingEmp) => existingEmp.userId === emp.userId)
+            (emp) =>
+              !prev.some((existingEmp) => existingEmp.userId === emp.userId)
           ),
         ]);
       }
@@ -122,12 +122,12 @@ const EmployeeManagement: React.FC = () => {
       const updatedEmployee = await updateAccountStatus(userId, checked);
       if (updatedEmployee) {
         setEmployees((prev) =>
-            prev.map((emp) =>
-                emp.userId === updatedEmployee.userId ? updatedEmployee : emp
-            )
+          prev.map((emp) =>
+            emp.userId === updatedEmployee.userId ? updatedEmployee : emp
+          )
         );
         message.success(
-            `Account status updated to ${checked ? "Active" : "Inactive"}`
+          `Account status updated to ${checked ? "Active" : "Inactive"}`
         );
       }
     } catch (error) {
@@ -140,36 +140,36 @@ const EmployeeManagement: React.FC = () => {
     Modal.confirm({
       icon: null,
       title: (
-          <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <ExclamationCircleOutlined
+            style={{ color: "#faad14", fontSize: 48 }}
+          />
+          <span
+            style={{ marginTop: 16, fontWeight: "bold", textAlign: "center" }}
           >
-            <ExclamationCircleOutlined
-                style={{ color: "#faad14", fontSize: 48 }}
-            />
-            <span
-                style={{ marginTop: 16, fontWeight: "bold", textAlign: "center" }}
-            >
             Are you sure you want to change the account status?
           </span>
-          </div>
+        </div>
       ),
       content: (
-          <div
-              style={{
-                textAlign: "center",
-                display: "flex",
-                justifyContent: "center",
-                flexDirection: "column",
-              }}
-          >
-            This will set the account status to{" "}
-            <strong>{checked ? "Active" : "Inactive"}</strong>.
-          </div>
+        <div
+          style={{
+            textAlign: "center",
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+          }}
+        >
+          This will set the account status to{" "}
+          <strong>{checked ? "Active" : "Inactive"}</strong>.
+        </div>
       ),
       okText: "Yes",
       cancelText: "No",
@@ -218,14 +218,14 @@ const EmployeeManagement: React.FC = () => {
       const updatedFields = await updateForm.validateFields();
       if (currentEmployee?.userId) {
         const updatedEmployee = await updateUser(
-            currentEmployee.userId,
-            updatedFields
+          currentEmployee.userId,
+          updatedFields
         );
         if (updatedEmployee) {
           setEmployees((prev) =>
-              prev.map((emp) =>
-                  emp.userId === updatedEmployee.userId ? updatedEmployee : emp
-              )
+            prev.map((emp) =>
+              emp.userId === updatedEmployee.userId ? updatedEmployee : emp
+            )
           );
           message.success("Employee updated successfully.");
           setIsUpdateEmployeeModalOpen(false);
@@ -247,26 +247,26 @@ const EmployeeManagement: React.FC = () => {
       title: null,
       icon: null,
       content: (
-          <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <ExclamationCircleOutlined
+            style={{ color: "#faad14", fontSize: 48 }}
+          />
+          <h3
+            style={{ marginTop: 16, textAlign: "center", fontWeight: "bold" }}
           >
-            <ExclamationCircleOutlined
-                style={{ color: "#faad14", fontSize: 48 }}
-            />
-            <h3
-                style={{ marginTop: 16, textAlign: "center", fontWeight: "bold" }}
-            >
-              Confirm Delete
-            </h3>
-            <p style={{ textAlign: "center", marginTop: 8 }}>
-              Are you sure you want to delete this employee?
-            </p>
-          </div>
+            Confirm Delete
+          </h3>
+          <p style={{ textAlign: "center", marginTop: 8 }}>
+            Are you sure you want to delete this employee?
+          </p>
+        </div>
       ),
       okText: "Yes, delete",
       cancelText: "Cancel",
@@ -288,16 +288,16 @@ const EmployeeManagement: React.FC = () => {
   // Export employees to Excel
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(
-        employees.map((emp) => ({
-          ID: emp.userId,
-          Username: emp.username,
-          FullName: emp.fullName,
-          Email: emp.email,
-          PhoneNumber: emp.phoneNumber,
-          Address: emp.address,
-          UserType: emp.userType,
-          AccountStatus: emp.accountStatus ? "Active" : "Inactive",
-        }))
+      employees.map((emp) => ({
+        ID: emp.userId,
+        Username: emp.username,
+        FullName: emp.fullName,
+        Email: emp.email,
+        PhoneNumber: emp.phoneNumber,
+        Address: emp.address,
+        UserType: emp.userType,
+        AccountStatus: emp.accountStatus ? "Active" : "Inactive",
+      }))
     );
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
@@ -321,31 +321,31 @@ const EmployeeManagement: React.FC = () => {
   // Export employees to CSV
   const exportToCSV = () => {
     const csvContent =
-        "data:text/csv;charset=utf-8," +
+      "data:text/csv;charset=utf-8," +
+      [
         [
-          [
-            "ID",
-            "Username",
-            "Full Name",
-            "Email",
-            "Phone Number",
-            "Address",
-            "User Type",
-            "Account Status",
-          ],
-          ...employees.map((emp) => [
-            emp.userId,
-            emp.username,
-            emp.fullName,
-            emp.email,
-            emp.phoneNumber,
-            emp.address,
-            emp.userType,
-            emp.accountStatus ? "Active" : "Inactive",
-          ]),
-        ]
-            .map((e) => e.join(","))
-            .join("\n");
+          "ID",
+          "Username",
+          "Full Name",
+          "Email",
+          "Phone Number",
+          "Address",
+          "User Type",
+          "Account Status",
+        ],
+        ...employees.map((emp) => [
+          emp.userId,
+          emp.username,
+          emp.fullName,
+          emp.email,
+          emp.phoneNumber,
+          emp.address,
+          emp.userType,
+          emp.accountStatus ? "Active" : "Inactive",
+        ]),
+      ]
+        .map((e) => e.join(","))
+        .join("\n");
 
     const link = document.createElement("a");
     link.setAttribute("href", encodeURI(csvContent));
@@ -448,57 +448,57 @@ const EmployeeManagement: React.FC = () => {
   };
 
   return (
-      <React.Fragment>
-        <div className="container-fluid">
-          <div className="main-content">
-            <div className="employee-management">
-              <h2>Employee Management</h2>
-              <div
-                  className="search-filter"
-                  style={{
-                    marginBottom: 16,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-              >
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <div className="search-wrapper">
-                    <Input
-                        className="search-input"
-                        placeholder="Search for employees..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    <i className="fas fa-search search-icon"></i>
-                  </div>
-                </div>
-                <div
-                    className="btn-export-excel"
-                    style={{ display: "flex", alignItems: "center" }}
-                >
-                  <Button onClick={exportToExcel} style={{ marginRight: 8 }}>
-                    Export Excel
-                  </Button>
-                  <Button onClick={exportToPDF} style={{ marginRight: 8 }}>
-                    Export PDF
-                  </Button>
-                  <Button onClick={exportToCSV} style={{ marginRight: 8 }}>
-                    Export CSV
-                  </Button>
-                  <Button
-                      onClick={handleAddEmployee}
-                      className="btn add-employee-btn"
-                  >
-                    Add Employee
-                  </Button>
+    <React.Fragment>
+      <div className="container-fluid">
+        <div className="main-content">
+          <div className="employee-management">
+            <h2>Employee Management</h2>
+            <div
+              className="search-filter"
+              style={{
+                marginBottom: 16,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <div className="search-wrapper">
+                  <Input
+                    className="search-input"
+                    placeholder="Search for employees..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <i className="fas fa-search search-icon"></i>
                 </div>
               </div>
+              <div
+                className="btn-export-excel"
+                style={{ display: "flex", alignItems: "center" }}
+              >
+                <Button onClick={exportToExcel} style={{ marginRight: 8 }}>
+                  Export Excel
+                </Button>
+                <Button onClick={exportToPDF} style={{ marginRight: 8 }}>
+                  Export PDF
+                </Button>
+                <Button onClick={exportToCSV} style={{ marginRight: 8 }}>
+                  Export CSV
+                </Button>
+                <Button
+                  onClick={handleAddEmployee}
+                  className="btn add-employee-btn"
+                >
+                  Add Employee
+                </Button>
+              </div>
+            </div>
 
-              {/* Table */}
-              <div className="table-container" onScroll={handleScroll}>
-                <table className="table table-striped">
-                  <thead>
+            {/* Table */}
+            <div className="table-container" onScroll={handleScroll}>
+              <table className="table table-striped">
+                <thead>
                   <tr>
                     <th>ID</th>
                     <th>Username</th>
@@ -510,210 +510,210 @@ const EmployeeManagement: React.FC = () => {
                     <th>Account Status</th>
                     <th>Actions</th>
                   </tr>
-                  </thead>
-                  <tbody>
+                </thead>
+                <tbody>
                   {employees.map((employee) => (
-                      <tr key={employee.userId}>
-                        <td>{employee.userId}</td>
-                        <td>{employee.username}</td>
-                        <td>{employee.fullName}</td>
-                        <td>{employee.email}</td>
-                        <td>{employee.phoneNumber}</td>
-                        <td>{employee.address}</td>
-                        <td>{employee.userType}</td>
-                        <td>
-                          <Switch
-                              checked={Boolean(employee.accountStatus)}
-                              onChange={(checked) =>
-                                  confirmStatusChange(checked, employee.userId)
-                              }
-                          />
-                        </td>
-                        <td>
-                          <Button
-                              className="icon-button-edit"
-                              icon={<i className="fas fa-edit"></i>}
-                              onClick={() => openUpdateModal(employee)}
-                          />
-                          <Button
-                              className="icon-button-remove"
-                              icon={<i className="fas fa-trash"></i>}
-                              onClick={() => confirmDeleteUser(employee.userId)}
-                          />
-                        </td>
-                      </tr>
+                    <tr key={employee.userId}>
+                      <td>{employee.userId}</td>
+                      <td>{employee.username}</td>
+                      <td>{employee.fullName}</td>
+                      <td>{employee.email}</td>
+                      <td>{employee.phoneNumber}</td>
+                      <td>{employee.address}</td>
+                      <td>{employee.userType}</td>
+                      <td>
+                        <Switch
+                          checked={Boolean(employee.accountStatus)}
+                          onChange={(checked) =>
+                            confirmStatusChange(checked, employee.userId)
+                          }
+                        />
+                      </td>
+                      <td>
+                        <Button
+                          className="icon-button-edit"
+                          icon={<i className="fas fa-edit"></i>}
+                          onClick={() => openUpdateModal(employee)}
+                        />
+                        <Button
+                          className="icon-button-remove"
+                          icon={<i className="fas fa-trash"></i>}
+                          onClick={() => confirmDeleteUser(employee.userId)}
+                        />
+                      </td>
+                    </tr>
                   ))}
                   {loading && (
-                      <tr>
-                        <td colSpan={9} className="text-center">
-                          Loading...
-                        </td>
-                      </tr>
+                    <tr>
+                      <td colSpan={9} className="text-center">
+                        Loading...
+                      </td>
+                    </tr>
                   )}
                   {!loading && employees.length === 0 && (
-                      <tr>
-                        <td colSpan={9} className="text-center">
-                          No employees found.
-                        </td>
-                      </tr>
+                    <tr>
+                      <td colSpan={9} className="text-center">
+                        No employees found.
+                      </td>
+                    </tr>
                   )}
-                  </tbody>
-                </table>
-              </div>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Add Employee Modal */}
-        <Modal
-            title="Add Employee"
-            visible={isAddEmployeeModalOpen}
-            onOk={handleAddEmployeeModalOk}
-            onCancel={handleAddEmployeeModalCancel}
-        >
-          <Form form={form} layout="vertical">
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                    label="Username"
-                    name="username"
-                    rules={[{ required: true, message: "Please enter username" }]}
-                >
-                  <Input placeholder="Enter username" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                    label="Password"
-                    name="password"
-                    rules={[{ required: true, message: "Please enter password" }]}
-                >
-                  <Input.Password placeholder="Enter password" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                    label="Full Name"
-                    name="fullName"
-                    rules={[{ required: true, message: "Please enter full name" }]}
-                >
-                  <Input placeholder="Enter full name" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                    label="Email"
-                    name="email"
-                    rules={[
-                      { required: true, message: "Please enter email" },
-                      { type: "email", message: "Please enter a valid email" },
-                    ]}
-                >
-                  <Input placeholder="Enter email" type="email" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                    label="Phone Number"
-                    name="phoneNumber"
-                    rules={[
-                      { required: true, message: "Please enter phone number" },
-                    ]}
-                >
-                  <Input placeholder="Enter phone number" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item label="Address" name="address">
-                  <Input placeholder="Enter address" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                    label="User Type"
-                    name="userType"
-                    rules={[{ required: true, message: "Please enter user type" }]}
-                >
-                  <Select placeholder="Select UserType">
-                    <Select.Option value="Bếp trưởng">Bếp trưởng</Select.Option>
-                    <Select.Option value="Bếp phó">Bếp phó</Select.Option>
-                    <Select.Option value="Thu ngân">Thu ngân</Select.Option>
-                    <Select.Option value="Phục vụ">Phục vụ</Select.Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                    label="Account Status"
-                    name="accountStatus"
-                    rules={[{ required: true, message: "Please select status" }]}
-                >
-                  <Select placeholder="Select account status">
-                    <Select.Option value={true}>Active</Select.Option>
-                    <Select.Option value={false}>Inactive</Select.Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
-        </Modal>
+      {/* Add Employee Modal */}
+      <Modal
+        title="Add Employee"
+        visible={isAddEmployeeModalOpen}
+        onOk={handleAddEmployeeModalOk}
+        onCancel={handleAddEmployeeModalCancel}
+      >
+        <Form form={form} layout="vertical">
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Username"
+                name="username"
+                rules={[{ required: true, message: "Please enter username" }]}
+              >
+                <Input placeholder="Enter username" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Password"
+                name="password"
+                rules={[{ required: true, message: "Please enter password" }]}
+              >
+                <Input.Password placeholder="Enter password" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Full Name"
+                name="fullName"
+                rules={[{ required: true, message: "Please enter full name" }]}
+              >
+                <Input placeholder="Enter full name" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[
+                  { required: true, message: "Please enter email" },
+                  { type: "email", message: "Please enter a valid email" },
+                ]}
+              >
+                <Input placeholder="Enter email" type="email" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Phone Number"
+                name="phoneNumber"
+                rules={[
+                  { required: true, message: "Please enter phone number" },
+                ]}
+              >
+                <Input placeholder="Enter phone number" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Address" name="address">
+                <Input placeholder="Enter address" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="User Type"
+                name="userType"
+                rules={[{ required: true, message: "Please enter user type" }]}
+              >
+                <Select placeholder="Select UserType">
+                  <Select.Option value="Bếp trưởng">Bếp trưởng</Select.Option>
+                  <Select.Option value="Bếp phó">Bếp phó</Select.Option>
+                  <Select.Option value="Thu ngân">Thu ngân</Select.Option>
+                  <Select.Option value="Phục vụ">Phục vụ</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Account Status"
+                name="accountStatus"
+                rules={[{ required: true, message: "Please select status" }]}
+              >
+                <Select placeholder="Select account status">
+                  <Select.Option value={true}>Active</Select.Option>
+                  <Select.Option value={false}>Inactive</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
 
-        {/* Update Employee Modal */}
-        <Modal
-            title="Update Employee"
-            visible={isUpdateEmployeeModalOpen}
-            onOk={handleUpdateEmployeeModalOk}
-            onCancel={handleUpdateEmployeeModalCancel}
-        >
-          <Form form={updateForm} layout="vertical">
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item label="Username" name="username">
-                  <Input placeholder="Enter username" disabled />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item label="Password" name="password">
-                  <Input.Password placeholder="Enter new password" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item label="Full Name" name="fullName">
-                  <Input placeholder="Enter full name" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item label="Email" name="email">
-                  <Input placeholder="Enter email" type="email" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item label="Phone Number" name="phoneNumber">
-                  <Input placeholder="Enter phone number" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item label="Address" name="address">
-                  <Input placeholder="Enter address" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item label="User Type" name="userType">
-                  <Input placeholder="Enter user type" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item label="Account Status" name="accountStatus">
-                  <Select placeholder="Select account status">
-                    <Select.Option value={true}>Active</Select.Option>
-                    <Select.Option value={false}>Inactive</Select.Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
-        </Modal>
-      </React.Fragment>
+      {/* Update Employee Modal */}
+      <Modal
+        title="Update Employee"
+        visible={isUpdateEmployeeModalOpen}
+        onOk={handleUpdateEmployeeModalOk}
+        onCancel={handleUpdateEmployeeModalCancel}
+      >
+        <Form form={updateForm} layout="vertical">
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item label="Username" name="username">
+                <Input placeholder="Enter username" disabled />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Password" name="password">
+                <Input.Password placeholder="Enter new password" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Full Name" name="fullName">
+                <Input placeholder="Enter full name" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Email" name="email">
+                <Input placeholder="Enter email" type="email" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Phone Number" name="phoneNumber">
+                <Input placeholder="Enter phone number" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Address" name="address">
+                <Input placeholder="Enter address" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="User Type" name="userType">
+                <Input placeholder="Enter user type" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Account Status" name="accountStatus">
+                <Select placeholder="Select account status">
+                  <Select.Option value={true}>Active</Select.Option>
+                  <Select.Option value={false}>Inactive</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
+    </React.Fragment>
   );
 };
 

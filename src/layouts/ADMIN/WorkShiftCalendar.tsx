@@ -32,12 +32,10 @@ const WorkShiftCalendar: React.FC = () => {
   const columnsTab1 = [
     {
       title: "STT",
-      dataIndex: "userId",
-      key: "userId",
-      sorter: (a: WorkShiftModel, b: WorkShiftModel) =>
-        Number(a.userId) - Number(b.userId),
-      defaultSortOrder: "ascend" as "ascend",
+      key: "index",
+      render: (text: any, record: any, index: number) => index + 1,
     },
+
     {
       title: "Username",
       dataIndex: "username",
