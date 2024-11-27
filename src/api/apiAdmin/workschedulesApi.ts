@@ -58,6 +58,7 @@ export async function getWorkSchedulesByDate(
           schedule.fullName,
           schedule.userType,
           schedule.shiftId,
+          schedule.shiftName,
           new Date(schedule.workDate) // Chuyển đổi chuỗi ngày thành đối tượng Date
         )
     );

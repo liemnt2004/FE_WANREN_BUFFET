@@ -40,7 +40,10 @@ const Scheduleworkshifts: React.FC = () => {
 
   const [shiftId, setShiftId] = useState<number | null>(null);
   const [dataForSelectedDate, setDataForSelectedDate] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false); // Trạng thái tải dữ liệu
+  const [isLoading, setIsLoading] = useState(false);
+  const [filterUsername, setFilterUsername] = useState<string>("");
+  const [filterShiftId, setFilterShiftId] = useState<number | null>(null);
+  const [filterUserType, setFilterUserType] = useState<string>("");
 
   const openAddModal = (date: Dayjs) => {
     setSelectedDate(date);
@@ -68,6 +71,7 @@ const Scheduleworkshifts: React.FC = () => {
           fullName: schedule.fullName,
           userType: schedule.userType,
           shiftId: schedule.shiftId,
+          shiftName: schedule.shiftName,
           workDate: schedule.workDate.toLocaleDateString(),
         }))
       );
@@ -89,6 +93,7 @@ const Scheduleworkshifts: React.FC = () => {
     const dateString = date.format("YYYY-MM-DD");
     const todayString = dayjs().format("YYYY-MM-DD");
     const isToday = dateString === todayString;
+    const isPast = date.isBefore(dayjs(), "day"); // Kiểm tra ngày trong quá khứ
 
     const cellClass = classNames("ant-picker-cell-inner", {
       "ant-picker-cell-today": isToday,
@@ -104,6 +109,7 @@ const Scheduleworkshifts: React.FC = () => {
           position: "relative",
           width: "100%",
           height: "100%",
+          opacity: isPast ? 0.5 : 1,
         }}
       >
         <div className={cellClass}>{date.date()}</div>
@@ -111,19 +117,21 @@ const Scheduleworkshifts: React.FC = () => {
           <Popover
             content={
               <div style={{ display: "flex", gap: 10 }}>
-                <Button
-                  style={{ width: 105 }}
-                  className="bg-blue-600"
-                  onClick={() => openAddModal(date)}
-                >
-                  Thêm
-                </Button>
+                {!isPast && (
+                  <Button
+                    style={{ width: 105 }}
+                    className="bg-blue-600"
+                    onClick={() => openAddModal(date)}
+                  >
+                    Thêm
+                  </Button>
+                )}
                 <Button
                   style={{ width: 105 }}
                   className="bg-green-500"
                   onClick={() => openEditModal(date)}
                 >
-                  Chỉnh sửa
+                  Xem ca làm
                 </Button>
               </div>
             }
@@ -169,6 +177,24 @@ const Scheduleworkshifts: React.FC = () => {
     }
   };
 
+  const getFilteredData = () => {
+    return dataForSelectedDate.filter((item) => {
+      const matchesUsername = filterUsername
+        ? item.username.toLowerCase().includes(filterUsername.toLowerCase())
+        : true;
+
+      const matchesShiftId = filterShiftId
+        ? item.shiftId === filterShiftId
+        : true;
+
+      const matchesUserType = filterUserType
+        ? item.userType.toLowerCase() === filterUserType.toLowerCase()
+        : true;
+
+      return matchesUsername && matchesShiftId && matchesUserType;
+    });
+  };
+
   return (
     <div
       onClick={() => {
@@ -176,32 +202,7 @@ const Scheduleworkshifts: React.FC = () => {
       }}
     >
       <h5>Xếp ca nhân viên</h5>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: "16px",
-        }}
-      >
-        <select className="form-select" style={{ width: "200px" }}>
-          <option>Lọc theo ca làm</option>
-          <option>Sáng</option>
-          <option>Tối</option>
-          <option>Giữa ca</option>
-        </select>
-        <select className="form-select" style={{ width: "200px" }}>
-          <option>Lọc theo vị trí</option>
-          <option>Quản lý</option>
-          <option>Nhân viên</option>
-        </select>
-        <input
-          type="text"
-          className="form-control"
-          placeholder="Tìm kiếm theo tên"
-          style={{ width: "200px" }}
-        />
-        <button className="btn btn-success">Xuất file</button>
-      </div>
+
       <Calendar
         fullscreen={false}
         dateFullCellRender={dateFullCellRender}
@@ -264,9 +265,58 @@ const Scheduleworkshifts: React.FC = () => {
         onCancel={closeEditModal}
         footer={null}
       >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: "16px",
+            gap: "10px",
+          }}
+        >
+          {/* Lọc theo ca làm */}
+          <Select
+            value={filterShiftId}
+            onChange={(value) => setFilterShiftId(value)}
+            showSearch
+            style={{ width: "200px" }}
+            placeholder="Lọc theo ca làm"
+            optionFilterProp="label"
+            filterOption={(input, option) =>
+              (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+            }
+            options={shiftOptions}
+          />
+
+          {/* Lọc theo vị trí */}
+          <Select
+            value={filterUserType}
+            onChange={(value) => setFilterUserType(value)}
+            showSearch
+            style={{ width: "200px" }}
+            placeholder="Lọc theo vị trí"
+            options={[
+              { value: "", label: "Tất cả vị trí" },
+              { value: "Bếp trưởng", label: "Bếp trưởng" },
+              { value: "Bếp phó", label: "Bếp phó" },
+              { value: "Thu ngân", label: "Thu ngân" },
+              { value: "Phục vụ", label: "Phục vụ" },
+            ]}
+          />
+
+          {/* Tìm kiếm theo username */}
+          <Input
+            value={filterUsername}
+            onChange={(e) => setFilterUsername(e.target.value)}
+            placeholder="Tìm kiếm theo username"
+            style={{ width: "200px" }}
+          />
+
+          <Button type="primary">Xuất file</Button>
+        </div>
+
         {isLoading ? (
           <p>Loading...</p>
-        ) : dataForSelectedDate.length === 0 ? (
+        ) : getFilteredData().length === 0 ? (
           <p>Không có dữ liệu cho ngày này.</p>
         ) : (
           <Table
@@ -279,24 +329,10 @@ const Scheduleworkshifts: React.FC = () => {
               { title: "Username", dataIndex: "username", key: "username" },
               { title: "Full Name", dataIndex: "fullName", key: "fullName" },
               { title: "User Type", dataIndex: "userType", key: "userType" },
-              { title: "Shift ID", dataIndex: "shiftId", key: "shiftId" },
+              { title: "Shift Name", dataIndex: "shiftName", key: "shiftName" },
               { title: "Work Date", dataIndex: "workDate", key: "workDate" },
-              {
-                title: "Chức năng",
-                key: "actions",
-                render: (_, record) => (
-                  <Button
-                    type="link"
-                    onClick={() => {
-                      alert(`Chỉnh sửa cho: ${record.username}`);
-                    }}
-                  >
-                    Sửa
-                  </Button>
-                ),
-              },
             ]}
-            dataSource={dataForSelectedDate}
+            dataSource={getFilteredData()}
             rowKey="username"
           />
         )}

@@ -259,9 +259,7 @@ const CustomerManagement: React.FC = () => {
               />
               <i className="fas fa-search search-icon"></i>
             </div>
-            <select className="form-select filter-select">
-              <option value="">Filter</option>
-            </select>
+
             <Button
               onClick={openAddModal}
               className="btn add-employee-btn text-white"
