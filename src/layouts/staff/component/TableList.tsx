@@ -81,6 +81,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
   const [selectedTable, setSelectedTable] = useState<Tables | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [orderId, setOrderId] = useState<number>();
+  const [tableTimers, setTableTimers] = useState<Map<number, number>>(new Map());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -103,16 +104,52 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
     fetchTables();
   }, []);
 
+
+  useEffect(() => {
+    const savedTimers = localStorage.getItem('tableTimers');
+
+    if (savedTimers) {
+      const parsedTimers: Record<string, number> = JSON.parse(savedTimers);
+      setTableTimers(new Map(Object.entries(parsedTimers).map(([key, value]) => [Number(key), value])));
+    }
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTableTimers((prevTimers) => {
+        const updatedTimers = new Map(prevTimers);
+
+        tables.forEach((table) => {
+          if (table.tableStatus === 'OCCUPIED_TABLE') {
+            const currentTime = updatedTimers.get(table.tableId) || 0;
+            updatedTimers.set(table.tableId, currentTime + 1);
+          }
+        });
+
+        localStorage.setItem('tableTimers', JSON.stringify(Object.fromEntries(updatedTimers)));
+        return updatedTimers;
+      });
+    }, 1000); 
+    return () => clearInterval(interval);
+  }, [tables]); 
+
+  const getElapsedTime = (tableId: number) => {
+    const elapsedTime = tableTimers.get(tableId) || 0;
+
+    const hours = Math.floor(elapsedTime / 3600);
+    const minutes = Math.floor((elapsedTime % 3600) / 60);
+
+    return `${hours}h ${minutes}m`;
+  };
+
   const filteredTables = tables.filter((table) => {
-    // Lọc bàn theo location
     if (table.location === 'GDeli') {
       return area === 'gdeli';
     } else if (table.location === 'Table') {
-      // Chia bàn số theo tầng
       if (area === 'home') return table.tableNumber <= 25;
       if (area === '2nd_floor') return table.tableNumber > 25 && table.tableNumber <= 50;
     }
-    return false; // Không hiển thị bàn ngoài điều kiện
+    return false;
   });
 
   const handleCheckoutStep = async (tableId: number, step: number) => {
@@ -125,7 +162,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
 
       if (orderId !== null) {
         console.log(orderId)
-        navigate(`/checkout/step${step}`, { state: { tableId: tableId , orderId: orderId} });
+        navigate(`/checkout/step${step}`, { state: { tableId: tableId, orderId: orderId } });
       } else {
         console.error('No orderId found for this table');
       }
@@ -173,7 +210,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
             <div className={`card table-card position-relative ${table.tableStatus === 'EMPTY_TABLE' ? '' : 'table-card-active'}`}>
               {table.tableStatus === 'LOCKED_TABLE' && (
                 <>
-                  <p className="position-absolute translate-middle" style={{top: '10px', right:'-25px'}}>
+                  <p className="position-absolute translate-middle" style={{ top: '10px', right: '-25px' }}>
                     <i className="bi bi-shield-lock-fill fs-3 text-danger"></i>
                   </p>
                 </>)
@@ -182,7 +219,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
                 <h5 className="card-title text-center">Bàn {table.tableNumber} <span style={{ fontWeight: 'bold' }}>{table.location === 'GDeli' ? '(Deli)' : ''}</span> </h5>
                 {table.tableStatus !== 'EMPTY_TABLE' && table.tableStatus !== 'LOCKED_TABLE' && (
                   <>
-                    <p className="table-status">2h14'</p>
+                    <p className="table-status">{table.tableStatus === 'OCCUPIED_TABLE' && getElapsedTime(table.tableId)}</p>
                     <p key={table.tableId} onClick={() => handleCheckoutStep(table.tableId, 1)} className="btn btn-danger rounder-0 mt-4">Thanh toán</p>
                   </>
                 )}

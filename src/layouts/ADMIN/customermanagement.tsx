@@ -415,51 +415,31 @@ const CustomerManagement: React.FC = () => {
   };
 
   return (
-      <div className="container-fluid">
-        <div className="main-content">
-          <div className="employee-management">
-            <h2>Manage Customers</h2>
-            <div
-                className="search-filter"
-                style={{
-                  marginBottom: 16,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-            >
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <div className="search-wrapper">
-                  <Input
-                      className="search-input"
-                      placeholder="Search for customers..."
-                      value={searchInput}
-                      onChange={(e) => setSearchInput(e.target.value)}
-                  />
-                  <i className="fas fa-search search-icon"></i>
-                </div>
-              </div>
-              <div
-                  className="btn-export-excel"
-                  style={{ display: "flex", alignItems: "center" }}
-              >
-                <Button onClick={exportToExcel} style={{ marginRight: 8 }}>
-                  Export Excel
-                </Button>
-                <Button onClick={exportToPDF} style={{ marginRight: 8 }}>
-                  Export PDF
-                </Button>
-                <Button onClick={exportToCSV} style={{ marginRight: 8 }}>
-                  Export CSV
-                </Button>
-                <Button
-                    onClick={openAddModal}
-                    className="btn add-employee-btn text-white"
-                >
-                  Add Customer
-                </Button>
-              </div>
+    <div className="container-fluid">
+      <div className="main-content">
+        <div className="employee-management">
+          <h2>Manage Customers</h2>
+          <div className="search-filter">
+            <div className="search-wrapper">
+              <input
+                type="text"
+                className="form-control search-input"
+                placeholder="Search for customers..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+              />
+              <i className="fas fa-search search-icon"></i>
             </div>
+            <select className="form-select filter-select">
+              <option value="">Filter</option>
+            </select>
+            <Button
+              onClick={openAddModal}
+              className="btn add-employee-btn text-white"
+            >
+              Add Customer
+            </Button>
+          </div>
 
             {/* Add Customer Modal */}
             <Modal

@@ -4,7 +4,9 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus, payWithVNPay } from "../../../../api/apiStaff/orderForStaffApi";
 import OrderDetailsWithNameProduct from "../../../../models/StaffModels/OrderDetailsWithNameProduct";
 import { request } from "../../../../api/Request";
-import { AuthContext } from "../../../customer/component/AuthContext";
+// import { AuthContext } from "../../../customer/component/AuthContext";
+import { notification } from 'antd';
+import { InfoCircleOutlined } from "@ant-design/icons";
 
 const Checkout3: React.FC = () => {
     const location = useLocation();
@@ -15,12 +17,14 @@ const Checkout3: React.FC = () => {
     const [lastAmount, setLastAmount] = useState<number>(0);
     const [choicePayment, setChoicePayment] = useState<string | undefined>(undefined);
     const [orderDetails, setOrderDetails] = useState<OrderDetailsWithNameProduct[]>([]);
-    const { employeeUsername } = useContext(AuthContext);
+    // const { employeeUsername } = useContext(AuthContext);
     const [isQrPopupVisible, setQrPopupVisible] = useState(false);
     const [qrCode, setQrCode] = useState<string>();
     const [description, setDescription] = useState<string>();
     const [isSucess, setIsSucess] = useState<boolean>(false);
     const navigate = useNavigate();
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [api, contextHolder] = notification.useNotification();
     const styleOfA: React.CSSProperties = {
         cursor: "pointer",
         color: "white"
@@ -45,7 +49,7 @@ const Checkout3: React.FC = () => {
                 setAmount(amountOfRs);
                 setVat((amountOfRs * 0.08));
                 setLastAmount(amountOfRs + (amountOfRs * 0.08));
-            } catch (err) {
+            } catch (err) { 
                 const errorMessage = err instanceof Error ? err.message : 'Failed to get amount';
                 setError(errorMessage);
             }
@@ -69,17 +73,17 @@ const Checkout3: React.FC = () => {
         }
     }
 
-    const createPayment = async () => {
+    const createPayment = async (paymentMethod: string, status: boolean) => {
         try {
             const newOrderResponse = await fetch('http://localhost:8080/api/payment/create_payment/normal', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     amountPaid: lastAmount,
-                    paymentMethod: "CASH",
-                    paymentStatus: false,
+                    paymentMethod: paymentMethod,
+                    paymentStatus: status,
                     orderId: orderId,
-                    userId: employeeUsername
+                    userId: 1
                 })
             });
         } catch (error) {
@@ -109,18 +113,35 @@ const Checkout3: React.FC = () => {
     const checkoutClick = async () => {
         try {
             if (choicePayment === "1") {
-                payWithVNPay(lastAmount, Number(employeeUsername), orderId);
+                payWithVNPay(lastAmount, Number(1), orderId);
             } else if (choicePayment === "2") {
                 setQrPopupVisible(true);
             } else if (choicePayment === "3") {
                 updateAmount(Number(orderId), lastAmount);
-                createPayment();
-                alert("Thanh toán thành công!");
+                createPayment("CASH", false);
+                navigate("/checkout/sucessful", { state: { paymentMethod: "CASH", orderId: orderId, lastAmount: lastAmount, employeeUserId: 1 } })
             }
         } catch (error) {
             console.error("Cannot checkout");
         }
     };
+
+    const updateOrderStatus = async (orderId: number, status: string) => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/order_staff/update-status/${orderId}?status=${status}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to update order status');
+            }
+        } catch (error) {
+        }
+    };
+
+
     async function checkPaid(price: number, description: string) {
         if (isSucess) {
             return;
@@ -138,7 +159,9 @@ const Checkout3: React.FC = () => {
                     const lastDescription = lastPaid["Mô tả"];
                     if (lastPrice >= lastAmount && lastDescription.includes(description)) {
                         updateTableStatus(Number(tableId), "EMPTY_TABLE")
-                        
+                        updateOrderStatus(Number(orderId), "DELIVERED")
+                        createPayment("QR_CODE", true);
+                        navigate("/checkout/sucessful")
                         setIsSucess(true);
                     } else {
                         console.log("Chưa thành công")
@@ -153,158 +176,195 @@ const Checkout3: React.FC = () => {
     }
 
     useEffect(() => {
-        if (choicePayment?.includes("2")) {
-            checkPaid(lastAmount, String(description));
-        } 
-    }, []);
+        const interval = setInterval(async () => {
+            if (!isUpdating) {
+                setIsUpdating(true);
+                console.log(lastAmount);
+                console.log(description);
+                await checkPaid(lastAmount, String(description));
+                setIsUpdating(false);
+            }
+        }, 3000);
 
+        return () => clearInterval(interval);
+    }, [isUpdating, lastAmount, description]);
+
+    const openNotification = (message: string, description: string, icon: React.ReactNode, pauseOnHover: boolean = true) => {
+        api.open({
+            message,
+            description,
+            showProgress: true,
+            pauseOnHover,
+            placement: 'topRight',
+            duration: 3,
+            icon,
+        });
+    };
+
+    const handleManualCheck = async () => {
+        if (isUpdating) {
+            openNotification(
+                'Xác nhận thanh toán',
+                'Đang cập nhật!',
+                <InfoCircleOutlined style={{ color: '#1890ff' }} />
+            );
+            return;
+        }
+        setIsUpdating(true);
+        await checkPaid(lastAmount, String(description));
+        setIsUpdating(false);
+    };
 
 
     return (
-        <div className="ps36231-checkout-staff-1">
-            <div className="call-staff">
-                <div className="d-flex justify-content-between align-items-center">
-                    <div className="turn-back">
-                        <button onClick={() => navigate(-1)}>Quay lại</button>
-                    </div>
-                    <div className="call-staff-inner">
-                        <i className="bi bi-bell-fill"></i>
-                        Gọi nhân viên
-                    </div>
-                    <div className="turn-dashboard">
-                        <button onClick={() => navigate("/staff")}>
-                            <i className="bi bi-arrow-counterclockwise"></i> Về trang chủ
-                        </button>
+        <>
+            {contextHolder}
+            <div className="ps36231-checkout-staff-1">
+                <div className="call-staff">
+                    <div className="d-flex justify-content-between align-items-center">
+                        <div className="turn-back">
+                            <button onClick={() => navigate(-1)}>Quay lại</button>
+                        </div>
+                        <div className="call-staff-inner">
+                            <i className="bi bi-bell-fill"></i>
+                            Gọi nhân viên
+                        </div>
+                        <div className="turn-dashboard">
+                            <button onClick={() => navigate("/staff")}>
+                                <i className="bi bi-arrow-counterclockwise"></i> Về trang chủ
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div>
                 <div>
-                    <h2 className="title-table title-red">Đây là thông tin đơn hàng, bạn chỉ trả tiền khi nhận được PHIẾU THANH TOÁN</h2>
-                </div>
-                <div className="container-table">
                     <div>
-                        <table className="all-sp">
-                            {orderDetails.map((orderDetail, index) => (
-                                <tr key={index}>
-                                    <td>{orderDetail.quantity + " x " + orderDetail.productName}</td>
-                                    <td>{orderDetail.price?.toLocaleString() + " đ"}</td>
+                        <h2 className="title-table title-red">Đây là thông tin đơn hàng, bạn chỉ trả tiền khi nhận được PHIẾU THANH TOÁN</h2>
+                    </div>
+                    <div className="container-table">
+                        <div>
+                            <table className="all-sp">
+                                {orderDetails.map((orderDetail, index) => (
+                                    <tr key={index}>
+                                        <td>{orderDetail.quantity + " x " + orderDetail.productName}</td>
+                                        <td>{orderDetail.price?.toLocaleString() + " đ"}</td>
+                                    </tr>
+                                ))}
+                                <tr>
+                                    <td>Tổng tiền hàng</td>
+                                    <td>{Math.floor(amount).toLocaleString() + " đ"}</td>
                                 </tr>
-                            ))}
-                            <tr>
-                                <td>Tổng tiền hàng</td>
-                                <td>{amount.toLocaleString() + " đ"}</td>
-                            </tr>
-                            <tr>
-                                <td>VAT</td>
-                                <td>{vat.toLocaleString() + " đ"}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-                <div className="container-price-all-sp">
-                    <div>
-                        <table className="price-all-sp">
-                            <thead>
-                                <th>Tổng tiền cần thanh toán</th>
-                                <th>{lastAmount.toLocaleString() + " VNĐ"}</th>
-                            </thead>
-                        </table>
-                    </div>
-                </div>
-                <div className="container-method-checkout">
-                    <div>
-                        <div className="title-all-method-payment">
-                            <div><i className="bi bi-wallet-fill text-white"></i></div>
-                            <h3>Tất cả các hình thức thanh toán</h3>
+                                <tr>
+                                    <td>VAT</td>
+                                    <td>{Math.floor(vat).toLocaleString() + " đ"}</td>
+                                </tr>
+                            </table>
                         </div>
-                        <div className="all-div-method-payment">
-                            <div data-id="1" onClick={choiceClick} className={choicePayment === '1' ? 'selected' : ''}>
-                                <div className="control-img">
-                                    <img src="https://vinadesign.vn/uploads/images/2023/05/vnpay-logo-vinadesign-25-12-57-55.jpg" alt="" />
-                                </div>
+                    </div>
+                    <div className="container-price-all-sp">
+                        <div>
+                            <table className="price-all-sp">
+                                <thead>
+                                    <th>Tổng tiền cần thanh toán</th>
+                                    <th>{Math.floor(lastAmount).toLocaleString() + " VNĐ"}</th>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                    <div className="container-method-checkout">
+                        <div>
+                            <div className="title-all-method-payment">
+                                <div><i className="bi bi-wallet-fill text-white"></i></div>
+                                <h3>Tất cả các hình thức thanh toán</h3>
                             </div>
-                            <div data-id="2" onClick={choiceClick} className={choicePayment === '2' ? 'selected' : ''}>
-                                <div className="control-img">
-                                    <img src="https://downloadlogomienphi.com/sites/default/files/logos/download-logo-vector-vietqr-mien-phi.jpg" alt="" />
+                            <div className="all-div-method-payment">
+                                <div data-id="1" onClick={choiceClick} className={choicePayment === '1' ? 'selected' : ''}>
+                                    <div className="control-img">
+                                        <img src="https://vinadesign.vn/uploads/images/2023/05/vnpay-logo-vinadesign-25-12-57-55.jpg" alt="" />
+                                    </div>
                                 </div>
-                            </div>
-                            <div data-id="3" onClick={choiceClick} className={choicePayment === '3' ? 'selected' : ''}>
-                                <div className="control-img">
-                                    <img src="https://static.vecteezy.com/system/resources/previews/004/309/804/non_2x/stack-bills-money-cash-isolated-icon-free-vector.jpg" alt="" />
+                                <div data-id="2" onClick={choiceClick} className={choicePayment === '2' ? 'selected' : ''}>
+                                    <div className="control-img">
+                                        <img src="https://downloadlogomienphi.com/sites/default/files/logos/download-logo-vector-vietqr-mien-phi.jpg" alt="" />
+                                    </div>
+                                </div>
+                                <div data-id="3" onClick={choiceClick} className={choicePayment === '3' ? 'selected' : ''}>
+                                    <div className="control-img">
+                                        <img src="https://static.vecteezy.com/system/resources/previews/004/309/804/non_2x/stack-bills-money-cash-isolated-icon-free-vector.jpg" alt="" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <div className="container-button">
+                        <a style={styleOfA} onClick={checkoutClick}>Thanh toán</a>
+                    </div>
                 </div>
-                <div className="container-button">
-                    <a style={styleOfA} onClick={checkoutClick}>Thanh toán</a>
+                <div className="step-checkout">
+                    <div>
+                        <button style={{ backgroundColor: '#bd4242' }}>1</button>
+                        <button style={{ backgroundColor: '#bd4242' }}>2</button>
+                        <button style={{ backgroundColor: '#bd4242' }}>3</button>
+                    </div>
                 </div>
-            </div>
-            <div className="step-checkout">
-                <div>
-                    <button style={{ backgroundColor: '#bd4242' }}>1</button>
-                    <button style={{ backgroundColor: '#bd4242' }}>2</button>
-                    <button style={{ backgroundColor: '#bd4242' }}>3</button>
-                </div>
-            </div>
-            {isQrPopupVisible && (
-                <div
-                    style={{
-                        position: "fixed",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        backgroundColor: "rgba(0, 0, 0, 0.5)",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        zIndex: 1000,
-                    }}
-                >
+                {isQrPopupVisible && (
                     <div
                         style={{
-                            position: "relative", // Để định vị dấu "X" bên trong popup
-                            backgroundColor: "white",
-                            padding: "20px",
-                            borderRadius: "8px",
-                            textAlign: "center",
-                            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                            position: "fixed",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            backgroundColor: "rgba(0, 0, 0, 0.5)",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            zIndex: 1000,
                         }}
                     >
-                        <button
-                            onClick={closeQrPopup}
+                        <div
                             style={{
-                                position: "absolute",
-                                top: "10px",
-                                right: "10px",
-                                backgroundColor: "transparent",
-                                border: "none",
-                                fontSize: "16px",
-                                fontWeight: "bold",
-                                cursor: "pointer",
+                                position: "relative", // Để định vị dấu "X" bên trong popup
+                                backgroundColor: "white",
+                                padding: "20px",
+                                borderRadius: "8px",
+                                textAlign: "center",
+                                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
                             }}
-                            aria-label="Close"
                         >
-                            ✖
-                        </button>
+                            <button
+                                onClick={closeQrPopup}
+                                style={{
+                                    position: "absolute",
+                                    top: "10px",
+                                    right: "10px",
+                                    backgroundColor: "transparent",
+                                    border: "none",
+                                    fontSize: "16px",
+                                    fontWeight: "bold",
+                                    cursor: "pointer",
+                                }}
+                                aria-label="Close"
+                            >
+                                ✖
+                            </button>
 
-                        <div className="qr-code-img d-flex justify-content-center">
-                            <img
-                                src={qrCode}
-                                alt="QR Code"
-                                width={350}
-                            />
+                            <div className="qr-code-img d-flex justify-content-center">
+                                <img
+                                    src={qrCode}
+                                    alt="QR Code"
+                                    width={350}
+                                />
+                            </div>
+
+                            <button className="btn btn-danger mt-3" onClick={handleManualCheck}>
+                                Xác nhận
+                            </button>
                         </div>
-
-                        <button className="btn btn-danger mt-3" onClick={() => checkPaid(lastAmount, String(description))}>
-                            Xác nhận
-                        </button>
                     </div>
-                </div>
-            )}
-        </div>
+                )}
+            </div>
+        </>
+
     );
 };
 
