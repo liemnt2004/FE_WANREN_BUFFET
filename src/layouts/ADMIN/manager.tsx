@@ -155,14 +155,14 @@ const Management: React.FC = () => {
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th>Admin ID</th>
+                    <th style={{ width: 100 }}>Admin ID</th>
                     <th>Username</th>
                     <th>Full Name</th>
                     <th>Email</th>
-                    <th>Phone Number</th>
+                    <th style={{ width: 150 }}>Phone Number</th>
                     <th>Address</th>
-                    <th>Registration Date</th>
-                    <th>Account Status</th>
+                    <th style={{ width: 170 }}>Registration Date</th>
+                    <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>

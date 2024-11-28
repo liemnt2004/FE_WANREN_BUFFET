@@ -12,6 +12,7 @@ import {
   Row,
   Col,
   Select,
+  Flex,
 } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -504,11 +505,11 @@ const EmployeeManagement: React.FC = () => {
                     <th>Username</th>
                     <th>Full Name</th>
                     <th>Email</th>
-                    <th>Phone Number</th>
+                    <th style={{ width: 150 }}>Phone Number</th>
                     <th>Address</th>
                     <th>UserType</th>
-                    <th>Account Status</th>
-                    <th>Actions</th>
+                    <th style={{ width: 150 }}>Account Status</th>
+                    <th style={{ width: 100 }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -521,7 +522,7 @@ const EmployeeManagement: React.FC = () => {
                       <td>{employee.phoneNumber}</td>
                       <td>{employee.address}</td>
                       <td>{employee.userType}</td>
-                      <td>
+                      <td className ="text-center align-middle">
                         <Switch
                           checked={Boolean(employee.accountStatus)}
                           onChange={(checked) =>
@@ -529,6 +530,7 @@ const EmployeeManagement: React.FC = () => {
                           }
                         />
                       </td>
+
                       <td>
                         <Button
                           className="icon-button-edit"
