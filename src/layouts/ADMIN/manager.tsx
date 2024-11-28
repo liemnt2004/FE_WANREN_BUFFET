@@ -20,12 +20,14 @@ const Management: React.FC = () => {
   const [form] = Form.useForm(); // Form quản lý thông tin admin
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [currentAdmin, setCurrentAdmin] = useState<AdminModel | null>(null);
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
+
   // Lấy danh sách admin từ API
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await fetchAdminList();
-        setAdmins(data); // Cập nhật danh sách admin
+        setAdmins(data);
       } catch (err) {
         setError("Failed to fetch admin data");
       } finally {
@@ -34,7 +36,6 @@ const Management: React.FC = () => {
     };
     fetchData();
   }, []);
-
   // Hàm hiển thị modal
   const showModal = () => {
     setIsModalVisible(true);
@@ -62,8 +63,6 @@ const Management: React.FC = () => {
     } catch (error: any) {
       if (error.message.includes("token")) {
         message.error("Authentication failed. Please log in.");
-        // Chuyển hướng tới trang đăng nhập nếu cần
-        // window.location.href = "/login";
       } else {
         message.error("Failed to add admin. Please try again.");
       }
@@ -121,6 +120,20 @@ const Management: React.FC = () => {
       onOk: () => handleDeleteAdmin(adminId),
     });
   };
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+  // Filter customers based on search query
+  const filteredAdmins = admins.filter((admins) => {
+    const username = admins.fullName.toLowerCase();
+    const fullname = admins.username.toLowerCase();
+    const email = admins.email.toLowerCase();
+    return (
+      username.includes(searchQuery.toLowerCase()) ||
+      email.includes(searchQuery.toLowerCase()) ||
+      fullname.includes(searchQuery.toLowerCase())
+    );
+  });
   return (
     <div className="container-fluid">
       <div className="main-content">
@@ -132,6 +145,7 @@ const Management: React.FC = () => {
                 type="text"
                 className="form-control search-input"
                 placeholder="Search for admins..."
+                onChange={handleSearchChange}
               />
               <i className="fas fa-search search-icon"></i>
             </div>
@@ -149,7 +163,7 @@ const Management: React.FC = () => {
               <p>Loading...</p>
             ) : error ? (
               <p style={{ color: "red", textAlign: "center" }}>{error}</p>
-            ) : admins.length === 0 ? (
+            ) : filteredAdmins.length === 0 ? (
               <p style={{ textAlign: "center" }}>No data available</p>
             ) : (
               <table className="table table-striped">
@@ -167,7 +181,7 @@ const Management: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {admins.map((admin) => (
+                  {filteredAdmins.map((admin) => (
                     <tr key={admin.userId}>
                       <td>{admin.userId}</td>
                       <td>{admin.username}</td>

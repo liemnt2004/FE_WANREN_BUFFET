@@ -22,7 +22,6 @@ import {
   createPromotion,
   updatePromotion,
   deletePromotion,
-  searchPromotionByName,
 } from "../../api/apiAdmin/promotionApi";
 import useDebounce from "../customer/component/useDebounce";
 
@@ -43,7 +42,6 @@ const PromotionManagement: React.FC = () => {
   const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
   const [editingPromotion, setEditingPromotion] =
     useState<PromotionAdmin | null>(null);
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const showModal = () => setIsModalVisible(true);
 
@@ -55,27 +53,6 @@ const PromotionManagement: React.FC = () => {
   useEffect(() => {
     fetchPromotions();
   }, []);
-
-  useEffect(() => {
-    if (debouncedSearchQuery.trim()) {
-      handleSearch();
-    } else {
-      fetchPromotions(); // If search query is empty, fetch all promotions
-    }
-  }, [debouncedSearchQuery]);
-
-  const handleSearch = async () => {
-    setLoading(true);
-    try {
-      const results = await searchPromotionByName(debouncedSearchQuery);
-      setPromotions(results);
-    } catch (error) {
-      console.error("Search failed:", error);
-      message.error("Failed to search promotions.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchPromotions = async () => {
     if (loading || !hasMore) return;
@@ -353,6 +330,18 @@ const PromotionManagement: React.FC = () => {
     }
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+  // Filter customers based on search query
+  const filteredEmloyees = promotions.filter((promotions) => {
+    const promotionName = promotions.promotionName.toLowerCase();
+    const promotionType = promotions.promotionType.toLowerCase();
+    return (
+      promotionName.includes(searchQuery.toLowerCase()) ||
+      promotionType.includes(searchQuery.toLowerCase())
+    );
+  });
   return (
     <React.Fragment>
       <div className="container-fluid">
@@ -373,9 +362,8 @@ const PromotionManagement: React.FC = () => {
                   <Input
                     className="search-input"
                     placeholder="Search for promotions..."
+                    onChange={handleSearchChange}
                     style={{ width: 300 }}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)} // Update search query state
                   />
                   <i className="fas fa-search search-icon"></i>
                 </div>
@@ -416,8 +404,8 @@ const PromotionManagement: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {promotions.length > 0 ? (
-                    promotions.map((promotion) => (
+                  {filteredEmloyees.length > 0 ? (
+                    filteredEmloyees.map((promotion) => (
                       <tr key={promotion.promotion}>
                         <td>{promotion.promotion}</td>
                         <td>{promotion.promotionName}</td>
