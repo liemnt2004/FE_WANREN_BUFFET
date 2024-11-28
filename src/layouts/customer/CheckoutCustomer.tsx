@@ -249,11 +249,11 @@ const CheckoutCustomer: React.FC = () => {
     let total = subtotal + shippingFee;
     let discountDisplay = null;
     if (selectedPromotion) {
-        if (selectedPromotion.promotionType === 'DISCOUNT') {
+        if (selectedPromotion.promotionType === 'DISCOUNT%') {
             const discountValue = (subtotal * selectedPromotion.promotionValue) / 100;
             total = subtotal - discountValue + shippingFee;
             discountDisplay = `Giảm ${selectedPromotion.promotionValue}% (-${FormatMoney(discountValue)})`;
-        } else if (selectedPromotion.promotionType === 'DISCOUNT') {
+        } else if (selectedPromotion.promotionType === 'DISCOUNT-') {
             total = subtotal - selectedPromotion.promotionValue + shippingFee;
             discountDisplay = `Giảm trực tiếp (-${FormatMoney(selectedPromotion.promotionValue)})`;
         }

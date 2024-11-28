@@ -1,3 +1,5 @@
+// src/components/ProductManagement.tsx
+
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
     Form,
@@ -28,34 +30,22 @@ import {
     fetchProductList,
     createProduct,
     updateProduct,
-    deleteProduct,
+    deleteProduct, Product, updateCategory,
 } from "../../api/apiAdmin/productApiAdmin";
+import {Category, fetchCategoryList} from "../../api/apiAdmin/categoryApiAdmin";
 import axios from "axios";
 import * as XLSX from 'xlsx';
 import fontkit from '@pdf-lib/fontkit';
-
-
-
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-
+import { PDFDocument, rgb } from 'pdf-lib';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import {ProductInput} from "../../models/AdminModels/ProductInput";
 
 const { Option } = Select;
 
 // Cấu hình Cloudinary
 const CLOUDINARY_CLOUD_NAME = 'dn2ot5mo6'; // Thay thế bằng Cloud name của bạn
 const CLOUDINARY_UPLOAD_PRESET = 'urvibegs'; // Thay thế bằng Upload preset của bạn
-
-
-export interface Product {
-    productId: number;
-    productName: string;
-    description: string;
-    price: number;
-    typeFood: string;
-    image: string;
-    quantity: number;
-    productStatus: "IN_STOCK" | "OUT_OF_STOCK" | "HIDDEN";
-}
 
 const ProductManagement: React.FC = () => {
     // Trạng thái cho các modal
@@ -64,6 +54,7 @@ const ProductManagement: React.FC = () => {
     const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
     const [editProduct, setEditProduct] = useState<Product | null>(null);
     const [confirmDeleteProductId, setConfirmDeleteProductId] = useState<number | null>(null);
+
     // Trạng thái dữ liệu
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState<boolean>(false); // Trạng thái tải dữ liệu
@@ -72,7 +63,6 @@ const ProductManagement: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<number>(0); // Chỉ số trang hiện tại (bắt đầu từ 0)
     const [totalProducts, setTotalProducts] = useState<number>(0); // Tổng số sản phẩm
     const [searchText, setSearchText] = useState<string>("");
-    const [filterType, setFilterType] = useState<string>("");
 
     // Giá trị tìm kiếm sau khi debounce
     const debouncedSearchText = useDebounce<string>(searchText, 500);
@@ -86,6 +76,10 @@ const ProductManagement: React.FC = () => {
     const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
     const [uploadingAddImage, setUploadingAddImage] = useState<boolean>(false);
     const [uploadingEditImage, setUploadingEditImage] = useState<boolean>(false);
+
+    // State cho danh sách Category
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [categoriesLoading, setCategoriesLoading] = useState<boolean>(false);
 
     // Hàm xử lý lỗi API
     const handleApiError = useCallback((error: any, defaultMessage: string) => {
@@ -104,33 +98,60 @@ const ProductManagement: React.FC = () => {
         }
     }, []);
 
+    // Hàm lấy danh sách Category từ backend
+    const getCategories = useCallback(async () => {
+        setCategoriesLoading(true);
+        try {
+            const data = await fetchCategoryList();
+            setCategories(data);
+
+        } catch (error) {
+            handleApiError(error, "Không thể lấy danh sách danh mục.");
+        } finally {
+            setCategoriesLoading(false);
+        }
+    }, [handleApiError]);
+
+    // Fetch categories khi component mount
+    useEffect(() => {
+        getCategories();
+    }, [getCategories]);
+
     // Hàm lấy danh sách sản phẩm từ backend
     const fetchProducts = useCallback(async () => {
         setLoading(true);
         try {
             const { data, totalPages, totalElements } = await fetchProductList(
                 currentPage,
-                debouncedSearchText
-                // Bạn có thể thêm filterType vào đây nếu API hỗ trợ
+                debouncedSearchText,
             );
+
+            console.log(data)
+
             setProducts(data);
+
+
             setTotalProducts(totalElements);
         } catch (error) {
             handleApiError(error, "Không thể lấy danh sách sản phẩm.");
         } finally {
             setLoading(false);
         }
-    }, [currentPage, debouncedSearchText, filterType, handleApiError]);
+    }, [currentPage, debouncedSearchText, handleApiError]);
 
     // Reset trang hiện tại khi tìm kiếm hoặc lọc thay đổi
     useEffect(() => {
+
         setCurrentPage(0);
-    }, [debouncedSearchText, filterType]);
+    }, [debouncedSearchText]);
+
+
+
 
     // Lấy danh sách sản phẩm khi trang hiện tại, tìm kiếm hoặc lọc thay đổi
     useEffect(() => {
         fetchProducts();
-    }, [currentPage, debouncedSearchText, filterType, fetchProducts]);
+    }, [fetchProducts]);
 
     // Hàm mở modal chỉnh sửa sản phẩm
     const openEditModal = useCallback(
@@ -141,6 +162,7 @@ const ProductManagement: React.FC = () => {
             editForm.setFieldsValue({
                 ...product,
                 productStatus: product.productStatus === "IN_STOCK",
+                category: product.category.categoryId, // Đặt giá trị category
             });
         },
         [editForm]
@@ -189,8 +211,10 @@ const ProductManagement: React.FC = () => {
     // Hàm xử lý thêm mới sản phẩm
     const handleSaveNewProduct = useCallback(async () => {
         try {
+            // Xác thực form và lấy dữ liệu mới
             const newProductData = await addForm.validateFields();
 
+            // Kiểm tra xem ảnh có được upload chưa
             if (!addImageUrl) {
                 notification.error({
                     message: "Yêu cầu ảnh",
@@ -200,7 +224,9 @@ const ProductManagement: React.FC = () => {
             }
 
             setSavingProduct(true);
-            const newProduct: Omit<Product, "productId"> = {
+
+            // Tạo đối tượng sản phẩm mới
+            const newProduct: ProductInput = {
                 productName: newProductData.productName,
                 description: newProductData.description,
                 price: newProductData.price,
@@ -208,14 +234,31 @@ const ProductManagement: React.FC = () => {
                 image: addImageUrl,
                 quantity: newProductData.quantity,
                 productStatus: newProductData.productStatus ? "IN_STOCK" : "HIDDEN",
+                categoryId: newProductData.category, // Sử dụng categoryId
             };
+
+            // Gọi API để tạo sản phẩm mới
             const createdProduct = await createProduct(newProduct);
-            setProducts((prev) => [createdProduct, ...prev]);
+
+            // Nếu có sự thay đổi về category, gọi API để cập nhật danh mục
+            if (newProductData.category !== createdProduct.categoryId) {
+                // Cập nhật danh mục cho sản phẩm vừa tạo
+                await updateCategory(createdProduct.productId, newProductData.category);
+            }
+
+            // Cập nhật lại danh sách sản phẩm sau khi tạo mới thành công
+            setProducts((prev) => [...prev, createdProduct]);
+
+            // Cập nhật tổng số sản phẩm
             setTotalProducts((prev) => prev + 1);
+
+            // Hiển thị thông báo thành công
             notification.success({
                 message: "Thêm sản phẩm",
                 description: "Sản phẩm mới đã được thêm thành công!",
             });
+            window.location.reload()
+            // Đóng modal và reset form
             setIsAddModalOpen(false);
             addForm.resetFields();
             setAddImageUrl(null);
@@ -225,6 +268,8 @@ const ProductManagement: React.FC = () => {
             setSavingProduct(false);
         }
     }, [addForm, addImageUrl, handleApiError]);
+
+
 
     // Hàm xử lý cập nhật sản phẩm
     const handleSaveEditProduct = useCallback(async () => {
@@ -241,7 +286,9 @@ const ProductManagement: React.FC = () => {
 
             if (editProduct) {
                 setSavingProduct(true);
-                const updatedProduct: Omit<Product, "productId"> = {
+
+                // Tạo đối tượng updatedProduct không bao gồm categoryId
+                const updatedProduct: Partial<ProductInput> = {
                     productName: updatedProductData.productName,
                     description: updatedProductData.description,
                     price: updatedProductData.price,
@@ -250,14 +297,32 @@ const ProductManagement: React.FC = () => {
                     quantity: updatedProductData.quantity,
                     productStatus: updatedProductData.productStatus ? "IN_STOCK" : "HIDDEN",
                 };
+
+                // Cập nhật thông tin sản phẩm
                 const result = await updateProduct(editProduct.productId, updatedProduct);
+
+                // Nếu có thay đổi về category, gọi API để cập nhật danh mục
+                if (updatedProductData.category) {
+                    const categoryId = updatedProductData.category;
+                    await updateCategory(editProduct.productId, categoryId);  // Gọi API cập nhật danh mục
+                }
+
+
+
+                // Cập nhật lại danh sách sản phẩm sau khi sửa thành công
                 setProducts((prev) =>
-                    prev.map((p) => (p.productId === editProduct.productId ? result : p))
+                    prev.map((product) =>
+                        product.productId === editProduct.productId ? { ...product, ...updatedProduct } : product
+                    )
                 );
+
+                window.location.reload()
+
                 notification.success({
                     message: "Cập nhật sản phẩm",
                     description: "Sản phẩm đã được cập nhật thành công!",
                 });
+
                 setIsEditModalOpen(false);
                 setEditImageUrl(null);
             }
@@ -267,6 +332,8 @@ const ProductManagement: React.FC = () => {
             setSavingProduct(false);
         }
     }, [editForm, editProduct, editImageUrl, handleApiError]);
+
+
 
     // Hàm xử lý xóa sản phẩm
     const handleDeleteProduct = useCallback((productId: number) => {
@@ -352,21 +419,21 @@ const ProductManagement: React.FC = () => {
                 dataIndex: "price",
                 key: "price",
                 sorter: (a, b) => a.price - b.price,
-                render: (price: number) => `\$${price.toFixed(2)}`,
+                render: (price: number) => `$${price.toFixed(2)}`,
                 width: 120,
             },
             {
                 title: "Loại món ăn",
                 dataIndex: "typeFood",
                 key: "typeFood",
-                filters: [
-                    { text: "Mains", value: "Mains" },
-                    { text: "Desserts", value: "Desserts" },
-                    { text: "Drinks", value: "Drinks" },
-                    // Thêm các loại khác nếu cần
-                ],
-                filteredValue: filterType ? [filterType] : null,
-                width: 120,
+
+            },
+            {
+                title: "Danh mục",
+                dataIndex: ["category", "categoryName"],
+                key: "category",
+                sorter: (a, b) => a.category.categoryName.localeCompare(b.category.categoryName),
+
             },
             {
                 title: "Ảnh",
@@ -408,6 +475,7 @@ const ProductManagement: React.FC = () => {
                     { text: "Hết hàng", value: "OUT_OF_STOCK" },
                     { text: "Ẩn", value: "HIDDEN" },
                 ],
+                onFilter: (value, record) => record.productStatus === value,
                 width: 150,
             },
             {
@@ -432,28 +500,42 @@ const ProductManagement: React.FC = () => {
                 width: 120,
             },
         ],
-        [filterType, handleUpdateProductStatus, openEditModal, handleDeleteProduct]
+        [categories ,handleUpdateProductStatus, openEditModal, handleDeleteProduct]
     );
 
     // Xử lý thay đổi của bảng (phân trang, lọc)
     const handleTableChange = useCallback(
         (pagination: any, filters: any, sorter: any) => {
             const newPage = pagination.current - 1;
-            const newFilterType = filters.typeFood ? filters.typeFood[0] : "";
 
-            if (newFilterType !== filterType) {
-                setFilterType(newFilterType);
-                setCurrentPage(0); // Reset về trang đầu khi lọc thay đổi
+
+            let shouldResetPage = false;
+
+
+
+            if (shouldResetPage) {
+                setCurrentPage(0);
             } else if (newPage !== currentPage) {
                 setCurrentPage(newPage);
             }
         },
-        [currentPage, filterType]
+        [currentPage]
     );
 
     // Các hàm xuất dữ liệu
     const exportToExcel = () => {
-        const worksheet = XLSX.utils.json_to_sheet(products);
+        const dataToExport = products.map((product) => ({
+            "Mã sản phẩm": product.productId,
+            "Tên sản phẩm": product.productName,
+            "Mô tả": product.description,
+            "Giá": product.price,
+            "Loại món ăn": product.typeFood,
+            "Danh mục": product.category.categoryName, // Thêm Category
+            "Số lượng": product.quantity,
+            "Trạng thái": product.productStatus,
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
 
@@ -474,13 +556,14 @@ const ProductManagement: React.FC = () => {
         const csvContent =
             'data:text/csv;charset=utf-8,' +
             [
-                ['Mã sản phẩm', 'Tên sản phẩm', 'Mô tả', 'Giá', 'Loại món ăn', 'Số lượng', 'Trạng thái'],
+                ['Mã sản phẩm', 'Tên sản phẩm', 'Mô tả', 'Giá', 'Loại món ăn', 'Danh mục', 'Số lượng', 'Trạng thái'],
                 ...products.map((item) => [
                     item.productId,
                     item.productName,
                     item.description,
                     item.price,
                     item.typeFood,
+                    item.category.categoryName, // Thêm Category
                     item.quantity,
                     item.productStatus,
                 ]),
@@ -496,7 +579,7 @@ const ProductManagement: React.FC = () => {
     };
 
     const exportToPDF = async () => {
-        const fontUrl = '/fonts/Roboto-Black.ttf';
+        const fontUrl = '/fonts/Roboto-Black.ttf'; // Đảm bảo đường dẫn font đúng
         try {
             console.log('Creating PDF...');
             const pdfDoc = await PDFDocument.create();
@@ -504,7 +587,7 @@ const ProductManagement: React.FC = () => {
             const fontBytes = await fetch(fontUrl).then((res) => res.arrayBuffer());
             const customFont = await pdfDoc.embedFont(fontBytes);
 
-            let page = pdfDoc.addPage([595.28, 841.89]); // A4 size
+            let page = pdfDoc.addPage([595.28, 841.89]); // Kích thước A4
             const { width, height } = page.getSize();
             const margin = 50;
 
@@ -518,9 +601,9 @@ const ProductManagement: React.FC = () => {
             });
 
             // Bảng dữ liệu
-            const tableHeader = ['Mã SP', 'Tên SP', 'Giá', 'Loại', 'Số Lượng', 'Trạng Thái'];
+            const tableHeader = ['Mã SP', 'Tên SP', 'Giá', 'Loại', 'Danh mục', 'Số Lượng', 'Trạng Thái'];
             let yPosition = height - margin - 40;
-            const cellWidth = [50, 150, 70, 100, 70, 100];
+            const cellWidth = [50, 100, 70, 100, 100, 70, 100];
 
             // Header row
             tableHeader.forEach((header, i) => {
@@ -542,6 +625,7 @@ const ProductManagement: React.FC = () => {
                     product.productName || 'N/A',
                     product.price ? `$${product.price.toFixed(2)}` : 'N/A',
                     product.typeFood || 'N/A',
+                    product.category.categoryName || 'N/A',
                     product.quantity?.toString() || 'N/A',
                     product.productStatus || 'N/A',
                 ];
@@ -587,8 +671,6 @@ const ProductManagement: React.FC = () => {
         }
     };
 
-
-
     return (
         <div className="container-fluid">
             <div className="main-content">
@@ -612,9 +694,10 @@ const ProductManagement: React.FC = () => {
                                 allowClear
                                 style={{ width: 300, marginRight: 16 }}
                             />
-                            {/* Nếu muốn thêm bộ lọc bên ngoài, có thể thêm Select ở đây */}
+
+
                         </div>
-                        <div className="btn-export-excel" style={{ display: 'flex', alignItems: 'center' }}>
+                        <div className="btn-export-excel" style={{ display: 'flex', alignItems: "center" }}>
                             <Button onClick={exportToExcel} style={{ marginRight: 8 }}>
                                 Xuất Excel
                             </Button>
@@ -706,6 +789,28 @@ const ProductManagement: React.FC = () => {
                                 </Col>
                                 <Col span={12}>
                                     <Form.Item
+                                        label="Danh mục"
+                                        name="category"
+                                        rules={[{ required: true, message: "Vui lòng chọn danh mục!" }]}>
+                                        <Select
+                                            placeholder="Chọn danh mục"
+                                            loading={categoriesLoading}
+                                            allowClear
+                                            onChange={(value) => addForm.setFieldsValue({ category: value })}
+                                        >
+                                            {categories.map((category) => (
+                                                <Select.Option key={category.categoryId} value={category.categoryId}>
+                                                    {category.categoryName}
+                                                </Select.Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+
+                                </Col>
+                            </Row>
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item
                                         label="Số lượng"
                                         name="quantity"
                                         rules={[
@@ -720,6 +825,16 @@ const ProductManagement: React.FC = () => {
                                         <InputNumber placeholder="Nhập số lượng" style={{ width: "100%" }} />
                                     </Form.Item>
                                 </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Trạng thái"
+                                        name="productStatus"
+                                        valuePropName="checked"
+                                        rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}
+                                    >
+                                        <Switch checkedChildren="Hiển thị" unCheckedChildren="Ẩn" />
+                                    </Form.Item>
+                                </Col>
                             </Row>
                             <Row gutter={16}>
                                 <Col span={24}>
@@ -728,7 +843,28 @@ const ProductManagement: React.FC = () => {
                                         name="description"
                                         rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
                                     >
-                                        <Input.TextArea rows={4} placeholder="Nhập mô tả" />
+                                        <CKEditor
+                                            editor={ClassicEditor}
+                                            data={addForm.getFieldValue('description') || ''}
+                                            onChange={(event, editor) => {
+                                                const data = editor.getData();
+                                                addForm.setFieldsValue({ description: data });
+                                            }}
+                                            config={{
+                                                toolbar: [
+                                                    'heading',
+                                                    '|',
+                                                    'bold',
+                                                    'italic',
+                                                    'link',
+                                                    'bulletedList',
+                                                    'numberedList',
+                                                    'blockQuote',
+                                                    'undo',
+                                                    'redo'
+                                                ]
+                                            }}
+                                        />
                                     </Form.Item>
                                 </Col>
                             </Row>
@@ -759,16 +895,6 @@ const ProductManagement: React.FC = () => {
                                                 style={{ width: "100px", marginTop: "10px" }}
                                             />
                                         )}
-                                    </Form.Item>
-                                </Col>
-                                <Col span={12}>
-                                    <Form.Item
-                                        label="Trạng thái"
-                                        name="productStatus"
-                                        valuePropName="checked"
-                                        rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}
-                                    >
-                                        <Switch checkedChildren="Hiển thị" unCheckedChildren="Ẩn" />
                                     </Form.Item>
                                 </Col>
                             </Row>
@@ -807,6 +933,7 @@ const ProductManagement: React.FC = () => {
                                     ? {
                                         ...editProduct,
                                         productStatus: editProduct.productStatus === "IN_STOCK",
+                                        category: editProduct.category.categoryId, // Đặt giá trị category
                                     }
                                     : {}
                             }
@@ -855,6 +982,28 @@ const ProductManagement: React.FC = () => {
                                 </Col>
                                 <Col span={12}>
                                     <Form.Item
+                                        label="Danh mục"
+                                        name="category"
+                                        rules={[{ required: true, message: "Vui lòng chọn danh mục!" }]}>
+                                        <Select
+                                            placeholder="Chọn danh mục"
+                                            loading={categoriesLoading}
+                                            allowClear
+                                            onChange={(value) => addForm.setFieldsValue({ category: value })}
+                                        >
+                                            {categories.map((category) => (
+                                                <Select.Option key={category.categoryId} value={category.categoryId}>
+                                                    {category.categoryName}
+                                                </Select.Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+
+                                </Col>
+                            </Row>
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item
                                         label="Số lượng"
                                         name="quantity"
                                         rules={[
@@ -869,6 +1018,16 @@ const ProductManagement: React.FC = () => {
                                         <InputNumber placeholder="Nhập số lượng" style={{ width: "100%" }} />
                                     </Form.Item>
                                 </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Trạng thái"
+                                        name="productStatus"
+                                        valuePropName="checked"
+                                        rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}
+                                    >
+                                        <Switch checkedChildren="Hiển thị" unCheckedChildren="Ẩn" />
+                                    </Form.Item>
+                                </Col>
                             </Row>
                             <Row gutter={16}>
                                 <Col span={24}>
@@ -877,7 +1036,28 @@ const ProductManagement: React.FC = () => {
                                         name="description"
                                         rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
                                     >
-                                        <Input.TextArea rows={4} placeholder="Nhập mô tả" />
+                                        <CKEditor
+                                            editor={ClassicEditor}
+                                            data={editForm.getFieldValue('description') || ''}
+                                            onChange={(event, editor) => {
+                                                const data = editor.getData();
+                                                editForm.setFieldsValue({ description: data });
+                                            }}
+                                            config={{
+                                                toolbar: [
+                                                    'heading',
+                                                    '|',
+                                                    'bold',
+                                                    'italic',
+                                                    'link',
+                                                    'bulletedList',
+                                                    'numberedList',
+                                                    'blockQuote',
+                                                    'undo',
+                                                    'redo'
+                                                ]
+                                            }}
+                                        />
                                     </Form.Item>
                                 </Col>
                             </Row>
@@ -908,16 +1088,6 @@ const ProductManagement: React.FC = () => {
                                                 style={{ width: "100px", marginTop: "10px" }}
                                             />
                                         )}
-                                    </Form.Item>
-                                </Col>
-                                <Col span={12}>
-                                    <Form.Item
-                                        label="Trạng thái"
-                                        name="productStatus"
-                                        valuePropName="checked"
-                                        rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}
-                                    >
-                                        <Switch checkedChildren="Hiển thị" unCheckedChildren="Ẩn" />
                                     </Form.Item>
                                 </Col>
                             </Row>

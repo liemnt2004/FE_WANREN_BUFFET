@@ -293,8 +293,8 @@ body {
     overflow: hidden;
     width: 800px;
     max-width: 100%;
-    min-height: 600px;
-    margin-top:5% ;
+    min-height: 650px;
+    margin-top:2% ;
 }
 
 .ps28277 .container p {
@@ -664,6 +664,9 @@ body {
 
 
 
+    . css-dev-only-do-not-override-apn68{
+        width: 50px !important;
+    }
 
 
 
