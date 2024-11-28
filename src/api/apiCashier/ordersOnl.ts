@@ -13,6 +13,10 @@ export type Order = {
   username?: string;
   tableId?: number | null;
   orderDetailsLink?: string;
+  createdDate?: string;
+  _links?: {
+    orderDetails: { href: string };
+  };
 };
 
 
