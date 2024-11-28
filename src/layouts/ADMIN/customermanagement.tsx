@@ -35,11 +35,11 @@ const CustomerManagement: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [currentCustomerId, setCurrentCustomerId] = useState<number | null>(
-      null
+    null
   );
   const [currentStatus, setCurrentStatus] = useState<boolean>(false);
   const [editCustomer, setEditCustomer] =
-      useState<Partial<CustomerModelAdmin> | null>(null);
+    useState<Partial<CustomerModelAdmin> | null>(null);
   const [customers, setCustomers] = useState<CustomerModelAdmin[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
@@ -51,10 +51,10 @@ const CustomerManagement: React.FC = () => {
   const [editForm] = Form.useForm();
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const [confirmDeleteCustomerId, setConfirmDeleteCustomerId] = useState<
-      number | null
+    number | null
   >(null);
   const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] =
-      useState(false);
+    useState(false);
 
   const openEditModal = (customer: CustomerModelAdmin) => {
     setEditCustomer(customer);
@@ -92,14 +92,14 @@ const CustomerManagement: React.FC = () => {
 
       setCustomers((prevCustomers) => {
         const existingCustomerIds = new Set(
-            prevCustomers.map((c) => c.customerId)
+          prevCustomers.map((c) => c.customerId)
         );
         const newUniqueCustomers = newCustomers.filter(
-            (customer) => !existingCustomerIds.has(customer.customerId)
+          (customer) => !existingCustomerIds.has(customer.customerId)
         );
         return page === 0
-            ? newCustomers
-            : [...prevCustomers, ...newUniqueCustomers];
+          ? newCustomers
+          : [...prevCustomers, ...newUniqueCustomers];
       });
       setPage((prevPage) => prevPage + 1);
       setTotalPages(newTotalPages);
@@ -121,7 +121,7 @@ const CustomerManagement: React.FC = () => {
   const handleScroll = useCallback(() => {
     if (tableContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } =
-          tableContainerRef.current;
+        tableContainerRef.current;
       if (scrollTop + clientHeight >= scrollHeight - 50) loadMoreCustomers();
     }
   }, [loadMoreCustomers]);
@@ -206,8 +206,8 @@ const CustomerManagement: React.FC = () => {
   };
 
   const handleUpdateAccountStatus = (
-      customerId: number,
-      newStatus: boolean
+    customerId: number,
+    newStatus: boolean
   ) => {
     setCurrentCustomerId(customerId);
     setCurrentStatus(newStatus);
@@ -221,7 +221,7 @@ const CustomerManagement: React.FC = () => {
         notification.success({
           message: "Account Status Updated",
           description: `The account status has been successfully ${
-              currentStatus ? "activated" : "deactivated"
+            currentStatus ? "activated" : "deactivated"
           }!`,
         });
         setPage(0);
@@ -246,17 +246,17 @@ const CustomerManagement: React.FC = () => {
   // Export customers to Excel
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(
-        customers.map((customer) => ({
-          CustomerID: customer.customerId,
-          Username: customer.username,
-          FullName: customer.fullName,
-          Email: customer.email,
-          PhoneNumber: customer.phoneNumber,
-          Address: customer.address,
-          RegistrationDate: dayjs(customer.createdDate).format("YYYY-MM-DD"),
-          LoyaltyPoints: customer.loyaltyPoints,
-          AccountStatus: customer.accountStatus ? "Active" : "Inactive",
-        }))
+      customers.map((customer) => ({
+        CustomerID: customer.customerId,
+        Username: customer.username,
+        FullName: customer.fullName,
+        Email: customer.email,
+        PhoneNumber: customer.phoneNumber,
+        Address: customer.address,
+        RegistrationDate: dayjs(customer.createdDate).format("YYYY-MM-DD"),
+        LoyaltyPoints: customer.loyaltyPoints,
+        AccountStatus: customer.accountStatus ? "Active" : "Inactive",
+      }))
     );
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Customers");
@@ -280,33 +280,33 @@ const CustomerManagement: React.FC = () => {
   // Export customers to CSV
   const exportToCSV = () => {
     const csvContent =
-        "data:text/csv;charset=utf-8," +
+      "data:text/csv;charset=utf-8," +
+      [
         [
-          [
-            "CustomerID",
-            "Username",
-            "Full Name",
-            "Email",
-            "Phone Number",
-            "Address",
-            "Registration Date",
-            "Loyalty Points",
-            "Account Status",
-          ],
-          ...customers.map((customer) => [
-            customer.customerId,
-            customer.username,
-            customer.fullName,
-            customer.email,
-            customer.phoneNumber,
-            customer.address,
-            dayjs(customer.createdDate).format("YYYY-MM-DD"),
-            customer.loyaltyPoints,
-            customer.accountStatus ? "Active" : "Inactive",
-          ]),
-        ]
-            .map((e) => e.join(","))
-            .join("\n");
+          "CustomerID",
+          "Username",
+          "Full Name",
+          "Email",
+          "Phone Number",
+          "Address",
+          "Registration Date",
+          "Loyalty Points",
+          "Account Status",
+        ],
+        ...customers.map((customer) => [
+          customer.customerId,
+          customer.username,
+          customer.fullName,
+          customer.email,
+          customer.phoneNumber,
+          customer.address,
+          dayjs(customer.createdDate).format("YYYY-MM-DD"),
+          customer.loyaltyPoints,
+          customer.accountStatus ? "Active" : "Inactive",
+        ]),
+      ]
+        .map((e) => e.join(","))
+        .join("\n");
 
     const link = document.createElement("a");
     link.setAttribute("href", encodeURI(csvContent));
@@ -430,9 +430,7 @@ const CustomerManagement: React.FC = () => {
               />
               <i className="fas fa-search search-icon"></i>
             </div>
-            <select className="form-select filter-select">
-              <option value="">Filter</option>
-            </select>
+
             <Button
               onClick={openAddModal}
               className="btn add-employee-btn text-white"
@@ -441,306 +439,306 @@ const CustomerManagement: React.FC = () => {
             </Button>
           </div>
 
-            {/* Add Customer Modal */}
-            <Modal
-                title="Add New Customer"
-                visible={isModalOpen}
-                onCancel={() => {
-                  setIsModalOpen(false);
-                  addForm.resetFields();
-                }}
-                footer={[
-                  <Button key="cancel" onClick={() => setIsModalOpen(false)}>
-                    Close
-                  </Button>,
-                  <Button key="save" type="primary" onClick={handleSaveNewCustomer}>
-                    Save
-                  </Button>,
-                ]}
-            >
-              <Form form={addForm} layout="vertical" initialValues={{}}>
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item
-                        label="Username"
-                        name="username"
-                        rules={[
-                          { required: true, message: "Please enter a username!" },
-                        ]}
-                    >
-                      <Input placeholder="Enter username" />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                        label="Password"
-                        name="password"
-                        rules={[
-                          { required: true, message: "Please enter a password!" },
-                        ]}
-                    >
-                      <Input.Password placeholder="Enter password" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item
-                        label="Full Name"
-                        name="fullName"
-                        rules={[
-                          { required: true, message: "Please enter full name!" },
-                        ]}
-                    >
-                      <Input placeholder="Enter full name" />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                        label="Email"
-                        name="email"
-                        rules={[
-                          { required: true, message: "Please enter an email!" },
-                          { type: "email", message: "Please enter a valid email!" },
-                        ]}
-                    >
-                      <Input placeholder="Enter email" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item
-                        label="Phone Number"
-                        name="phoneNumber"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please enter a phone number!",
-                          },
-                        ]}
-                    >
-                      <Input placeholder="Enter phone number" />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                        label="Address"
-                        name="address"
-                        rules={[
-                          { required: true, message: "Please enter an address!" },
-                        ]}
-                    >
-                      <Input placeholder="Enter address" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item label="Loyalty Points" name="loyaltyPoints">
-                      <Input type="number" placeholder="Enter points" />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item label="Account Status" name="accountStatus">
-                      <Select placeholder="Select account status">
-                        <Select.Option value={true}>Active</Select.Option>
-                        <Select.Option value={false}>Inactive</Select.Option>
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </Form>
-            </Modal>
-
-            {/* Edit Customer Modal */}
-            <Modal
-                title="Edit Customer"
-                visible={isEditModalOpen}
-                onCancel={() => {
-                  setIsEditModalOpen(false);
-                  editForm.resetFields();
-                }}
-                footer={[
-                  <Button key="cancel" onClick={() => setIsEditModalOpen(false)}>
-                    Close
-                  </Button>,
-                  <Button
-                      key="save"
-                      type="primary"
-                      onClick={handleSaveEditCustomer}
+          {/* Add Customer Modal */}
+          <Modal
+            title="Add New Customer"
+            visible={isModalOpen}
+            onCancel={() => {
+              setIsModalOpen(false);
+              addForm.resetFields();
+            }}
+            footer={[
+              <Button key="cancel" onClick={() => setIsModalOpen(false)}>
+                Close
+              </Button>,
+              <Button key="save" type="primary" onClick={handleSaveNewCustomer}>
+                Save
+              </Button>,
+            ]}
+          >
+            <Form form={addForm} layout="vertical" initialValues={{}}>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Username"
+                    name="username"
+                    rules={[
+                      { required: true, message: "Please enter a username!" },
+                    ]}
                   >
-                    Save Changes
-                  </Button>,
-                ]}
-            >
-              <Form
-                  form={editForm}
-                  layout="vertical"
-                  initialValues={editCustomer || {}}
+                    <Input placeholder="Enter username" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Password"
+                    name="password"
+                    rules={[
+                      { required: true, message: "Please enter a password!" },
+                    ]}
+                  >
+                    <Input.Password placeholder="Enter password" />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Full Name"
+                    name="fullName"
+                    rules={[
+                      { required: true, message: "Please enter full name!" },
+                    ]}
+                  >
+                    <Input placeholder="Enter full name" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Email"
+                    name="email"
+                    rules={[
+                      { required: true, message: "Please enter an email!" },
+                      { type: "email", message: "Please enter a valid email!" },
+                    ]}
+                  >
+                    <Input placeholder="Enter email" />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Phone Number"
+                    name="phoneNumber"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter a phone number!",
+                      },
+                    ]}
+                  >
+                    <Input placeholder="Enter phone number" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Address"
+                    name="address"
+                    rules={[
+                      { required: true, message: "Please enter an address!" },
+                    ]}
+                  >
+                    <Input placeholder="Enter address" />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item label="Loyalty Points" name="loyaltyPoints">
+                    <Input type="number" placeholder="Enter points" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item label="Account Status" name="accountStatus">
+                    <Select placeholder="Select account status">
+                      <Select.Option value={true}>Active</Select.Option>
+                      <Select.Option value={false}>Inactive</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
+          </Modal>
+
+          {/* Edit Customer Modal */}
+          <Modal
+            title="Edit Customer"
+            visible={isEditModalOpen}
+            onCancel={() => {
+              setIsEditModalOpen(false);
+              editForm.resetFields();
+            }}
+            footer={[
+              <Button key="cancel" onClick={() => setIsEditModalOpen(false)}>
+                Close
+              </Button>,
+              <Button
+                key="save"
+                type="primary"
+                onClick={handleSaveEditCustomer}
               >
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item
-                        label="Username"
-                        name="username"
-                        rules={[
-                          { required: true, message: "Please enter a username!" },
-                        ]}
-                    >
-                      <Input placeholder="Enter username" disabled />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                        label="Full Name"
-                        name="fullName"
-                        rules={[
-                          { required: true, message: "Please enter full name!" },
-                        ]}
-                    >
-                      <Input placeholder="Enter full name" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item
-                        label="Email"
-                        name="email"
-                        rules={[
-                          { required: true, message: "Please enter an email!" },
-                          { type: "email", message: "Please enter a valid email!" },
-                        ]}
-                    >
-                      <Input placeholder="Enter email" />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                        label="Phone Number"
-                        name="phoneNumber"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please enter a phone number!",
-                          },
-                        ]}
-                    >
-                      <Input placeholder="Enter phone number" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item label="Address" name="address">
-                      <Input placeholder="Enter address" />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item label="Loyalty Points" name="loyaltyPoints">
-                      <Input type="number" placeholder="Enter loyalty points" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </Form>
-            </Modal>
-
-            {/* Confirmation Modal */}
-            <Modal
-                visible={confirmModalVisible}
-                onCancel={() => setConfirmModalVisible(false)}
-                footer={null}
-                centered
-                width={400}
+                Save Changes
+              </Button>,
+            ]}
+          >
+            <Form
+              form={editForm}
+              layout="vertical"
+              initialValues={editCustomer || {}}
             >
-              <div style={{ textAlign: "center" }}>
-                <ExclamationCircleOutlined
-                    style={{ fontSize: "48px", color: "#ff4d4f" }}
-                />
-                <h3 style={{ fontWeight: "bold", marginTop: "16px" }}>
-                  Confirm Status Change
-                </h3>
-                <p style={{ fontSize: "16px" }}>
-                  Are you sure you want to{" "}
-                  {currentStatus ? "activate" : "deactivate"} this account?
-                </p>
-                <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginTop: "24px",
-                    }}
-                >
-                  <Button
-                      onClick={() => setConfirmModalVisible(false)}
-                      style={{ backgroundColor: "#f0f0f0", color: "#000" }}
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Username"
+                    name="username"
+                    rules={[
+                      { required: true, message: "Please enter a username!" },
+                    ]}
                   >
-                    Go Back
-                  </Button>
-                  <Button
-                      type="primary"
-                      onClick={handleConfirmStatusChange}
-                      style={{
-                        backgroundColor: "rgb(252, 71, 10)",
-                        borderColor: "rgb(252, 71, 10)",
-                      }}
+                    <Input placeholder="Enter username" disabled />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Full Name"
+                    name="fullName"
+                    rules={[
+                      { required: true, message: "Please enter full name!" },
+                    ]}
                   >
-                    {currentStatus ? "Activate" : "Deactivate"}
-                  </Button>
-                </div>
-              </div>
-            </Modal>
+                    <Input placeholder="Enter full name" />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Email"
+                    name="email"
+                    rules={[
+                      { required: true, message: "Please enter an email!" },
+                      { type: "email", message: "Please enter a valid email!" },
+                    ]}
+                  >
+                    <Input placeholder="Enter email" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Phone Number"
+                    name="phoneNumber"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter a phone number!",
+                      },
+                    ]}
+                  >
+                    <Input placeholder="Enter phone number" />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item label="Address" name="address">
+                    <Input placeholder="Enter address" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item label="Loyalty Points" name="loyaltyPoints">
+                    <Input type="number" placeholder="Enter loyalty points" />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
+          </Modal>
 
-            {/* Delete Confirmation Modal */}
-            <Modal
-                visible={confirmDeleteModalVisible}
-                onCancel={() => setConfirmDeleteModalVisible(false)}
-                footer={null}
-                centered
-                width={400}
-            >
-              <div style={{ textAlign: "center" }}>
-                <ExclamationCircleOutlined
-                    style={{ fontSize: "48px", color: "#ff4d4f" }}
-                />
-                <h3 style={{ fontWeight: "bold", marginTop: "16px" }}>
-                  Confirm Delete
-                </h3>
-                <p style={{ fontSize: "16px" }}>
-                  Are you sure you want to delete this customer?
-                </p>
-                <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginTop: "24px",
-                    }}
+          {/* Confirmation Modal */}
+          <Modal
+            visible={confirmModalVisible}
+            onCancel={() => setConfirmModalVisible(false)}
+            footer={null}
+            centered
+            width={400}
+          >
+            <div style={{ textAlign: "center" }}>
+              <ExclamationCircleOutlined
+                style={{ fontSize: "48px", color: "#ff4d4f" }}
+              />
+              <h3 style={{ fontWeight: "bold", marginTop: "16px" }}>
+                Confirm Status Change
+              </h3>
+              <p style={{ fontSize: "16px" }}>
+                Are you sure you want to{" "}
+                {currentStatus ? "activate" : "deactivate"} this account?
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginTop: "24px",
+                }}
+              >
+                <Button
+                  onClick={() => setConfirmModalVisible(false)}
+                  style={{ backgroundColor: "#f0f0f0", color: "#000" }}
                 >
-                  <Button
-                      onClick={() => setConfirmDeleteModalVisible(false)}
-                      style={{ backgroundColor: "#f0f0f0", color: "#000" }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                      type="primary"
-                      onClick={handleConfirmDeleteCustomer}
-                      style={{
-                        backgroundColor: "rgb(252, 71, 10)",
-                        borderColor: "rgb(252, 71, 10)",
-                      }}
-                  >
-                    Delete
-                  </Button>
-                </div>
+                  Go Back
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={handleConfirmStatusChange}
+                  style={{
+                    backgroundColor: "rgb(252, 71, 10)",
+                    borderColor: "rgb(252, 71, 10)",
+                  }}
+                >
+                  {currentStatus ? "Activate" : "Deactivate"}
+                </Button>
               </div>
-            </Modal>
+            </div>
+          </Modal>
 
-            {/* Customer Table */}
-            <div className="table-container" ref={tableContainerRef}>
-              <table className="table-admin table-striped">
-                <thead>
+          {/* Delete Confirmation Modal */}
+          <Modal
+            visible={confirmDeleteModalVisible}
+            onCancel={() => setConfirmDeleteModalVisible(false)}
+            footer={null}
+            centered
+            width={400}
+          >
+            <div style={{ textAlign: "center" }}>
+              <ExclamationCircleOutlined
+                style={{ fontSize: "48px", color: "#ff4d4f" }}
+              />
+              <h3 style={{ fontWeight: "bold", marginTop: "16px" }}>
+                Confirm Delete
+              </h3>
+              <p style={{ fontSize: "16px" }}>
+                Are you sure you want to delete this customer?
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginTop: "24px",
+                }}
+              >
+                <Button
+                  onClick={() => setConfirmDeleteModalVisible(false)}
+                  style={{ backgroundColor: "#f0f0f0", color: "#000" }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={handleConfirmDeleteCustomer}
+                  style={{
+                    backgroundColor: "rgb(252, 71, 10)",
+                    borderColor: "rgb(252, 71, 10)",
+                  }}
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </Modal>
+
+          {/* Customer Table */}
+          <div className="table-container" ref={tableContainerRef}>
+            <table className="table-admin table-striped">
+              <thead>
                 <tr>
                   <th>CustomerID</th>
                   <th>Username</th>
@@ -753,64 +751,64 @@ const CustomerManagement: React.FC = () => {
                   <th>Account Status</th>
                   <th>Actions</th>
                 </tr>
-                </thead>
-                <tbody>
+              </thead>
+              <tbody>
                 {customers.map((customer) => (
-                    <tr key={customer.customerId}>
-                      <td>{customer.customerId}</td>
-                      <td>{customer.username}</td>
-                      <td>{customer.fullName}</td>
-                      <td>{customer.email}</td>
-                      <td>{customer.phoneNumber}</td>
-                      <td>{customer.address}</td>
-                      <td>
-                        {new Date(customer.createdDate).toLocaleDateString()}
-                      </td>
-                      <td>{customer.loyaltyPoints}</td>
-                      <td>
-                        <Switch
-                            checked={customer.accountStatus}
-                            onClick={() =>
-                                handleUpdateAccountStatus(
-                                    customer.customerId,
-                                    !customer.accountStatus
-                                )
-                            }
-                        />
-                      </td>
-                      <td>
-                        <button
-                            type="button"
-                            className="icon-button-edit"
-                            onClick={() => openEditModal(customer)}
-                        >
-                          <i className="fas fa-edit"></i>
-                        </button>
-                        <button
-                            type="button"
-                            className="icon-button-remove"
-                            onClick={() =>
-                                handleDeleteCustomer(customer.customerId)
-                            }
-                        >
-                          <i className="fa-solid fa-trash"></i>
-                        </button>
-                      </td>
-                    </tr>
+                  <tr key={customer.customerId}>
+                    <td>{customer.customerId}</td>
+                    <td>{customer.username}</td>
+                    <td>{customer.fullName}</td>
+                    <td>{customer.email}</td>
+                    <td>{customer.phoneNumber}</td>
+                    <td>{customer.address}</td>
+                    <td>
+                      {new Date(customer.createdDate).toLocaleDateString()}
+                    </td>
+                    <td>{customer.loyaltyPoints}</td>
+                    <td>
+                      <Switch
+                        checked={customer.accountStatus}
+                        onClick={() =>
+                          handleUpdateAccountStatus(
+                            customer.customerId,
+                            !customer.accountStatus
+                          )
+                        }
+                      />
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        className="icon-button-edit"
+                        onClick={() => openEditModal(customer)}
+                      >
+                        <i className="fas fa-edit"></i>
+                      </button>
+                      <button
+                        type="button"
+                        className="icon-button-remove"
+                        onClick={() =>
+                          handleDeleteCustomer(customer.customerId)
+                        }
+                      >
+                        <i className="fa-solid fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
                 ))}
                 {loading && (
-                    <tr>
-                      <td colSpan={10} style={{ textAlign: "center" }}>
-                        Loading...
-                      </td>
-                    </tr>
+                  <tr>
+                    <td colSpan={10} style={{ textAlign: "center" }}>
+                      Loading...
+                    </td>
+                  </tr>
                 )}
-                </tbody>
-              </table>
-            </div>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
+    </div>
   );
 };
 
