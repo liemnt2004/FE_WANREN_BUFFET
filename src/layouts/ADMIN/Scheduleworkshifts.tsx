@@ -58,7 +58,6 @@ const Scheduleworkshifts: React.FC = () => {
   };
 
   const openEditModal = async (date: Dayjs) => {
-    setFilterShiftId(null);
     setSelectedDate(date);
     setIsLoading(true);
     setIsEditModalOpen(true);
@@ -177,21 +176,6 @@ const Scheduleworkshifts: React.FC = () => {
       alert("Thêm ca thất bại. Vui lòng thử lại.");
     }
   };
-  const [filterPosition, setFilterPosition] = useState<string>("");
-  const [filterName, setFilterName] = useState<string>("");
-  const filteredData = dataForSelectedDate.filter((item) => {
-    const matchesShiftId = filterShiftId
-      ? item.shiftId === filterShiftId
-      : true;
-    const matchesPosition = filterPosition
-      ? item.userType === filterPosition
-      : true;
-    const matchesName = filterName
-      ? item.fullName.toLowerCase().includes(filterName.toLowerCase())
-      : true;
-
-    return matchesShiftId && matchesPosition && matchesName;
-  });
 
   const getFilteredData = () => {
     return dataForSelectedDate.filter((item) => {
@@ -218,6 +202,7 @@ const Scheduleworkshifts: React.FC = () => {
       }}
     >
       <h5>Xếp ca nhân viên</h5>
+
       <Calendar
         fullscreen={false}
         dateFullCellRender={dateFullCellRender}
@@ -253,10 +238,10 @@ const Scheduleworkshifts: React.FC = () => {
           </Form.Item>
           <FormItem label="Ca làm" required>
             <Select
-              value={filterShiftId}
-              onChange={(value) => setFilterShiftId(value)}
+              value={shiftId}
+              onChange={(value) => setShiftId(value)}
               showSearch
-              style={{ width: 200 }}
+              style={{ width: "100%" }}
               placeholder="Chọn ca làm"
               optionFilterProp="label"
               filterOption={(input, option) =>
@@ -285,6 +270,7 @@ const Scheduleworkshifts: React.FC = () => {
             display: "flex",
             justifyContent: "space-between",
             marginBottom: "16px",
+            gap: "10px",
           }}
         >
           {/* Lọc theo ca làm */}
@@ -292,38 +278,42 @@ const Scheduleworkshifts: React.FC = () => {
             value={filterShiftId}
             onChange={(value) => setFilterShiftId(value)}
             showSearch
-            style={{ width: 200 }}
-            placeholder="Chọn ca làm"
+            style={{ width: "200px" }}
+            placeholder="Lọc theo ca làm"
             optionFilterProp="label"
             filterOption={(input, option) =>
               (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
             }
             options={shiftOptions}
           />
-          {/* Lọc theo vị trí */}
-          <select
-            className="form-select"
-            style={{ width: "200px" }}
-            value={filterPosition}
-            onChange={(e) => setFilterPosition(e.target.value)}
-          >
-            <option value="">Lọc theo vị trí</option>
-            <option value="Bếp trưởng">Bếp trưởng</option>
-            <option value="Bếp phó">Bếp phó</option>
-            <option value="Thu ngân">Thu ngân</option>
-            <option value="Phục vụ">Phục vụ</option>
-          </select>
 
-          {/* Tìm kiếm theo tên */}
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Tìm kiếm theo tên"
+          {/* Lọc theo vị trí */}
+          <Select
+            value={filterUserType}
+            onChange={(value) => setFilterUserType(value)}
+            showSearch
             style={{ width: "200px" }}
-            value={filterName}
-            onChange={(e) => setFilterName(e.target.value)}
+            placeholder="Lọc theo vị trí"
+            options={[
+              { value: "", label: "Tất cả vị trí" },
+              { value: "Bếp trưởng", label: "Bếp trưởng" },
+              { value: "Bếp phó", label: "Bếp phó" },
+              { value: "Thu ngân", label: "Thu ngân" },
+              { value: "Phục vụ", label: "Phục vụ" },
+            ]}
           />
+
+          {/* Tìm kiếm theo username */}
+          <Input
+            value={filterUsername}
+            onChange={(e) => setFilterUsername(e.target.value)}
+            placeholder="Tìm kiếm theo username"
+            style={{ width: "200px" }}
+          />
+
+          <Button type="primary">Xuất file</Button>
         </div>
+
         {isLoading ? (
           <p>Loading...</p>
         ) : getFilteredData().length === 0 ? (
@@ -342,7 +332,7 @@ const Scheduleworkshifts: React.FC = () => {
               { title: "Shift Name", dataIndex: "shiftName", key: "shiftName" },
               { title: "Work Date", dataIndex: "workDate", key: "workDate" },
             ]}
-            dataSource={filteredData}
+            dataSource={getFilteredData()}
             rowKey="username"
           />
         )}

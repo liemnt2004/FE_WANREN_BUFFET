@@ -123,23 +123,25 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
           if (table.tableStatus === 'OCCUPIED_TABLE') {
             const currentTime = updatedTimers.get(table.tableId) || 0;
             updatedTimers.set(table.tableId, currentTime + 1);
+          } else if (table.tableStatus === 'EMPTY_TABLE') {
+            updatedTimers.delete(table.tableId);
           }
         });
 
         localStorage.setItem('tableTimers', JSON.stringify(Object.fromEntries(updatedTimers)));
         return updatedTimers;
       });
-    }, 1000); 
+    }, 1000);
     return () => clearInterval(interval);
-  }, [tables]); 
+  }, [tables]);
 
   const getElapsedTime = (tableId: number) => {
     const elapsedTime = tableTimers.get(tableId) || 0;
 
     const hours = Math.floor(elapsedTime / 3600);
     const minutes = Math.floor((elapsedTime % 3600) / 60);
-
-    return `${hours}h ${minutes}m`;
+    const seconds = elapsedTime % 60;
+    return `${hours}h ${minutes}m ${seconds}s`;
   };
 
   const filteredTables = tables.filter((table) => {

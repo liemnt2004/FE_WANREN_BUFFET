@@ -238,7 +238,6 @@ export const updateQuantityOrderDetails = async (details: any) => {
 
 export const payWithVNPay = async (total_amount: number, user_id: number, order_id: number) => {
       try {
-          const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
           const formData = new URLSearchParams();
           formData.append('amount', String(total_amount));
           formData.append('orderInfo', 'Pay for the bill at the table by ' + String(user_id) + ' ' + String(order_id));
