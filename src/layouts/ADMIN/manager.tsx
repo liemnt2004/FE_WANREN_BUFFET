@@ -20,14 +20,14 @@ const Management: React.FC = () => {
   const [form] = Form.useForm(); // Form quản lý thông tin admin
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [currentAdmin, setCurrentAdmin] = useState<AdminModel | null>(null);
-  const [searchTerm, setSearchTerm] = useState<string>(""); // Từ khóa tìm kiếm
-  const [filteredAdmins, setFilteredAdmins] = useState<AdminModel[]>([]); // Danh sách admin sau khi lọc
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
+
   // Lấy danh sách admin từ API
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await fetchAdminList();
-        setFilteredAdmins(data); // Đặt danh sách admin ban đầu cho filter
+        setAdmins(data);
       } catch (err) {
         setError("Failed to fetch admin data");
       } finally {
@@ -36,21 +36,6 @@ const Management: React.FC = () => {
     };
     fetchData();
   }, []);
-  // Hàm xử lý thay đổi trong ô tìm kiếm
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setSearchTerm(value);
-
-    // Lọc danh sách admin theo username
-    if (value) {
-      const filtered = admins.filter((admin) =>
-        admin.username.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredAdmins(filtered);
-    } else {
-      setFilteredAdmins(admins); // Nếu không có từ khóa tìm kiếm, hiển thị tất cả
-    }
-  };
   // Hàm hiển thị modal
   const showModal = () => {
     setIsModalVisible(true);
@@ -135,6 +120,20 @@ const Management: React.FC = () => {
       onOk: () => handleDeleteAdmin(adminId),
     });
   };
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+  // Filter customers based on search query
+  const filteredAdmins = admins.filter((admins) => {
+    const username = admins.fullName.toLowerCase();
+    const fullname = admins.username.toLowerCase();
+    const email = admins.email.toLowerCase();
+    return (
+      username.includes(searchQuery.toLowerCase()) ||
+      email.includes(searchQuery.toLowerCase()) ||
+      fullname.includes(searchQuery.toLowerCase())
+    );
+  });
   return (
     <div className="container-fluid">
       <div className="main-content">
@@ -146,7 +145,6 @@ const Management: React.FC = () => {
                 type="text"
                 className="form-control search-input"
                 placeholder="Search for admins..."
-                value={searchTerm}
                 onChange={handleSearchChange}
               />
               <i className="fas fa-search search-icon"></i>

@@ -42,18 +42,13 @@ const EmployeeManagement: React.FC = () => {
   const [updateForm] = Form.useForm();
   const [currentEmployee, setCurrentEmployee] =
     useState<Partial<EmployeeAdmin> | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
-  const fetchEmployees = async (page: number, searchTerm: string = "") => {
+  const fetchEmployees = async (page: number) => {
     try {
       setLoading(true);
-      let response;
+      let response = await getListUser(page);
       let newEmployees: EmployeeAdmin[] = [];
-
-      if (searchTerm.trim() === "") {
-        response = await getListUser(page);
-      }
       if (
         response &&
         response._embedded &&
@@ -88,24 +83,8 @@ const EmployeeManagement: React.FC = () => {
   };
 
   useEffect(() => {
-    setEmployees([]);
-    setPage(0);
-    setHasMore(true);
-  }, [debouncedSearchTerm]);
-
-  useEffect(() => {
-    if (hasMore) fetchEmployees(page, debouncedSearchTerm);
-  }, [page, hasMore, debouncedSearchTerm]);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchTerm]);
+    if (hasMore) fetchEmployees(page);
+  }, [page, hasMore]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
@@ -442,6 +421,20 @@ const EmployeeManagement: React.FC = () => {
     }
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+  // Filter customers based on search query
+  const filteredEmloyees = employees.filter((employee) => {
+    const username = employee.fullName.toLowerCase();
+    const fullname = employee.username.toLowerCase();
+    const email = employee.email.toLowerCase();
+    return (
+      username.includes(searchQuery.toLowerCase()) ||
+      email.includes(searchQuery.toLowerCase()) ||
+      fullname.includes(searchQuery.toLowerCase())
+    );
+  });
   return (
     <React.Fragment>
       <div className="container-fluid">
@@ -462,6 +455,7 @@ const EmployeeManagement: React.FC = () => {
                   <Input
                     className="search-input"
                     placeholder="Search for employees..."
+                    onChange={handleSearchChange}
                   />
                   <i className="fas fa-search search-icon"></i>
                 </div>
@@ -505,7 +499,7 @@ const EmployeeManagement: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {employees.map((employee) => (
+                  {filteredEmloyees.map((employee) => (
                     <tr key={employee.userId}>
                       <td>{employee.userId}</td>
                       <td>{employee.username}</td>
