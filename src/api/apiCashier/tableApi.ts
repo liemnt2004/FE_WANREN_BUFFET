@@ -1,5 +1,6 @@
 // tableApi.ts
 import axios from "axios";
+import { Order } from "./ordersOnl";
 
 export type Table = {
   createdDate: string;
@@ -19,3 +20,17 @@ export const fetchTables = async () => {
     return [];
   }
 };
+
+
+export const fetchOrderbyTableId = async (tableId: number) => {
+  try {
+    const response = await axios.get(`http://localhost:8080/Table/${tableId}/orders`);
+    return response.data._embedded.orders;
+  } catch (error) {
+    console.error("Lỗi khi lấy dữ liệu:", error);
+    return [];
+  }
+};
+
+
+

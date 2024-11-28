@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { Order } from "../../../api/apiCashier/ordersOnl";
+import { fetchOrderbyTableId } from "../../../api/apiCashier/tableApi";
 
 type Props = {
+  tableId?: number;
   tableNumber?: number;
   status?: string;
   location?: string;
@@ -9,9 +12,11 @@ type Props = {
   swapTable?: () => void;
   splitTable?: () => void;
   combineTable?: () => void;
+  detailTable?: () => void;
 };
 
 const CardTableCashier = ({
+  tableId,
   tableNumber,
   status,
   location,
@@ -19,11 +24,40 @@ const CardTableCashier = ({
   swapTable,
   splitTable,
   combineTable,
+  detailTable,
 }: Props) => {
+  const [latestOrder, setLatestOrder] = useState<Order | null>(null);
+
+  useEffect(() => {
+    const fetchLatestOrder = async () => {
+      try {
+        const orders = await fetchOrderbyTableId(tableId || 0); // Gọi API lấy orders
+        if (orders && orders.length > 0) {
+          // Lọc lấy order mới nhất theo `createdDate`
+          const mostRecentOrder = orders.reduce(
+            (latest: Order, current: Order) =>
+              new Date(latest.createdDate || 0) >
+              new Date(current.createdDate || 0)
+                ? latest
+                : current
+          );
+          setLatestOrder(mostRecentOrder); // Lưu vào state
+        } else {
+          setLatestOrder(null); // Không có order
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải order:", error);
+        setLatestOrder(null);
+      }
+    };
+
+    fetchLatestOrder();
+  }, [tableId]);
+
   return (
     <StyledWrapper status={status}>
       <div className="card">
-        <section className="info-section">
+        <section className="info-section" onClick={detailTable}>
           <div className="background-design">
             <div className="circle" />
             <div className="circle" />
@@ -38,8 +72,26 @@ const CardTableCashier = ({
           </div>
           <div className="right-side">
             <div>
-              <div className="hour">{status === "Có Khách" ? "23:56" : ""}</div>
-              <div className="date">{status === "Có Khách" ? "26/11" : ""}</div>
+              <div className="hour">
+                {status === "Có Khách"
+                  ? `${new Date(
+                      latestOrder?.createdDate || ""
+                    ).toLocaleTimeString("vi-VN", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}`
+                  : ""}
+              </div>
+              <div className="date">
+                {status === "Có Khách"
+                  ? `${new Date(
+                      latestOrder?.createdDate || ""
+                    ).toLocaleDateString("vi-VN", {
+                      day: "2-digit",
+                      month: "2-digit",
+                    })}`
+                  : ""}
+              </div>
             </div>
             <div className="city">{status}</div>
           </div>
