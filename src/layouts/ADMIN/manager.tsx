@@ -20,12 +20,14 @@ const Management: React.FC = () => {
   const [form] = Form.useForm(); // Form quản lý thông tin admin
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [currentAdmin, setCurrentAdmin] = useState<AdminModel | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>(""); // Từ khóa tìm kiếm
+  const [filteredAdmins, setFilteredAdmins] = useState<AdminModel[]>([]); // Danh sách admin sau khi lọc
   // Lấy danh sách admin từ API
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await fetchAdminList();
-        setAdmins(data); // Cập nhật danh sách admin
+        setFilteredAdmins(data); // Đặt danh sách admin ban đầu cho filter
       } catch (err) {
         setError("Failed to fetch admin data");
       } finally {
@@ -34,7 +36,21 @@ const Management: React.FC = () => {
     };
     fetchData();
   }, []);
+  // Hàm xử lý thay đổi trong ô tìm kiếm
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setSearchTerm(value);
 
+    // Lọc danh sách admin theo username
+    if (value) {
+      const filtered = admins.filter((admin) =>
+        admin.username.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredAdmins(filtered);
+    } else {
+      setFilteredAdmins(admins); // Nếu không có từ khóa tìm kiếm, hiển thị tất cả
+    }
+  };
   // Hàm hiển thị modal
   const showModal = () => {
     setIsModalVisible(true);
@@ -62,8 +78,6 @@ const Management: React.FC = () => {
     } catch (error: any) {
       if (error.message.includes("token")) {
         message.error("Authentication failed. Please log in.");
-        // Chuyển hướng tới trang đăng nhập nếu cần
-        // window.location.href = "/login";
       } else {
         message.error("Failed to add admin. Please try again.");
       }
@@ -132,6 +146,8 @@ const Management: React.FC = () => {
                 type="text"
                 className="form-control search-input"
                 placeholder="Search for admins..."
+                value={searchTerm}
+                onChange={handleSearchChange}
               />
               <i className="fas fa-search search-icon"></i>
             </div>
@@ -149,7 +165,7 @@ const Management: React.FC = () => {
               <p>Loading...</p>
             ) : error ? (
               <p style={{ color: "red", textAlign: "center" }}>{error}</p>
-            ) : admins.length === 0 ? (
+            ) : filteredAdmins.length === 0 ? (
               <p style={{ textAlign: "center" }}>No data available</p>
             ) : (
               <table className="table table-striped">
@@ -167,7 +183,7 @@ const Management: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {admins.map((admin) => (
+                  {filteredAdmins.map((admin) => (
                     <tr key={admin.userId}>
                       <td>{admin.userId}</td>
                       <td>{admin.username}</td>

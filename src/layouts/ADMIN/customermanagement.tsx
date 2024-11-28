@@ -44,8 +44,7 @@ const CustomerManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState<number | null>(null);
-  const [searchInput, setSearchInput] = useState<string>("");
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
   const [addForm] = Form.useForm();
   const [editForm] = Form.useForm();
@@ -71,23 +70,11 @@ const CustomerManagement: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  useEffect(() => {
-    const handler = setTimeout(() => setSearchQuery(searchInput), 500);
-    return () => clearTimeout(handler);
-  }, [searchInput]);
-
-  useEffect(() => {
-    setPage(0);
-    setCustomers([]);
-    setTotalPages(null);
-    loadMoreCustomers();
-  }, [searchQuery]);
-
   const loadMoreCustomers = useCallback(async () => {
     if (loading || (totalPages !== null && page >= totalPages)) return;
     setLoading(true);
     try {
-      const response = await fetchCustomerList(page, searchQuery);
+      const response = await fetchCustomerList(page);
       const { data: newCustomers, totalPages: newTotalPages } = response;
 
       setCustomers((prevCustomers) => {
@@ -112,7 +99,7 @@ const CustomerManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [loading, page, totalPages, searchQuery]);
+  }, [loading, page, totalPages]);
 
   useEffect(() => {
     loadMoreCustomers();
@@ -413,7 +400,21 @@ const CustomerManagement: React.FC = () => {
       });
     }
   };
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
 
+  // Filter customers based on search query
+  const filteredCustomers = customers.filter((customer) => {
+    const username = customer.username.toLowerCase();
+    const fullname = customer.fullName.toLowerCase();
+    const email = customer.email.toLowerCase();
+    return (
+      username.includes(searchQuery.toLowerCase()) ||
+      email.includes(searchQuery.toLowerCase()) ||
+      fullname.includes(searchQuery.toLowerCase())
+    );
+  });
   return (
     <div className="container-fluid">
       <div className="main-content">
@@ -425,8 +426,7 @@ const CustomerManagement: React.FC = () => {
                 type="text"
                 className="form-control search-input"
                 placeholder="Search for customers..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
+                onChange={handleSearchChange}
               />
               <i className="fas fa-search search-icon"></i>
             </div>
@@ -753,7 +753,7 @@ const CustomerManagement: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {customers.map((customer) => (
+                {filteredCustomers.map((customer) => (
                   <tr key={customer.customerId}>
                     <td>{customer.customerId}</td>
                     <td>{customer.username}</td>

@@ -23,7 +23,6 @@ import {
   updateUser,
   updateAccountStatus,
   deleteUser,
-  searchUsers,
 } from "../../api/apiAdmin/employeemanagementApi";
 
 // Importing libraries for exporting data
@@ -54,10 +53,7 @@ const EmployeeManagement: React.FC = () => {
 
       if (searchTerm.trim() === "") {
         response = await getListUser(page);
-      } else {
-        response = await searchUsers({ fullName: searchTerm, page });
       }
-
       if (
         response &&
         response._embedded &&
@@ -284,8 +280,6 @@ const EmployeeManagement: React.FC = () => {
     });
   };
 
-  // Export functions
-
   // Export employees to Excel
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(
@@ -357,7 +351,7 @@ const EmployeeManagement: React.FC = () => {
 
   // Export employees to PDF
   const exportToPDF = async () => {
-    const fontUrl = "/fonts/Roboto-Black.ttf"; // Adjust the font path if necessary
+    const fontUrl = "/fonts/Roboto-Black.ttf";
     try {
       const pdfDoc = await PDFDocument.create();
       pdfDoc.registerFontkit(fontkit);
@@ -468,8 +462,6 @@ const EmployeeManagement: React.FC = () => {
                   <Input
                     className="search-input"
                     placeholder="Search for employees..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
                   />
                   <i className="fas fa-search search-icon"></i>
                 </div>
@@ -522,7 +514,7 @@ const EmployeeManagement: React.FC = () => {
                       <td>{employee.phoneNumber}</td>
                       <td>{employee.address}</td>
                       <td>{employee.userType}</td>
-                      <td className ="text-center align-middle">
+                      <td className="text-center align-middle">
                         <Switch
                           checked={Boolean(employee.accountStatus)}
                           onChange={(checked) =>
