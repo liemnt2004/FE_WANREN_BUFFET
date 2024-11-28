@@ -412,7 +412,7 @@ const PromotionManagement: React.FC = () => {
                     <th style={{ width: 150 }}>Start Date</th>
                     <th style={{ width: 150 }}>End Date</th>
                     <th>Status</th>
-                    <th style={{ width: 110  }}>Actions</th>
+                    <th style={{ width: 110 }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
