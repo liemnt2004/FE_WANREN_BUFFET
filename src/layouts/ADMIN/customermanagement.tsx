@@ -23,6 +23,13 @@ import {
   fetchCustomerList,
 } from "../../api/apiAdmin/customerApi";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
+
+// Importing libraries for exporting data
+import * as XLSX from "xlsx";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
+import dayjs from "dayjs";
+
 const CustomerManagement: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -37,8 +44,7 @@ const CustomerManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState<number | null>(null);
-  const [searchInput, setSearchInput] = useState<string>("");
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
   const [addForm] = Form.useForm();
   const [editForm] = Form.useForm();
@@ -48,6 +54,7 @@ const CustomerManagement: React.FC = () => {
   >(null);
   const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] =
     useState(false);
+
   const openEditModal = (customer: CustomerModelAdmin) => {
     setEditCustomer(customer);
     setIsEditModalOpen(true);
@@ -63,22 +70,11 @@ const CustomerManagement: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  useEffect(() => {
-    const handler = setTimeout(() => setSearchQuery(searchInput), 500);
-    return () => clearTimeout(handler);
-  }, [searchInput]);
-
-  useEffect(() => {
-    setPage(0);
-    setCustomers([]);
-    setTotalPages(null);
-    loadMoreCustomers();
-  }, [searchQuery]);
   const loadMoreCustomers = useCallback(async () => {
     if (loading || (totalPages !== null && page >= totalPages)) return;
     setLoading(true);
     try {
-      const response = await fetchCustomerList(page, searchQuery);
+      const response = await fetchCustomerList(page);
       const { data: newCustomers, totalPages: newTotalPages } = response;
 
       setCustomers((prevCustomers) => {
@@ -103,11 +99,12 @@ const CustomerManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [loading, page, totalPages, searchQuery]);
+  }, [loading, page, totalPages]);
 
   useEffect(() => {
     loadMoreCustomers();
   }, [loadMoreCustomers]);
+
   const handleScroll = useCallback(() => {
     if (tableContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } =
@@ -148,7 +145,7 @@ const CustomerManagement: React.FC = () => {
     try {
       const updatedCustomerData = await editForm.validateFields();
       if (editCustomer?.customerId) {
-        await updateCustomer(editCustomer.customerId, updatedCustomerData); // `getEmployeeToken` sẽ được gọi bên trong hàm API
+        await updateCustomer(editCustomer.customerId, updatedCustomerData);
         notification.success({
           message: "Customer Updated",
           description: "The customer has been updated successfully!",
@@ -231,6 +228,193 @@ const CustomerManagement: React.FC = () => {
     }
   };
 
+  // Export functions
+
+  // Export customers to Excel
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(
+      customers.map((customer) => ({
+        CustomerID: customer.customerId,
+        Username: customer.username,
+        FullName: customer.fullName,
+        Email: customer.email,
+        PhoneNumber: customer.phoneNumber,
+        Address: customer.address,
+        RegistrationDate: dayjs(customer.createdDate).format("YYYY-MM-DD"),
+        LoyaltyPoints: customer.loyaltyPoints,
+        AccountStatus: customer.accountStatus ? "Active" : "Inactive",
+      }))
+    );
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Customers");
+
+    // Create buffer
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    // Save file
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    const url = window.URL.createObjectURL(data);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "customers.xlsx");
+    document.body.appendChild(link);
+    link.click();
+  };
+
+  // Export customers to CSV
+  const exportToCSV = () => {
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [
+        [
+          "CustomerID",
+          "Username",
+          "Full Name",
+          "Email",
+          "Phone Number",
+          "Address",
+          "Registration Date",
+          "Loyalty Points",
+          "Account Status",
+        ],
+        ...customers.map((customer) => [
+          customer.customerId,
+          customer.username,
+          customer.fullName,
+          customer.email,
+          customer.phoneNumber,
+          customer.address,
+          dayjs(customer.createdDate).format("YYYY-MM-DD"),
+          customer.loyaltyPoints,
+          customer.accountStatus ? "Active" : "Inactive",
+        ]),
+      ]
+        .map((e) => e.join(","))
+        .join("\n");
+
+    const link = document.createElement("a");
+    link.setAttribute("href", encodeURI(csvContent));
+    link.setAttribute("download", "customers.csv");
+    document.body.appendChild(link);
+    link.click();
+  };
+
+  // Export customers to PDF
+  const exportToPDF = async () => {
+    const fontUrl = "/fonts/Roboto-Black.ttf"; // Adjust the font path if necessary
+    try {
+      const pdfDoc = await PDFDocument.create();
+      pdfDoc.registerFontkit(fontkit);
+      // You can use StandardFonts.Helvetica if you don't have a custom font
+      const fontBytes = await fetch(fontUrl).then((res) => res.arrayBuffer());
+      const customFont = await pdfDoc.embedFont(fontBytes);
+
+      let page = pdfDoc.addPage([595.28, 841.89]); // A4 size
+      const { width, height } = page.getSize();
+      const margin = 50;
+
+      // Title
+      page.drawText("Customer List", {
+        x: margin,
+        y: height - margin,
+        size: 18,
+        font: customFont,
+        color: rgb(0, 0.53, 0.71),
+      });
+
+      // Table headers
+      const tableHeader = [
+        "ID",
+        "Username",
+        "Full Name",
+        "Email",
+        "Phone",
+        "Loyalty Points",
+        "Status",
+      ];
+      let yPosition = height - margin - 40;
+      const cellWidths = [30, 80, 100, 120, 80, 60, 60];
+
+      // Draw headers
+      tableHeader.forEach((header, i) => {
+        page.drawText(header, {
+          x: margin + cellWidths.slice(0, i).reduce((a, b) => a + b, 0),
+          y: yPosition,
+          size: 10,
+          font: customFont,
+          color: rgb(0, 0, 0),
+        });
+      });
+
+      yPosition -= 20;
+
+      // Draw data rows
+      for (const customer of customers) {
+        const rowData = [
+          customer.customerId.toString(),
+          customer.username || "",
+          customer.fullName || "",
+          customer.email || "",
+          customer.phoneNumber || "",
+          customer.loyaltyPoints?.toString() || "0",
+          customer.accountStatus ? "Active" : "Inactive",
+        ];
+
+        rowData.forEach((data, i) => {
+          page.drawText(data, {
+            x: margin + cellWidths.slice(0, i).reduce((a, b) => a + b, 0),
+            y: yPosition,
+            size: 10,
+            font: customFont,
+            color: rgb(0, 0, 0),
+          });
+        });
+
+        yPosition -= 20;
+        if (yPosition < 50) {
+          yPosition = height - margin - 40;
+          page = pdfDoc.addPage([595.28, 841.89]);
+        }
+      }
+
+      const pdfBytes = await pdfDoc.save();
+
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "customers.pdf";
+      link.click();
+
+      notification.success({
+        message: "PDF Exported",
+        description: "Customers have been exported to PDF successfully!",
+      });
+    } catch (error) {
+      console.error("Error exporting to PDF:", error);
+      notification.error({
+        message: "PDF Export Failed",
+        description: "An error occurred while exporting to PDF.",
+      });
+    }
+  };
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Filter customers based on search query
+  const filteredCustomers = customers.filter((customer) => {
+    const username = customer.username.toLowerCase();
+    const fullname = customer.fullName.toLowerCase();
+    const email = customer.email.toLowerCase();
+    return (
+      username.includes(searchQuery.toLowerCase()) ||
+      email.includes(searchQuery.toLowerCase()) ||
+      fullname.includes(searchQuery.toLowerCase())
+    );
+  });
   return (
     <div className="container-fluid">
       <div className="main-content">
@@ -242,14 +426,11 @@ const CustomerManagement: React.FC = () => {
                 type="text"
                 className="form-control search-input"
                 placeholder="Search for customers..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
+                onChange={handleSearchChange}
               />
               <i className="fas fa-search search-icon"></i>
             </div>
-            <select className="form-select filter-select">
-              <option value="">Filter</option>
-            </select>
+
             <Button
               onClick={openAddModal}
               className="btn add-employee-btn text-white"
@@ -405,7 +586,7 @@ const CustomerManagement: React.FC = () => {
                       { required: true, message: "Please enter a username!" },
                     ]}
                   >
-                    <Input placeholder="Enter username" />
+                    <Input placeholder="Enter username" disabled />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -509,7 +690,7 @@ const CustomerManagement: React.FC = () => {
             </div>
           </Modal>
 
-          {/* modal xóa */}
+          {/* Delete Confirmation Modal */}
           <Modal
             visible={confirmDeleteModalVisible}
             onCancel={() => setConfirmDeleteModalVisible(false)}
@@ -572,7 +753,7 @@ const CustomerManagement: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {customers.map((customer) => (
+                {filteredCustomers.map((customer) => (
                   <tr key={customer.customerId}>
                     <td>{customer.customerId}</td>
                     <td>{customer.username}</td>
@@ -585,17 +766,15 @@ const CustomerManagement: React.FC = () => {
                     </td>
                     <td>{customer.loyaltyPoints}</td>
                     <td>
-                      <td>
-                        <Switch
-                          checked={customer.accountStatus}
-                          onClick={() =>
-                            handleUpdateAccountStatus(
-                              customer.customerId,
-                              !customer.accountStatus
-                            )
-                          }
-                        />
-                      </td>
+                      <Switch
+                        checked={customer.accountStatus}
+                        onClick={() =>
+                          handleUpdateAccountStatus(
+                            customer.customerId,
+                            !customer.accountStatus
+                          )
+                        }
+                      />
                     </td>
                     <td>
                       <button

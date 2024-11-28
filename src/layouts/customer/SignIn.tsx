@@ -4,7 +4,8 @@ import React, { useState, FormEvent, ChangeEvent, useContext } from 'react';
 import './assets/css/styles.css';
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { AuthContext } from "./component/AuthContext";
-// import jwtDecode from "jwt-decode"; // Sửa lại cách import
+import { notification, Spin, Button } from "antd";
+import { GoogleOutlined } from '@ant-design/icons'; // Sử dụng biểu tượng Google từ Ant Design
 
 const LoginRegisterComponent: React.FC = () => {
     const navigate = useNavigate();
@@ -20,6 +21,7 @@ const LoginRegisterComponent: React.FC = () => {
         full_name: '',
         email: '',
         password: '',
+        phoneNumber: '', // Thêm trường số điện thoại
         agree: false,
     });
 
@@ -29,6 +31,14 @@ const LoginRegisterComponent: React.FC = () => {
     });
 
     const [errorMessage, setErrorMessage] = useState<string>('');
+    const [errors, setErrors] = useState({
+        username: '',
+        full_name: '',
+        email: '',
+        password: '',
+        phoneNumber: '',
+        agree: '',
+    });
     const [isLoading, setIsLoading] = useState<boolean>(false); // Trạng thái loading
 
     const handleRegisterClick = (): void => {
@@ -39,6 +49,21 @@ const LoginRegisterComponent: React.FC = () => {
     const handleLoginClick = (): void => {
         setIsActive(false);
         navigate('/login');
+    };
+
+    // Hàm tiện ích để hiển thị thông báo
+    const openNotification = (type: 'success' | 'error' | 'info' | 'warning', message: string, description: string) => {
+        notification[type]({
+            message,
+            description,
+            placement: 'topRight', // Vị trí hiển thị: topLeft, topRight, bottomLeft, bottomRight
+            duration: 3, // Thời gian hiển thị (giây)
+        });
+    };
+
+    // Hàm xử lý khi người dùng nhấp vào nút Google Sign-In
+    const handleGoogleSignIn = () => {
+        window.location.href = 'http://localhost:8080/oauth2/authorization/google';
     };
 
     // Xử lý sự thay đổi input cho form đăng ký
@@ -62,7 +87,50 @@ const LoginRegisterComponent: React.FC = () => {
     const handleSignUpSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
         setErrorMessage('');
+        setErrors({
+            username: '',
+            full_name: '',
+            email: '',
+            password: '',
+            phoneNumber: '',
+            agree: '',
+        });
         setIsLoading(true);
+
+        // Các regex đã định nghĩa ở trên
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+        const vietnamPhoneRegex = /^(03|05|07|08|09|01[2689])+([0-9]{8,9})$/;
+        const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+
+        let valid = true;
+        const newErrors = { ...errors };
+
+        // Kiểm tra định dạng số điện thoại
+        if (!vietnamPhoneRegex.test(signUpData.phoneNumber)) {
+            newErrors.phoneNumber = 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam hợp lệ.';
+            valid = false;
+        }
+
+        // Kiểm tra định dạng email (thuộc Gmail)
+        if (!gmailRegex.test(signUpData.email)) {
+            newErrors.email = 'Email không hợp lệ. Vui lòng sử dụng địa chỉ Gmail.';
+            valid = false;
+        }
+
+        // Kiểm tra định dạng mật khẩu
+
+
+        // Kiểm tra đồng ý với điều khoản
+        if (!signUpData.agree) {
+            newErrors.agree = 'Bạn phải đồng ý với điều khoản & chính sách.';
+            valid = false;
+        }
+
+        if (!valid) {
+            setErrors(newErrors);
+            setIsLoading(false);
+            return;
+        }
 
         try {
             // Kiểm tra username
@@ -72,9 +140,8 @@ const LoginRegisterComponent: React.FC = () => {
             }
             const usernameExists = await checkUsernameResponse.json();
             if (usernameExists) {
-                setErrorMessage('Tên người dùng đã tồn tại. Vui lòng chọn tên khác.');
-                setIsLoading(false);
-                return;
+                newErrors.username = 'Tên người dùng đã tồn tại. Vui lòng chọn tên khác.';
+                valid = false;
             }
 
             // Kiểm tra email
@@ -84,31 +151,42 @@ const LoginRegisterComponent: React.FC = () => {
             }
             const emailExists = await checkEmailResponse.json();
             if (emailExists) {
-                setErrorMessage('Email đã tồn tại. Vui lòng chọn email khác.');
+                newErrors.email = 'Email đã tồn tại. Vui lòng chọn email khác.';
+                valid = false;
+            }
+
+            // Kiểm tra số điện thoại
+            const checkPhoneResponse = await fetch(`http://localhost:8080/Customer/search/existsByPhoneNumber?phoneNumber=${encodeURIComponent(signUpData.phoneNumber)}`);
+            if (!checkPhoneResponse.ok) {
+                throw new Error('Failed to check phone number');
+            }
+            const phoneExists = await checkPhoneResponse.json();
+            if (phoneExists) {
+                newErrors.phoneNumber = 'Số điện thoại đã được sử dụng. Vui lòng sử dụng số khác.';
+                valid = false;
+            }
+
+            if (!valid) {
+                setErrors(newErrors);
                 setIsLoading(false);
                 return;
             }
+
         } catch (err) {
-            console.error('Error checking username or email:', err);
-            setErrorMessage('Đã xảy ra lỗi khi kiểm tra username hoặc email.');
+            console.error('Error checking username, email or phone number:', err);
+            setErrorMessage('Đã xảy ra lỗi khi kiểm tra username, email hoặc số điện thoại.');
+            openNotification('error', 'Lỗi', 'Đã xảy ra lỗi khi kiểm tra username, email hoặc số điện thoại.');
             setIsLoading(false);
             return;
         }
 
-        // Validate form fields
-        if (!signUpData.agree) {
-            setErrorMessage('Bạn phải đồng ý với điều khoản & chính sách.');
-            setIsLoading(false);
-            return;
-        }
-
-        // Tạo đối tượng người dùng mới
+        // Tiếp tục với việc đăng ký...
         const newUser = {
             username: signUpData.username,
             email: signUpData.email,
             password: signUpData.password,
             fullName: signUpData.full_name,
-            phoneNumber: null,
+            phoneNumber: signUpData.phoneNumber, // Gán số điện thoại từ form
             address: null,
             loyaltyPoints: 0,
             customerType: "Khách mới",
@@ -125,22 +203,25 @@ const LoginRegisterComponent: React.FC = () => {
 
             const result = await response.json();
             if (response.ok) {
-                alert('Đăng ký thành công!');
+                openNotification('success', 'Thành công', 'Đăng ký thành công!');
                 setSignUpData({
                     username: '',
                     full_name: '',
                     email: '',
                     password: '',
+                    phoneNumber: '',
                     agree: false,
                 });
                 setIsActive(false);
                 navigate('/login');
             } else {
                 setErrorMessage(result.message || 'Đăng ký thất bại.');
+                openNotification('error', 'Lỗi', result.message || 'Đăng ký thất bại.');
             }
         } catch (error) {
             console.error('Sign-up error:', error);
             setErrorMessage('Có lỗi xảy ra. Vui lòng thử lại.');
+            openNotification('error', 'Lỗi', 'Có lỗi xảy ra. Vui lòng thử lại.');
         } finally {
             setIsLoading(false);
         }
@@ -162,31 +243,41 @@ const LoginRegisterComponent: React.FC = () => {
             if (response.ok) {
                 if (result.token) {
                     login(result.token); // Sử dụng hàm login từ AuthContext
-                    alert('Đăng nhập thành công!');
-                    // window.location.href("http://localhost:3000/")
-                    window.location.href = "http://localhost:3000/";
+                    openNotification('success', 'Thành công', 'Đăng nhập thành công!');
+                    window.location.href = "http://localhost:3000/"
                 } else {
                     setErrorMessage('Token không hợp lệ từ server.');
+                    openNotification('error', 'Lỗi', 'Token không hợp lệ từ server.');
                 }
             } else {
                 setErrorMessage(result.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại.');
+                openNotification('error', 'Lỗi', result.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại.');
             }
         } catch (error) {
             console.error('Sign-in error:', error);
             setErrorMessage('Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại.');
+            openNotification('error', 'Lỗi', 'Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại.');
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="ps28277">
+        <div className="ps28277 container-fluid">
             <div className={`container ${isActive ? 'active' : ''}`} id="container">
                 <div className="form-container sign-up">
                     <form id="signup-form" onSubmit={handleSignUpSubmit}>
                         <h1>Tạo tài khoản</h1>
                         <div className="social-icons">
-                            {/* Social icons (optional) */}
+                            {/* Nút Đăng Ký bằng Google */}
+                            <Button
+                                type="primary"
+                                icon={<GoogleOutlined />}
+                                onClick={handleGoogleSignIn}
+                                className="google-button"
+                            >
+                                Đăng ký bằng Google
+                            </Button>
                         </div>
                         <span>hoặc sử dụng email của bạn để đăng ký</span>
                         <input
@@ -197,6 +288,8 @@ const LoginRegisterComponent: React.FC = () => {
                             onChange={handleSignUpChange}
                             required
                         />
+                        {errors.username && <p className="error-message">{errors.username}</p>}
+
                         <input
                             type="text"
                             placeholder="Họ Và Tên"
@@ -205,6 +298,8 @@ const LoginRegisterComponent: React.FC = () => {
                             onChange={handleSignUpChange}
                             required
                         />
+                        {errors.full_name && <p className="error-message">{errors.full_name}</p>}
+
                         <input
                             type="email"
                             placeholder="Email"
@@ -213,6 +308,18 @@ const LoginRegisterComponent: React.FC = () => {
                             onChange={handleSignUpChange}
                             required
                         />
+                        {errors.email && <p className="error-message">{errors.email}</p>}
+
+                        <input
+                            type="text"
+                            placeholder="Số điện thoại"
+                            name="phoneNumber"
+                            value={signUpData.phoneNumber}
+                            onChange={handleSignUpChange}
+                            required
+                        />
+                        {errors.phoneNumber && <p className="error-message">{errors.phoneNumber}</p>}
+
                         <input
                             type="password"
                             placeholder="Mật khẩu"
@@ -221,6 +328,8 @@ const LoginRegisterComponent: React.FC = () => {
                             onChange={handleSignUpChange}
                             required
                         />
+                        {errors.password && <p className="error-message">{errors.password}</p>}
+
                         {/* Terms & Policies checkbox */}
                         <label className="terms">
                             <input
@@ -233,11 +342,12 @@ const LoginRegisterComponent: React.FC = () => {
                             />
                             <span>Tôi đồng ý với</span> <a href="#">điều khoản &amp; chính sách</a>
                         </label>
+                        {errors.agree && <p className="error-message">{errors.agree}</p>}
 
                         {errorMessage && <p className="error-message">{errorMessage}</p>}
 
                         <button type="submit" disabled={isLoading}>
-                            {isLoading ? 'Đang đăng ký...' : 'Đăng Ký'}
+                            {isLoading ? <Spin /> : 'Đăng Ký'}
                         </button>
                     </form>
                 </div>
@@ -245,7 +355,15 @@ const LoginRegisterComponent: React.FC = () => {
                     <form id="signin-form" onSubmit={handleSignInSubmit}>
                         <h1>Đăng nhập</h1>
                         <div className="social-icons">
-                            {/* Social icons (optional) */}
+                            {/* Nút Đăng Nhập bằng Google */}
+                            <Button
+                                type="primary"
+                                icon={<GoogleOutlined />}
+                                onClick={handleGoogleSignIn}
+                                className="google-button"
+                            >
+                                Đăng nhập bằng Google
+                            </Button>
                         </div>
                         <span>hoặc sử dụng username của bạn để đăng nhập</span>
                         <input
@@ -264,7 +382,6 @@ const LoginRegisterComponent: React.FC = () => {
                             onChange={handleSignInChange}
                             required
                         />
-                        {/* Terms & Policies checkbox */}
 
                         <Link to={"/forgot-password"} className="forget-your-password">
                             Quên mật khẩu?
@@ -273,7 +390,7 @@ const LoginRegisterComponent: React.FC = () => {
                         {errorMessage && <p className="error-message cl-danger">{errorMessage}</p>}
 
                         <button type="submit" disabled={isLoading}>
-                            {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+                            {isLoading ? <Spin /> : 'Đăng nhập'}
                         </button>
                     </form>
                 </div>

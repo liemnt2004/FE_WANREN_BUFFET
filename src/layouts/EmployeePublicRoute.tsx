@@ -17,7 +17,7 @@ const EmployeePublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
         return <Navigate to="/cashier" replace />;
     }
     if(employeeRoles?.includes('ADMIN')){
-        return <Navigate to="/ADMIN" replace />;
+        return <Navigate to="/admin" replace />;
     }
 
 

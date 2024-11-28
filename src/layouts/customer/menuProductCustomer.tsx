@@ -13,6 +13,7 @@ import { fetchProductsByCategory, SearchProduct } from "../../api/apiCustommer/p
 import ProductMenu from "./component/productMenu";
 import { CartContext } from "./component/CartContext";
 
+
 // Định nghĩa loại Category
 type Category = 'mains' | 'desserts' | 'soft_drinks';
 

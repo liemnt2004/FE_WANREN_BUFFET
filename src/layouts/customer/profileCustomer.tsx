@@ -170,7 +170,7 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
     };
 
     return (
-        <div className="col-12 col-sm-4 tinh-height25 mb-3 mb-sm-0 px-2 px-md-3">
+        <div className="col-12 col-sm-4 ">
             <h4 className="py-3">Thông tin cá nhân</h4>
             {!editing ? (
                 <div id="personalInfo">
@@ -182,7 +182,7 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                         {userInfo.phoneNumber}
                     </span>
                     <br/>
-                    <span className="tinh-fs12" id="phoneDisplay">
+                    <span className="tinh-fs12" id="email">
                         {userInfo.email}
                     </span>
                     <br/>
@@ -753,7 +753,7 @@ const MenuProfile: React.FC = () => {
         }
     } catch (error) {
         console.error('Invalid or missing token:', error);
-        navigate('/login');
+        window.location.href = "http://localhost:3000/"
     }
 
     const [userInfo, setUserInfo] = useState<UserInfo>({
@@ -762,10 +762,9 @@ const MenuProfile: React.FC = () => {
         phoneNumber: decoded?.phone || "",
         password: "", // Initialize as empty for security
     });
-
     const [listOrder,setListOrder] = useState<OrderModel[]>([]);
     useEffect(() => {
-        getPreparingOrders(49)
+        getPreparingOrders(Number(decoded?.userId))
             .then(Order =>{
                 setListOrder(Order)
 
@@ -780,7 +779,7 @@ const MenuProfile: React.FC = () => {
     };
 
     function logout(){
-        localStorage.clear()
+        localStorage.removeItem("token")
         window.location.reload();
     }
 
@@ -821,12 +820,7 @@ const MenuProfile: React.FC = () => {
                                 <div
                                     className="row tinh-height30 m-0 p-2 px-3 d-flex align-items-center justify-content-center">
                                     <div className="">
-                                        <img
-                                            src={kichi}
-                                            alt="User Logo"
-                                            className=" rounded-circle"
-                                            style={{padding:100}}
-                                        />
+
                                     </div>
                                 </div>
                                 <div

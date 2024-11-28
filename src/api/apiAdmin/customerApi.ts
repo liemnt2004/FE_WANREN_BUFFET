@@ -3,8 +3,7 @@ const API_URL = "http://localhost:8080";
 
 // Function to fetch the list of customers
 export async function fetchCustomerList(
-  page: number,
-  fullName?: string
+  page: number
 ): Promise<{ data: CustomerModelAdmin[]; totalPages: number }> {
   const employeeToken = localStorage.getItem("employeeToken");
   if (!employeeToken) {
@@ -12,9 +11,8 @@ export async function fetchCustomerList(
   }
 
   try {
-    const url = fullName
-      ? `${API_URL}/Customer/search?fullName=${encodeURIComponent(fullName)}`
-      : `${API_URL}/Customer?page=${page}`;
+    // Removed the search condition for `fullName`
+    const url = `${API_URL}/Customer?page=${page}`;
 
     const response = await fetch(url, {
       method: "GET",
@@ -51,7 +49,7 @@ export async function fetchCustomerList(
               customer.updatedDate
             )
         ),
-        totalPages: 1,
+        totalPages: 1, // If no pagination info is provided in the response, assume 1 page
       };
     } else if (data?._embedded?.customers) {
       return {
@@ -72,7 +70,7 @@ export async function fetchCustomerList(
               customer.updatedDate
             )
         ),
-        totalPages: data.page ? data.page.totalPages : 1,
+        totalPages: data.page ? data.page.totalPages : 1, // Use pagination if available
       };
     } else {
       return { data: [], totalPages: 0 };

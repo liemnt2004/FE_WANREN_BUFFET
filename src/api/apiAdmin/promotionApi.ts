@@ -63,7 +63,7 @@ export async function createPromotion(
     const response = await axios.post(`${API_BASE_URL}/create`, newPromotion, {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${getEmployeeToken()}`, // Add token to headers
+        Authorization: `Bearer ${getEmployeeToken()}`,
       },
     });
 
@@ -89,7 +89,7 @@ export const updatePromotion = async (
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getEmployeeToken()}`, // Add token to headers
+          Authorization: `Bearer ${getEmployeeToken()}`,
         },
       }
     );
@@ -106,7 +106,7 @@ export const deletePromotion = async (id: number): Promise<void> => {
   try {
     await axios.delete(`${API_BASE_URL}/delete/${id}`, {
       headers: {
-        Authorization: `Bearer ${getEmployeeToken()}`, // Add token to headers
+        Authorization: `Bearer ${getEmployeeToken()}`,
       },
     });
     console.log(`Promotion with ID ${id} has been deleted successfully.`);

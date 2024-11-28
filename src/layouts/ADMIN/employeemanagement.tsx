@@ -12,7 +12,10 @@ import {
   Row,
   Col,
   Select,
+  Flex,
 } from "antd";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
 import EmployeeAdmin from "../../models/AdminModels/EmployeeModel";
 import {
   getListUser,
@@ -20,9 +23,12 @@ import {
   updateUser,
   updateAccountStatus,
   deleteUser,
-  searchUsers,
 } from "../../api/apiAdmin/employeemanagementApi";
-import { ExclamationCircleOutlined } from "@ant-design/icons";
+
+// Importing libraries for exporting data
+import * as XLSX from "xlsx";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
 
 const EmployeeManagement: React.FC = () => {
   const [employees, setEmployees] = useState<EmployeeAdmin[]>([]);
@@ -36,21 +42,13 @@ const EmployeeManagement: React.FC = () => {
   const [updateForm] = Form.useForm();
   const [currentEmployee, setCurrentEmployee] =
     useState<Partial<EmployeeAdmin> | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
-  const fetchEmployees = async (page: number, searchTerm: string = "") => {
+  const fetchEmployees = async (page: number) => {
     try {
       setLoading(true);
-      let response;
+      let response = await getListUser(page);
       let newEmployees: EmployeeAdmin[] = [];
-
-      if (searchTerm.trim() === "") {
-        response = await getListUser(page);
-      } else {
-        response = await searchUsers({ fullName: searchTerm, page });
-      }
-
       if (
         response &&
         response._embedded &&
@@ -85,24 +83,8 @@ const EmployeeManagement: React.FC = () => {
   };
 
   useEffect(() => {
-    setEmployees([]);
-    setPage(0);
-    setHasMore(true);
-  }, [debouncedSearchTerm]);
-
-  useEffect(() => {
-    if (hasMore) fetchEmployees(page, debouncedSearchTerm);
-  }, [page, hasMore, debouncedSearchTerm]);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchTerm]);
+    if (hasMore) fetchEmployees(page);
+  }, [page, hasMore]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
@@ -276,32 +258,228 @@ const EmployeeManagement: React.FC = () => {
       },
     });
   };
-  console.log(employees);
+
+  // Export employees to Excel
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(
+      employees.map((emp) => ({
+        ID: emp.userId,
+        Username: emp.username,
+        FullName: emp.fullName,
+        Email: emp.email,
+        PhoneNumber: emp.phoneNumber,
+        Address: emp.address,
+        UserType: emp.userType,
+        AccountStatus: emp.accountStatus ? "Active" : "Inactive",
+      }))
+    );
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
+
+    // Create buffer
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    // Save file
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    const url = window.URL.createObjectURL(data);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "employees.xlsx");
+    document.body.appendChild(link);
+    link.click();
+  };
+
+  // Export employees to CSV
+  const exportToCSV = () => {
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [
+        [
+          "ID",
+          "Username",
+          "Full Name",
+          "Email",
+          "Phone Number",
+          "Address",
+          "User Type",
+          "Account Status",
+        ],
+        ...employees.map((emp) => [
+          emp.userId,
+          emp.username,
+          emp.fullName,
+          emp.email,
+          emp.phoneNumber,
+          emp.address,
+          emp.userType,
+          emp.accountStatus ? "Active" : "Inactive",
+        ]),
+      ]
+        .map((e) => e.join(","))
+        .join("\n");
+
+    const link = document.createElement("a");
+    link.setAttribute("href", encodeURI(csvContent));
+    link.setAttribute("download", "employees.csv");
+    document.body.appendChild(link);
+    link.click();
+  };
+
+  // Export employees to PDF
+  const exportToPDF = async () => {
+    const fontUrl = "/fonts/Roboto-Black.ttf";
+    try {
+      const pdfDoc = await PDFDocument.create();
+      pdfDoc.registerFontkit(fontkit);
+      // You can use StandardFonts.Helvetica if you don't have a custom font
+      const fontBytes = await fetch(fontUrl).then((res) => res.arrayBuffer());
+      const customFont = await pdfDoc.embedFont(fontBytes);
+
+      let page = pdfDoc.addPage([595.28, 841.89]); // A4 size
+      const { width, height } = page.getSize();
+      const margin = 50;
+
+      // Title
+      page.drawText("Employee List", {
+        x: margin,
+        y: height - margin,
+        size: 18,
+        font: customFont,
+        color: rgb(0, 0.53, 0.71),
+      });
+
+      // Table headers
+      const tableHeader = [
+        "ID",
+        "Username",
+        "Full Name",
+        "Email",
+        "Phone",
+        "User Type",
+        "Status",
+      ];
+      let yPosition = height - margin - 40;
+      const cellWidths = [30, 80, 100, 120, 80, 80, 60];
+
+      // Draw headers
+      tableHeader.forEach((header, i) => {
+        page.drawText(header, {
+          x: margin + cellWidths.slice(0, i).reduce((a, b) => a + b, 0),
+          y: yPosition,
+          size: 10,
+          font: customFont,
+          color: rgb(0, 0, 0),
+        });
+      });
+
+      yPosition -= 20;
+
+      // Draw data rows
+      for (const emp of employees) {
+        const rowData = [
+          emp.userId.toString(),
+          emp.username || "",
+          emp.fullName || "",
+          emp.email || "",
+          emp.phoneNumber || "",
+          emp.userType || "",
+          emp.accountStatus ? "Active" : "Inactive",
+        ];
+
+        rowData.forEach((data, i) => {
+          page.drawText(data, {
+            x: margin + cellWidths.slice(0, i).reduce((a, b) => a + b, 0),
+            y: yPosition,
+            size: 10,
+            font: customFont,
+            color: rgb(0, 0, 0),
+          });
+        });
+
+        yPosition -= 20;
+        if (yPosition < 50) {
+          yPosition = height - margin - 40;
+          page = pdfDoc.addPage([595.28, 841.89]);
+        }
+      }
+
+      const pdfBytes = await pdfDoc.save();
+
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "employees.pdf";
+      link.click();
+
+      message.success("PDF exported successfully!");
+    } catch (error) {
+      console.error("Error exporting to PDF:", error);
+      message.error("Failed to export to PDF.");
+    }
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+  // Filter customers based on search query
+  const filteredEmloyees = employees.filter((employee) => {
+    const username = employee.fullName.toLowerCase();
+    const fullname = employee.username.toLowerCase();
+    const email = employee.email.toLowerCase();
+    return (
+      username.includes(searchQuery.toLowerCase()) ||
+      email.includes(searchQuery.toLowerCase()) ||
+      fullname.includes(searchQuery.toLowerCase())
+    );
+  });
   return (
     <React.Fragment>
       <div className="container-fluid">
         <div className="main-content">
           <div className="employee-management">
             <h2>Employee Management</h2>
-            <div className="search-filter">
-              <div className="search-wrapper">
-                <Input
-                  className="search-input"
-                  placeholder="Search for employees..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <i className="fas fa-search search-icon"></i>
+            <div
+              className="search-filter"
+              style={{
+                marginBottom: 16,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <div className="search-wrapper">
+                  <Input
+                    className="search-input"
+                    placeholder="Search for employees..."
+                    onChange={handleSearchChange}
+                  />
+                  <i className="fas fa-search search-icon"></i>
+                </div>
               </div>
-              <select className="form-select filter-select">
-                <option value="">Filter</option>
-              </select>
-              <Button
-                onClick={handleAddEmployee}
-                className="btn add-employee-btn"
+              <div
+                className="btn-export-excel"
+                style={{ display: "flex", alignItems: "center" }}
               >
-                Add Employee
-              </Button>
+                <Button onClick={exportToExcel} style={{ marginRight: 8 }}>
+                  Export Excel
+                </Button>
+                <Button onClick={exportToPDF} style={{ marginRight: 8 }}>
+                  Export PDF
+                </Button>
+                <Button onClick={exportToCSV} style={{ marginRight: 8 }}>
+                  Export CSV
+                </Button>
+                <Button
+                  onClick={handleAddEmployee}
+                  className="btn add-employee-btn"
+                >
+                  Add Employee
+                </Button>
+              </div>
             </div>
 
             {/* Table */}
@@ -313,24 +491,24 @@ const EmployeeManagement: React.FC = () => {
                     <th>Username</th>
                     <th>Full Name</th>
                     <th>Email</th>
-                    <th>Phone Number</th>
+                    <th style={{ width: 150 }}>Phone Number</th>
                     <th>Address</th>
                     <th>UserType</th>
-                    <th>Account Status</th>
-                    <th>Actions</th>
+                    <th style={{ width: 150 }}>Account Status</th>
+                    <th style={{ width: 100 }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {employees.map((employee) => (
+                  {filteredEmloyees.map((employee) => (
                     <tr key={employee.userId}>
                       <td>{employee.userId}</td>
                       <td>{employee.username}</td>
-                      <td>{employee.fullname}</td>
+                      <td>{employee.fullName}</td>
                       <td>{employee.email}</td>
                       <td>{employee.phoneNumber}</td>
                       <td>{employee.address}</td>
                       <td>{employee.userType}</td>
-                      <td>
+                      <td className="text-center align-middle">
                         <Switch
                           checked={Boolean(employee.accountStatus)}
                           onChange={(checked) =>
@@ -338,6 +516,7 @@ const EmployeeManagement: React.FC = () => {
                           }
                         />
                       </td>
+
                       <td>
                         <Button
                           className="icon-button-edit"
