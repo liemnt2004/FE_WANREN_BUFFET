@@ -6,17 +6,21 @@ import {
   fetchOrderbyTableId,
   fetchTables,
   Table,
+  updateTableStatus,
 } from "../../api/apiCashier/tableApi";
 import {
   Order,
   OrderDetail,
   fetchOrderDetails,
   updateOrderDetails,
+  updateTableIdOrder,
 } from "../../api/apiCashier/ordersOnl";
 import CardFoodEditCashier from "./component/cardFoodEditCashier";
 import CardFoodOrderCashierEdit from "./component/cardFoodOrderCashierEdit";
 import { Product, fetchProductsInStock } from "../../api/apiCashier/foodApi";
 import { v4 as uuidv4_3 } from "uuid";
+import { table } from "console";
+import AlertSuccess from "./component/alertSuccess";
 
 const ManagementTableCashier: React.FC = () => {
   const defaultOrder: Order = {
@@ -56,6 +60,10 @@ const ManagementTableCashier: React.FC = () => {
 
   const [orderDetails, setOrderDetails] = useState<OrderDetail[]>([]);
 
+  const [tablesEmpty, setTablesEmpty] = useState<Table[]>([]);
+
+  const [selectTable, setSelectTable] = useState<Table | null>(null);
+
   // useState ^
 
   // lấy dữ liệu từ api v
@@ -81,7 +89,6 @@ const ManagementTableCashier: React.FC = () => {
     }
   };
   useEffect(() => {
-    console.log(selectOrderbyTableId);
     loadOrderDetails();
   }, [selectOrderbyTableId]);
 
@@ -93,9 +100,7 @@ const ManagementTableCashier: React.FC = () => {
       return currentDate > latestDate ? current : latest;
     }, null); // Giá trị khởi tạo là null
 
-    // setSelectOrderbyTableId(latestOrder); // Lưu order mới nhất.
-    console.log(latestOrder);
-    console.log(latestOrder?._links?.orderDetails?.href);
+    setSelectOrderbyTableId(latestOrder); // Lưu order mới nhất.
     return latestOrder;
   };
 
@@ -106,7 +111,7 @@ const ManagementTableCashier: React.FC = () => {
     };
 
     loadTables();
-  }, []);
+  }, [tables]);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -115,6 +120,22 @@ const ManagementTableCashier: React.FC = () => {
     };
 
     loadProducts();
+  }, []);
+
+  useEffect(() => {
+    const loadTablesEmpty = async () => {
+      try {
+        const data = await fetchTables(); // Giả sử fetchTables trả về danh sách các bảng
+        const emptyTables = data.filter(
+          (table: Table) => table.tableStatus === "EMPTY_TABLE"
+        );
+        setTablesEmpty(emptyTables);
+      } catch (error) {
+        console.error("Error loading tables:", error);
+      }
+    };
+
+    loadTablesEmpty();
   }, []);
 
   // lấy dữ liệu từ api ^
@@ -205,6 +226,35 @@ const ManagementTableCashier: React.FC = () => {
     closeFoodTable();
   };
 
+  const saveSwapTable = (
+    orderId: number,
+    selectTable: number,
+    currentTable: number
+  ) => {
+    if (selectTable !== 0) {
+      updateTableIdOrder(orderId, selectTable);
+
+      closeSwapTable();
+
+      // alert v
+      const newAlert = {
+        id: uuidv4_3(), // Tạo ID duy nhất cho mỗi alert
+        message: "Cập nhật bàn thành công",
+      };
+      setAlerts((prevAlerts) => [...prevAlerts, newAlert]);
+
+      // Tự động xóa thông báo sau 3 giây
+      setTimeout(() => {
+        setAlerts((prevAlerts) =>
+          prevAlerts.filter((alert) => alert.id !== newAlert.id)
+        );
+      }, 3000);
+      // alert ^
+    } else {
+      alert("Bạn chưa chọn bàn");
+    }
+  };
+
   // các hành động function ^
 
   // các popup v
@@ -226,6 +276,7 @@ const ManagementTableCashier: React.FC = () => {
   };
   const closeSwapTable = () => {
     setSelectOrderbyTableId(null);
+    setSelectTable(null);
     setSwapTable(null);
   };
 
@@ -240,7 +291,7 @@ const ManagementTableCashier: React.FC = () => {
 
   const openCombineTable = (table: Table) => {
     getOrderbyTableId(table.tableId);
-    setSwapTable(table);
+    setCombineTable(table);
   };
   const closeCombineTable = () => {
     setSelectOrderbyTableId(null);
@@ -288,28 +339,28 @@ const ManagementTableCashier: React.FC = () => {
                         table,
                         (await getOrderbyTableId(table.tableId)) || defaultOrder
                       )
-                    : alert("Bàn này trống");
+                    : void null;
                 }
               }}
               swapTable={() => {
                 {
                   table.tableStatus === "OCCUPIED_TABLE"
                     ? openSwapTable(table)
-                    : alert("Bàn này trống");
+                    : void null;
                 }
               }}
               splitTable={() => {
                 {
                   table.tableStatus === "OCCUPIED_TABLE"
                     ? openSplitTable(table)
-                    : alert("Bàn này trống");
+                    : void null;
                 }
               }}
               combineTable={() => {
                 {
                   table.tableStatus === "OCCUPIED_TABLE"
                     ? openCombineTable(table)
-                    : alert("Bàn này trống");
+                    : void null;
                 }
               }}
               detailTable={() => {
@@ -415,8 +466,85 @@ const ManagementTableCashier: React.FC = () => {
       {swapTable && (
         <PopupOverlay onClick={closeSwapTable}>
           <PopupCard onClick={(e) => e.stopPropagation()}>
-            this is popup swap table
-            {selectOrderbyTableId?.totalAmount}
+            <PopupCardGrid>
+              <div
+                className="w-100"
+                style={{ overflow: "auto", height: "80vh" }}
+              >
+                <div className="grid-container-swapTable">
+                  <div className="box d-flex align-items-center justify-content-center">
+                    <OrderLabel>Danh sách bàn</OrderLabel>
+                  </div>
+                  <div className="box d-flex align-items-center justify-content-center">
+                    <OrderLabel>Bàn hiện tại</OrderLabel>
+                  </div>
+                  <div className="box box-table">
+                    {tablesEmpty.map((table) => (
+                      <div
+                        className="d-flex justify-content-center"
+                        key={table.tableId}
+                      >
+                        <CardTableCashier
+                          key={table.tableId}
+                          tableId={table.tableId}
+                          tableNumber={table.tableNumber}
+                          status={
+                            table.tableStatus === "EMPTY_TABLE"
+                              ? "Trống"
+                              : table.tableStatus === "OCCUPIED_TABLE"
+                              ? "Có Khách"
+                              : table.tableStatus === "RESERVED_TABLE"
+                              ? "Đặt Trước"
+                              : "Không xác định"
+                          }
+                          detailTable={() => setSelectTable(table)}
+                          location={table.location}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="box d-flex align-items-center justify-content-center">
+                    <CardTableCashier
+                      tableId={swapTable.tableId}
+                      tableNumber={swapTable.tableNumber}
+                      status={
+                        swapTable.tableStatus === "EMPTY_TABLE"
+                          ? "Trống"
+                          : swapTable.tableStatus === "OCCUPIED_TABLE"
+                          ? "Có Khách"
+                          : swapTable.tableStatus === "RESERVED_TABLE"
+                          ? "Đặt Trước"
+                          : "Không xác định"
+                      }
+                      location={swapTable.location}
+                    />
+                  </div>
+                  <div className="box d-flex align-items-center justify-content-center">
+                    <OrderLabel>Bàn đang chọn:</OrderLabel>{" "}
+                    <span>{selectTable?.tableNumber}</span>
+                  </div>
+                  <div className="box d-flex align-items-center justify-content-end">
+                    <StyledWrapperButton>
+                      <button
+                        onClick={() =>
+                          saveSwapTable(
+                            selectOrderbyTableId?.orderId || 0,
+                            selectTable?.tableId || 0,
+                            swapTable.tableId
+                          )
+                        }
+                      >
+                        Lưu
+                      </button>
+                    </StyledWrapperButton>
+                    &emsp;
+                    <StyledWrapperButton>
+                      <button onClick={closeSwapTable}>Đóng</button>
+                    </StyledWrapperButton>
+                  </div>
+                </div>
+              </div>
+            </PopupCardGrid>
           </PopupCard>
         </PopupOverlay>
       )}
@@ -447,6 +575,13 @@ const ManagementTableCashier: React.FC = () => {
           </PopupCard>
         </PopupOverlay>
       )}
+
+      {/* Container hiển thị thông báo */}
+      <div className="fixed top-4 right-4 flex flex-col items-end space-y-2">
+        {alerts.map((alert) => (
+          <AlertSuccess key={alert.id} message={alert.message} />
+        ))}
+      </div>
     </div>
   );
 };
@@ -527,11 +662,65 @@ const PopupCardGrid = styled.div`
     grid-template-columns: 50% 50%;
     grid-template-rows: 7.5vh 65vh 7.5vh;
   }
+  .grid-container-swapTable {
+    display: grid;
+    grid-template-columns: 65% 35%;
+    grid-template-rows: 7.5vh 65vh 7.5vh;
+  }
+  /* Media query for smaller screens */
+  @media (max-width: 1146px) {
+    .grid-container-swapTable {
+      grid-template-columns: 100%; /* Chỉ còn 1 cột */
+      grid-template-rows: auto; /* Các hàng tự động chiếm không gian */
+      overflow-y: auto;
+    }
+    .grid-container-swapTable > .box:nth-child(1) {
+      grid-column: 1; /* Cột đầu tiên */
+      grid-row: 3; /* Hàng đầu tiên */
+    }
+
+    .grid-container-swapTable > .box:nth-child(3) {
+      grid-column: 1; /* Cột đầu tiên */
+      grid-row: 4; /* Hàng thứ hai */
+      height: 600px;
+    }
+
+    .grid-container-swapTable > .box:nth-child(5) {
+      grid-column: 1; /* Cột đầu tiên */
+      grid-row: 5; /* Hàng thứ ba */
+      justify-content: center !important;
+    }
+
+    .grid-container-swapTable > .box:nth-child(2) {
+      grid-column: 1; /* Cột thứ hai */
+      grid-row: 1; /* Hàng đầu tiên */
+    }
+
+    .grid-container-swapTable > .box:nth-child(4) {
+      grid-column: 1; /* Cột thứ hai */
+      grid-row: 2; /* Hàng thứ hai */
+    }
+
+    .grid-container-swapTable > .box:nth-child(6) {
+      grid-column: 1; /* Cột thứ hai */
+      grid-row: 6; /* Hàng thứ ba */
+      justify-content: center !important;
+    }
+  }
   .box-food {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
     row-gap: 20px;
     overflow-y: auto;
+  }
+  .box-table {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    row-gap: 20px;
+    overflow-y: auto;
+  }
+  .box {
+    border: solid 1px black;
   }
 `;
 
