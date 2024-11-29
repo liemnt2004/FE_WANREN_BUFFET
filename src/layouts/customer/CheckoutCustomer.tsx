@@ -17,7 +17,8 @@ import { request } from "../../api/Request";
 import { DecodedToken } from "./component/AuthContext";
 import { getAllPromotion } from "../../api/apiCustommer/promotionApi";
 import PromotionModel from "../../models/PromotionModel";
-import {userInfo} from "node:os";
+
+
 
 interface OrderDetailData {
     productId: number;
@@ -56,11 +57,33 @@ const CheckoutCustomer: React.FC = () => {
     const token = localStorage.getItem('token');
     const cartContext = useContext(CartContext);
     const [listCart, setListCart] = useState<CartItem[]>(cartContext?.cartItems || []);
-
+    const [isSucess, setIsSucess] = useState<boolean>(false);
+    const [isUpdating, setIsUpdating] = useState(false);
     // Modal State
     const [showModal, setShowModal] = useState<boolean>(false);
     const [modalMessage, setModalMessage] = useState<string>('');
     const [modalType, setModalType] = useState<'success' | 'error'>('success');
+    const [description, setDescription] = useState<string>();
+    // State để hiển thị modal QR Code
+    const [showQRCodeModal, setShowQRCodeModal] = useState(false);
+
+// URL của ảnh QR code
+    const [qrCodeUrl, setQrCodeUrl] = useState("");
+
+// Hàm mở modal và cập nhật URL QR Code
+    const handleShowQRCodeModal = (qrCodeUrl:string) => {
+        setQrCodeUrl(qrCodeUrl);  // Lưu URL ảnh QR
+        setShowQRCodeModal(true);  // Mở modal
+        setIsUpdating(true)
+    };
+
+// Hàm đóng modal và đặt lại giá trị success
+    const handleCloseQRCodeModal = () => {
+        console.log("Đã Tăt")
+        setIsUpdating(false)
+        setShowQRCodeModal(false);
+        setIsSucess(false);  // Đặt lại trạng thái thành false khi đóng modal
+    };
 
     // Decode Token
     let decoded: DecodedToken | null = null;
@@ -125,7 +148,7 @@ const CheckoutCustomer: React.FC = () => {
     const [loadingWards, setLoadingWards] = useState<boolean>(false);
     const [errorDistricts, setErrorDistricts] = useState<string>('');
     const [errorWards, setErrorWards] = useState<string>('');
-
+    const [lastAmount, setLastAmount] = useState<number>(0);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     // State Variables for Promotion Code Modal
@@ -323,7 +346,7 @@ const CheckoutCustomer: React.FC = () => {
                     body: JSON.stringify(orderData),
                 });
 
-                console.log(createOrderResponse)
+
 
                 if (!createOrderResponse.ok) {
                     const errorData = await createOrderResponse.json();
@@ -369,7 +392,7 @@ const CheckoutCustomer: React.FC = () => {
                     body: JSON.stringify(orderData),
                 });
 
-                console.log(createOrderResponse)
+
 
                 if (!createOrderResponse.ok) {
                     const errorData = await createOrderResponse.json();
@@ -398,7 +421,68 @@ const CheckoutCustomer: React.FC = () => {
                 setShowModal(true);
                 cartContext?.clearCart();
                 navigate('/checkout'); // Redirect to the order page
+            }else if(formData.payment === "QR_CODE"){
+                const createOrderResponse = await fetch('http://localhost:8080/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(orderData),
+                });
+
+
+
+                if (!createOrderResponse.ok) {
+                    const errorData = await createOrderResponse.json();
+                    throw new Error(errorData.message || "Đặt hàng thất bại.");
+                }
+
+                const createOrderResult = await createOrderResponse.json();
+                console.log(createOrderResult)
+                const orderId:number = createOrderResult.orderId;
+
+                console.log(orderId)
+
+
+                if (createOrderResult.jwtToken) {
+                    localStorage.setItem("token", createOrderResult.jwtToken);
+                    const newDecoded = jwtDecode<DecodedToken>(createOrderResult.jwtToken);
+
+                    // Cập nhật formData với thông tin mới từ token
+                    setFormData(prev => ({
+                        ...prev,
+                        username: newDecoded.sub || "",
+                        emailCheckout: newDecoded.email || "",
+                        phoneCheckout: newDecoded.phone || "",
+                        // Bạn có thể cập nhật thêm các trường khác nếu cần
+                    }));
+                }
+
+                const myBank = {
+                    bank_ID: 'MB',
+                    account_NO: '280520049999'
+                };
+
+
+
+
+
+
+                setDescription(orderId + " Thanh toan tai Wanren Buffet");
+                setLastAmount( Number(2000))
+
+
+                const generateQrCode = (bank: { bank_ID: string; account_NO: string; }, amount: number): string => {
+                    console.log(description)
+                    return `https://img.vietqr.io/image/${bank.bank_ID}-${bank.account_NO}-compact.png?amount=${amount}&addInfo=${orderId + " Thanh toan tai Wanren Buffet"}`;
+                };
+                const QR = generateQrCode(myBank, Number(2000));
+                handleShowQRCodeModal(QR);  // Mở modal và hiển thị QR code
+
+
             }
+
         } catch (error: any) {
             console.error("Đặt hàng thất bại:", error);
             setModalMessage(error.message || "Có lỗi xảy ra trong quá trình đặt hàng hoặc tạo thanh toán.");
@@ -408,6 +492,57 @@ const CheckoutCustomer: React.FC = () => {
             setIsSubmitting(false);
         }
     };
+
+
+
+
+
+    useEffect(() => {
+        const interval = setInterval(async () => {
+
+            if (isUpdating) {
+
+                await checkPaid(lastAmount, description || "");
+            }
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [isUpdating, lastAmount, description]);
+
+    async function checkPaid(price: number , description: string) {
+        console.log(description)
+        if (isSucess) {
+            return;
+        } else {
+            try {
+                const response = await fetch("https://script.google.com/macros/s/AKfycbyXPtx_J0RXilysEH-qwzQ8n2QPHJe8LyrMTn74sQJJGKAFKeVhuFYBA32zR3WZiXKHyw/exec");
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                if (Array.isArray(data.data) && data.data.length > 0) {
+                    const lastPaid = data.data[1];
+                    const lastPrice = lastPaid["Giá trị"];
+                    const lastDescription = lastPaid["Mô tả"];
+                    if (lastPrice >= lastAmount && lastDescription.includes(description)) {
+                        console.log("thành công")
+                        handleCloseQRCodeModal()
+                        window.location.href = `http://localhost:8080/api/payment/callbck_qrcode/${description.trim().slice(0,2)}`;
+
+                    } else {
+                        console.log("Thanh toán đang cập nhật!")
+                    }
+                } else {
+                    console.log("No data or data is not an array.");
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+    }
+
+
 
     // Open Promotion Modal
     const handleOpenPromotionModal = () => {
@@ -721,14 +856,29 @@ const CheckoutCustomer: React.FC = () => {
                                             <span className="checkmark"></span>
                                         </label>
                                     </div>
+
+                                    <div className="checkout__input__checkbox mb-3">
+                                        <label>
+                                            QR CODE
+                                            <input
+                                                type="radio"
+                                                name="payment"
+                                                value="QR_CODE"
+                                                checked={formData.payment === 'QR_CODE'}
+                                                onChange={handleChange}
+                                                required
+                                            />
+                                            <span className="checkmark"></span>
+                                        </label>
+                                    </div>
                                     <div className='checkoyt_submit'>
-                                    <button
-                                        type="submit"
-                                        className="site-btn"
-                                        disabled={listCart.length === 0 || isSubmitting}
-                                    >
-                                        {isSubmitting ? 'Đang xử lý...' : 'ĐẶT HÀNG'}
-                                    </button>
+                                        <button
+                                            type="submit"
+                                            className="site-btn"
+                                            disabled={listCart.length === 0 || isSubmitting}
+                                        >
+                                            {isSubmitting ? 'Đang xử lý...' : 'ĐẶT HÀNG'}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -748,7 +898,7 @@ const CheckoutCustomer: React.FC = () => {
                             <p className="text-danger">{errorPromotions}</p>
                         ) : promotions.length > 0 ? (
                             <ul className="list-group">
-                                {promotions.map((promo) => (
+                            {promotions.map((promo) => (
                                     <li
                                         key={promo.PromotionId}
                                         className="list-group-item d-flex justify-content-between align-items-center"
@@ -776,6 +926,22 @@ const CheckoutCustomer: React.FC = () => {
                 </div>
             )}
 
+            {showQRCodeModal && (
+                <div className="modal-overlay" onClick={() => handleCloseQRCodeModal()}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h5 className="modal-title">Thanh Toán Qua QR Code</h5>
+                        <div className="qr-code-container">
+                            {/* Hiển thị ảnh QR Code */}
+                            <img src={qrCodeUrl} alt="QR Code thanh toán" className="qr-code-image" />
+                        </div>
+                        <button className="btn btn-secondary mt-3" onClick={() => handleCloseQRCodeModal()}>
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            )}
+
+
             {/* Modal */}
             {showModal && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
@@ -791,6 +957,7 @@ const CheckoutCustomer: React.FC = () => {
                 </div>
             )}
         </section>
+
     );
 
 };
