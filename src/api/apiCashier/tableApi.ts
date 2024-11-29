@@ -32,5 +32,15 @@ export const fetchOrderbyTableId = async (tableId: number) => {
   }
 };
 
+export const updateTableStatus = async (tableId: number, newStatus: string) => {
+  try {
+    await axios.patch(`http://localhost:8080/Table/${tableId}`, {
+      tableStatus: newStatus
+    });
+  } catch (error) {
+    console.error("Lỗi khi cập nhật trạng thái sản phẩm:", error);
+    throw error;
+  }
+};
 
 
