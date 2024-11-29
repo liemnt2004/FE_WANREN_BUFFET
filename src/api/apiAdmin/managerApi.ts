@@ -25,6 +25,7 @@ export const fetchAdminList = async (): Promise<AdminModel[]> => {
         Authorization: `Bearer ${getEmployeeToken()}`, // Thêm token vào header
       },
     });
+    console.log(response)
     return response.data as AdminModel[];
   } catch (error) {
     console.error("Error fetching admin list:", error);

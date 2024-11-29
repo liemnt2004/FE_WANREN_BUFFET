@@ -98,16 +98,13 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
           setOrderId(orderId);
           const orderData = await fetchOrderStatusAPI(orderId);
           if (orderData.orderStatus === "DELIVERED") {
-            // await CreateNewOrder(Number(1), Number(tableId));
             setOrderId(null);
           } else {
             fetchOrderDetails(orderId);
           }
         } else {
-          // await CreateNewOrder(Number(1), Number(tableId));
           setOrderId(null);
         }
-        console.log("id Ban đầu: ", orderId)
       } catch (error) {
         console.error(error);
       }
@@ -148,14 +145,11 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   const handleConfirmOrder = async () => {
     try {
       let orderIdToUse = orderId;
-      console.log("orderIdToUse trước: ", orderIdToUse)
       if (orderId === null) {
-        const newOrderId = await CreateNewOrder(1, tableId);
-        console.log("newOrderId: ", newOrderId);
+        const newOrderId = await CreateNewOrder(Number(employeeUserId), tableId);
         if (newOrderId) {
           setOrderId(newOrderId.id);
           orderIdToUse = newOrderId.id;
-          console.log("orderIdToUse: ", orderIdToUse);
         }
       }
 
