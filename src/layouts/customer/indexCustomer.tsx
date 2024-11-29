@@ -209,10 +209,10 @@ const IndexCustomer: React.FC = () => {
                                                 </div>
 
                                                 {/* Modal cho mỗi sản phẩm */}
-                                                <div className="modal fade" id={`productModal${product.productId}`}
+                                                <div className="modal fade ps36231"
+                                                     id={`productModal${product.productId}`}
                                                      tabIndex={-1}
-                                                     aria-labelledby={`productModalLabel${product.productId}`}
-                                                     aria-hidden="true">
+                                                     aria-labelledby="productModalLabel" aria-hidden="true">
                                                     <div className="modal-dialog modal-dialog-centered">
                                                         <div className="modal-content">
                                                             <div className="container-modal">
@@ -228,8 +228,9 @@ const IndexCustomer: React.FC = () => {
                                                                     </div>
                                                                 </div>
                                                                 <div className="container-modal-footer">
-                                                                    <div className="name-item">{product.productName}</div>
-                                                                    <div className="capacity-item">900 ml</div>
+                                                                    <div
+                                                                        className="name-item">{product.productName}</div>
+                                                                    <div className="capacity-item">{product.description}</div>
                                                                     <div className="container-price-quantity">
                                                                         <div className="price-quantity">
                                                                             <div className="price">
@@ -237,13 +238,14 @@ const IndexCustomer: React.FC = () => {
                                                                             </div>
 
                                                                         </div>
-                                                                        <div className="control-btn-add-to-cart mt-3">
-                                                                            <button
-                                                                                className="btn btn-primary w-100"
-                                                                                onClick={() => addProductToCart(product)}
-                                                                                disabled={!fullName} // Vô hiệu hóa nếu chưa đăng nhập
-                                                                            >
-                                                                                Thêm vào giỏ hàng
+                                                                        <div className="control-btn-add-to-cart">
+                                                                            <button onClick={() => addToCart({
+                                                                                productId: product.productId,
+                                                                                productName: product.productName,
+                                                                                price: product.price,
+                                                                                quantity: 1,
+                                                                                image: product.image
+                                                                            })}>Thêm vào giỏ hàng
                                                                             </button>
                                                                         </div>
                                                                     </div>

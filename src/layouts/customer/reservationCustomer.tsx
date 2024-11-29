@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState, ChangeEvent, FormEvent, useContext } from 'react';
 
 // Importing images
 import websiteGreen from './assets/img/website_green.jpg';
@@ -6,29 +6,52 @@ import bannerHome from './assets/img/Banner-Hompage-_1500W-x-700H_px.jpg';
 import bannerBuffet from './assets/img/banner-gia-buffet-kich-kichi-160824.jpg';
 import './assets/css/styles.css';
 import './assets/css/reservation.css';
+import axios from 'axios';
+import { AuthContext, DecodedToken } from './component/AuthContext';
+import { jwtDecode } from 'jwt-decode';
 
 interface FormData {
-    name: string;
+    customerId: number;
+    numberPeople: string;
+    timeToCome: string;
+    dateToCome: string;
+    phoneNumber: string;
     email: string;
-    phone: string;
-    guests: string;
-    date: string;
-    time: string;
-    requests: string;
+    fullName: string;
+    note: string;
     agree: boolean;
 }
 
 const ReservationForm: React.FC = () => {
+    const token = localStorage.getItem('token');
+    let decoded: DecodedToken | null = null;
+    if (token) {
+        decoded = jwtDecode<DecodedToken>(token);
+    }
+
     const [formData, setFormData] = useState<FormData>({
-        name: '',
+        customerId:  Number(decoded?.userId || null),
+        numberPeople: '',
+        timeToCome: '',
+        dateToCome: '',
+        phoneNumber: '',
         email: '',
-        phone: '',
-        guests: '',
-        date: '',
-        time: '',
-        requests: '',
-        agree: false,
+        fullName: '',
+        note: '',
+        agree: false
     });
+
+    const initialFormData = {
+        customerId: Number(decoded?.userId || null),
+        numberPeople: '',
+        timeToCome: '',
+        dateToCome: '',
+        phoneNumber: '',
+        email: '',
+        fullName: '',
+        note: '',
+        agree: false,
+    };
 
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
@@ -46,9 +69,31 @@ const ReservationForm: React.FC = () => {
         }
     };
 
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // Handle form submission logic here
+
+
+        try {
+            if(formData.agree === true){
+                const response = await axios.post('http://localhost:8080/api/reservation/create', formData, {
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                });
+    
+                const message = response.data.message;
+    
+                if(message){
+                    alert(message);
+                    setFormData(initialFormData); 
+                }
+            }else{
+                alert("Vui lòng chọn đồng ý điều kiện!");
+            }
+
+        } catch (error) {
+            console.log("Cannot create reservation", error);
+        }
 
         console.log(formData);
     };
@@ -125,22 +170,22 @@ const ReservationForm: React.FC = () => {
                 {/* Right Section: Reservation Form */}
                 <div className="col-md-4">
                     <form className="form-booktable" onSubmit={handleSubmit}>
-                        <h3 className="text-center pb-5">RESERVATION</h3>
+                        <h3 className="text-center pb-5">ĐẶT BÀN</h3>
                         <p className="text-center">
-                            Book at ZenAsia for a captivating culinary adventure with Asia's finest flavors. Reserve now!
+                        Hãy đặt chỗ tại Wanren Buffet để có một chuyến phiêu lưu ẩm thực với những hương vị tuyệt vời. Đặt ngay!
                         </p>
 
                         <div className="row g-3">
                             <div className="col-md-6">
-                                <label htmlFor="name" className="form-label">Your name *</label>
+                                <label htmlFor="name" className="form-label">Tên của bạn *</label>
                                 <input
                                     type="text"
                                     className="form-control"
                                     id="name"
-                                    name="name"
-                                    value={formData.name}
+                                    name="fullName"
+                                    value={formData.fullName}
                                     onChange={handleChange}
-                                    placeholder="Enter your name"
+                                    placeholder="Nhập tên"
                                     required
                                 />
                             </div>
@@ -153,75 +198,75 @@ const ReservationForm: React.FC = () => {
                                     name="email"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    placeholder="Enter your email"
+                                    placeholder="Nhập email"
                                     required
                                 />
                             </div>
 
                             <div className="col-md-6">
-                                <label htmlFor="phone" className="form-label">Phone number *</label>
+                                <label htmlFor="phone" className="form-label">Số điện thoại *</label>
                                 <input
-                                    type="text"
+                                    type="tel"
                                     className="form-control"
                                     id="phone"
-                                    name="phone"
-                                    value={formData.phone}
+                                    name="phoneNumber"
+                                    value={formData.phoneNumber}
                                     onChange={handleChange}
-                                    placeholder="Enter your phone number"
+                                    placeholder="Nhập số điện thoại"
                                     required
                                 />
                             </div>
 
                             <div className="col-md-6">
-                                <label htmlFor="guests" className="form-label">Number of guests *</label>
+                                <label htmlFor="guests" className="form-label">Số lượng người *</label>
                                 <input
                                     type="number"
                                     className="form-control"
                                     id="guests"
-                                    name="guests"
-                                    value={formData.guests}
+                                    name="numberPeople"
+                                    value={formData.numberPeople}
                                     onChange={handleChange}
-                                    placeholder="Enter number of guests"
+                                    placeholder="Nhập số lượng người"
                                     required
                                 />
                             </div>
 
                             <div className="col-md-6">
-                                <label htmlFor="date" className="form-label">Date *</label>
+                                <label htmlFor="date" className="form-label">Ngày đến *</label>
                                 <input
                                     type="date"
                                     className="form-control"
                                     id="date"
-                                    name="date"
-                                    value={formData.date}
+                                    name="dateToCome"
+                                    value={formData.dateToCome}
                                     onChange={handleChange}
                                     required
                                 />
                             </div>
 
                             <div className="col-md-6">
-                                <label htmlFor="time" className="form-label">Time *</label>
+                                <label htmlFor="time" className="form-label">Giờ đến *</label>
                                 <input
                                     type="time"
                                     className="form-control"
                                     id="time"
-                                    name="time"
-                                    value={formData.time}
+                                    name="timeToCome"
+                                    value={formData.timeToCome}
                                     onChange={handleChange}
                                     required
                                 />
                             </div>
 
                             <div className="col-12">
-                                <label htmlFor="requests" className="form-label">Special requests</label>
+                                <label htmlFor="requests" className="form-label">Ghi chú</label>
                                 <textarea
                                     className="form-control"
                                     id="requests"
-                                    name="requests"
-                                    value={formData.requests}
+                                    name="note"
+                                    value={formData.note}
                                     onChange={handleChange}
                                     rows={3}
-                                    placeholder="Enter any special requests"
+                                    placeholder="Nhập ghi chú"
                                 ></textarea>
                             </div>
 
@@ -236,12 +281,12 @@ const ReservationForm: React.FC = () => {
                                     required
                                 />
                                 <label className="form-check-label" htmlFor="agree">
-                                    I agree to use my personal data
+                                    Tôi đồng ý việc sử dụng thông tin cá nhân
                                 </label>
                             </div>
 
                             <div className="col-12 text-center mt-3">
-                                <button type="submit" className="btn-reservation">Reserve now</button>
+                                <button type="submit" className="btn-reservation">Đặt bàn bây giờ</button>
                             </div>
                         </div>
                     </form>
