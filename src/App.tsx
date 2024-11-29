@@ -41,6 +41,12 @@ import WorkShift from "./layouts/ADMIN/WorkShift";
 import LoginSuccess from "./layouts/customer/LoginSuccess";
 import CheckoutSucess from "./layouts/staff/component/checkout/CheckoutSucess";
 import CheckoutFailed from "./layouts/staff/component/checkout/CheckoutFailed";
+import MainLayoutCashier from "./layouts/cashier/mainLayoutCashier";
+import ManagementTableCashier from "./layouts/cashier/managementTableCashier";
+import ManagementFoodCashier from "./layouts/cashier/managementFoodCashier";
+import ManagementOrdersOnlCashier from "./layouts/cashier/managementOrdersOnlCashier";
+import ManagementReservationCashier from "./layouts/cashier/managementReservationCashier";
+import DashboardCashier from "./layouts/cashier/dashboardCashier";
 
 function App() {
   return (
@@ -81,12 +87,11 @@ export function Routing() {
     "/admin/dashboard",
     "/orderOnTable",
     "/checkout",
-    "/admin/manage-product"
+    "/admin/manage-product",
+    "/cashier",
   ];
 
   return (
-
-
     <>
       {/* Hiển thị MenuCustomer trừ khi ở các routes ẩn */}
       {!isHiddenRoute(window.location.pathname) && <MenuCustomer />}
@@ -156,10 +161,19 @@ export function Routing() {
           path="/cashier"
           element={
             <PrivateRoute allowedRoles={["CASHIER", "ADMIN"]}>
-              <IndexCustomer />
+              <MainLayoutCashier />
             </PrivateRoute>
           }
-        />
+        >
+          <Route index element={<DashboardCashier />} />
+          <Route path="table" element={<ManagementTableCashier />} />
+          <Route path="food" element={<ManagementFoodCashier />} />
+          <Route path="ordersOnline" element={<ManagementOrdersOnlCashier />} />
+          <Route
+            path="reservation"
+            element={<ManagementReservationCashier />}
+          />
+        </Route>
 
         <Route
           path="/admin"
@@ -177,10 +191,7 @@ export function Routing() {
             path="/admin/manage-promotions"
             element={<PromotionManagement />}
           />
-          <Route
-            path="/admin/manage-product"
-            element={<ProductManagement />}
-          />
+          <Route path="/admin/manage-product" element={<ProductManagement />} />
           <Route path="/admin/manage-accounts" element={<Management />} />
           <Route path="/admin/manage-work-shifts" element={<WorkShift />} />
         </Route>
