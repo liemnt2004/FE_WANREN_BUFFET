@@ -8,6 +8,8 @@ import { request } from "../../../../api/Request";
 import { notification } from 'antd';
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { AuthContext } from "../../../customer/component/AuthContext";
+import jsPDF from "jspdf";
+import autoTable from 'jspdf-autotable'
 
 const Checkout3: React.FC = () => {
     const location = useLocation();
@@ -18,7 +20,7 @@ const Checkout3: React.FC = () => {
     const [lastAmount, setLastAmount] = useState<number>(0);
     const [choicePayment, setChoicePayment] = useState<string | undefined>(undefined);
     const [orderDetails, setOrderDetails] = useState<OrderDetailsWithNameProduct[]>([]);
-    const {employeeUserId} = useContext(AuthContext);
+    const { employeeUserId, employeeFullName } = useContext(AuthContext);
     const [isQrPopupVisible, setQrPopupVisible] = useState(false);
     const [qrCode, setQrCode] = useState<string>();
     const [description, setDescription] = useState<string>();
@@ -38,6 +40,7 @@ const Checkout3: React.FC = () => {
                 const validOrderDetails = fetchedOrderDetails.filter((item: any) => item.quantity > 0 && item.price > 0);
                 setOrderDetails(validOrderDetails);
                 await updateTableStatus(Number(tableId), "LOCKED_TABLE");
+                updateOrderStatus(orderId, "WAITING");
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Failed to fetch orderDetails';
                 setError(errorMessage);
@@ -50,15 +53,102 @@ const Checkout3: React.FC = () => {
                 setAmount(Math.floor(amountOfRs));
                 setVat(Math.floor(amountOfRs * 0.08));
                 setLastAmount(Math.floor(amountOfRs + (amountOfRs * 0.08)));
-            } catch (err) { 
+            } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Failed to get amount';
                 setError(errorMessage);
             }
-        }
+        };
 
         getAmount();
         loadOrderDetails();
     }, []);
+
+    const checkAndPrintInvoice = (
+        details: any[] = orderDetails,
+        totalAmount: number = amount,
+        vatAmount: number = vat,
+        finalAmount: number = lastAmount
+    ) => {
+        if (details.length > 0 && totalAmount > 0 && vatAmount > 0 && finalAmount > 0) {
+            console.log("Tiến hành in hóa đơn!");
+            exportStyledInvoice();
+        }
+    };
+
+    const handlePrintInvoice = () => {
+        checkAndPrintInvoice(orderDetails, amount, vat, lastAmount);
+    };
+
+    const exportStyledInvoice = () => {
+        const doc = new jsPDF();
+
+        doc.setFont('Roboto', 'normal');
+
+        // Add Date and Time
+        const currentDate = new Date().toLocaleString(); // Format as you want
+        doc.setFontSize(10);
+        doc.text(`Date: ${currentDate}`, 200, 30, { align: 'right' });
+
+        // Logo and title
+        doc.setFontSize(20);
+        doc.text("HÓA ĐƠN THANH TOÁN", 105, 20, { align: "center" });
+        doc.setFontSize(10);
+        doc.text("NO. 000" + `${orderId}`, 200, 20, { align: "right" });
+
+        // Customer information
+        doc.setFontSize(12);
+        doc.text("Hóa đơn:", 20, 40);
+        doc.text(`Bàn số: ${tableId}`, 20, 45);
+        doc.text(`Số hóa đơn: ${orderId}`, 20, 50);
+        doc.text("Nhà hàng:", 140, 40);
+        doc.text("Wanren Buffet", 140, 45);
+
+        doc.text(`Nhân viên thanh toán: ${employeeFullName}`, 140, 50);
+
+        const columns = ["Sản phẩm", "Số lượng", "Đơn giá", "Thành tiền"];
+        const tableRows = orderDetails.map((item: any) => [
+            item.productName,
+            item.quantity,
+            `${item.price} VND`,
+            `${item.quantity * item.price} VND`,
+        ]);
+
+        // Generate the table using autoTable plugin
+        autoTable(doc, {
+            startY: 60, // Position where the table starts
+            head: [columns], // Table headers
+            body: tableRows, // Table data
+            columnStyles: {
+                0: { cellWidth: 70 },  // Set column widths
+                1: { cellWidth: 30 },
+                2: { cellWidth: 30 },
+                3: { cellWidth: 30 },
+            },
+            theme: "grid", // Use grid style for the table
+        });
+
+        // Get the final Y position of the last table rendered
+        const lastY = (doc as any).lastAutoTable.finalY;
+
+        // Total amount
+        let currentY = lastY + 10; // Use lastAutoTable.finalY to position the total
+
+        doc.text(`Subtotal: ${amount} VND`, 20, currentY);
+        doc.text(`VAT (8%): ${vat} VND`, 20, currentY + 10);
+        doc.text(`Total: ${lastAmount} VND`, 20, currentY + 20);
+
+        // Notes and payment method
+        currentY += 40;
+        doc.setFontSize(12);
+        doc.text("Note: Thank you for choosing us!", 20, currentY + 10);
+
+        // Save the PDF
+        doc.save(`invoice_order_${orderId}.pdf`);
+    };
+
+
+
+
 
     const choiceClick = (event: React.MouseEvent<HTMLDivElement>) => {
         const divId = event.currentTarget.dataset.id;
@@ -84,7 +174,7 @@ const Checkout3: React.FC = () => {
                     paymentMethod: paymentMethod,
                     paymentStatus: status,
                     orderId: orderId,
-                    userId: 1
+                    userId: Number(employeeUserId)
                 })
             });
         } catch (error) {
@@ -224,13 +314,15 @@ const Checkout3: React.FC = () => {
                         <div className="turn-back">
                             <button onClick={() => navigate(-1)}>Quay lại</button>
                         </div>
-                        <div className="call-staff-inner">
+                        {/* <div className="call-staff-inner">
                             <i className="bi bi-bell-fill"></i>
                             Gọi nhân viên
-                        </div>
+                        </div> */}
                         <div className="turn-dashboard">
+                            <button onClick={handlePrintInvoice}><i className="bi bi-printer-fill text-danger fs-4"></i></button>
+                            <button className="mx-3"><i className="bi bi-arrow-counterclockwise fw-bold text-danger fs-4"></i></button>
                             <button onClick={() => navigate("/staff")}>
-                                <i className="bi bi-arrow-counterclockwise"></i> Về trang chủ
+                                Về trang chủ
                             </button>
                         </div>
                     </div>
