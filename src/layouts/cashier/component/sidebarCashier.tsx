@@ -1,27 +1,12 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom"; // useNavigate để chuyển hướng sau khi logout
+import { Link } from "react-router-dom"; // useNavigate để chuyển hướng sau khi logout
 import "../assets/css/cashierSidebar.css";
 
 const SidebarCashier = () => {
-  const navigate = useNavigate(); // Hook để chuyển hướng sau khi logout
 
-  // Hàm xử lý logout
   const handleLogout = () => {
-    // Hiển thị thông báo xác nhận logout
-    const confirmLogout = window.confirm(
-      "Bạn có chắc chắn muốn đăng xuất không? "
-    );
-
-    if (confirmLogout) {
-      // Xóa thông tin người dùng khỏi localStorage (hoặc nơi bạn lưu trữ thông tin đăng nhập)
-      localStorage.removeItem("user"); // Giả sử bạn lưu thông tin người dùng trong 'user'
-
-      // Chuyển hướng về trang login sau khi logout
-      navigate("/login"); // Đảm bảo rằng đường dẫn '/login' là trang đăng nhập của bạn
-
-      // Hiển thị thông báo logout thành công
-      alert("Bạn đã đăng xuất thành công.");
-    }
+    localStorage.clear();
+    window.location.href = "/employee/login";
   };
 
   return (

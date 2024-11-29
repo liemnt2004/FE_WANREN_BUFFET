@@ -1,24 +1,29 @@
 import React, { useContext, useEffect, useState } from "react";
 import '../../assets/css/checkout_for_staff.css'
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus, payWithVNPay } from "../../../../api/apiStaff/orderForStaffApi";
+import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus, payWithVNPay, getPromotionByOrderId, getLoyaltyPoints } from "../../../../api/apiStaff/orderForStaffApi";
 import OrderDetailsWithNameProduct from "../../../../models/StaffModels/OrderDetailsWithNameProduct";
-import { request } from "../../../../api/Request";
-// import { AuthContext } from "../../../customer/component/AuthContext";
 import { notification } from 'antd';
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { AuthContext } from "../../../customer/component/AuthContext";
+import jsPDF from "jspdf";
+import autoTable from 'jspdf-autotable'
+
+interface PromotionInfo {
+    promotionName: string;
+    promotionValue: number;
+}
 
 const Checkout3: React.FC = () => {
     const location = useLocation();
-    const { tableId, orderId } = location.state || {};
+    const { tableId, orderId, phoneNumber } = location.state || {};
     const [error, setError] = useState<string | null>(null);
     const [amount, setAmount] = useState<number>(0);
     const [vat, setVat] = useState<number>(0);
     const [lastAmount, setLastAmount] = useState<number>(0);
     const [choicePayment, setChoicePayment] = useState<string | undefined>(undefined);
     const [orderDetails, setOrderDetails] = useState<OrderDetailsWithNameProduct[]>([]);
-    const {employeeUserId} = useContext(AuthContext);
+    const { employeeUserId, employeeFullName } = useContext(AuthContext);
     const [isQrPopupVisible, setQrPopupVisible] = useState(false);
     const [qrCode, setQrCode] = useState<string>();
     const [description, setDescription] = useState<string>();
@@ -30,6 +35,22 @@ const Checkout3: React.FC = () => {
         cursor: "pointer",
         color: "white"
     }
+    const [promotion, setPromotion] = useState<PromotionInfo | null>(null);
+    const [loyaltyPoints, setLoyaltyPoints] = useState<number>(0);
+    const [inputValue, setInputValue] = useState<number>();
+    const [maxPointsUsable, setMaxPointsUsable] = useState(0);
+
+    const openNotification = (message: string, description: string, icon: React.ReactNode, pauseOnHover: boolean = true) => {
+        api.open({
+            message,
+            description,
+            showProgress: true,
+            pauseOnHover,
+            placement: 'topRight',
+            duration: 3,
+            icon,
+        });
+    };
 
     useEffect(() => {
         const loadOrderDetails = async () => {
@@ -38,27 +59,173 @@ const Checkout3: React.FC = () => {
                 const validOrderDetails = fetchedOrderDetails.filter((item: any) => item.quantity > 0 && item.price > 0);
                 setOrderDetails(validOrderDetails);
                 await updateTableStatus(Number(tableId), "LOCKED_TABLE");
+                updateOrderStatus(orderId, "WAITING");
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Failed to fetch orderDetails';
                 setError(errorMessage);
             }
         };
 
-        const getAmount = async () => {
+        const fetchPromotion = async () => {
             try {
-                const amountOfRs = await getOrderAmount(Number(orderId));
-                setAmount(Math.floor(amountOfRs));
-                setVat(Math.floor(amountOfRs * 0.08));
-                setLastAmount(Math.floor(amountOfRs + (amountOfRs * 0.08)));
-            } catch (err) { 
-                const errorMessage = err instanceof Error ? err.message : 'Failed to get amount';
+                const data = await getPromotionByOrderId(orderId);
+                setPromotion(data);
+            } catch (err) {
+                setError("Unable to fetch promotion details.");
+                console.error(err);
+            }
+        };
+
+        fetchPromotion();
+        loadOrderDetails();
+        fetchLoyaltyPoints(phoneNumber);
+    }, []);
+
+    const fetchLoyaltyPoints = async (phoneNumber: string) => {
+        try {
+            const data = await getLoyaltyPoints(phoneNumber);
+            const loyaltyPoints = data.loyaltyPoints;
+            setLoyaltyPoints(loyaltyPoints);
+        } catch (error) {
+            console.error("Failed to fetch loyalty points:", error);
+            return null;
+        }
+    };
+    useEffect(() => {
+        const calculateAmounts = async () => {
+            try {
+                const totalAmount = orderDetails.reduce((sum, item) => {
+                    if (item.quantity && item.price) {
+                        return sum + item.quantity * item.price;
+                    }
+                    return sum;
+                }, 0);
+
+                const maxDiscount = Math.floor(totalAmount * 0.5);
+
+                const discountFromPromotion = promotion ? promotion.promotionValue : 0;
+                const appliedPromotionDiscount = Math.min(discountFromPromotion, maxDiscount);
+
+                const remainingDiscountCap = maxDiscount - appliedPromotionDiscount;
+                const discountFromLoyaltyPoints = Math.min(
+                    inputValue || 0,
+                    loyaltyPoints,
+                    remainingDiscountCap
+                );
+
+                setMaxPointsUsable(Math.min(loyaltyPoints, remainingDiscountCap));
+
+                const totalDiscount = appliedPromotionDiscount + discountFromLoyaltyPoints;
+                const discountedAmount = Math.max(totalAmount - totalDiscount, 0);
+
+                const vatAmount = Math.floor(discountedAmount * 0.08);
+                const finalAmount = Math.floor(discountedAmount + vatAmount);
+
+                setAmount(discountedAmount);
+                setVat(vatAmount);
+                setLastAmount(finalAmount);
+            } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'Failed to calculate amounts';
                 setError(errorMessage);
             }
+        };
+
+        calculateAmounts();
+    }, [orderDetails, promotion, inputValue, loyaltyPoints]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newInputValue = Number(e.target.value);
+
+        if (newInputValue > maxPointsUsable) {
+            openNotification(
+                'Điểm cần dùng!',
+                'Lưu ý! Số điểm dùng không vượt quá 50% tổng bill (Bao gồm các voucher giảm giá khác)!',
+                <InfoCircleOutlined style={{ color: '#1890ff' }} />
+            );
+        } else {
         }
 
-        getAmount();
-        loadOrderDetails();
-    }, []);
+        setInputValue(newInputValue);
+    };
+
+    const checkAndPrintInvoice = (
+        details: any[] = orderDetails,
+        totalAmount: number = amount,
+        vatAmount: number = vat,
+        finalAmount: number = lastAmount
+    ) => {
+        if (details.length > 0 && totalAmount > 0 && vatAmount > 0 && finalAmount > 0) {
+            console.log("Tiến hành in hóa đơn!");
+            exportStyledInvoice();
+        }
+    };
+
+    const handlePrintInvoice = () => {
+        checkAndPrintInvoice(orderDetails, amount, vat, lastAmount);
+    };
+
+    const exportStyledInvoice = () => {
+        const doc = new jsPDF();
+
+        doc.setFont('Roboto', 'normal');
+
+        const currentDate = new Date().toLocaleString();
+        doc.setFontSize(10);
+        doc.text(`Date: ${currentDate}`, 200, 30, { align: 'right' });
+
+        doc.setFontSize(20);
+        doc.text("HÓA ĐƠN THANH TOÁN", 105, 20, { align: "center" });
+        doc.setFontSize(10);
+        doc.text("NO. 000" + `${orderId}`, 200, 20, { align: "right" });
+
+        doc.setFontSize(12);
+        doc.text("Hóa đơn:", 20, 40);
+        doc.text(`Bàn số: ${tableId}`, 20, 45);
+        doc.text(`Số hóa đơn: ${orderId}`, 20, 50);
+        doc.text("Nhà hàng:", 140, 40);
+        doc.text("Wanren Buffet", 140, 45);
+
+        doc.text(`Nhân viên thanh toán: ${employeeFullName}`, 140, 50);
+
+        const columns = ["Sản phẩm", "Số lượng", "Đơn giá", "Thành tiền"];
+        const tableRows = orderDetails.map((item: any) => [
+            item.productName,
+            item.quantity,
+            `${item.price} VND`,
+            `${item.quantity * item.price} VND`,
+        ]);
+
+        autoTable(doc, {
+            startY: 60,
+            head: [columns],
+            body: tableRows,
+            columnStyles: {
+                0: { cellWidth: 70 },
+                1: { cellWidth: 30 },
+                2: { cellWidth: 30 },
+                3: { cellWidth: 30 },
+            },
+            theme: "grid",
+        });
+
+        const lastY = (doc as any).lastAutoTable.finalY;
+
+        let currentY = lastY + 10;
+
+        doc.text(`Subtotal: ${amount} VND`, 20, currentY);
+        doc.text(`VAT (8%): ${vat} VND`, 20, currentY + 10);
+        doc.text(`Total: ${lastAmount} VND`, 20, currentY + 20);
+
+        currentY += 40;
+        doc.setFontSize(12);
+        doc.text("Note: Thank you for choosing us!", 20, currentY + 10);
+
+        doc.save(`invoice_order_${orderId}.pdf`);
+    };
+
+
+
+
 
     const choiceClick = (event: React.MouseEvent<HTMLDivElement>) => {
         const divId = event.currentTarget.dataset.id;
@@ -84,7 +251,7 @@ const Checkout3: React.FC = () => {
                     paymentMethod: paymentMethod,
                     paymentStatus: status,
                     orderId: orderId,
-                    userId: 1
+                    userId: Number(employeeUserId)
                 })
             });
         } catch (error) {
@@ -92,11 +259,10 @@ const Checkout3: React.FC = () => {
         }
     }
 
-    const generateQrCode = (bank: { bank_ID: string; account_NO: string; }, amount: number): string => {
-        return `https://img.vietqr.io/image/${bank.bank_ID}-${bank.account_NO}-compact.png?amount=${amount}&addInfo=${(description)}`;
-    };
-
     useEffect(() => {
+        const generateQrCode = (bank: { bank_ID: string; account_NO: string; }, amount: number): string => {
+            return `https://img.vietqr.io/image/${bank.bank_ID}-${bank.account_NO}-compact.png?amount=${amount}&addInfo=${(description)}`;
+        };
         const myBank = {
             bank_ID: 'MB',
             account_NO: '280520049999'
@@ -104,7 +270,7 @@ const Checkout3: React.FC = () => {
         setDescription(orderId + " Thanh toan tai Wanren Buffet");
         const QR = generateQrCode(myBank, lastAmount);
         setQrCode(QR);
-    }, [generateQrCode, lastAmount, orderId]);
+    }, [description, lastAmount, orderId]);
 
 
     const closeQrPopup = () => {
@@ -188,18 +354,6 @@ const Checkout3: React.FC = () => {
         return () => clearInterval(interval);
     }, [isUpdating, lastAmount, description]);
 
-    const openNotification = (message: string, description: string, icon: React.ReactNode, pauseOnHover: boolean = true) => {
-        api.open({
-            message,
-            description,
-            showProgress: true,
-            pauseOnHover,
-            placement: 'topRight',
-            duration: 3,
-            icon,
-        });
-    };
-
     const handleManualCheck = async () => {
         if (isUpdating) {
             openNotification(
@@ -224,13 +378,15 @@ const Checkout3: React.FC = () => {
                         <div className="turn-back">
                             <button onClick={() => navigate(-1)}>Quay lại</button>
                         </div>
-                        <div className="call-staff-inner">
+                        {/* <div className="call-staff-inner">
                             <i className="bi bi-bell-fill"></i>
                             Gọi nhân viên
-                        </div>
+                        </div> */}
                         <div className="turn-dashboard">
+                            <button onClick={handlePrintInvoice}><i className="bi bi-printer-fill text-danger fs-4"></i></button>
+                            <button className="mx-3" onClick={() => navigate(0)}><i className="bi bi-arrow-counterclockwise fw-bold text-danger fs-4"></i></button>
                             <button onClick={() => navigate("/staff")}>
-                                <i className="bi bi-arrow-counterclockwise"></i> Về trang chủ
+                                Về trang chủ
                             </button>
                         </div>
                     </div>
@@ -248,6 +404,38 @@ const Checkout3: React.FC = () => {
                                         <td>{orderDetail.price?.toLocaleString() + " đ"}</td>
                                     </tr>
                                 ))}
+                                <tr>
+                                    <td colSpan={2} style={{ height: '20px' }}></td>
+                                </tr>
+                                {promotion != null && (
+                                    <tr>
+                                        <td>{promotion?.promotionName}</td>
+                                        <td>{"- " + Math.floor(Number(promotion?.promotionValue)).toLocaleString() + " đ"}</td>
+                                    </tr>)
+                                }
+                                {phoneNumber != null && phoneNumber.length >= 10 && (
+                                    <tr>
+                                        <td>Số điểm hiện có: {loyaltyPoints.toLocaleString() + " điểm"}</td>
+                                        <td>
+                                            <input
+                                            style={{borderBottom: '1px solid gray'}}
+                                                className="w-50 m-0 p-0 fs-5"
+                                                type="number"
+                                                id="loyaltyPointsInput"
+                                                value={inputValue}
+                                                onChange={handleInputChange}
+                                                placeholder="Nhập số điểm"
+                                            />
+                                        </td>
+                                    </tr>
+                                )}
+
+                                {phoneNumber != null && phoneNumber.length >= 10 && (
+                                    <tr>
+                                        <td>Số điểm có thể dùng: {maxPointsUsable.toLocaleString() + " điểm"}</td>
+                                        <td></td>
+                                    </tr>
+                                )}
                                 <tr>
                                     <td>Tổng tiền hàng</td>
                                     <td>{Math.floor(amount).toLocaleString() + " đ"}</td>

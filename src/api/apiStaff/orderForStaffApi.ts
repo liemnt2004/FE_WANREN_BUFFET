@@ -128,6 +128,35 @@ export const fetchOrderStatusAPI = async (orderId: number) => {
     if (!response.ok) throw new Error("Error fetching order details");
     return response.json();
   };
+
+  export const getPromotionByOrderId = async (orderId: number) => {
+    const response = await fetch(`http://localhost:8080/api/promotions/info/${orderId}`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Error fetching order details");
+    return response.json();
+  };
+
+  export const getLoyaltyPoints = async (phoneNumber:string) => {
+    const response = await fetch(`http://localhost:8080/api/customer/loyalty-points?phoneNumber=${phoneNumber}`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Error fetching getLoyaltyPoints");
+    return response.json();
+  };
+
+  export const updateLoyaltyPoints = async (phoneNumber: number, pointsToDeduct: number) => {
+    const response = await fetch(`${BASE_URL}/customer/update-loyalty-points`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify({ phoneNumber: phoneNumber, pointsToDeduct: pointsToDeduct}),
+    });
+    if (!response.ok) throw new Error("Error updating order amount");
+  };
+
+
   
 
 export const fetchProductDetailsAPI = async (productId: number) => {
@@ -137,6 +166,22 @@ export const fetchProductDetailsAPI = async (productId: number) => {
   });
   if (!response.ok) throw new Error(`Error fetching product ${productId}`);
   return response.json();
+};
+
+export const fetchTableStatus = async (tableId: number) => {
+  const response = await fetch(`http://localhost:8080/api/table/status/${tableId}`, {
+    method: "GET",
+    headers: getHeaders(),
+  });
+  if (!response.ok) throw new Error(`Error fetching table status`);
+  const responseText = await response.text();
+  try {
+    const data = JSON.parse(responseText);
+    return data;
+  } catch (error) {
+    console.error("Error parsing response as JSON:", error);
+    return responseText;
+  }
 };
 
 export const fetchOrderIdByTableId = async (tableId: number) => {
@@ -255,3 +300,4 @@ export const payWithVNPay = async (total_amount: number, user_id: number, order_
           console.error('Error creating payment:', error);
       }
 }
+
