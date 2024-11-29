@@ -12,6 +12,7 @@ import {
   Row,
   Col,
   Select,
+  Flex,
 } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -22,7 +23,6 @@ import {
   updateUser,
   updateAccountStatus,
   deleteUser,
-  searchUsers,
 } from "../../api/apiAdmin/employeemanagementApi";
 
 // Importing libraries for exporting data
@@ -42,21 +42,13 @@ const EmployeeManagement: React.FC = () => {
   const [updateForm] = Form.useForm();
   const [currentEmployee, setCurrentEmployee] =
     useState<Partial<EmployeeAdmin> | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
-  const fetchEmployees = async (page: number, searchTerm: string = "") => {
+  const fetchEmployees = async (page: number) => {
     try {
       setLoading(true);
-      let response;
+      let response = await getListUser(page);
       let newEmployees: EmployeeAdmin[] = [];
-
-      if (searchTerm.trim() === "") {
-        response = await getListUser(page);
-      } else {
-        response = await searchUsers({ fullName: searchTerm, page });
-      }
-
       if (
         response &&
         response._embedded &&
@@ -91,24 +83,8 @@ const EmployeeManagement: React.FC = () => {
   };
 
   useEffect(() => {
-    setEmployees([]);
-    setPage(0);
-    setHasMore(true);
-  }, [debouncedSearchTerm]);
-
-  useEffect(() => {
-    if (hasMore) fetchEmployees(page, debouncedSearchTerm);
-  }, [page, hasMore, debouncedSearchTerm]);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchTerm]);
+    if (hasMore) fetchEmployees(page);
+  }, [page, hasMore]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
@@ -283,8 +259,6 @@ const EmployeeManagement: React.FC = () => {
     });
   };
 
-  // Export functions
-
   // Export employees to Excel
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(
@@ -356,7 +330,7 @@ const EmployeeManagement: React.FC = () => {
 
   // Export employees to PDF
   const exportToPDF = async () => {
-    const fontUrl = "/fonts/Roboto-Black.ttf"; // Adjust the font path if necessary
+    const fontUrl = "/fonts/Roboto-Black.ttf";
     try {
       const pdfDoc = await PDFDocument.create();
       pdfDoc.registerFontkit(fontkit);
@@ -447,6 +421,20 @@ const EmployeeManagement: React.FC = () => {
     }
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+  // Filter customers based on search query
+  const filteredEmloyees = employees.filter((employee) => {
+    const username = employee.fullName.toLowerCase();
+    const fullname = employee.username.toLowerCase();
+    const email = employee.email.toLowerCase();
+    return (
+      username.includes(searchQuery.toLowerCase()) ||
+      email.includes(searchQuery.toLowerCase()) ||
+      fullname.includes(searchQuery.toLowerCase())
+    );
+  });
   return (
     <React.Fragment>
       <div className="container-fluid">
@@ -467,8 +455,7 @@ const EmployeeManagement: React.FC = () => {
                   <Input
                     className="search-input"
                     placeholder="Search for employees..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={handleSearchChange}
                   />
                   <i className="fas fa-search search-icon"></i>
                 </div>
@@ -504,15 +491,15 @@ const EmployeeManagement: React.FC = () => {
                     <th>Username</th>
                     <th>Full Name</th>
                     <th>Email</th>
-                    <th>Phone Number</th>
+                    <th style={{ width: 150 }}>Phone Number</th>
                     <th>Address</th>
                     <th>UserType</th>
-                    <th>Account Status</th>
-                    <th>Actions</th>
+                    <th style={{ width: 150 }}>Account Status</th>
+                    <th style={{ width: 100 }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {employees.map((employee) => (
+                  {filteredEmloyees.map((employee) => (
                     <tr key={employee.userId}>
                       <td>{employee.userId}</td>
                       <td>{employee.username}</td>
@@ -521,7 +508,7 @@ const EmployeeManagement: React.FC = () => {
                       <td>{employee.phoneNumber}</td>
                       <td>{employee.address}</td>
                       <td>{employee.userType}</td>
-                      <td>
+                      <td className="text-center align-middle">
                         <Switch
                           checked={Boolean(employee.accountStatus)}
                           onChange={(checked) =>
@@ -529,6 +516,7 @@ const EmployeeManagement: React.FC = () => {
                           }
                         />
                       </td>
+
                       <td>
                         <Button
                           className="icon-button-edit"

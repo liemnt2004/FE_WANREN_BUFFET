@@ -1,7 +1,18 @@
 // src/api/apiAdmin/productApi.ts
 import axios from "axios";
-import {Product} from "../../layouts/ADMIN/ProductManagement";
+import { Category } from "./categoryApiAdmin";  // Import Category type
 
+export interface Product {
+    productId: number;
+    productName: string;
+    description: string;
+    price: number;
+    typeFood: string;
+    image: string;
+    quantity: number;
+    productStatus: "IN_STOCK" | "OUT_OF_STOCK" | "HIDDEN";
+    category: Category;  // Category object
+}
 
 const API_BASE_URL = "http://localhost:8080/Product";
 
@@ -11,50 +22,53 @@ export const fetchProductList = async (
     searchQuery: string
 ): Promise<{ data: Product[]; totalPages: number; totalElements: number }> => {
     try {
+        let url = `${API_BASE_URL}`;
+
         if (searchQuery !== "") {
-            const response = await axios.get(
-                `http://localhost:8080/Product/search/findByProductNameContaining`,
-                {
-                    params: {
-                        productName: searchQuery,
-                        page: page,
-                        size: 20,
-                    },
-                    headers: {
-                        Authorization: `Bearer ${getEmployeeToken()}`,
-                    },
-                }
-            );
-
-            return {
-                data: response.data._embedded.products,
-                totalPages: response.data.page.totalPages,
-                totalElements: response.data.page.totalElements,
-            };
-        } else {
-            const response = await axios.get(`${API_BASE_URL}`, {
-                params: {
-                    page: page,
-                    size: 20,
-                },
-                headers: {
-                    Authorization: `Bearer ${getEmployeeToken()}`,
-                },
-            });
-
-            return {
-                data: response.data._embedded.products,
-                totalPages: response.data.page.totalPages,
-                totalElements: response.data.page.totalElements,
-            };
+            url = `${API_BASE_URL}/search/findByProductNameContaining`;
         }
+
+        const response = await axios.get(url, {
+            params: {
+                productName: searchQuery,
+                page: page,
+                size: 20,
+            },
+            headers: {
+                Authorization: `Bearer ${getEmployeeToken()}`,
+            },
+        });
+
+        // Lấy danh sách sản phẩm từ phản hồi và xử lý category
+        const products = await Promise.all(
+            response.data._embedded.products.map(async (product: any) => {
+                // Lấy dữ liệu category từ API bằng productId
+                const categoryResponse = await axios.get(
+                    `http://localhost:8080/Category/search/findCategoryByProductId?productId=${product.productId}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${getEmployeeToken()}`,
+                        },
+                    }
+                );
+
+                return {
+                    ...product,
+                    category: categoryResponse.data, // Gán dữ liệu category vào product
+                };
+            })
+        );
+
+        return {
+            data: products,
+            totalPages: response.data.page.totalPages,
+            totalElements: response.data.page.totalElements,
+        };
     } catch (error) {
         console.error("Error fetching product list:", error);
         throw error;
     }
 };
-
-
 
 // Thêm mới sản phẩm
 export const createProduct = async (productData: any) => {
@@ -78,6 +92,24 @@ export const updateProduct = async (productId: number, productData: any) => {
                 Authorization: `Bearer ${getEmployeeToken()}`,
             },
         });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Cập nhật danh mục sản phẩm
+export const updateCategory = async (productId: number, categoryId: number) => {
+    try {
+        const response = await axios.put(
+            `http://localhost:8080/api/product/UpdateCategory?productId=${productId}&categoryId=${categoryId}`,
+
+            {
+                headers: {
+                    Authorization: `Bearer ${getEmployeeToken()}`,
+                },
+            }
+        );
         return response.data;
     } catch (error) {
         throw error;
