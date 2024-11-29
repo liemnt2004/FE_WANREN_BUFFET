@@ -23,11 +23,9 @@ import {
   updatePromotion,
   deletePromotion,
 } from "../../api/apiAdmin/promotionApi";
-import useDebounce from "../customer/component/useDebounce";
-
 // Importing libraries for exporting data
 import * as XLSX from "xlsx";
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 
 const { confirm } = Modal;
@@ -52,7 +50,7 @@ const PromotionManagement: React.FC = () => {
 
   useEffect(() => {
     fetchPromotions();
-  }, []);
+  });
 
   const fetchPromotions = async () => {
     if (loading || !hasMore) return;
@@ -248,7 +246,7 @@ const PromotionManagement: React.FC = () => {
       const customFont = await pdfDoc.embedFont(fontBytes);
 
       let page = pdfDoc.addPage([595.28, 841.89]); // A4 size
-      const { width, height } = page.getSize();
+      const { height } = page.getSize();
       const margin = 50;
 
       // Title
@@ -287,33 +285,33 @@ const PromotionManagement: React.FC = () => {
       yPosition -= 20;
 
       // Draw data rows
-      for (const promo of promotions) {
-        const rowData = [
-          promo.promotion.toString(),
-          promo.promotionName || "",
-          promo.promotionType || "",
-          promo.promotionValue?.toString() || "",
-          dayjs(promo.startDate).format("YYYY-MM-DD HH:mm"),
-          dayjs(promo.endDate).format("YYYY-MM-DD HH:mm"),
-          promo.promotionStatus ? "Active" : "Inactive",
-        ];
+      // for (const promo of promotions) {
+      //   const rowData = [
+      //     promo.promotion.toString(),
+      //     promo.promotionName || "",
+      //     promo.promotionType || "",
+      //     promo.promotionValue?.toString() || "",
+      //     dayjs(promo.startDate).format("YYYY-MM-DD HH:mm"),
+      //     dayjs(promo.endDate).format("YYYY-MM-DD HH:mm"),
+      //     promo.promotionStatus ? "Active" : "Inactive",
+      //   ];
 
-        rowData.forEach((data, i) => {
-          page.drawText(data, {
-            x: margin + cellWidths.slice(0, i).reduce((a, b) => a + b, 0),
-            y: yPosition,
-            size: 10,
-            font: customFont,
-            color: rgb(0, 0, 0),
-          });
-        });
+      //   rowData.forEach((data, i) => {
+      //     page.drawText(data, {
+      //       x: margin + cellWidths.slice(0, i).reduce((a, b) => a + b, 0),
+      //       y: yPosition,
+      //       size: 10,
+      //       font: customFont,
+      //       color: rgb(0, 0, 0),
+      //     });
+      //   });
 
-        yPosition -= 20;
-        if (yPosition < 50) {
-          yPosition = height - margin - 40;
-          page = pdfDoc.addPage([595.28, 841.89]);
-        }
-      }
+      //   yPosition -= 20;
+      //   if (yPosition < 50) {
+      //     yPosition = height - margin - 40;
+      //     page = pdfDoc.addPage([595.28, 841.89]);
+      //   }
+      // }
 
       const pdfBytes = await pdfDoc.save();
 

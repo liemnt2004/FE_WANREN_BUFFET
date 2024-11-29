@@ -12,10 +12,8 @@ import {
   Row,
   Col,
   Select,
-  Flex,
 } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
 import EmployeeAdmin from "../../models/AdminModels/EmployeeModel";
 import {
   getListUser,
@@ -27,7 +25,7 @@ import {
 
 // Importing libraries for exporting data
 import * as XLSX from "xlsx";
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 
 const EmployeeManagement: React.FC = () => {
@@ -339,7 +337,7 @@ const EmployeeManagement: React.FC = () => {
       const customFont = await pdfDoc.embedFont(fontBytes);
 
       let page = pdfDoc.addPage([595.28, 841.89]); // A4 size
-      const { width, height } = page.getSize();
+      const { height } = page.getSize();
       const margin = 50;
 
       // Title
@@ -378,33 +376,33 @@ const EmployeeManagement: React.FC = () => {
       yPosition -= 20;
 
       // Draw data rows
-      for (const emp of employees) {
-        const rowData = [
-          emp.userId.toString(),
-          emp.username || "",
-          emp.fullName || "",
-          emp.email || "",
-          emp.phoneNumber || "",
-          emp.userType || "",
-          emp.accountStatus ? "Active" : "Inactive",
-        ];
+      // for (const emp of employees) {
+      //   const rowData = [
+      //     emp.userId.toString(),
+      //     emp.username || "",
+      //     emp.fullName || "",
+      //     emp.email || "",
+      //     emp.phoneNumber || "",
+      //     emp.userType || "",
+      //     emp.accountStatus ? "Active" : "Inactive",
+      //   ];
 
-        rowData.forEach((data, i) => {
-          page.drawText(data, {
-            x: margin + cellWidths.slice(0, i).reduce((a, b) => a + b, 0),
-            y: yPosition,
-            size: 10,
-            font: customFont,
-            color: rgb(0, 0, 0),
-          });
-        });
+      //   rowData.forEach((data, i) => {
+      //     page.drawText(data, {
+      //       x: margin + cellWidths.slice(0, i).reduce((a, b) => a + b, 0),
+      //       y: yPosition,
+      //       size: 10,
+      //       font: customFont,
+      //       color: rgb(0, 0, 0),
+      //     });
+      //   });
 
-        yPosition -= 20;
-        if (yPosition < 50) {
-          yPosition = height - margin - 40;
-          page = pdfDoc.addPage([595.28, 841.89]);
-        }
-      }
+      //   yPosition -= 20;
+      //   if (yPosition < 50) {
+      //     yPosition = height - margin - 40;
+      //     page = pdfDoc.addPage([595.28, 841.89]);
+      //   }
+      // }
 
       const pdfBytes = await pdfDoc.save();
 
