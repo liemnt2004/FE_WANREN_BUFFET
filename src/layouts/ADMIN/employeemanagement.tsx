@@ -420,17 +420,17 @@ const EmployeeManagement: React.FC = () => {
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+    setSearchQuery(e.target.value || "");
   };
   // Filter customers based on search query
   const filteredEmloyees = employees.filter((employee) => {
-    const username = employee.fullName.toLowerCase();
-    const fullname = employee.username.toLowerCase();
-    const email = employee.email.toLowerCase();
+    const username = employee.fullName.toLowerCase() || "";
+    const fullname = employee.username.toLowerCase() || "";
+    const email = employee.email.toLowerCase() || "";
     return (
-      username.includes(searchQuery.toLowerCase()) ||
-      email.includes(searchQuery.toLowerCase()) ||
-      fullname.includes(searchQuery.toLowerCase())
+      username.includes(searchQuery.toLowerCase() || "") ||
+      email.includes(searchQuery.toLowerCase() || "") ||
+      fullname.includes(searchQuery.toLowerCase() || "")
     );
   });
   return (

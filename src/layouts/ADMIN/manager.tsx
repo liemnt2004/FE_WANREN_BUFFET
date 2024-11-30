@@ -121,17 +121,18 @@ const Management: React.FC = () => {
     });
   };
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+    setSearchQuery(e.target.value || "");
   };
   // Filter customers based on search query
-  const filteredAdmins = admins.filter((admins) => {
-    const username = admins.fullName.toLowerCase();
-    const fullname = admins.username.toLowerCase();
-    const email = admins.email.toLowerCase();
+  const filteredAdmins = admins.filter((admin) => {
+    const username = admin.username?.toLowerCase() || "";
+    const fullname = admin.fullName?.toLowerCase() || "";
+    const email = admin.email?.toLowerCase() || "";
+
     return (
-      username.includes(searchQuery.toLowerCase()) ||
-      email.includes(searchQuery.toLowerCase()) ||
-      fullname.includes(searchQuery.toLowerCase())
+      username.includes(searchQuery.toLowerCase() || "") ||
+      email.includes(searchQuery.toLowerCase() || "") ||
+      fullname.includes(searchQuery.toLowerCase() || "")
     );
   });
   return (

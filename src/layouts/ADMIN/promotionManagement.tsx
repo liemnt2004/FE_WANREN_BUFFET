@@ -329,15 +329,15 @@ const PromotionManagement: React.FC = () => {
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+    setSearchQuery(e.target.value || "");
   };
   // Filter customers based on search query
   const filteredEmloyees = promotions.filter((promotions) => {
-    const promotionName = promotions.promotionName.toLowerCase();
-    const promotionType = promotions.promotionType.toLowerCase();
+    const promotionName = promotions.promotionName.toLowerCase() || "";
+    const promotionType = promotions.promotionType.toLowerCase() || "";
     return (
-      promotionName.includes(searchQuery.toLowerCase()) ||
-      promotionType.includes(searchQuery.toLowerCase())
+      promotionName.includes(searchQuery.toLowerCase() || "") ||
+      promotionType.includes(searchQuery.toLowerCase() || "")
     );
   });
   return (
