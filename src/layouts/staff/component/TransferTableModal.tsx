@@ -59,7 +59,14 @@ const TransferTableModal: React.FC<{
     useEffect(() => {
         const fetchAvailableTables = async () => {
             try {
-                const response = await fetch('http://localhost:8080/Table?page=0&size=50');
+                const employeeToken = localStorage.getItem("employeeToken");
+                const response = await fetch('http://localhost:8080/Table?page=0&size=50', {
+                    method: "GET",
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${employeeToken}`
+                    },
+                });
                 const data = await response.json();
                 if (data && data._embedded && data._embedded.tablees) {
                     setTables(data._embedded.tablees.filter((table: { tableStatus: string; }) => table.tableStatus === 'EMPTY_TABLE'));
@@ -106,10 +113,12 @@ const TransferTableModal: React.FC<{
     const handleTransfer = async () => {
         if (currentTableId && selectedTableId !== null && currentTableId !== selectedTableId) {
             try {
+                const employeeToken = localStorage.getItem("employeeToken");
                 const response = await fetch(`http://localhost:8080/api/order_staff/${orderId}/transfer`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
+                        Authorization: `Bearer ${employeeToken}`
                     },
                     body: JSON.stringify({
                         orderId: orderId,

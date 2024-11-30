@@ -140,14 +140,6 @@ export function Routing() {
         />
 
         {/* Route dành cho nhân viên */}
-        <Route path="/orderOnTable" element={<OrderOnTable />} />
-        <Route path="/checkout" element={<CheckoutLayout />}>
-          <Route path="step1" element={<Checkout1 />} />
-          <Route path="step2" element={<Checkout2 />} />
-          <Route path="step3" element={<Checkout3 />} />
-          <Route path="sucessful" element={<CheckoutSucess />} />
-          <Route path="failed" element={<CheckoutFailed />} />
-        </Route>
         <Route
           path="/staff"
           element={
@@ -156,6 +148,28 @@ export function Routing() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/orderOnTable"
+          element={
+            <PrivateRoute allowedRoles={["STAFF", "ADMIN"]}>
+              <OrderOnTable />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <PrivateRoute allowedRoles={["STAFF", "ADMIN"]}>
+              <CheckoutLayout />
+            </PrivateRoute>
+          }
+        >
+          <Route path="step1" index element={<Checkout1 />} />
+          <Route path="step2" element={<Checkout2 />} />
+          <Route path="step3" element={<Checkout3 />} />
+          <Route path="sucessful" element={<CheckoutSucess />} />
+          <Route path="failed" element={<CheckoutFailed />} />
+        </Route>
 
         {/* Route dành cho quản lý */}
         <Route
