@@ -174,7 +174,7 @@ const Scheduleworkshifts: React.FC = () => {
       closeAddModal();
     } catch (error) {
       console.error("Lỗi khi thêm ca:", error);
-      alert("Thêm ca thất bại. Vui lòng thử lại.");
+      alert("Username này đã có ca làm đó vui lòng thử với ca làm khác");
     }
   };
 
