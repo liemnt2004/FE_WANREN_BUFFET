@@ -297,12 +297,16 @@ const CheckoutCustomer: React.FC = () => {
             return;
         }
 
+
+
         let address22 = '';
 
-        if (!showNewAddressForm && decoded) {
+        if (!showNewAddressForm && decoded && decoded.address != '') {
             // Use saved address from token
             address22 = decoded.address || ""
-        } else {
+        }
+
+        else {
             // Use new address entered
             if (!formData.quan || !formData.phuong || !formData.detail_address) {
                 setModalMessage('Vui lòng điền đầy đủ thông tin địa chỉ.');
@@ -415,12 +419,12 @@ const CheckoutCustomer: React.FC = () => {
                         // Bạn có thể cập nhật thêm các trường khác nếu cần
                     }));
                 }
+                cartContext?.clearCart();
 
                 setModalMessage("Đặt hàng thành công. Chúng tôi sẽ liên hệ với bạn sớm.");
                 setModalType('success');
                 setShowModal(true);
-                cartContext?.clearCart();
-                navigate('/checkout'); // Redirect to the order page
+                window.location.reload()
             }else if(formData.payment === "QR_CODE"){
                 const createOrderResponse = await fetch('http://localhost:8080/api/orders', {
                     method: 'POST',
@@ -528,6 +532,7 @@ const CheckoutCustomer: React.FC = () => {
                     if (lastPrice >= lastAmount && lastDescription.includes(description)) {
                         console.log("thành công")
                         handleCloseQRCodeModal()
+                        cartContext?.clearCart();
                         window.location.href = `http://localhost:8080/api/payment/callbck_qrcode/${description.trim().slice(0,2)}`;
 
                     } else {

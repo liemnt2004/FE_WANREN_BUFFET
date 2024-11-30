@@ -72,3 +72,41 @@ export async function getWorkSchedulesByDate(
     throw error;
   }
 }
+// Hàm gọi API để cập nhật WorkSchedule
+export async function updateWorkSchedule(
+  workScheduleId: number,
+  workSchedule: WorkScheduleModel
+): Promise<WorkScheduleFullModel> {
+  try {
+    // Gửi request với token
+    const response = await axios.put(
+      `${API_URL}/update/${workScheduleId}`,
+      workSchedule,
+      {
+        headers: {
+          Authorization: `Bearer ${getEmployeeToken()}`, // Đính kèm token trong header
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // Xử lý và trả về WorkScheduleFullModel đã được cập nhật
+    const updatedSchedule = response.data;
+    return new WorkScheduleFullModel(
+      updatedSchedule.username,
+      updatedSchedule.fullName,
+      updatedSchedule.userType,
+      updatedSchedule.shiftId,
+      updatedSchedule.shiftName,
+      new Date(updatedSchedule.workDate)
+    );
+  } catch (error: any) {
+    // Xử lý lỗi
+    if (error.response) {
+      console.error("Error response:", error.response.data);
+    } else {
+      console.error("Error message:", error.message);
+    }
+    throw error;
+  }
+}

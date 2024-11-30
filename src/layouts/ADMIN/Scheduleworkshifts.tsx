@@ -44,6 +44,7 @@ const Scheduleworkshifts: React.FC = () => {
   const [filterUsername, setFilterUsername] = useState<string>("");
   const [filterShiftId, setFilterShiftId] = useState<number | null>(null);
   const [filterUserType, setFilterUserType] = useState<string>("");
+  const [isEditingShift, setIsEditingShift] = useState<boolean>(false);
 
   const openAddModal = (date: Dayjs) => {
     setSelectedDate(date);
@@ -173,14 +174,15 @@ const Scheduleworkshifts: React.FC = () => {
       closeAddModal();
     } catch (error) {
       console.error("Lỗi khi thêm ca:", error);
-      alert("Thêm ca thất bại. Vui lòng thử lại.");
+      alert("Username này đã có ca làm đó vui lòng thử với ca làm khác");
     }
   };
 
   const getFilteredData = () => {
     return dataForSelectedDate.filter((item) => {
       const matchesUsername = filterUsername
-        ? item.username.toLowerCase().includes(filterUsername.toLowerCase())
+        ? item.username.toLowerCase() ||
+          "".includes(filterUsername.toLowerCase() || "")
         : true;
 
       const matchesShiftId = filterShiftId
@@ -188,11 +190,16 @@ const Scheduleworkshifts: React.FC = () => {
         : true;
 
       const matchesUserType = filterUserType
-        ? item.userType.toLowerCase() === filterUserType.toLowerCase()
+        ? item.userType.toLowerCase() ||
+          "" === filterUserType.toLowerCase() ||
+          ""
         : true;
 
       return matchesUsername && matchesShiftId && matchesUserType;
     });
+  };
+  const handleEditShift = () => {
+    setIsEditingShift(true);
   };
 
   return (
@@ -329,8 +336,33 @@ const Scheduleworkshifts: React.FC = () => {
               { title: "Username", dataIndex: "username", key: "username" },
               { title: "Full Name", dataIndex: "fullName", key: "fullName" },
               { title: "User Type", dataIndex: "userType", key: "userType" },
-              { title: "Shift Name", dataIndex: "shiftName", key: "shiftName" },
+              {
+                title: "Ca làm việc",
+                dataIndex: "shiftName",
+                key: "shiftName",
+                render: (text, record: any) => (
+                  <Select
+                    defaultValue={record.shiftId}
+                    style={{ width: "100%" }}
+                    disabled={!isEditingShift} // Disable if not in editing mode
+                  >
+                    {shiftOptions.map((shift) => (
+                      <Select.Option key={shift.value} value={shift.value}>
+                        {shift.label}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                ),
+              },
+
               { title: "Work Date", dataIndex: "workDate", key: "workDate" },
+              {
+                title: "Actions",
+                key: "actions",
+                render: (text: any, record: any) => (
+                  <Button onClick={handleEditShift}>Sửa</Button>
+                ),
+              },
             ]}
             dataSource={getFilteredData()}
             rowKey="username"
