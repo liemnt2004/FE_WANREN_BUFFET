@@ -401,18 +401,18 @@ const CustomerManagement: React.FC = () => {
     }
   };
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+    setSearchQuery(e.target.value || "");
   };
 
   // Filter customers based on search query
   const filteredCustomers = customers.filter((customer) => {
-    const username = customer.username.toLowerCase();
-    const fullname = customer.fullName.toLowerCase();
-    const email = customer.email.toLowerCase();
+    const username = customer.username.toLowerCase() || "";
+    const fullname = customer.fullName.toLowerCase() || "";
+    const email = customer.email.toLowerCase() || "";
     return (
-      username.includes(searchQuery.toLowerCase()) ||
-      email.includes(searchQuery.toLowerCase()) ||
-      fullname.includes(searchQuery.toLowerCase())
+      username.includes(searchQuery.toLowerCase() || "") ||
+      email.includes(searchQuery.toLowerCase() || "") ||
+      fullname.includes(searchQuery.toLowerCase() || "")
     );
   });
   return (
