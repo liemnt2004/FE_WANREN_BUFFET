@@ -69,7 +69,8 @@ export function Routing() {
         (route === "/orderOnTable" && /^\/orderOnTable\/\d+$/.test(pathname)) ||
         (route === "/checkout" && /^\/checkout\/step[1-3]$/.test(pathname)) ||
         (route === "/checkout" && /^\/checkout\/sucessful/.test(pathname)) ||
-        (route === "/checkout" && /^\/checkout\/failed/.test(pathname))
+        (route === "/checkout" && /^\/checkout\/failed/.test(pathname)) ||
+        (route === "/cashier" && /^\/table/.test(pathname))
     );
   };
   const hiddenRoutes = [

@@ -12,6 +12,7 @@ type Props = {
   swapTable?: () => void;
   splitTable?: () => void;
   combineTable?: () => void;
+  deleteTable?: () => void;
   detailTable?: () => void;
 };
 
@@ -24,6 +25,7 @@ const CardTableCashier = ({
   swapTable,
   splitTable,
   combineTable,
+  deleteTable,
   detailTable,
 }: Props) => {
   const [latestOrder, setLatestOrder] = useState<Order | null>(null);
@@ -56,7 +58,7 @@ const CardTableCashier = ({
 
   return (
     <StyledWrapper status={status}>
-      <div className="card">
+      <div className="card p-0">
         <section className="info-section" onClick={detailTable}>
           <div className="background-design">
             <div className="circle" />
@@ -98,16 +100,19 @@ const CardTableCashier = ({
         </section>
         <section className="days-section">
           <button onClick={foodTable}>
-            <span className="day">Món</span>
+            <p className="day m-0">Món</p>
           </button>
           <button onClick={swapTable}>
-            <span className="day">Đổi</span>
+            <p className="day m-0">Đổi</p>
           </button>
           <button onClick={splitTable}>
-            <span className="day">Tách</span>
+            <p className="day m-0">Tách</p>
           </button>
           <button onClick={combineTable}>
-            <span className="day">Gộp</span>
+            <p className="day m-0">Gộp</p>
+          </button>
+          <button onClick={deleteTable}>
+            <p className="day m-0">Hủy</p>
           </button>
         </section>
       </div>

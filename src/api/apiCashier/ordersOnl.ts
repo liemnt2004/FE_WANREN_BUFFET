@@ -163,4 +163,24 @@ export const updateOrderDetails = async (orderId: number, details: any[]) => {
   }
 };
 
+export const updateTableIdOrder = async (orderId: number, tableId: number) => {
+  try {
+    const response = await fetch(`http://localhost:8080/api/order_staff/${orderId}/transfer`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            orderId: orderId,
+            newTableId: tableId,
+        }),
+    });
 
+    if (!response.ok) {
+        throw new Error('Error transferring table');
+    }
+
+} catch (error) {
+    console.error('Error transferring table:', error);
+}
+};
