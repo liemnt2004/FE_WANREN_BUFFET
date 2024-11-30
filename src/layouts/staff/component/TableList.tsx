@@ -86,7 +86,14 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
   useEffect(() => {
     const fetchTables = async () => {
       try {
-        const response = await fetch('http://localhost:8080/Table?page=0&size=50');
+        const employeeToken = localStorage.getItem("employeeToken");
+        const response = await fetch('http://localhost:8080/Table?page=0&size=50', {
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${employeeToken}`
+          },
+        });
         const data = await response.json();
         if (data && data._embedded && data._embedded.tablees) {
           setTables(data._embedded.tablees);
@@ -116,7 +123,14 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
 
   const handleCheckoutStep = async (tableId: number, step: number) => {
     try {
-      const responseOrderId = await fetch(`http://localhost:8080/api/order_staff/findOrderIdByTableId/${tableId}`);
+       const employeeToken = localStorage.getItem("employeeToken");
+      const responseOrderId = await fetch(`http://localhost:8080/api/order_staff/findOrderIdByTableId/${tableId}`, {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json',
+           Authorization: `Bearer ${employeeToken}`
+      },
+      });
       if (!responseOrderId.ok) throw new Error('Error fetching orderId');
 
       const orderIdText = await responseOrderId.text();

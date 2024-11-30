@@ -1,9 +1,11 @@
 export async function request(endpoint: string, method: string = "GET", body?: any) {
     try {
+        const employeeToken = localStorage.getItem("employeeToken");
         const response = await fetch(endpoint, {
             method: method,
             headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${employeeToken}`,
             },
             body: body ? JSON.stringify(body) : null,
         });
