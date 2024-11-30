@@ -57,3 +57,14 @@ export const updateProductStatus = async (productId: number, newStatus: string) 
     throw error;
   }
 };
+
+export const findProductById = async (productId: number) => {
+  try {
+    // Gọi API để lấy thông tin sản phẩm
+    const response = await axios.get(`http://localhost:8080/Product/${productId}`);
+    return response.data; // Trả về dữ liệu sản phẩm
+  } catch (error) {
+    console.error("Lỗi khi lấy dữ liệu sản phẩm:", error);
+    throw error; // Ném lỗi để xử lý ở nơi gọi hàm
+  }
+};

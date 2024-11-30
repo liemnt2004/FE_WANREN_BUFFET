@@ -12,6 +12,7 @@ type Props = {
   swapTable?: () => void;
   splitTable?: () => void;
   combineTable?: () => void;
+  deleteTable?: () => void;
   detailTable?: () => void;
 };
 
@@ -24,6 +25,7 @@ const CardTableCashier = ({
   swapTable,
   splitTable,
   combineTable,
+  deleteTable,
   detailTable,
 }: Props) => {
   const [latestOrder, setLatestOrder] = useState<Order | null>(null);
@@ -108,6 +110,9 @@ const CardTableCashier = ({
           </button>
           <button onClick={combineTable}>
             <p className="day m-0">Gộp</p>
+          </button>
+          <button onClick={deleteTable}>
+            <p className="day m-0">Hủy</p>
           </button>
         </section>
       </div>
