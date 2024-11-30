@@ -5,7 +5,7 @@ import "./assets/css/styles.css";
 import "./assets/css/Tinh_Style.css";
 import "./assets/css/order_history.css";
 import kichi from "./assets/img/Cream and Black Simple Illustration Catering Logo.png";
-import { DecodedToken } from "./component/AuthContext";
+import {AuthContext, DecodedToken} from "./component/AuthContext";
 import {jwtDecode} from "jwt-decode"; // Corrected import
 import { useNavigate } from "react-router-dom";
 import {getProductHot} from "../../api/apiCustommer/productApi";
@@ -251,32 +251,54 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
 
 
 
+
 const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
     const [editing, setEditing] = useState(false);
     const [tempPassword, setTempPassword] = useState<string>("");
-    const token = localStorage.getItem('token'); // Retrieve token for authorization
+    const [confirmPassword, setConfirmPassword] = useState<string>(""); // New state for confirm password
+    const [error, setError] = useState<string | null>(null); // To display error messages
+    const [token, setToken] = useState<string | null>(localStorage.getItem('token')); // Token state
+
+    const authContext = useContext(AuthContext);
+
+    // Update token if it changes in localStorage
+    useEffect(() => {
+        const storedToken = localStorage.getItem('token');
+        setToken(storedToken);
+    }, []);
 
     const handleSave = async () => {
+        if (tempPassword !== confirmPassword) {
+            setError("Mật khẩu và xác nhận mật khẩu không khớp.");
+            return;
+        }
+
+        if (tempPassword.length < 6) {
+            setError("Mật khẩu phải có ít nhất 6 ký tự.");
+            return;
+        }
+
         try {
-            const response = await fetch('http://localhost:8080/api/user/password', { // Updated endpoint
+            const response = await fetch(`http://localhost:8080/api/customer/updatePassword/${authContext.userId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ password: tempPassword }),
+                body: JSON.stringify({ password: tempPassword }), // Pass the password in the body
             });
 
             if (!response.ok) {
-                throw new Error('Failed to update password');
+                const errorMessage = await response.text();
+                throw new Error(errorMessage || 'Không thể cập nhật mật khẩu');
             }
 
-            // Assuming the API returns a success message or updated user info
             setUserInfo({ ...userInfo, password: tempPassword });
             setEditing(false);
-        } catch (error) {
+            setError(null); // Clear any error on successful update
+        } catch (error: any) {
             console.error('Error updating password:', error);
-            // Optionally, set an error state to display to the user
+            setError('Đã có lỗi xảy ra, vui lòng thử lại.');
         }
     };
 
@@ -284,6 +306,7 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
         setTempPassword("");
         setEditing(false);
     };
+
 
     return (
         <div className="card p-3 rounded-0 mb-3">
@@ -316,6 +339,15 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                         onChange={(e) => setTempPassword(e.target.value)}
                         placeholder="Nhập mật khẩu mới"
                     />
+                    <input
+                        type="password"
+                        id="re-enterPassword"
+                        className="form-control tinh-fs14 tinh-no-outline my-2"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Nhập lại mật khẩu"
+                    />
+                    {error && <div className="text-danger my-2">{error}</div>} {/* Display error message */}
                     <hr />
                     <a
                         href="#"
@@ -343,12 +375,14 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
     );
 };
 
-const AccountContent: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => (
+
+
+const AccountContent: React.FC<UserInfoProps> = ({userInfo, setUserInfo}) => (
     <div
         className="row tinh-height90 m-0 align-items-center tinh-overflowScroll"
-        style={{ padding: "100px 40px 0 40px" }}
+        style={{padding: "100px 40px 0 40px"}}
     >
-        <PersonalInfo userInfo={userInfo} setUserInfo={setUserInfo} />
+        <PersonalInfo userInfo={userInfo} setUserInfo={setUserInfo}/>
         <PasswordInfo userInfo={userInfo} setUserInfo={setUserInfo} />
     </div>
 );
