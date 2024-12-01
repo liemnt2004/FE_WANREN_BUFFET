@@ -341,7 +341,7 @@ const CheckoutCustomer: React.FC = () => {
         try {
             // If VN PAY is selected
             if (formData.payment === "VNPAY") {
-                const createOrderResponse = await fetch('http://103.124.92.95:80800/api/orders', {
+                const createOrderResponse = await fetch('http://103.124.92.95:8080/api/orders', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

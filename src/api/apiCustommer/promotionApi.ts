@@ -4,7 +4,7 @@ import PromotionModel from "../../models/PromotionModel";
 export async function getAllPromotion(): Promise<PromotionModel[]> {
     const rs: PromotionModel[] = [];
     try {
-        const data = await request('https://wanrenbuffet.netlify.app/Promotion/search/findByPromotionStatus?promotionStatus=true');
+        const data = await request('http://103.124.92.95:8080/Promotion/search/findByPromotionStatus?promotionStatus=true');
         console.log(data)
         if (data && data._embedded && data._embedded.promotions) {
 

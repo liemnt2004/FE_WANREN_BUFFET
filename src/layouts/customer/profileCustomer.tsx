@@ -140,7 +140,7 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
 
     const handleSave = async () => {
         try {
-            const response = await fetch(`http://103.124.92.95:80800/api/customer/updateCustomer/${decoded.sub}`, {
+            const response = await fetch(`http://103.124.92.95:8080/api/customer/updateCustomer/${decoded.sub}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",

@@ -42,7 +42,7 @@ export async function getProductHot(): Promise<ProductModel[]> {
     try {
         const productIds: number[] = await request('http://103.124.92.95:8080/api/product/ProductHot'); // Đảm bảo đúng endpoint
         if (Array.isArray(productIds)) {
-            const productPromises = productIds.map(id => request(`https://wanrenbuffet.netlify.app/Product/${id}`));
+            const productPromises = productIds.map(id => request(`http://103.124.92.95:8080/Product/${id}`));
             const productsData = await Promise.all(productPromises);
 
             return productsData.map((product: any) => new ProductModel(
