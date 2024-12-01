@@ -7,10 +7,6 @@ import bannerHome from './assets/img/Banner-Hompage-_1500W-x-700H_px.jpg';
 import image1500x700 from './assets/img/1500x700-01_1_1.png';
 import bannerBuffet from './assets/img/banner-gia-buffet-kich-kichi-160824.jpg';
 import kichiHomeAll from './assets/img/kichi-home-all.png';
-import datHang from './assets/img/datHang.png';
-import heThong from './assets/img/heThong.png';
-import giaoHang from './assets/img/giaoHang.png';
-import uuDai from './assets/img/uuDaipng.png';
 import lau3 from './assets/img/Lau3-300x300.jpg';
 import cothaygia from './assets/img/cothaygia_t11.png';
 import publicAvif from './assets/img/public.avif';
@@ -22,23 +18,21 @@ import {CartItem, useCart} from "./component/CartContext"; // Sử dụng custom
 import formatMoney from "./component/FormatMoney";
 import { AuthContext } from "./component/AuthContext";
 import { useNavigate } from "react-router-dom";
-
+import {Modal} from "bootstrap"
 const IndexCustomer: React.FC = () => {
     const [listProduct, setListProduct] = useState<ProductModel[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { cartItems, addToCart, addMultipleToCart, buyAgain, updateQuantity, removeFromCart, clearCart, subtotal } = useCart();
-    const authContext = useContext(AuthContext);
+    const [selectedProduct, setSelectedProduct] = useState<ProductModel | null>(null); // Lưu sản phẩm đang chọn
+
+    const { fullName, logout } = useContext(AuthContext);
+    const { cartItems, addToCart, updateQuantity } = useCart();
     const navigate = useNavigate();
 
-
-
-    const { fullName, logout } = authContext;
-
-    // State để quản lý số lượng trong từng modal
+// State để quản lý số lượng của sản phẩm trong modal
     const [modalQuantities, setModalQuantities] = useState<{ [key: number]: number }>({});
 
-    // Lấy sản phẩm hot khi component được render
+// Lấy sản phẩm hot khi component được render
     useEffect(() => {
         getProductHot()
             .then(product => {
@@ -58,12 +52,22 @@ const IndexCustomer: React.FC = () => {
             });
     }, []);
 
-    // Hàm để thêm sản phẩm vào giỏ hàng với số lượng cụ thể
-    function addProductToCart(product: ProductModel) {
+// useEffect to show modal when a product is selected
+    useEffect(() => {
+        if (selectedProduct) {
+            const modalElement = document.getElementById(`productModal${selectedProduct.productId}`);
+            if (modalElement) {
+                const modal = new window.bootstrap.Modal(modalElement);
+                modal.show();
+            }
+        }
+    }, [selectedProduct]);
+
+// Hàm để thêm sản phẩm vào giỏ hàng với số lượng cụ thể
+    const addProductToCart = (product: ProductModel) => {
         if (!fullName) {
-            // Nếu người dùng chưa đăng nhập, thông báo và chuyển hướng đến trang đăng nhập
             alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
-            navigate("/login"); // Đảm bảo bạn đã định nghĩa route /login
+            navigate("/login");
             return;
         }
 
@@ -74,38 +78,56 @@ const IndexCustomer: React.FC = () => {
             productName: product.productName,
             price: product.price,
             image: product.image,
-            quantity: quantity, // Sử dụng số lượng đã chọn
+            quantity: quantity,
         };
 
-        addToCart(cartItem); // Thêm sản phẩm vào giỏ hàng
-    }
+        addToCart(cartItem);
 
-    // Hàm để thêm nhiều sản phẩm vào giỏ hàng
-    function addMultipleProductsToCart(products: CartItem[]) {
-        if (!fullName) {
-            alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
-            navigate("/login");
-            return;
+        // Sau đó, nếu người dùng muốn thay đổi số lượng, gọi updateQuantity
+        if (quantity > 1) {
+            updateQuantity(product.productId, quantity);
         }
-
-        addMultipleToCart(products);
-    }
-
-    // Hàm để tăng số lượng trong modal
-    const incrementQuantity = (productId: number) => {
-        setModalQuantities(prev => ({
-            ...prev,
-            [productId]: prev[productId] + 1,
-        }));
     };
 
-    // Hàm để giảm số lượng trong modal
-    const decrementQuantity = (productId: number) => {
+    const decreaseQuantity = (productId: number) => {
+        const newQuantity = Math.max((modalQuantities[productId] || 1) - 1, 1); // Không để số lượng nhỏ hơn 1
         setModalQuantities(prev => ({
             ...prev,
-            [productId]: prev[productId] > 1 ? prev[productId] - 1 : 1, // Giữ số lượng tối thiểu là 1
+            [productId]: newQuantity
         }));
+        updateQuantity(productId, newQuantity);
     };
+
+    const handleQuantityChange = (productId: number, event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = Math.max(Number(event.target.value), 1); // Đảm bảo số lượng không nhỏ hơn 1
+        setModalQuantities(prevQuantities => ({
+            ...prevQuantities,
+            [productId]: value
+        }));
+
+        // Cập nhật số lượng trong giỏ hàng sau khi thay đổi
+        updateQuantity(productId, value);
+    };
+
+    const increaseQuantity = (productId: number) => {
+        const newQuantity = (modalQuantities[productId] || 1) + 1;
+        setModalQuantities(prev => ({
+            ...prev,
+            [productId]: newQuantity
+        }));
+        updateQuantity(productId, newQuantity);
+    };
+
+    const handleProductClick = (product: ProductModel) => {
+        setSelectedProduct(product);
+    };
+
+
+
+
+
+
+
 
     return (
         <div className="container-fluid">
@@ -169,7 +191,7 @@ const IndexCustomer: React.FC = () => {
                         </section>
 
                         {/* Hot Deal Section */}
-                        <section className="hot-deal" style={{ backgroundColor: 'white' }}>
+                        <section className="hot-deal" style={{backgroundColor: 'white'}}>
                             <h4 className="fw-bold">HOT DEAL</h4>
                             {loading ? (
                                 <div>Đang tải sản phẩm...</div>
@@ -180,15 +202,14 @@ const IndexCustomer: React.FC = () => {
                                     <div className="row g-4 mb-5">
                                         {listProduct.map((product) => (
                                             <React.Fragment key={product.productId}>
-                                                <div className="col-6 col-md-3">
+                                                <div className="col-6 col-md-3"
+                                                     onClick={() => handleProductClick(product)}>
                                                     <div className="card border border-0 p-3 card-custom text-center">
                                                         <img
                                                             src={product.image || lau3}
                                                             className="rounded-3"
                                                             alt={product.productName || 'Product Image'}
-                                                            style={{ height: 200, width: 250 }}
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target={`#productModal${product.productId}`}
+                                                            style={{height: 200, width: 250}}
                                                         />
                                                         <div className="card-body p-0">
                                                             <h5 className="card-title fs-6 m-0 p-0">{product.productName}</h5>
@@ -198,78 +219,96 @@ const IndexCustomer: React.FC = () => {
                                                             <h6 className="card__price fw-bold">{formatMoney(product.price)}</h6>
                                                             <button
                                                                 id="increment"
-                                                                onClick={() => addProductToCart(product)}
+                                                                onClick={() => addProductToCart(product)} // Chỉ thêm sản phẩm vào giỏ hàng, không mở modal
                                                                 disabled={!fullName} // Vô hiệu hóa nếu chưa đăng nhập
                                                                 title={fullName ? "Thêm vào giỏ hàng" : "Vui lòng đăng nhập để thêm vào giỏ hàng"}
                                                             >
                                                                 <i className="bi bi-plus-lg"></i>
                                                             </button>
+
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 {/* Modal cho mỗi sản phẩm */}
-                                                <div className="modal fade ps36231"
-                                                     id={`productModal${product.productId}`}
-                                                     tabIndex={-1}
-                                                     aria-labelledby="productModalLabel" aria-hidden="true">
-                                                    <div className="modal-dialog modal-dialog-centered">
-                                                        <div className="modal-content">
-                                                            <div className="container-modal">
-                                                                <div className="container-modal-header">
-                                                                    <div className="control-img">
-                                                                        <img src={product.image || lau3}
-                                                                             alt={product.productName}/>
-                                                                        <div
-                                                                            className="container-button d-grid place-item-center">
-                                                                            <button type="button" className="btn-close"
-                                                                                    data-bs-dismiss="modal"></button>
+                                                {selectedProduct && selectedProduct.productId === product.productId && (
+                                                    <div
+                                                        className="modal fade ps36231"
+                                                        id={`productModal${selectedProduct.productId}`}
+                                                        tabIndex={-1}
+                                                        aria-hidden="true"
+                                                    >
+                                                        <div className="modal-dialog modal-dialog-centered">
+                                                            <div className="modal-content">
+                                                                <div className="container-modal">
+                                                                    <div className="container-modal-header">
+                                                                        <div className="control-img">
+                                                                            <img
+                                                                                src={selectedProduct.image}
+                                                                                alt={selectedProduct.productName}
+                                                                            />
                                                                         </div>
                                                                     </div>
-                                                                </div>
-                                                                <div className="container-modal-footer">
-                                                                    <div
-                                                                        className="name-item">{product.productName}</div>
-                                                                    <div className="capacity-item">{product.description}</div>
-                                                                    <div className="container-price-quantity">
-                                                                        <div className="price-quantity">
+                                                                    <div className="container-modal-footer">
+                                                                        <div
+                                                                            className="name-item">{selectedProduct.productName}</div>
+                                                                        <div
+                                                                            className="capacity-item">{selectedProduct.description}</div>
+                                                                        <div className="container-price-quantity">
                                                                             <div className="price">
-                                                                                <span>Giá: {formatMoney(product.price)}</span>
+                                                                                <span>Giá: {formatMoney(selectedProduct.price)}</span>
                                                                             </div>
 
-                                                                        </div>
-                                                                        <div className="control-btn-add-to-cart">
-                                                                            <button onClick={() => addToCart({
-                                                                                productId: product.productId,
-                                                                                productName: product.productName,
-                                                                                price: product.price,
-                                                                                quantity: 1,
-                                                                                image: product.image
-                                                                            })}>Thêm vào giỏ hàng
+                                                                            <button
+                                                                                className="control-btn-add-to-cart btn"
+                                                                                onClick={() => addProductToCart(selectedProduct)}>
+                                                                                Thêm vào giỏ hàng
                                                                             </button>
+                                                                            <span>
+                                                                                <div className="quantity-control">
+                                                                                <button
+                                                                                    className="btn"
+                                                                                    onClick={() => decreaseQuantity(selectedProduct.productId)}
+                                                                                >
+                                                                                    -
+                                                                                </button>
+                                                                                <input
+
+                                                                                    type="number"
+                                                                                    value={modalQuantities[selectedProduct.productId] || 1}
+                                                                                    onChange={(e) =>
+                                                                                        handleQuantityChange(selectedProduct.productId, e)
+                                                                                    }
+                                                                                    min="1"
+                                                                                />
+                                                                                <button
+                                                                                    className="btn"
+                                                                                    onClick={() => increaseQuantity(selectedProduct.productId)}
+                                                                                >
+                                                                                    +
+                                                                                </button>
+                                                                            </div>
+                                                                            </span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                )}
                                             </React.Fragment>
                                         ))}
-
-                                        {/* Ví dụ thêm một button để thêm nhiều sản phẩm cùng lúc */}
-                                        {/* Bạn có thể tùy chỉnh theo nhu cầu */}
-                                        {/* <button onClick={() => addMultipleProductsToCart([{...}, {...}])}>Thêm Nhiều Sản Phẩm</button> */}
                                     </div>
                                 </div>
                             )}
                         </section>
 
+
                         {/* What Can We Do Section */}
-                        <section className="what-can-we-do mt-3 pb-4" style={{ backgroundColor: 'white' }}>
+                        <section className="what-can-we-do mt-3 pb-4" style={{backgroundColor: 'white'}}>
                             <div className="container">
                                 <div className="row">
-                                    <div className="col-md-6 help" style={{ paddingLeft: 0, paddingRight: '50px' }}>
+                                    <div className="col-md-6 help" style={{paddingLeft: 0, paddingRight: '50px'}}>
                                         <h4 className="fw-bold pb-4">CHÚNG TÔI CÓ THỂ GIÚP GÌ CHO BẠN ?</h4>
                                         <div className="accordion" id="accordionExample">
                                             {/* Accordion Item 1 */}
@@ -350,7 +389,7 @@ const IndexCustomer: React.FC = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="col-md-6" style={{ paddingRight: 0 }}>
+                                    <div className="col-md-6" style={{paddingRight: 0}}>
                                         <h4 className="fw-bold pb-4">KHÁCH HÀNG NÓI GÌ?</h4>
                                         <div id="carouselExampleCaptions" className="carousel slide"
                                              data-bs-ride="carousel">
@@ -390,7 +429,7 @@ const IndexCustomer: React.FC = () => {
                                                                 width="70"
                                                                 height="70"
                                                                 className="img-fluid"
-                                                                style={{ borderRadius: '50%' }}
+                                                                style={{borderRadius: '50%'}}
                                                             />
                                                         </div>
                                                         <div className="comment py-5">
@@ -417,7 +456,7 @@ const IndexCustomer: React.FC = () => {
                                                                 width="70"
                                                                 height="70"
                                                                 className="img-fluid"
-                                                                style={{ borderRadius: '50%' }}
+                                                                style={{borderRadius: '50%'}}
                                                             />
                                                         </div>
                                                         <div className="comment py-5">
@@ -444,7 +483,7 @@ const IndexCustomer: React.FC = () => {
                                                                 width="70"
                                                                 height="70"
                                                                 className="img-fluid"
-                                                                style={{ borderRadius: '50%' }}
+                                                                style={{borderRadius: '50%'}}
                                                             />
                                                         </div>
                                                         <div className="comment py-5">
@@ -515,7 +554,7 @@ const IndexCustomer: React.FC = () => {
                                             <section className="ratio ratio-16x9">
                                                 <iframe
                                                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.177875756147!2d106.68670197570356!3d10.79768475879993!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135adedecb7bc5f%3A0xa3f78f8a3e35f1b0!2zTOG6qXUgQsSDbmcgQ2h1eeG7gW4gS2ljaGkgS2ljaGk!5e0!3m2!1svi!2s!4v1727163707823!5m2!1svi!2s"
-                                                    width="300" height="200" style={{ border: 0 }}
+                                                    width="300" height="200" style={{border: 0}}
                                                     loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                                             </section>
                                         </div>
@@ -551,7 +590,7 @@ const IndexCustomer: React.FC = () => {
                 </div>
             </div>
 
-            {/* Các Modal khác nếu có thể thêm ở đây */}
+
         </div>
     );
 

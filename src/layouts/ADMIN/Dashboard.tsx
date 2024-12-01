@@ -387,26 +387,7 @@ const MainDash: React.FC = () => {
                   </div>
 
                   {/* Compact Expenses Card */}
-                  <div
-                      className="CompactCard"
-                      data-bs-toggle="modal"
-                      data-bs-target="#modalExpenses"
-                      style={{
-                        background:
-                            "linear-gradient(rgb(248, 212, 154) -146.42%, rgb(255, 202, 113) -46.42%)",
-                        boxShadow: "rgb(249, 213, 155) 0px 10px 20px 0px",
-                        cursor: "pointer",
-                      }}
-                  >
-                    <div className="radialBar">
-                      <span>60%</span>
-                      <span>Expenses</span>
-                    </div>
-                    <div className="detail">
-                      <span>$4,270</span>
-                      <span>Last 24 hours</span>
-                    </div>
-                  </div>
+
 
                   {/* Modal Expenses */}
                   <div
@@ -459,67 +440,7 @@ const MainDash: React.FC = () => {
             <div className="row">
               <div className="chart-row">
                 {/* Activity Chart */}
-                <div className="chart-card">
-                  <h3>Activity</h3>
-                  {isLoadingMonthly ? (
-                      <p>Loading...</p>
-                  ) : errorMonthly ? (
-                      <p>{errorMonthly}</p>
-                  ) : (
-                      <ReactApexChart
-                          options={{
-                            chart: {
-                              type: "area",
-                              height: 350,
-                              toolbar: {
-                                show: true,
-                              },
-                            },
-                            xaxis: {
-                              categories: [
-                                "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",
-                              ],
-                            },
-                            stroke: {
-                              curve: "smooth",
-                            },
-                            fill: {
-                              type: "gradient",
-                              gradient: {
-                                shadeIntensity: 1,
-                                opacityFrom: 0.7,
-                                opacityTo: 0.9,
-                                stops: [0, 90, 100],
-                              },
-                            },
-                            colors: ["#00E396"],
-                            grid: {
-                              borderColor: "#f0f2f5",
-                            },
-                            tooltip: {
-                              theme: "dark",
-                            },
-                            title: {
-                              text: "Activity",
-                              align: "center",
-                              style: {
-                                color: "#ffffff",
-                                fontSize: "24px",
-                                fontWeight: "bold",
-                              },
-                            },
-                          }}
-                          series={[
-                            {
-                              name: "Activity",
-                              data: monthlyRevenue,
-                            },
-                          ]}
-                          type="area"
-                          height={350}
-                      />
-                  )}
-                </div>
+
 
                 {/* Payment Chart */}
                 <div className="chart-card">
