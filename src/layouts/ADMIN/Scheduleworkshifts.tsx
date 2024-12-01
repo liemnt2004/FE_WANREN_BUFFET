@@ -45,6 +45,7 @@ const Scheduleworkshifts: React.FC = () => {
   const [filterShiftId, setFilterShiftId] = useState<number | null>(null);
   const [filterUserType, setFilterUserType] = useState<string>("");
   const [isEditingShift, setIsEditingShift] = useState<boolean>(false);
+  const [editingUsername, setEditingUsername] = useState<string | null>(null);
 
   const openAddModal = (date: Dayjs) => {
     setSelectedDate(date);
@@ -174,7 +175,7 @@ const Scheduleworkshifts: React.FC = () => {
       closeAddModal();
     } catch (error) {
       console.error("Lỗi khi thêm ca:", error);
-      alert("Username này đã có ca làm đó vui lòng thử với ca làm khác");
+      alert("người này đã có ca làm đó vui lòng thử với ca làm khác");
     }
   };
 
@@ -198,8 +199,9 @@ const Scheduleworkshifts: React.FC = () => {
       return matchesUsername && matchesShiftId && matchesUserType;
     });
   };
-  const handleEditShift = () => {
-    setIsEditingShift(true);
+
+  const handleEditShift = (username: string) => {
+    setEditingUsername(username);
   };
 
   return (
@@ -342,9 +344,13 @@ const Scheduleworkshifts: React.FC = () => {
                 key: "shiftName",
                 render: (text, record: any) => (
                   <Select
-                    defaultValue={record.shiftId}
+                    value={record.shiftId} // Giá trị của ca làm hiện tại (ID)
                     style={{ width: "100%" }}
-                    disabled={!isEditingShift} // Disable if not in editing mode
+                    disabled={record.username !== editingUsername} // Chỉ cho phép chỉnh sửa nếu là username đang chỉnh sửa
+                    onChange={(value) => {
+                      // Cập nhật shiftId khi người dùng thay đổi ca làm việc
+                      record.shiftId = value;
+                    }}
                   >
                     {shiftOptions.map((shift) => (
                       <Select.Option key={shift.value} value={shift.value}>
@@ -354,13 +360,14 @@ const Scheduleworkshifts: React.FC = () => {
                   </Select>
                 ),
               },
-
               { title: "Work Date", dataIndex: "workDate", key: "workDate" },
               {
                 title: "Actions",
                 key: "actions",
                 render: (text: any, record: any) => (
-                  <Button onClick={handleEditShift}>Sửa</Button>
+                  <Button onClick={() => handleEditShift(record.username)}>
+                    Sửa
+                  </Button>
                 ),
               },
             ]}
