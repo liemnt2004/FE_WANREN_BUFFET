@@ -46,7 +46,7 @@ const ResetPasswordOtp: React.FC = () => {
 
         try {
             // Gửi yêu cầu POST tới backend để cập nhật mật khẩu
-            const response = await axios.post('http://103.124.92.95:8080/api/reset-password/update', {
+            const response = await axios.post('https://wanrenbuffet.online/api/reset-password/update', {
                 email: email,
                 newPassword: password
             });

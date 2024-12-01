@@ -75,7 +75,7 @@ const ReservationForm: React.FC = () => {
 
         try {
             if(formData.agree === true){
-                const response = await axios.post('http://103.124.92.95:8080/api/reservation/create', formData, {
+                const response = await axios.post('https://wanrenbuffet.online/api/reservation/create', formData, {
                     headers: {
                       'Content-Type': 'application/json',
                     },

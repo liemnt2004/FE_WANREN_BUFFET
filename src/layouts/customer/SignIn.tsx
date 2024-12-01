@@ -63,7 +63,7 @@ const LoginRegisterComponent: React.FC = () => {
 
     // Hàm xử lý khi người dùng nhấp vào nút Google Sign-In
     const handleGoogleSignIn = () => {
-        window.location.href = 'http://103.124.92.95:8080/oauth2/authorization/google';
+        window.location.href = 'https://wanrenbuffet.online/oauth2/authorization/google';
     };
 
     // Xử lý sự thay đổi input cho form đăng ký
@@ -134,7 +134,7 @@ const LoginRegisterComponent: React.FC = () => {
 
         try {
             // Kiểm tra username
-            const checkUsernameResponse = await fetch(`http://103.124.92.95:8080/Customer/search/existsByUsername?username=${encodeURIComponent(signUpData.username)}`);
+            const checkUsernameResponse = await fetch(`https://wanrenbuffet.online/Customer/search/existsByUsername?username=${encodeURIComponent(signUpData.username)}`);
             if (!checkUsernameResponse.ok) {
                 throw new Error('Failed to check username');
             }
@@ -145,7 +145,7 @@ const LoginRegisterComponent: React.FC = () => {
             }
 
             // Kiểm tra email
-            const checkEmailResponse = await fetch(`http://103.124.92.95:8080/Customer/search/existsByEmail?email=${encodeURIComponent(signUpData.email)}`);
+            const checkEmailResponse = await fetch(`https://wanrenbuffet.online/Customer/search/existsByEmail?email=${encodeURIComponent(signUpData.email)}`);
             if (!checkEmailResponse.ok) {
                 throw new Error('Failed to check email');
             }
@@ -195,7 +195,7 @@ const LoginRegisterComponent: React.FC = () => {
         };
 
         try {
-            const response = await fetch('http://103.124.92.95:8080/api/customer/register', {
+            const response = await fetch('https://wanrenbuffet.online/api/customer/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newUser),
@@ -233,7 +233,7 @@ const LoginRegisterComponent: React.FC = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://103.124.92.95:8080/api/customer/login', {
+            const response = await fetch('https://wanrenbuffet.online/api/customer/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(signInData),
