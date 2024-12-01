@@ -56,11 +56,6 @@ const WorkShiftCalendar: React.FC = () => {
       dataIndex: "totalHours",
       key: "totalHours",
     },
-    {
-      title: "Thao tác",
-      key: "actions",
-      render: () => <Button type="link">Chi tiết</Button>,
-    },
   ];
 
   return (
