@@ -8,7 +8,6 @@ interface PublicRouteProps {
 
 const EmployeePublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
     const { employeeRoles } = useContext(AuthContext);
-    console.log(employeeRoles)
     if(employeeRoles?.includes('STAFF')){
         return <Navigate to="/staff" replace />;
     }

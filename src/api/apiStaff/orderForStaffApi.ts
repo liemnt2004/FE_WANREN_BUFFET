@@ -3,7 +3,7 @@ import { request } from "./Request";
 import OrderDetailsWithNameProduct from "../../models/StaffModels/OrderDetailsWithNameProduct";
 import OrderDetailModel from "../../models/StaffModels/OrderDetaitModel";
 
-const BASE_URL = "http://localhost:8080/api";
+const BASE_URL = "https://wanrenbuffet.online/api";
 
 const getHeaders = () => {
   const employeeToken = localStorage.getItem("employeeToken");
@@ -16,7 +16,7 @@ const getHeaders = () => {
 export async function getAllOrderDetailsByOrderId(orderId: number): Promise<OrderDetailModel[]>{
     const rs: OrderDetailModel[] = [];
     try {
-        const data = await request(`http://localhost:8080/Orders/${orderId}/orderDetails`);
+        const data = await request(`https://wanrenbuffet.online/Orders/${orderId}/orderDetails`);
         console.log(data._embedded.orderDetails);
         if (data && data._embedded && data._embedded.orderDetails) {
             for (const orderDetail of data._embedded.orderDetails) {
@@ -40,7 +40,7 @@ export async function getAllOrderDetailsByOrderId(orderId: number): Promise<Orde
 
 export async function getTableNumberByOrderId(orderId: number): Promise<number>{
     try {
-        const response = await request(`http://localhost:8080/Orders/${orderId}/tablee`);
+        const response = await request(`https://wanrenbuffet.online/Orders/${orderId}/tablee`);
         const tableNumber = response.tableNumber;
         return tableNumber;
     } catch (error) {
@@ -52,7 +52,7 @@ export async function getTableNumberByOrderId(orderId: number): Promise<number>{
 export async function getOrderDetailWithNameProduct(orderId: number): Promise<OrderDetailsWithNameProduct[]> {
     const rs: OrderDetailsWithNameProduct[] = [];
     try{
-        const data = await request(`http://localhost:8080/api/orders_detail_staff/get/order_details/with_name/${orderId}`);
+        const data = await request(`https://wanrenbuffet.online/api/orders_detail_staff/get/order_details/with_name/${orderId}`);
         if (data && data.orderDetails) {
             for (const orderDetail of data.orderDetails) {
                 const orderDetailModel = new OrderDetailsWithNameProduct(
@@ -74,7 +74,7 @@ export async function getOrderDetailWithNameProduct(orderId: number): Promise<Or
 
 export async function getOrderAmount(orderId: number): Promise<number>{
     try {
-        const amountOfOrder = await request(`http://localhost:8080/api/order_staff/get_amount/${orderId}`);
+        const amountOfOrder = await request(`https://wanrenbuffet.online/api/order_staff/get_amount/${orderId}`);
         return amountOfOrder.amount;   
     } catch (error) {
         console.log(error, "Cannot get amount of order");
@@ -84,7 +84,7 @@ export async function getOrderAmount(orderId: number): Promise<number>{
 
 export async function updateLoyaltyPoint(phoneNumber:string, amount:number): Promise<string> {
     try {
-        const loyaltyPoint = await axios.put(`http://localhost:8080/api/customer/loyal_point/${phoneNumber}/${amount}`, {
+        const loyaltyPoint = await axios.put(`https://wanrenbuffet.online/api/customer/loyal_point/${phoneNumber}/${amount}`, {
           method: "PUT",
           headers: getHeaders(),
         });
@@ -99,7 +99,7 @@ export async function updateLoyaltyPoint(phoneNumber:string, amount:number): Pro
 
 export async function updateTotalAmount(orderId: number, total_amount:number): Promise<number>{
     try {
-        const response = await axios.put(`http://localhost:8080/api/order_staff/update/total_amount/${orderId}/${total_amount}`, {
+        const response = await axios.put(`https://wanrenbuffet.online/api/order_staff/update/total_amount/${orderId}/${total_amount}`, {
           method: "PUT",
           headers: getHeaders(),
         });
@@ -136,7 +136,7 @@ export const fetchOrderStatusAPI = async (orderId: number) => {
   };
 
   export const getPromotionByOrderId = async (orderId: number) => {
-    const response = await fetch(`http://localhost:8080/api/promotions/info/${orderId}`, {
+    const response = await fetch(`https://wanrenbuffet.online/api/promotions/info/${orderId}`, {
       method: "GET",
       headers: getHeaders(),
     });
@@ -145,7 +145,7 @@ export const fetchOrderStatusAPI = async (orderId: number) => {
   };
 
   export const getLoyaltyPoints = async (phoneNumber:string) => {
-    const response = await fetch(`http://localhost:8080/api/customer/loyalty-points?phoneNumber=${phoneNumber}`, {
+    const response = await fetch(`https://wanrenbuffet.online/api/customer/loyalty-points?phoneNumber=${phoneNumber}`, {
       method: "GET",
       headers: getHeaders(),
     });
@@ -175,7 +175,7 @@ export const fetchProductDetailsAPI = async (productId: number) => {
 };
 
 export const fetchTableStatus = async (tableId: number) => {
-  const response = await fetch(`http://localhost:8080/api/table/status/${tableId}`, {
+  const response = await fetch(`https://wanrenbuffet.online/api/table/status/${tableId}`, {
     method: "GET",
     headers: getHeaders(),
   });
@@ -294,7 +294,7 @@ export const payWithVNPay = async (total_amount: number, user_id: number, order_
           formData.append('orderInfo', 'Pay for the bill at the table by ' + String(user_id) + ' ' + String(order_id) + ' ' + String(phoneNumber) + ' ' + String(pointsToDeduct));
           const employeeToken = localStorage.getItem("employeeToken");
           // formData.append('baseUrl', baseUrl);
-          const response = await axios.post('http://localhost:8080/api/payment/submit_order_vnpay', formData, {
+          const response = await axios.post('https://wanrenbuffet.online/api/payment/submit_order_vnpay', formData, {
               headers: {
                 
                   'Content-Type': 'application/x-www-form-urlencoded',

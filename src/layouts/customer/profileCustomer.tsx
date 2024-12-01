@@ -790,7 +790,7 @@ const MenuProfile: React.FC = () => {
         }
     } catch (error) {
         console.error('Invalid or missing token:', error);
-        window.location.href = "http://localhost:3000/"
+        window.location.href = "https://wanrenbuffet.netlify.app/login"
     }
 
     const [userInfo, setUserInfo] = useState<UserInfo>({

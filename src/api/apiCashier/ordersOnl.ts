@@ -93,7 +93,7 @@ const fetchProductInfo = async (productLink: string): Promise<{ image?: string; 
 // Hàm lấy orders từ API
 export const fetchOrders = async (): Promise<Order[]> => {
   try {
-    const response = await axios.get("http://localhost:8080/Orders");
+    const response = await axios.get("https://wanrenbuffet.online/Orders");
     const ordersData = response.data._embedded.orders;
 
     return ordersData.map((order: any) => ({
@@ -143,7 +143,7 @@ export const fetchTableId = async (tableLink: string): Promise<number | null> =>
 // Hàm cập nhật trạng thái sản phẩm
 export const updateOrderStatus = async (orderId: number, newStatus: string) => {
   try {
-    await axios.patch(`http://localhost:8080/Orders/${orderId}`, {
+    await axios.patch(`https://wanrenbuffet.online/Orders/${orderId}`, {
       orderStatus: newStatus
     });
   } catch (error) {
@@ -156,7 +156,7 @@ export const updateOrderStatus = async (orderId: number, newStatus: string) => {
 // Hàm cập nhật trạng thái sản phẩm
 export const updateOrderDetails = async (orderId: number, details: any[]) => {
   try {
-    await axios.put(`http://localhost:8080/Orders/${orderId}/updateOrder`, details); // Gửi danh sách đơn giản
+    await axios.put(`https://wanrenbuffet.online/Orders/${orderId}/updateOrder`, details); // Gửi danh sách đơn giản
   } catch (error) {
     console.error("Lỗi khi cập nhật chi tiết đơn hàng:", error);
     throw error;
@@ -165,7 +165,7 @@ export const updateOrderDetails = async (orderId: number, details: any[]) => {
 
 export const updateTableIdOrder = async (orderId: number, tableId: number) => {
   try {
-    const response = await fetch(`http://localhost:8080/api/order_staff/${orderId}/transfer`, {
+    const response = await fetch(`https://wanrenbuffet.online/api/order_staff/${orderId}/transfer`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',

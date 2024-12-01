@@ -60,7 +60,7 @@ const TransferTableModal: React.FC<{
         const fetchAvailableTables = async () => {
             try {
                 const employeeToken = localStorage.getItem("employeeToken");
-                const response = await fetch('http://localhost:8080/Table?page=0&size=50', {
+                const response = await fetch('https://wanrenbuffet.online/Table?page=0&size=50', {
                     method: "GET",
                     headers: {
                         'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ const TransferTableModal: React.FC<{
         if (currentTableId && selectedTableId !== null && currentTableId !== selectedTableId) {
             try {
                 const employeeToken = localStorage.getItem("employeeToken");
-                const response = await fetch(`http://localhost:8080/api/order_staff/${orderId}/transfer`, {
+                const response = await fetch(`https://wanrenbuffet.online/api/order_staff/${orderId}/transfer`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',

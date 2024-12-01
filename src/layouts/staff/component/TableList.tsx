@@ -87,7 +87,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
     const fetchTables = async () => {
       try {
         const employeeToken = localStorage.getItem("employeeToken");
-        const response = await fetch('http://localhost:8080/Table?page=0&size=50', {
+        const response = await fetch('https://wanrenbuffet.online/Table?page=0&size=50', {
           method: "GET",
           headers: {
             'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
   const handleCheckoutStep = async (tableId: number, step: number) => {
     try {
        const employeeToken = localStorage.getItem("employeeToken");
-      const responseOrderId = await fetch(`http://localhost:8080/api/order_staff/findOrderIdByTableId/${tableId}`, {
+      const responseOrderId = await fetch(`https://wanrenbuffet.online/api/order_staff/findOrderIdByTableId/${tableId}`, {
         method: "GET",
         headers: {
           'Content-Type': 'application/json',

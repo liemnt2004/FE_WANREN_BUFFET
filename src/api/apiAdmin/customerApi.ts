@@ -1,5 +1,5 @@
 import CustomerModelAdmin from "../../models/AdminModels/CustomerModel";
-const API_URL = "http://localhost:8080";
+const API_URL = "https://wanrenbuffet.online";
 
 // Function to fetch the list of customers
 export async function fetchCustomerList(

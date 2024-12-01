@@ -69,7 +69,7 @@ export async function getProductHot(): Promise<ProductModel[]> {
 export async function fetchProductsByType(typeFood: string): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        // const data = await request(`http://localhost:8080/Product/search/findByTypeFood?typeFood=${typeFood}`);
+        // const data = await request(`https://wanrenbuffet.online/Product/search/findByTypeFood?typeFood=${typeFood}`);
         const data = await request(`https://wanrenbuffet.online/product/by-category?categoryName=${typeFood}`);
         // Spring Data REST thường trả về dữ liệu trong _embedded
         if (data && data._embedded && data._embedded.products) {

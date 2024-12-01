@@ -27,7 +27,7 @@ const MainDash: React.FC = () => {
     const fetchMonthlyRevenue = async () => {
       try {
         const currentYear = new Date().getFullYear(); // Lấy năm hiện tại, bạn có thể thay đổi nếu cần
-        const response = await axios.get(`http://localhost:8080/api/statistical/monthly-revenue?year=${currentYear}`);
+        const response = await axios.get(`https://wanrenbuffet.online/api/statistical/monthly-revenue?year=${currentYear}`);
         setMonthlyRevenue(response.data);
         setIsLoadingMonthly(false);
       } catch (err) {
@@ -44,7 +44,7 @@ const MainDash: React.FC = () => {
   useEffect(() => {
     const fetchWeeklyRevenue = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/statistical/weekly`);
+        const response = await axios.get(`https://wanrenbuffet.online/api/statistical/weekly`);
         setWeekRevenue(response.data);
         setIsLoadingWeekly(false);
       } catch (err) {
@@ -61,7 +61,7 @@ const MainDash: React.FC = () => {
   useEffect(() => {
     const fetchHourlyRevenue = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/statistical/hourly`);
+        const response = await axios.get(`https://wanrenbuffet.online/api/statistical/hourly`);
         console.log("Hourly Revenue Data:", response.data);
         setHourlyRevenue(response.data);
         setIsLoadingHourly(false);

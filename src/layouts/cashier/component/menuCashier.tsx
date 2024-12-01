@@ -79,7 +79,7 @@ const MenuCashier: React.FC = () => {
 
       try {
         // Giả sử bạn đã có dữ liệu sản phẩm từ API
-        const response = await fetch("http://localhost:8080/Product");
+        const response = await fetch("https://wanrenbuffet.online/Product");
         const data = await response.json();
         if (data && data._embedded) {
           setProducts(data._embedded.products); // Lưu sản phẩm vào state
