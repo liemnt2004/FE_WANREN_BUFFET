@@ -341,7 +341,7 @@ const CheckoutCustomer: React.FC = () => {
         try {
             // If VN PAY is selected
             if (formData.payment === "VNPAY") {
-                const createOrderResponse = await fetch('http://localhost:8080/api/orders', {
+                const createOrderResponse = await fetch('http://103.124.92.95:80800/api/orders', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -376,7 +376,7 @@ const CheckoutCustomer: React.FC = () => {
                 }
 
                 // Create payment URL
-                const paymentResponse = await request(`http://localhost:8080/api/payment/create_payment?price=${total}`);
+                const paymentResponse = await request(`http://103.124.92.95:8080/api/payment/create_payment?price=${total}`);
                 if (!paymentResponse || !paymentResponse.url) {
                     throw new Error("Tạo thanh toán VN PAY thất bại.");
                 }
@@ -387,7 +387,7 @@ const CheckoutCustomer: React.FC = () => {
 
             } else if (formData.payment === "CASH") {
                 // Handle other payment methods, e.g., Cash on Delivery
-                const createOrderResponse = await fetch('http://localhost:8080/api/orders', {
+                const createOrderResponse = await fetch('http://103.124.92.95:8080/api/orders', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -426,7 +426,7 @@ const CheckoutCustomer: React.FC = () => {
                 setShowModal(true);
                 window.location.reload()
             }else if(formData.payment === "QR_CODE"){
-                const createOrderResponse = await fetch('http://localhost:8080/api/orders', {
+                const createOrderResponse = await fetch('http://103.124.92.95:8080/api/orders', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -533,7 +533,7 @@ const CheckoutCustomer: React.FC = () => {
                         console.log("thành công")
                         handleCloseQRCodeModal()
                         cartContext?.clearCart();
-                        window.location.href = `http://localhost:8080/api/payment/callbck_qrcode/${description.trim().slice(0,2)}`;
+                        window.location.href = `http://103.124.92.95:8080/api/payment/callbck_qrcode/${description.trim().slice(0,2)}`;
 
                     } else {
                         console.log("Thanh toán đang cập nhật!")

@@ -17,7 +17,7 @@ const Forgotpassword: React.FC = () => {
 
         try {
             // Gửi yêu cầu POST tới backend để yêu cầu gửi OTP
-            const response = await axios.post('http://localhost:8080/api/forgot-password/request', {
+            const response = await axios.post('http://103.124.92.95:8080/api/forgot-password/request', {
                 email: email
             });
 

@@ -10,7 +10,7 @@ function MenuCustomer() {
     const { fullName } = useContext(AuthContext);
 
     function login() {
-        window.location.href = "http://localhost:3000/login";
+        window.location.href = "https://wanrenbuffet.netlify.app/";
     }
 
     const cartContext = useContext(CartContext);

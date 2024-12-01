@@ -38,7 +38,7 @@ export async function getAllPromotion(): Promise<PromotionModel[]> {
 export async function GetPromotionById(PromotionId: number): Promise<PromotionModel | null> {
     try {
 
-        const data = await request(`https://wanrenbuffet.netlify.app/Promotion/${PromotionId}`);
+        const data = await request(`http://103.124.92.95:8080/Promotion/${PromotionId}`);
 
         if (data) {
             return new PromotionModel(

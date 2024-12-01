@@ -36,7 +36,7 @@ const EnterOtp: React.FC = () => {
 
         try {
             // Gửi yêu cầu POST tới backend để xác thực OTP
-            const response = await axios.post('http://localhost:8080/api/otp/validate', {
+            const response = await axios.post('http://103.124.92.95:8080/api/otp/validate', {
                 email: email,
                 otp: otp
             });

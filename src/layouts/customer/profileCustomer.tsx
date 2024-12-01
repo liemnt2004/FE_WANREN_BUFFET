@@ -140,7 +140,7 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
 
     const handleSave = async () => {
         try {
-            const response = await fetch(`http://localhost:8080/api/customer/updateCustomer/${decoded.sub}`, {
+            const response = await fetch(`http://103.124.92.95:80800/api/customer/updateCustomer/${decoded.sub}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -279,7 +279,7 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
         }
 
         try {
-            const response = await fetch(`http://localhost:8080/api/customer/updatePassword/${authContext.userId}`, {
+            const response = await fetch(`http://103.124.92.95:8080/api/customer/updatePassword/${authContext.userId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -427,7 +427,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
 
             axios
                 .get<ProductDetail[]>(
-                    `http://localhost:8080/api/orders/GetOrderDetailByOrderId/${selectedOrderId}`,
+                    `http://103.124.92.95:8080/api/orders/GetOrderDetailByOrderId/${selectedOrderId}`,
                     { headers: headers }
                 )
                 .then((response) => {
@@ -495,7 +495,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
         const token = localStorage.getItem("token");
 
         try {
-            const response = await fetch(`http://localhost:8080/api/review/Creact_review`, {
+            const response = await fetch(`http://103.124.92.95:8080/api/review/Creact_review`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
