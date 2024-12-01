@@ -11,7 +11,7 @@ export async function getPreparingOrders(
   try {
     const token = localStorage.getItem("token");
     const response = await axios.get(
-      `http://localhost:3000/api/orders/GetOrderByCustomerId/${customerId}`,
+      `https://wanrenbuffet.netlify.app/api/orders/GetOrderByCustomerId/${customerId}`,
       {
         headers: {
           "Content-Type": "application/json",

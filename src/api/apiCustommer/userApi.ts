@@ -4,7 +4,7 @@ import { request } from "../Request";
 export async function getAllUser(): Promise<UserModel[]> {
     const users: UserModel[] = [];
     try {
-        const data = await request('http://localhost:8080/User');
+        const data = await request('https://wanrenbuffet.netlify.app/User');
 
 
         // Adjust the data path according to your API response structure
