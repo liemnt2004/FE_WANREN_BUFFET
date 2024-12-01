@@ -52,7 +52,7 @@ export async function getWorkSchedulesByDate(
 
     // Xử lý và trả về danh sách WorkScheduleFullModel
     return response.data.map(
-      (schedule: any) =>
+      (schedule: WorkScheduleFullModel) =>
         new WorkScheduleFullModel(
           schedule.username,
           schedule.fullName,
