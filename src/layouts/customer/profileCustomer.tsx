@@ -140,7 +140,7 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
 
     const handleSave = async () => {
         try {
-            const response = await fetch(`http://localhost:8080/api/customer/updateCustomer/${decoded.sub}`, {
+            const response = await fetch(`http://103.124.92.95:8080/api/customer/updateCustomer/${decoded.sub}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -279,7 +279,7 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
         }
 
         try {
-            const response = await fetch(`http://localhost:8080/api/customer/updatePassword/${authContext.userId}`, {
+            const response = await fetch(`http://103.124.92.95:8080/api/customer/updatePassword/${authContext.userId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -307,12 +307,11 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
         setEditing(false);
     };
 
-
     return (
         <div className="card p-3 rounded-0 mb-3">
-            <h4 className="py-3">Mật Khẩu</h4>
-            {!editing ? (
+            {authContext.userId?.includes("@") && !editing && (
                 <div id="passwordInfo">
+                    <h4 className="py-3">Mật Khẩu</h4>
                     <span className="tinh-fs12" id="passwordDisplay">
                         *********
                     </span>
@@ -329,7 +328,9 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                         Sửa
                     </a>
                 </div>
-            ) : (
+            )}
+
+            {authContext.userId?.includes("@") && editing && (
                 <div id="editPasswordInfo">
                     <input
                         type="password"
@@ -378,11 +379,13 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
 
 
 const AccountContent: React.FC<UserInfoProps> = ({userInfo, setUserInfo}) => (
+
     <div
         className="row tinh-height90 m-0 align-items-center tinh-overflowScroll"
         style={{padding: "100px 40px 0 40px"}}
     >
         <PersonalInfo userInfo={userInfo} setUserInfo={setUserInfo}/>
+
         <PasswordInfo userInfo={userInfo} setUserInfo={setUserInfo} />
     </div>
 );
@@ -424,7 +427,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
 
             axios
                 .get<ProductDetail[]>(
-                    `http://localhost:8080/api/orders/GetOrderDetailByOrderId/${selectedOrderId}`,
+                    `http://103.124.92.95:8080/api/orders/GetOrderDetailByOrderId/${selectedOrderId}`,
                     { headers: headers }
                 )
                 .then((response) => {
@@ -492,7 +495,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
         const token = localStorage.getItem("token");
 
         try {
-            const response = await fetch(`http://localhost:8080/api/review/Creact_review`, {
+            const response = await fetch(`http://103.124.92.95:8080/api/review/Creact_review`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -558,7 +561,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                 <div className="col-md-10 mx-2">
                                     <div className="product-info">
                                         <h5>{order.producHistorytDTOList[0]._productName}</h5>
-                                        <p>{order.producHistorytDTOList[0]._description}</p>
+                                        <p dangerouslySetInnerHTML={{__html: order.producHistorytDTOList[0]._description}}></p>
                                         <p>x {order.producHistorytDTOList[0]._quantity}</p>
                                         <button
                                             onClick={() => handleBuyAgain(order.producHistorytDTOList)}

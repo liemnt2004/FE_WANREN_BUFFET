@@ -243,7 +243,7 @@
 .add-to-cart button {
     color: #fff;
     background-color: var(--colorPrimary);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--bs-border-color);
     font-size: 1rem;
     cursor: pointer;
 }

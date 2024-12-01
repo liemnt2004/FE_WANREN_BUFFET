@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import '../../assets/css/checkout_for_staff.css'
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus, payWithVNPay, getPromotionByOrderId, getLoyaltyPoints } from "../../../../api/apiStaff/orderForStaffApi";
+import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus, payWithVNPay, getPromotionByOrderId, getLoyaltyPoints, updateLoyaltyPoints } from "../../../../api/apiStaff/orderForStaffApi";
 import OrderDetailsWithNameProduct from "../../../../models/StaffModels/OrderDetailsWithNameProduct";
 import { notification } from 'antd';
 import { InfoCircleOutlined } from "@ant-design/icons";
@@ -243,9 +243,13 @@ const Checkout3: React.FC = () => {
 
     const createPayment = async (paymentMethod: string, status: boolean) => {
         try {
+            const employeeToken = localStorage.getItem("employeeToken");
             const newOrderResponse = await fetch('http://localhost:8080/api/payment/create_payment/normal', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${employeeToken}`
+                },
                 body: JSON.stringify({
                     amountPaid: lastAmount,
                     paymentMethod: paymentMethod,
@@ -277,10 +281,13 @@ const Checkout3: React.FC = () => {
         setQrPopupVisible(false);
     };
 
+    console.log("Phone: ",phoneNumber)
+    console.log("point: ",inputValue)
+
     const checkoutClick = async () => {
         try {
             if (choicePayment === "1") {
-                payWithVNPay(lastAmount, Number(employeeUserId), orderId);
+                payWithVNPay(lastAmount, Number(employeeUserId), orderId, phoneNumber, Number(inputValue));
             } else if (choicePayment === "2") {
                 setQrPopupVisible(true);
             } else if (choicePayment === "3") {
@@ -295,10 +302,12 @@ const Checkout3: React.FC = () => {
 
     const updateOrderStatus = async (orderId: number, status: string) => {
         try {
+            const employeeToken = localStorage.getItem("employeeToken");
             const response = await fetch(`http://localhost:8080/api/order_staff/update-status/${orderId}?status=${status}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${employeeToken}`
                 },
             });
             if (!response.ok) {
@@ -328,6 +337,9 @@ const Checkout3: React.FC = () => {
                         updateTableStatus(Number(tableId), "EMPTY_TABLE")
                         updateOrderStatus(Number(orderId), "DELIVERED")
                         createPayment("QR_CODE", true);
+                        if (phoneNumber !== null && phoneNumber.length >=10) {
+                            updateLoyaltyPoints(phoneNumber, Number(inputValue));
+                        }
                         navigate("/checkout/sucessful")
                         setIsSucess(true);
                     } else {
@@ -418,7 +430,7 @@ const Checkout3: React.FC = () => {
                                         <td>Số điểm hiện có: {loyaltyPoints.toLocaleString() + " điểm"}</td>
                                         <td>
                                             <input
-                                            style={{borderBottom: '1px solid gray'}}
+                                                style={{ borderBottom: '1px solid gray' }}
                                                 className="w-50 m-0 p-0 fs-5"
                                                 type="number"
                                                 id="loyaltyPointsInput"

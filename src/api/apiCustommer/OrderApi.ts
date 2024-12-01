@@ -11,7 +11,7 @@ export async function getPreparingOrders(
   try {
     const token = localStorage.getItem("token");
     const response = await axios.get(
-      `http://localhost:8080/api/orders/GetOrderByCustomerId/${customerId}`,
+      `http://103.124.92.95:8080/api/orders/GetOrderByCustomerId/${customerId}`,
       {
         headers: {
           "Content-Type": "application/json",

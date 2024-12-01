@@ -40,7 +40,6 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ allowedRoles, children }) =
     const hasAccess = rolesArray.some(role => allowedRoles.includes(role || ""));
 
     if (!hasAccess) {
-        alert("Bạn Không Có Quyền")
         localStorage.removeItem("employeeToken");
         return <Navigate to="/employee/login" replace />;
     }

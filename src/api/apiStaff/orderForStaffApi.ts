@@ -2,8 +2,16 @@ import axios from "axios";
 import { request } from "./Request";
 import OrderDetailsWithNameProduct from "../../models/StaffModels/OrderDetailsWithNameProduct";
 import OrderDetailModel from "../../models/StaffModels/OrderDetaitModel";
-import { AuthContext } from "../../layouts/customer/component/AuthContext";
-import { useContext } from "react";
+
+const BASE_URL = "http://localhost:8080/api";
+
+const getHeaders = () => {
+  const employeeToken = localStorage.getItem("employeeToken");
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${employeeToken}`,
+  };
+};
 
 export async function getAllOrderDetailsByOrderId(orderId: number): Promise<OrderDetailModel[]>{
     const rs: OrderDetailModel[] = [];
@@ -76,7 +84,10 @@ export async function getOrderAmount(orderId: number): Promise<number>{
 
 export async function updateLoyaltyPoint(phoneNumber:string, amount:number): Promise<string> {
     try {
-        const loyaltyPoint = await axios.put(`http://localhost:8080/api/customer/loyal_point/${phoneNumber}/${amount}`);
+        const loyaltyPoint = await axios.put(`http://localhost:8080/api/customer/loyal_point/${phoneNumber}/${amount}`, {
+          method: "PUT",
+          headers: getHeaders(),
+        });
         const rs = await loyaltyPoint.data;
         const message = rs.message;
         return message;
@@ -88,7 +99,10 @@ export async function updateLoyaltyPoint(phoneNumber:string, amount:number): Pro
 
 export async function updateTotalAmount(orderId: number, total_amount:number): Promise<number>{
     try {
-        const response = await axios.put(`http://localhost:8080/api/order_staff/update/total_amount/${orderId}/${total_amount}`);
+        const response = await axios.put(`http://localhost:8080/api/order_staff/update/total_amount/${orderId}/${total_amount}`, {
+          method: "PUT",
+          headers: getHeaders(),
+        });
         const data = response.data;
         return data.amount_last;
     } catch (error) {
@@ -101,15 +115,7 @@ export async function updateTotalAmount(orderId: number, total_amount:number): P
 
 // ORDER ON TABLE
 
-const BASE_URL = "http://localhost:8080/api";
 
-const getHeaders = () => {
-  const employeeToken = localStorage.getItem("employeeToken");
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${employeeToken}`,
-  };
-};
 
 export const fetchOrderDetailsAPI = async (orderId: number) => {
   const response = await fetch(`${BASE_URL}/orders_detail_staff/${orderId}`, {
@@ -281,15 +287,18 @@ export const updateQuantityOrderDetails = async (details: any) => {
   return response.json();
 };
 
-export const payWithVNPay = async (total_amount: number, user_id: number, order_id: number) => {
+export const payWithVNPay = async (total_amount: number, user_id: number, order_id: number, phoneNumber: string, pointsToDeduct: number) => {
       try {
           const formData = new URLSearchParams();
           formData.append('amount', String(total_amount));
-          formData.append('orderInfo', 'Pay for the bill at the table by ' + String(user_id) + ' ' + String(order_id));
+          formData.append('orderInfo', 'Pay for the bill at the table by ' + String(user_id) + ' ' + String(order_id) + ' ' + String(phoneNumber) + ' ' + String(pointsToDeduct));
+          const employeeToken = localStorage.getItem("employeeToken");
           // formData.append('baseUrl', baseUrl);
           const response = await axios.post('http://localhost:8080/api/payment/submit_order_vnpay', formData, {
               headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded'
+                
+                  'Content-Type': 'application/x-www-form-urlencoded',
+                   Authorization: `Bearer ${employeeToken}`
               }
           });
           const paymentUrl = response.data;

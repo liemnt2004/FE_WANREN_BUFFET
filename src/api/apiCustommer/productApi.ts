@@ -7,7 +7,7 @@ import { request } from "../Request";
 export async function getAllProduct(): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        const data = await request('http://localhost:8080/Product');
+        const data = await request('http://103.124.92.95:8080/Product');
         console.log(data._embedded.products)// Đảm bảo đúng endpoint
         if (data && data._embedded && data._embedded.products) {
 
@@ -40,9 +40,9 @@ export async function getAllProduct(): Promise<ProductModel[]> {
 // Get hot products
 export async function getProductHot(): Promise<ProductModel[]> {
     try {
-        const productIds: number[] = await request('http://localhost:8080/api/product/ProductHot'); // Đảm bảo đúng endpoint
+        const productIds: number[] = await request('http://103.124.92.95:8080/api/product/ProductHot'); // Đảm bảo đúng endpoint
         if (Array.isArray(productIds)) {
-            const productPromises = productIds.map(id => request(`http://localhost:8080/Product/${id}`));
+            const productPromises = productIds.map(id => request(`http://103.124.92.95:8080/Product/${id}`));
             const productsData = await Promise.all(productPromises);
 
             return productsData.map((product: any) => new ProductModel(
@@ -70,7 +70,7 @@ export async function fetchProductsByType(typeFood: string): Promise<ProductMode
     const rs: ProductModel[] = [];
     try {
         // const data = await request(`http://localhost:8080/Product/search/findByTypeFood?typeFood=${typeFood}`);
-        const data = await request(`http://localhost:8080/api/product/by-category?categoryName=${typeFood}`);
+        const data = await request(`http://103.124.92.95:8080/product/by-category?categoryName=${typeFood}`);
         // Spring Data REST thường trả về dữ liệu trong _embedded
         if (data && data._embedded && data._embedded.products) {
             for (const product of data._embedded.products) {
@@ -99,7 +99,7 @@ export async function fetchProductsByType(typeFood: string): Promise<ProductMode
 export async function getOrderDetail(OrderDetailId:number): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        const data = await request(`http://localhost:8080/Order_detail/${OrderDetailId}/product`);
+        const data = await request(`http://103.124.92.95:8080/Order_detail/${OrderDetailId}/product`);
         // Spring Data REST thường trả về dữ liệu trong _embedded
         if (data && data._embedded && data._embedded.products) {
             for (const product of data._embedded.products) {
@@ -128,7 +128,7 @@ export async function getOrderDetail(OrderDetailId:number): Promise<ProductModel
 export async function SearchProduct(foodname: string): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        const data = await request(`http://localhost:8080/Product/search/findByProductNameContaining?productName=${foodname}`);
+        const data = await request(`http://103.124.92.95:8080/Product/search/findByProductNameContaining?productName=${foodname}`);
         // Spring Data REST thường trả về dữ liệu trong _embedded
         if (data && data._embedded && data._embedded.products) {
             for (const product of data._embedded.products) {
@@ -161,7 +161,7 @@ export async function fetchProductsByCategory(category: string): Promise<Product
 
     try {
         // Gọi API
-        const response = await fetch(`http://localhost:8080/api/product/by-category?categoryName=${category}`, {
+        const response = await fetch(`http://103.124.92.95:8080/api/product/by-category?categoryName=${category}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
