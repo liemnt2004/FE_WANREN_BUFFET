@@ -44,7 +44,6 @@ const Scheduleworkshifts: React.FC = () => {
   const [filterUsername, setFilterUsername] = useState<string>("");
   const [filterShiftId, setFilterShiftId] = useState<number | null>(null);
   const [filterUserType, setFilterUserType] = useState<string>("");
-  const [isEditingShift, setIsEditingShift] = useState<boolean>(false);
   const [editingUsername, setEditingUsername] = useState<string | null>(null);
 
   const openAddModal = (date: Dayjs) => {
@@ -361,15 +360,6 @@ const Scheduleworkshifts: React.FC = () => {
                 ),
               },
               { title: "Work Date", dataIndex: "workDate", key: "workDate" },
-              {
-                title: "Actions",
-                key: "actions",
-                render: (text: any, record: any) => (
-                  <Button onClick={() => handleEditShift(record.username)}>
-                    Sửa
-                  </Button>
-                ),
-              },
             ]}
             dataSource={getFilteredData()}
             rowKey="username"
