@@ -256,7 +256,7 @@ span {
 .hot-deal button {
     color: #fff;
     background-color: var(--colorPrimary);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--bs-border-color);
     font-size: 1rem;
     cursor: pointer;
 }
@@ -469,7 +469,6 @@ body {
     height: 100%;
     /* background: linear-gradient(to right, #5c6bc0, #512da8); */
     color: #fff;
-    text-shadow: 0 cap;
     position: relative;
     left: -100%;
     height: 100%;
@@ -590,7 +589,7 @@ body {
 
     /*Phần HOT DEAL trang chủ Customer */
     .hot-deal .card {
-        background-color: var(--light-color);
+        background-color: var(--bs-light-bg-subtle);
         border-radius: 6px; /* Bo góc nhẹ */
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Tạo bóng nhẹ */
         padding: 0.75rem; /* Giảm padding trong card */
@@ -616,7 +615,7 @@ body {
 
     .hot-deal .card__price {
         font-weight: bold;
-        color: var(--primary-color);
+        color: var(--colorPrimary);
     }
 
 
@@ -626,7 +625,7 @@ body {
     }
 
     .hot-deal .card {
-        background-color: var(--light-color);
+        background-color: var(--bs-light);
         border-radius: 6px; /* Bo góc nhẹ */
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Tạo bóng nhẹ */
         padding: 0.75rem; /* Giảm padding trong card */
@@ -653,7 +652,7 @@ body {
 
     .hot-deal .card__price {
         font-weight: bold;
-        color: var(--primary-color);
+        color: var(--colorPrimary);
     }
 
 
@@ -725,7 +724,7 @@ body {
         height: 60vh !important;
         width: 36vh !important; /* Chiếm toàn bộ chiều ngang */
         padding: 1rem; /* Khoảng cách bên trong */
-        background-color: var(--light-color);
+        background-color: var(--bs-light);
         border-radius: 6px; /* Bo góc nhẹ */
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Tạo bóng nhẹ */
         box-sizing: border-box; /* Tính toán đúng kích thước */
@@ -762,7 +761,7 @@ body {
         width: 75%; /* Đảm bảo nút bấm chiếm hết chiều ngang */
         padding: 0.75rem; /* Khoảng cách bên trong nút */
         text-align: center;
-        background-color: var(--primary-color) !important;
+        background-color: var(--colorPrimary) !important;
         color: #fff;
         border: none;
         border-radius: 6px; /* Bo góc nút */
@@ -775,7 +774,7 @@ body {
       }
 
       .checkout_submit button {
-        background-color: var(--primary-color) !important; /* Màu nền chính */
+        background-color: var(--colorPrimary) !important; /* Màu nền chính */
         color:var(--colorPrimary) !important; /* Màu chữ trắng */
         padding: 0.75rem; /* Khoảng cách bên trong nút */
         font-size: 1rem; /* Kích thước chữ */
@@ -804,7 +803,7 @@ body {
       }
       
       .checkout_submit button:hover {
-        background-color: var(--primary-color-hover); /* Màu nền khi hover */
+        background-color: var(--colorPrimary); /* Màu nền khi hover */
         box-shadow: 0 4px 6px rgba(253, 0, 0, 0.15) !important; /* Tạo bóng khi hover */
         transform: translateY(-2px) ; /* Nhấn mạnh nút nổi lên */
         color: #fff; /* Đảm bảo chữ vẫn trắng khi hover */
@@ -813,7 +812,7 @@ body {
       .checkout_submit button:active {
         transform: translateY(0) !important; /* Hiệu ứng ấn nút */
         box-shadow: 0 2px 4px rgba(255, 0, 0, 0.1) !important; /* Bóng nhỏ hơn khi ấn */
-        background-color: var(--primary-color) !important; /* Quay lại màu ban đầu */
+        background-color: var(--colorPrimary) !important; /* Quay lại màu ban đầu */
       }
       
       .checkout_submit button:disabled {
@@ -824,7 +823,7 @@ body {
       }
 
         .checkout__order {
-        background-color: var(--light-color); /* Màu nền gốc */
+        background-color: var(--bs-light); /* Màu nền gốc */
         border-radius: 6px; /* Bo góc cho vùng */
         padding: 1.5rem; /* Khoảng cách bên trong */
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Bóng mờ mặc định */
@@ -835,12 +834,12 @@ body {
         .checkout__order:hover {
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Bóng đậm hơn khi hover */
         transform: translateY(-5px) !important; /* Đẩy vùng nhô lên nhẹ */
-        background-color: var(--light-hover-color) !important; /* Thay đổi màu nền khi hover */
-        border: 1px solid var(--primary-color) !important; /* Thêm viền nổi bật */
+        background-color: var(--bs-light) !important; /* Thay đổi màu nền khi hover */
+        border: 1px solid var(--colorPrimary) !important; /* Thêm viền nổi bật */
         }
 
         .checkout__order h4:hover {
-        color: var(--primary-color) !important; /* Thay đổi màu tiêu đề khi hover */
+        color: var(--colorPrimary) !important; /* Thay đổi màu tiêu đề khi hover */
         text-decoration: underline; /* Gạch chân tiêu đề */
         }
 
@@ -855,7 +854,7 @@ body {
 
 
 .checkout__order {
-    background-color: var(--light-color); /* Màu nền gốc */
+    background-color: var(--bs-light); /* Màu nền gốc */
     border-radius: 6px; /* Bo góc cho vùng */
     padding: 1.5rem; /* Khoảng cách bên trong */
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Bóng mờ mặc định */
@@ -866,12 +865,12 @@ body {
   .checkout__order:hover {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Bóng đậm hơn khi hover */
     transform: translateY(-5px); /* Đẩy vùng nhô lên nhẹ */
-    background-color: var(--light-hover-color); /* Thay đổi màu nền khi hover */
-    border: 1px solid var(--primary-color); /* Thêm viền nổi bật */
+    background-color: var(--bs-light); /* Thay đổi màu nền khi hover */
+    border: 1px solid var(--colorPrimary); /* Thêm viền nổi bật */
   }
   
   .checkout__order h4:hover {
-    color: var(--primary-color); /* Thay đổi màu tiêu đề khi hover */
+    color: var(--colorPrimary); /* Thay đổi màu tiêu đề khi hover */
     text-decoration: underline; /* Gạch chân tiêu đề */
   }
   
