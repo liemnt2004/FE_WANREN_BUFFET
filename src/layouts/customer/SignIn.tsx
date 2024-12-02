@@ -156,7 +156,7 @@ const LoginRegisterComponent: React.FC = () => {
             }
 
             // Kiểm tra số điện thoại
-            const checkPhoneResponse = await fetch(`http://103.124.92.95/Customer/search/existsByPhoneNumber?phoneNumber=${encodeURIComponent(signUpData.phoneNumber)}`);
+            const checkPhoneResponse = await fetch(`https://wanrenbuffet.online/Customer/search/existsByPhoneNumber?phoneNumber=${encodeURIComponent(signUpData.phoneNumber)}`);
             if (!checkPhoneResponse.ok) {
                 throw new Error('Failed to check phone number');
             }
