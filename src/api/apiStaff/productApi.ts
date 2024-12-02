@@ -1,45 +1,35 @@
 import ProductModel from "../../models/StaffModels/ProductModel";
 import axios from "axios";
+import { request } from "../Request";
 
 // Get all products
 export async function getAllProduct(): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        let url = 'https://wanrenbuffet.online/api-data/Product';
-        let hasNextPage = true;
+        const data = await request('https://wanrenbuffet.online/api-data/Product');
+        console.log(data._embedded.products)// Đảm bảo đúng endpoint
+        if (data && data._embedded && data._embedded.products) {
 
-        while (hasNextPage) {
-            const { data } = await axios.get(url); // Axios sẽ tự động xử lý JSON response
-            if (data && data._embedded && data._embedded.products) {
-                // Add products from the current page
-                for (const product of data._embedded.products) {
-                    const productModel = new ProductModel(
-                        product.productId,
-                        product.productName,
-                        product.description,
-                        product.price,
-                        product.typeFood,  // Ensure field name is consistent
-                        product.image,
-                        product.quantity,
-                        product.productStatus
-                    );
-                    rs.push(productModel);
-                }
-
-                // Check if there is another page to fetch
-                if (data._links && data._links.next) {
-                    url = data._links.next.href;  // Update to the next page URL
-                } else {
-                    hasNextPage = false;  // No more pages to load
-                }
-            } else {
-                hasNextPage = false;  // No products in the current page, stop fetching
+            for (const product of data._embedded.products) {
+                const productModel = new ProductModel(
+                    product.productId,
+                    product.productName,
+                    product.description,
+                    product.price,
+                    product.typefood, // Đảm bảo truyền đủ tham số
+                    product.image,
+                    product.quantity,
+                    product.productStatus
+                );
+                rs.push(productModel);
             }
-        }
 
-        return rs;
+            return rs;
+        } else {
+            return [];
+        }
     } catch (error) {
-        console.error('Cannot fetch product list:', error);
+        console.error("Cannot fetch product list:", error);
         return [];
     }
 }
