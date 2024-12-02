@@ -2,6 +2,7 @@ import { log } from "console";
 
 export async function request(endpoint: string, method: string = "GET", body?: any) {
 
+    console.log(endpoint);
     
     try {
         const employeeToken = localStorage.getItem("employeeToken");
