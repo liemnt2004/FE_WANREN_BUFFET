@@ -1,7 +1,7 @@
 import axios from "axios";
 import AdminModel from "../../models/AdminModels/AdminModal";
 
-const API_BASE_URL = "https://wanrenbuffet.online/User";
+const API_BASE_URL = "https://wanrenbuffet.online/api-data/User";
 
 /**
  * Hàm lấy token từ localStorage
