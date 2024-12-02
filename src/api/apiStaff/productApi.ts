@@ -53,7 +53,7 @@ export async function getProductHot(): Promise<ProductModel[]> {
     try {
         const productIds: number[] = await request('https://wanrenbuffet.online/api/product/ProductHot'); // Đảm bảo đúng endpoint
         if (Array.isArray(productIds)) {
-            const productPromises = productIds.map(id => request(`https://wanrenbuffet.online/Product/${id}`));
+            const productPromises = productIds.map(id => request(`https://wanrenbuffet.online/api/Product/${id}`));
             const productsData = await Promise.all(productPromises);
 
             return productsData.map((product: any) => new ProductModel(
