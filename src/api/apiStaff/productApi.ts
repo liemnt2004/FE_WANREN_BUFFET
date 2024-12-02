@@ -5,7 +5,7 @@ import axios from "axios";
 export async function getAllProduct(): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        let url = 'https://wanrenbuffet.online/api/Product';
+        let url = 'https://wanrenbuffet.online/Product';
         let hasNextPage = true;
 
         while (hasNextPage) {
