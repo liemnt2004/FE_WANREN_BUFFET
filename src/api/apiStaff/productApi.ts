@@ -5,7 +5,7 @@ import { request } from "../Request";
 export async function getAllProduct(): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        let url = 'http://localhost:8080/api-data/Product';
+        let url = 'https://wanrenbuffet.online/api-data/Product';
         let hasNextPage = true;
 
         while (hasNextPage) {
