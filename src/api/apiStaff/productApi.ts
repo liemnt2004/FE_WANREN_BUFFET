@@ -1,6 +1,7 @@
 import ProductModel from "../../models/StaffModels/ProductModel";
 import axios from "axios";
-import { request } from "../Request";
+import { request } from "./Request";
+
 
 export async function getAllProduct(): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];

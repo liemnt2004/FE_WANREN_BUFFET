@@ -12,7 +12,7 @@ export async function fetchCustomerList(
 
   try {
     // Removed the search condition for `fullName`
-    const url = `${API_URL}/api/Customer?page=${page}`;
+    const url = `${API_URL}/api-data/Customer?page=${page}`;
 
     const response = await fetch(url, {
       method: "GET",
