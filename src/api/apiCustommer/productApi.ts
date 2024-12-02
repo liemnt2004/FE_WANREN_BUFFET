@@ -7,7 +7,7 @@ import { request } from "../Request";
 export async function getAllProduct(): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        const data = await request('https://wanrenbuffet.online/Product');
+        const data = await request('https://wanrenbuffet.online/api-data/Product');
         console.log(data._embedded.products)// Đảm bảo đúng endpoint
         if (data && data._embedded && data._embedded.products) {
 
@@ -42,7 +42,7 @@ export async function getProductHot(): Promise<ProductModel[]> {
     try {
         const productIds: number[] = await request('https://wanrenbuffet.online/api/product/ProductHot'); // Đảm bảo đúng endpoint
         if (Array.isArray(productIds)) {
-            const productPromises = productIds.map(id => request(`https://wanrenbuffet.online/Product/${id}`));
+            const productPromises = productIds.map(id => request(`https://wanrenbuffet.online/api-data/Product/${id}`));
             const productsData = await Promise.all(productPromises);
 
             return productsData.map((product: any) => new ProductModel(

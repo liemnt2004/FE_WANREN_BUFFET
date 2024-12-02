@@ -5,7 +5,7 @@ import axios from "axios";
 export async function getAllProduct(): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        let url = 'https://wanrenbuffet.online/Product';
+        let url = 'https://wanrenbuffet.online/api-data/Product';
         let hasNextPage = true;
 
         while (hasNextPage) {
@@ -49,7 +49,7 @@ export async function getProductHot(): Promise<ProductModel[]> {
     try {
         const { data: productIds } = await axios.get('https://wanrenbuffet.online/api/product/ProductHot'); // Ensure the endpoint is correct
         if (Array.isArray(productIds)) {
-            const productPromises = productIds.map(id => axios.get(`https://wanrenbuffet.online/api/Product/${id}`)); // Ensure the correct path to the product
+            const productPromises = productIds.map(id => axios.get(`https://wanrenbuffet.online/api-data/Product/${id}`)); // Ensure the correct path to the product
             const productsData = await Promise.all(productPromises);
 
             return productsData.map((response: any) => {
@@ -78,7 +78,7 @@ export async function getProductHot(): Promise<ProductModel[]> {
 export async function fetchProductsByType(typeFood: string): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        const { data } = await axios.get(`https://wanrenbuffet.online/api/Product/search/findByTypeFood?typeFood=${typeFood}`);
+        const { data } = await axios.get(`https://wanrenbuffet.online/api-data/Product/search/findByTypeFood?typeFood=${typeFood}`);
         if (data && data._embedded && data._embedded.products) {
             for (const product of data._embedded.products) {
                 const productModel = new ProductModel(
@@ -107,7 +107,7 @@ export async function fetchProductsByType(typeFood: string): Promise<ProductMode
 export async function SearchProduct(foodname: string): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        const { data } = await axios.get(`https://wanrenbuffet.online/api/Product/search/findByProductNameContaining?productName=${foodname}`);
+        const { data } = await axios.get(`https://wanrenbuffet.online/api-data/Product/search/findByProductNameContaining?productName=${foodname}`);
         if (data && data._embedded && data._embedded.products) {
             for (const product of data._embedded.products) {
                 const productModel = new ProductModel(

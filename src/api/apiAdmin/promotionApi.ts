@@ -1,7 +1,7 @@
 import axios from "axios";
 import PromotionAdmin from "../../models/AdminModels/Promotion";
 
-const API_BASE_URL = "https://wanrenbuffet.online/api/Promotion";
+const API_BASE_URL = "https://wanrenbuffet.online/api-data/Promotion";
 
 // Function to get employee token
 function getEmployeeToken(): string {

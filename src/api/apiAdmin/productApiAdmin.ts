@@ -14,7 +14,7 @@ export interface Product {
     category: Category;  // Category object
 }
 
-const API_BASE_URL = "https://wanrenbuffet.online/api/Product";
+const API_BASE_URL = "https://wanrenbuffet.online/api-data/Product";
 
 // Lấy danh sách sản phẩm với phân trang và tìm kiếm
 export const fetchProductList = async (
@@ -44,7 +44,7 @@ export const fetchProductList = async (
             response.data._embedded.products.map(async (product: any) => {
                 // Lấy dữ liệu category từ API bằng productId
                 const categoryResponse = await axios.get(
-                    `https://wanrenbuffet.online/api/Category/search/findCategoryByProductId?productId=${product.productId}`,
+                    `https://wanrenbuffet.online/api-data/Category/search/findCategoryByProductId?productId=${product.productId}`,
                     {
                         headers: {
                             Authorization: `Bearer ${getEmployeeToken()}`,
