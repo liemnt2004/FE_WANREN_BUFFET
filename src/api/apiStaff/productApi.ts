@@ -1,7 +1,6 @@
 import ProductModel from "../../models/StaffModels/ProductModel";
 import { request } from "./Request";
 
-
 // Get all products
 export async function getAllProduct(): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
@@ -19,7 +18,7 @@ export async function getAllProduct(): Promise<ProductModel[]> {
                         product.productName,
                         product.description,
                         product.price,
-                        product.typeFood,
+                        product.typeFood,  // Ensure field name is consistent
                         product.image,
                         product.quantity,
                         product.productStatus
@@ -45,24 +44,20 @@ export async function getAllProduct(): Promise<ProductModel[]> {
     }
 }
 
-
-
-
 // Get hot products
 export async function getProductHot(): Promise<ProductModel[]> {
     try {
-        const productIds: number[] = await request('https://wanrenbuffet.online/api/product/ProductHot'); // Đảm bảo đúng endpoint
+        const productIds: number[] = await request('https://wanrenbuffet.online/api/product/ProductHot'); // Ensure the endpoint is correct
         if (Array.isArray(productIds)) {
-            const productPromises = productIds.map(id => request(`https://wanrenbuffet.online/api/Product/${id}`));
+            const productPromises = productIds.map(id => request(`https://wanrenbuffet.online/api/Product/${id}`)); // Ensure the correct path to the product
             const productsData = await Promise.all(productPromises);
 
             return productsData.map((product: any) => new ProductModel(
-
                 product.productId,
                 product.productName,
                 product.description,
                 product.price,
-                product.typefood,
+                product.typeFood, // Correct the naming consistency
                 product.image,
                 product.quantity,
                 product.productStatus
@@ -76,6 +71,7 @@ export async function getProductHot(): Promise<ProductModel[]> {
     }
 }
 
+// Fetch products by type
 export async function fetchProductsByType(typeFood: string): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
@@ -88,7 +84,7 @@ export async function fetchProductsByType(typeFood: string): Promise<ProductMode
                     product.productName,
                     product.description,
                     product.price,
-                    product.typefood, // Đảm bảo truyền đủ tham số
+                    product.typeFood, // Ensure consistency
                     product.image,
                     product.quantity,
                     product.productStatus
@@ -105,6 +101,7 @@ export async function fetchProductsByType(typeFood: string): Promise<ProductMode
     }
 }
 
+// Search products by name
 export async function SearchProduct(foodname: string): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
@@ -117,7 +114,7 @@ export async function SearchProduct(foodname: string): Promise<ProductModel[]> {
                     product.productName,
                     product.description,
                     product.price,
-                    product.typefood, // Đảm bảo truyền đủ tham số
+                    product.typeFood, // Ensure consistency
                     product.image,
                     product.quantity,
                     product.productStatus
@@ -133,8 +130,4 @@ export async function SearchProduct(foodname: string): Promise<ProductModel[]> {
         console.error(`Cannot fetch products of type ${foodname}:`, error);
         throw error;
     }
-
-    
 }
-
-
