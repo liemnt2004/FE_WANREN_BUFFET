@@ -6,44 +6,32 @@ import { request } from "./Request";
 export async function getAllProduct(): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        let url = 'https://wanrenbuffet.online/api-data/Product';
-        let hasNextPage = true;
-
-        while (hasNextPage) {
-            const data = await request(url);
-            if (data && data._embedded && data._embedded.products) {
-                // Add products from the current page
-                for (const product of data._embedded.products) {
-                    const productModel = new ProductModel(
-                        product.productId,
-                        product.productName,
-                        product.description,
-                        product.price,
-                        product.typeFood,
-                        product.image,
-                        product.quantity,
-                        product.productStatus
-                    );
-                    rs.push(productModel);
-                }
-
-                // Check if there is another page to fetch
-                if (data._links && data._links.next) {
-                    url = data._links.next.href;  // Update to the next page URL
-                } else {
-                    hasNextPage = false;  // No more pages to load
-                }
-            } else {
-                hasNextPage = false;  // No products in the current page, stop fetching
-            }
+      let url = "https://wanrenbuffet.online/api-data/Product?page=0&size=100";
+  
+      const data = await request(url);
+      if (data && data._embedded && data._embedded.products) {
+        // Add products from the current page
+        for (const product of data._embedded.products) {
+          const productModel = new ProductModel(
+            product.productId,
+            product.productName,
+            product.description,
+            product.price,
+            product.typeFood,
+            product.image,
+            product.quantity,
+            product.productStatus
+          );
+          rs.push(productModel);
         }
-
-        return rs;
+      }
+  
+      return rs;
     } catch (error) {
-        console.error('Cannot fetch product list:', error);
-        return [];
+      console.error("Cannot fetch product list:", error);
+      return [];
     }
-}
+  }
 
 // Get hot products
 export async function getProductHot(): Promise<ProductModel[]> {

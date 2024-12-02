@@ -1,7 +1,8 @@
 import { log } from "console";
 
 export async function request(endpoint: string, method: string = "GET", body?: any) {
-
+    console.log(endpoint);
+    
     if (!endpoint.startsWith("https://") && !endpoint.startsWith("http://")) {
         endpoint = `https://${endpoint}`;  
     }
