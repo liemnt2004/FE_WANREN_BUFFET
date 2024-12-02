@@ -6,7 +6,7 @@ import { request } from "./Request";
 export async function getAllProduct(): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        let url = 'https://wanrenbuffet.online/Product';
+        let url = 'https://wanrenbuffet.online/api/Product';
         let hasNextPage = true;
 
         while (hasNextPage) {
@@ -79,7 +79,7 @@ export async function getProductHot(): Promise<ProductModel[]> {
 export async function fetchProductsByType(typeFood: string): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        const data = await request(`https://wanrenbuffet.online/Product/search/findByTypeFood?typeFood=${typeFood}`);
+        const data = await request(`https://wanrenbuffet.online/api/Product/search/findByTypeFood?typeFood=${typeFood}`);
         // Spring Data REST thường trả về dữ liệu trong _embedded
         if (data && data._embedded && data._embedded.products) {
             for (const product of data._embedded.products) {
@@ -108,7 +108,7 @@ export async function fetchProductsByType(typeFood: string): Promise<ProductMode
 export async function SearchProduct(foodname: string): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        const data = await request(`https://wanrenbuffet.online/Product/search/findByProductNameContaining?productName=${foodname}`);
+        const data = await request(`https://wanrenbuffet.online/api/Product/search/findByProductNameContaining?productName=${foodname}`);
         // Spring Data REST thường trả về dữ liệu trong _embedded
         if (data && data._embedded && data._embedded.products) {
             for (const product of data._embedded.products) {

@@ -5,7 +5,7 @@ export async function getListUser(page: number = 1): Promise<{
 }> {
   const employeeToken = localStorage.getItem("employeeToken");
   try {
-    const response = await fetch(`https://wanrenbuffet.online/User?page=${page}`, {
+    const response = await fetch(`https://wanrenbuffet.online/api/User?page=${page}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

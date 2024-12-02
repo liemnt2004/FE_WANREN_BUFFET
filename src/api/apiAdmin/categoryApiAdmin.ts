@@ -10,7 +10,7 @@ export interface Category {
 }
 
 // Cấu hình cơ bản cho API
-const API_BASE_URL = "https://wanrenbuffet.online/Category"; // Thay đổi URL này thành URL thực tế của backend bạn
+const API_BASE_URL = "https://wanrenbuffet.online/api/Category"; // Thay đổi URL này thành URL thực tế của backend bạn
 
 // Hàm lấy token từ localStorage
 const getAuthToken = (): string => {

@@ -16,7 +16,7 @@ const getHeaders = () => {
 export async function getAllOrderDetailsByOrderId(orderId: number): Promise<OrderDetailModel[]>{
     const rs: OrderDetailModel[] = [];
     try {
-        const data = await request(`https://wanrenbuffet.online/Orders/${orderId}/orderDetails`);
+        const data = await request(`https://wanrenbuffet.online/api/Orders/${orderId}/orderDetails`);
         console.log(data._embedded.orderDetails);
         if (data && data._embedded && data._embedded.orderDetails) {
             for (const orderDetail of data._embedded.orderDetails) {
@@ -40,7 +40,7 @@ export async function getAllOrderDetailsByOrderId(orderId: number): Promise<Orde
 
 export async function getTableNumberByOrderId(orderId: number): Promise<number>{
     try {
-        const response = await request(`https://wanrenbuffet.online/Orders/${orderId}/tablee`);
+        const response = await request(`https://wanrenbuffet.online/api/Orders/${orderId}/tablee`);
         const tableNumber = response.tableNumber;
         return tableNumber;
     } catch (error) {
