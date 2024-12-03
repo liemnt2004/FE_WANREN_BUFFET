@@ -1,7 +1,7 @@
 import axios from "axios";
 import WorkScheduleModel from "../../models/AdminModels/WorkScheduleModel";
 import WorkScheduleFullModel from "../../models/AdminModels/WorkScheduleFullModel";
-const API_URL = "http://localhost:8080/work-schedules";
+const API_URL = "https://wanrenbuffet.online/work-schedules";
 
 // Hàm để lấy token từ localStorage
 function getEmployeeToken(): string {
@@ -52,7 +52,7 @@ export async function getWorkSchedulesByDate(
 
     // Xử lý và trả về danh sách WorkScheduleFullModel
     return response.data.map(
-      (schedule: any) =>
+      (schedule: WorkScheduleFullModel) =>
         new WorkScheduleFullModel(
           schedule.username,
           schedule.fullName,

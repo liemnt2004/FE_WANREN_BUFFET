@@ -1,4 +1,3 @@
-import { fetchCustomerUsername } from "./../apiCashier/ordersOnl";
 import axios from "axios";
 import { request } from "./Request";
 import OrderDetailsWithNameProduct from "../../models/StaffModels/OrderDetailsWithNameProduct";
@@ -58,13 +57,14 @@ export async function getTableNumberByOrderId(
   }
 }
 
+
 export async function getOrderDetailWithNameProduct(
   orderId: number
 ): Promise<OrderDetailsWithNameProduct[]> {
   const rs: OrderDetailsWithNameProduct[] = [];
   try {
     const data = await request(
-      `http://localhost:8080/api/orders_detail_staff/get/order_details/with_name/${orderId}`
+      `${BASE_URL}/orders_detail_staff/get/order_details/with_name/${orderId}`
     );
     if (data && data.orderDetails) {
       for (const orderDetail of data.orderDetails) {
@@ -88,7 +88,7 @@ export async function getOrderDetailWithNameProduct(
 export async function getOrderAmount(orderId: number): Promise<number> {
   try {
     const amountOfOrder = await request(
-      `http://localhost:8080/api/order_staff/get_amount/${orderId}`
+      `${BASE_URL}/order_staff/get_amount/${orderId}`
     );
     return amountOfOrder.amount;
   } catch (error) {
@@ -100,7 +100,7 @@ export async function getOrderAmount(orderId: number): Promise<number> {
 export async function updateLoyaltyPoint(phoneNumber: string, amount: number) {
   try {
     const loyaltyPoint = await fetch(
-      `http://localhost:8080/api/customer/loyal_point/${phoneNumber}/${amount}`,
+      `${BASE_URL}/customer/loyal_point/${phoneNumber}/${amount}`,
       {
         method: "PUT",
         headers: getHeaders(),
@@ -119,7 +119,7 @@ export async function updateTotalAmount(
 ): Promise<number> {
   try {
     const response = await axios.put(
-      `http://localhost:8080/api/order_staff/update/total_amount/${orderId}/${total_amount}`,
+      `${BASE_URL}/order_staff/update/total_amount/${orderId}/${total_amount}`,
       {
         method: "PUT",
         headers: getHeaders(),
@@ -154,20 +154,17 @@ export const fetchOrderStatusAPI = async (orderId: number) => {
 };
 
 export const getPromotionByOrderId = async (orderId: number) => {
-  const response = await fetch(
-    `http://localhost:8080/api/promotions/info/${orderId}`,
-    {
-      method: "GET",
-      headers: getHeaders(),
-    }
-  );
+  const response = await fetch(`${BASE_URL}/promotions/info/${orderId}`, {
+    method: "GET",
+    headers: getHeaders(),
+  });
   if (!response.ok) throw new Error("Error fetching order details");
   return response.json();
 };
 
 export const getLoyaltyPoints = async (phoneNumber: string) => {
   const response = await fetch(
-    `http://localhost:8080/api/customer/loyalty-points?phoneNumber=${phoneNumber}`,
+    `${BASE_URL}/customer/loyalty-points?phoneNumber=${phoneNumber}`,
     {
       method: "GET",
       headers: getHeaders(),
@@ -192,6 +189,41 @@ export const updateLoyaltyPoints = async (
   if (!response.ok) throw new Error("Error updating order amount");
 };
 
+export const transferTable = async (
+  orderId: number, selectedTableId: number
+) => {
+  const response = await fetch(`${BASE_URL}/order_staff/${orderId}/transfer`, {
+    method: 'PUT',
+    headers: getHeaders(),
+    body: JSON.stringify({
+        orderId: orderId,
+        newTableId: selectedTableId,
+    }),
+});
+
+if (!response.ok) {
+    throw new Error('Error transferring table');
+}
+};
+
+export const fetchReservations = async () => {
+  const response = await fetch(`${BASE_URL}/reservation/today`, {
+    method: "GET",
+    headers: getHeaders(),
+  });
+  if (!response.ok) throw new Error(`Error fetching table`);
+  return response.json();
+};
+
+export const fetchTables = async () => {
+  const response = await fetch(`http://localhost:8080/Table?page=0&size=50`, {
+    method: "GET",
+    headers: getHeaders(),
+  });
+  if (!response.ok) throw new Error(`Error fetching table`);
+  return response.json();
+};
+
 export const fetchProductDetailsAPI = async (productId: number) => {
   const response = await fetch(`${BASE_URL}/product/${productId}`, {
     method: "GET",
@@ -203,87 +235,102 @@ export const fetchProductDetailsAPI = async (productId: number) => {
 
 export const checkCustomer = async (orderId: number) => {
   try {
-      const response = await fetch(`http://localhost:8080/api/order_staff/check-customer?orderId=${orderId}`, {
-          method: "GET",
-          headers: getHeaders()
-      });
+    const response = await fetch(
+      `${BASE_URL}/order_staff/check-customer?orderId=${orderId}`,
+      {
+        method: "GET",
+        headers: getHeaders(),
+      }
+    );
 
-      const text = await response.text();
-      return text;
+    const text = await response.text();
+    return text;
   } catch (error) {
-      console.error("API call failed:", error);
-      throw error;
+    console.error("API call failed:", error);
+    throw error;
   }
 };
 
-export const updateReservationStatus = async (reservationId: number, status: string) => {
+export const updateReservationStatus = async (
+  reservationId: number,
+  status: string
+) => {
   try {
-      const response = await fetch(`${BASE_URL}/reservation/${reservationId}/status?status=${status}`, {
-          method: "PUT",
-          headers: getHeaders(),
-      });
-
-      if (response.ok) {
-          const message = await response.text(); // API trả về chuỗi thông báo
-          return message;
-      } else {
-          const errorMessage = await response.text();
-          throw new Error(errorMessage);
+    const response = await fetch(
+      `${BASE_URL}/reservation/${reservationId}/status?status=${status}`,
+      {
+        method: "PUT",
+        headers: getHeaders(),
       }
+    );
+
+    if (response.ok) {
+      const message = await response.text(); // API trả về chuỗi thông báo
+      return message;
+    } else {
+      const errorMessage = await response.text();
+      throw new Error(errorMessage);
+    }
   } catch (error) {
-      console.error("Failed to update reservation status:", error);
-      throw error;
+    console.error("Failed to update reservation status:", error);
+    throw error;
   }
 };
 
-export const updateDiscountPoints = async (orderId: number, discountPoints:number) => {
+export const updateDiscountPoints = async (
+  orderId: number,
+  discountPoints: number
+) => {
   try {
-      const response = await fetch(`${BASE_URL}/order_staff/update-discount-points-order?orderId=${orderId}&discountPoints=${discountPoints}`, {
-          method: "PUT",
-          headers: getHeaders()
-      });
-
-      if (response.ok) {
-          const message = await response.text(); // API trả về chuỗi thông báo
-          return message;
-      } else {
-          const errorMessage = await response.text();
-          throw new Error(errorMessage);
+    const response = await fetch(
+      `${BASE_URL}/order_staff/update-discount-points-order?orderId=${orderId}&discountPoints=${discountPoints}`,
+      {
+        method: "PUT",
+        headers: getHeaders(),
       }
+    );
+
+    if (response.ok) {
+      const message = await response.text(); // API trả về chuỗi thông báo
+      return message;
+    } else {
+      const errorMessage = await response.text();
+      throw new Error(errorMessage);
+    }
   } catch (error) {
-      console.error("Failed to update discount points:", error);
-      throw error;
+    console.error("Failed to update discount points:", error);
+    throw error;
   }
 };
 
 export const getDiscountPoints = async (orderId: number) => {
   try {
-      const response = await fetch(`${BASE_URL}/order_staff/get-discount-points?orderId=${orderId}`, {
-          method: "GET",
-          headers: getHeaders()
-      });
-
-      if (response.ok) {
-          const discountPoints = await response.json();
-          return discountPoints;
-      } else {
-          const errorMessage = await response.text();
-          throw new Error(errorMessage);
+    const response = await fetch(
+      `${BASE_URL}/order_staff/get-discount-points?orderId=${orderId}`,
+      {
+        method: "GET",
+        headers: getHeaders(),
       }
+    );
+
+    if (response.ok) {
+      const discountPoints = await response.json();
+      return discountPoints;
+    } else {
+      const errorMessage = await response.text();
+      throw new Error(errorMessage);
+    }
   } catch (error) {
-      console.error("Failed to fetch discount points:", error);
-      throw error;
+    console.error("Failed to fetch discount points:", error);
+    throw error;
   }
 };
 
 export const fetchTableStatus = async (tableId: number) => {
-  const response = await fetch(
-    `http://localhost:8080/api/table/status/${tableId}`,
-    {
-      method: "GET",
-      headers: getHeaders(),
-    }
-  );
+  const response = await fetch(`${BASE_URL}/table/status/${tableId}`, {
+    method: "GET",
+    headers: getHeaders(),
+  });
   if (!response.ok) throw new Error(`Error fetching table status`);
   const responseText = await response.text();
   try {
@@ -294,6 +341,7 @@ export const fetchTableStatus = async (tableId: number) => {
     return responseText;
   }
 };
+
 
 export const fetchOrderIdByTableId = async (tableId: number) => {
   const response = await fetch(
@@ -429,7 +477,7 @@ export const payWithVNPay = async (
     const employeeToken = localStorage.getItem("employeeToken");
     // formData.append('baseUrl', baseUrl);
     const response = await axios.post(
-      "http://localhost:8080/api/payment/submit_order_vnpay",
+      "${BASE_URL}/payment/submit_order_vnpay",
       formData,
       {
         headers: {

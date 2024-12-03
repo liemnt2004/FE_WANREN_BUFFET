@@ -5,7 +5,7 @@ export async function getListUser(page: number = 1): Promise<{
 }> {
   const employeeToken = localStorage.getItem("employeeToken");
   try {
-    const response = await fetch(`http://localhost:8080/User?page=${page}`, {
+    const response = await fetch(`https://wanrenbuffet.online/api-data/User?page=${page}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -29,7 +29,7 @@ export async function createUser(
 ): Promise<EmployeeAdmin | null> {
   const employeeToken = localStorage.getItem("employeeToken");
   try {
-    const response = await fetch(`http://localhost:8080/User/create`, {
+    const response = await fetch(`https://wanrenbuffet.online/User/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -57,7 +57,7 @@ export async function updateUser(
 ): Promise<EmployeeAdmin | null> {
   const employeeToken = localStorage.getItem("employeeToken");
   try {
-    const response = await fetch(`http://localhost:8080/User/update/${id}`, {
+    const response = await fetch(`https://wanrenbuffet.online/User/update/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -86,7 +86,7 @@ export async function updateAccountStatus(
   const employeeToken = localStorage.getItem("employeeToken");
   try {
     const response = await fetch(
-      `http://localhost:8080/User/updateAccountStatus/${id}`,
+      `https://wanrenbuffet.online/User/updateAccountStatus/${id}`,
       {
         method: "PATCH",
         headers: {
@@ -113,7 +113,7 @@ export async function updateAccountStatus(
 export async function deleteUser(id: number): Promise<void> {
   const employeeToken = localStorage.getItem("employeeToken");
   try {
-    const response = await fetch(`http://localhost:8080/User/delete/${id}`, {
+    const response = await fetch(`https://wanrenbuffet.online/User/delete/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

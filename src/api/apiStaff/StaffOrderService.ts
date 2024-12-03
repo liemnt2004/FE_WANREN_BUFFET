@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { StaffOrderDTO } from '../../models/StaffModels/Type';
 
-const API_URL = 'http://localhost:8080/api/StaffOrders';
+const API_URL = 'https://wanrenbuffet.online/api/StaffOrders';
 
 export const StaffOrderService = {
   createOrder: async (orderData: StaffOrderDTO.OrderWithDetailsRequest) => {

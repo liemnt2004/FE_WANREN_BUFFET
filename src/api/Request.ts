@@ -1,11 +1,9 @@
 export async function request(endpoint: string, method: string = "GET", body?: any) {
-    const token = localStorage.getItem("token");
     try {
         const response = await fetch(endpoint, {
             method: method,
             headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
             },
             body: body ? JSON.stringify(body) : null,
         });

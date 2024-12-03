@@ -36,7 +36,7 @@ const EnterOtp: React.FC = () => {
 
         try {
             // Gửi yêu cầu POST tới backend để xác thực OTP
-            const response = await axios.post('http://localhost:8080/api/otp/validate', {
+            const response = await axios.post('https://wanrenbuffet.online/api/otp/validate', {
                 email: email,
                 otp: otp
             });

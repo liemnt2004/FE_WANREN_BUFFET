@@ -2,7 +2,7 @@ import axios from "axios";
 
 export async function createPaymentNormal(payment: any): Promise<number>{
     try {
-        const response = await axios.post('http://localhost:8080/api/payment/create_payment/normal', payment, {
+        const response = await axios.post('https://wanrenbuffet.online/api/payment/create_payment/normal', payment, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }

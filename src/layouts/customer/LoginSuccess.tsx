@@ -15,7 +15,7 @@ const LoginSuccess = () => {
             localStorage.setItem("token", token);  // Lưu token vào localStorage
 
             // Chuyển hướng đến trang dashboard hoặc trang chính
-            window.location.href = "http://localhost:3000/"// Hoặc trang khác mà bạn muốn người dùng chuyển đến
+            window.location.href = "https://wanrenbuffet.netlify.app/"// Hoặc trang khác mà bạn muốn người dùng chuyển đến
         } else {
             // Nếu không có token, có thể chuyển hướng về trang lỗi hoặc trang đăng nhập
             history("/login");

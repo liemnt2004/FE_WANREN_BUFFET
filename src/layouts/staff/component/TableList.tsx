@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tables } from '../../../models/StaffModels/Tables';
-import { updateReservationStatus } from '../../../api/apiStaff/orderForStaffApi';
+import { fetchOrderIdByTableId, fetchReservations, fetchTables, updateReservationStatus } from '../../../api/apiStaff/orderForStaffApi';
 interface Reservation {
   reservationId: number;
   userId: number;
@@ -30,20 +30,9 @@ const TableModal: React.FC<{
   const [reID, setReID] = useState<number | null>(null);
 
   useEffect(() => {
-    const fetchReservations = async () => {
+    const fetchReservation = async () => {
       try {
-        const employeeToken = localStorage.getItem("employeeToken");
-        const response = await fetch("http://localhost:8080/api/reservation/today", {
-          method: "GET",
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${employeeToken}`
-          },
-        });
-        if (!response.ok) {
-          throw new Error("Failed to fetch reservations");
-        }
-        const data = await response.json();
+        const data = await fetchReservations();
 
         const approvedReservations = data.filter((reservation: { status: string }) => reservation.status === "APPROVED");
 
@@ -61,7 +50,7 @@ const TableModal: React.FC<{
       }
     };
 
-    fetchReservations();
+    fetchReservation();
   }, []);
 
 
@@ -195,17 +184,9 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchTables = async () => {
+    const fetchTable = async () => {
       try {
-        const employeeToken = localStorage.getItem("employeeToken");
-        const response = await fetch('http://localhost:8080/Table?page=0&size=50', {
-          method: "GET",
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${employeeToken}`
-          },
-        });
-        const data = await response.json();
+        const data = await fetchTables();
         if (data && data._embedded && data._embedded.tablees) {
           setTables(data._embedded.tablees);
         } else {
@@ -218,7 +199,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
       }
     };
 
-    fetchTables();
+    fetchTable();
   }, []);
 
 
@@ -234,18 +215,8 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
 
   const handleCheckoutStep = async (tableId: number, step: number) => {
     try {
-      const employeeToken = localStorage.getItem("employeeToken");
-      const responseOrderId = await fetch(`http://localhost:8080/api/order_staff/findOrderIdByTableId/${tableId}`, {
-        method: "GET",
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${employeeToken}`
-        },
-      });
-      if (!responseOrderId.ok) throw new Error('Error fetching orderId');
-
-      const orderIdText = await responseOrderId.text();
-      const orderId = orderIdText ? Number(orderIdText) : null;
+      
+      const orderId = await fetchOrderIdByTableId(tableId);
 
       if (orderId !== null) {
         console.log(orderId)

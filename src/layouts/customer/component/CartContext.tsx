@@ -27,6 +27,7 @@ interface CartProviderProps {
 }
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
+
     const [cartItems, setCartItems] = useState<CartItem[]>(() => {
         const storedCart = sessionStorage.getItem('cartItems');
         if (storedCart) {
