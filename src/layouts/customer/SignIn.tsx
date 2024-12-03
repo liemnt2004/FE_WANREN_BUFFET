@@ -134,7 +134,7 @@ const LoginRegisterComponent: React.FC = () => {
 
         try {
             // Kiểm tra username
-            const checkUsernameResponse = await fetch(`https://wanrenbuffet.online/Customer/search/existsByUsername?username=${encodeURIComponent(signUpData.username)}`);
+            const checkUsernameResponse = await fetch(`https://wanrenbuffet.online/api-data/Customer/search/existsByUsername?username=${encodeURIComponent(signUpData.username)}`);
             if (!checkUsernameResponse.ok) {
                 throw new Error('Failed to check username');
             }
@@ -145,7 +145,7 @@ const LoginRegisterComponent: React.FC = () => {
             }
 
             // Kiểm tra email
-            const checkEmailResponse = await fetch(`https://wanrenbuffet.online/Customer/search/existsByEmail?email=${encodeURIComponent(signUpData.email)}`);
+            const checkEmailResponse = await fetch(`https://wanrenbuffet.online/api-data/Customer/search/existsByEmail?email=${encodeURIComponent(signUpData.email)}`);
             if (!checkEmailResponse.ok) {
                 throw new Error('Failed to check email');
             }
@@ -156,7 +156,7 @@ const LoginRegisterComponent: React.FC = () => {
             }
 
             // Kiểm tra số điện thoại
-            const checkPhoneResponse = await fetch(`https://wanrenbuffet.online/Customer/search/existsByPhoneNumber?phoneNumber=${encodeURIComponent(signUpData.phoneNumber)}`);
+            const checkPhoneResponse = await fetch(`https://wanrenbuffet.online/api-data/Customer/search/existsByPhoneNumber?phoneNumber=${encodeURIComponent(signUpData.phoneNumber)}`);
             if (!checkPhoneResponse.ok) {
                 throw new Error('Failed to check phone number');
             }
