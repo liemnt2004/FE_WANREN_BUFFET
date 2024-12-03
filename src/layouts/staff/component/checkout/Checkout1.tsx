@@ -148,7 +148,7 @@ const Checkout1: React.FC = () => {
         if (isEditing) {
             handleOpenModal();
         } else {
-            navigate(`/checkout/step2`, { state: { tableId: tableId, orderId: orderId } });
+            navigate(`/staff/checkout/step2`, { state: { tableId: tableId, orderId: orderId } });
         }
     }
 

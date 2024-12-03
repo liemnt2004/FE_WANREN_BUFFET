@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { Offcanvas } from 'react-bootstrap';
 import '../../assets/css/styles.css'
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ProductModel from '../../../../models/StaffModels/ProductModel';
 import { CreateNewOrder, fetchOrderDetailsAPI, fetchOrderIdByTableId, fetchOrderStatusAPI, fetchProductDetailsAPI, updateOrderAmount, updateOrderDetails, updateTableStatus } from '../../../../api/apiStaff/orderForStaffApi';
 import { notification } from 'antd';
@@ -34,6 +34,8 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   onUpdateSubtotal,
   tableId
 }) => {
+  const location = useLocation();
+  const { adults } = location.state || {};
   const navigate = useNavigate();
   const [selectedItems, setSelectedItems] = useState<
     { product: ProductModel; quantity: number; note: string }[]
@@ -146,7 +148,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
     try {
       let orderIdToUse = orderId;
       if (orderId === null) {
-        const newOrderId = await CreateNewOrder(Number(employeeUserId), tableId);
+        const newOrderId = await CreateNewOrder(Number(employeeUserId), tableId, Number(adults));
         if (newOrderId) {
           setOrderId(newOrderId.id);
           orderIdToUse = newOrderId.id;
@@ -307,7 +309,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
                   </tbody>
                 </table>
               </div>
-              <button onClick={() => navigate(`/checkout/step1`, { state: { tableId: tableId, orderId: orderId } })} style={{ float: 'right' }} className="btn btn-danger">
+              <button onClick={() => navigate(`/staff/checkout/step1`, { state: { tableId: tableId, orderId: orderId } })} style={{ float: 'right' }} className="btn btn-danger">
                 Thanh Toán
               </button>
             </div>
