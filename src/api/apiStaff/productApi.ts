@@ -8,7 +8,7 @@ const BASE_URL = "https://wanrenbuffet.online";
 export async function getAllProduct(): Promise<ProductModel[]> {
   const rs: ProductModel[] = [];
   try {
-    let url = `${BASE_URL}/data-api/Product?page=0&size=100`;
+    let url = `${BASE_URL}/api-data/Product?page=0&size=100`;
 
     const data = await request(url);
     if (data && data._embedded && data._embedded.products) {
@@ -75,7 +75,7 @@ export async function fetchProductsByType(
   const rs: ProductModel[] = [];
   try {
     const data = await request(
-      `${BASE_URL}/data-api/Product/search/findByTypeFood?typeFood=${typeFood}`
+      `${BASE_URL}/api-data/Product/search/findByTypeFood?typeFood=${typeFood}`
     );
     // Spring Data REST thường trả về dữ liệu trong _embedded
     if (data && data._embedded && data._embedded.products) {
@@ -107,7 +107,7 @@ export async function SearchProduct(foodname: string): Promise<ProductModel[]> {
   const rs: ProductModel[] = [];
   try {
     const data = await request(
-      `${BASE_URL}/data-api/Product/search/findByProductNameContaining?productName=${foodname}`
+      `${BASE_URL}/api-data/Product/search/findByProductNameContaining?productName=${foodname}`
     );
     // Spring Data REST thường trả về dữ liệu trong _embedded
     if (data && data._embedded && data._embedded.products) {

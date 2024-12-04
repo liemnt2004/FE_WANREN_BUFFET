@@ -19,7 +19,7 @@ export async function getAllOrderDetailsByOrderId(
   const rs: OrderDetailModel[] = [];
   try {
     const data = await request(
-      `https://wanrenbuffet.online/data-api/Orders/${orderId}/orderDetails`
+      `https://wanrenbuffet.online/api-data/Orders/${orderId}/orderDetails`
     );
     console.log(data._embedded.orderDetails);
     if (data && data._embedded && data._embedded.orderDetails) {
@@ -47,7 +47,7 @@ export async function getTableNumberByOrderId(
 ): Promise<number> {
   try {
     const response = await request(
-      `https://wanrenbuffet.online/data-api/Orders/${orderId}/tablee`
+      `https://wanrenbuffet.online/api-data/Orders/${orderId}/tablee`
     );
     const tableNumber = response.tableNumber;
     return tableNumber;
