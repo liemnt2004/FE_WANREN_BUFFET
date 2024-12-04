@@ -1,19 +1,80 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import banerPrice from '../assets/img/cothaygia_t11.png';
 import { Tables } from '../../../models/StaffModels/Tables';
+import { fetchOrderIdByTableId, fetchReservations, fetchTables, updateReservationStatus } from '../../../api/apiStaff/orderForStaffApi';
+interface Reservation {
+  reservationId: number;
+  userId: number;
+  customerId: number;
+  numberPeople: number;
+  dateToCome: string;
+  timeToCome: string;
+  phoneNumber: string;
+  email: string;
+  fullName: string;
+  note: string;
+  status: string;
+}
 
 const TableModal: React.FC<{
   table: Tables | null;
   onClose: () => void;
   onConfirm: (tableId: number, tableNumber: number, adults: number, children: number, tableLocation: string) => void;
 }> = ({ table, onClose, onConfirm }) => {
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [adults, setAdults] = useState<number>(2);
   const [children, setChildren] = useState<number>(0);
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
+  const [reID, setReID] = useState<number | null>(null);
 
-  const handleConfirm = () => {
+  useEffect(() => {
+    const fetchReservation = async () => {
+      try {
+        const data = await fetchReservations();
+
+        const approvedReservations = data.filter((reservation: { status: string }) => reservation.status === "APPROVED");
+
+        const sortedReservations = approvedReservations.sort((a: { timeToCome: string }, b: { timeToCome: string }) => {
+          const timeA = new Date(a.timeToCome).getTime();
+          const timeB = new Date(b.timeToCome).getTime();
+          return timeA - timeB;
+        });
+
+        setReservations(sortedReservations);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReservation();
+  }, []);
+
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+
+  const handleRowClick = async (reservation: Reservation, index: number) => {
+    setAdults(reservation.numberPeople || 1);
+    setChildren(0);
+    if (selectedRowIndex === index) {
+      setSelectedRowIndex(null);
+      setReID(null);
+    } else {
+      setSelectedRowIndex(index);
+      setReID(reservation.reservationId);
+    }
+  };
+
+  const handleConfirm = (reservationId: number) => {
     if (table) {
-      onConfirm(table.tableId, table.tableNumber, 2, 0, table.location);
+      onConfirm(table.tableId, table.tableNumber, adults, children, table.location);
+      if (reservationId) {
+        updateReservationStatus(reservationId, "SEATED");
+      }
     }
     onClose();
   };
@@ -21,18 +82,21 @@ const TableModal: React.FC<{
   if (!table) return null;
 
   return (
-    <div className="modal fade show" style={{ display: 'block' }} tabIndex={-1} role="dialog">
+    <div className="modal modal-lg fade show" style={{ display: 'block' }} tabIndex={-1} role="dialog">
       <div className="modal-dialog modal-dialog-centered" role="document">
-        <div className="modal-content">
-          <div className="modal-header d-flex justify-content-between">
+        <div className="modal-content" style={{ maxWidth: '800px' }}>
+          {/* Modal Header */}
+          <div className="modal-header d-flex justify-content-between align-items-center">
             <h5 className="modal-title">Thông tin khách hàng</h5>
-            <button type="button" className="close" onClick={onClose}>
-              <span className="fs-3">&times;</span>
-            </button>
+            <button type="button" className="btn-close" onClick={onClose}></button>
           </div>
+
+          {/* Modal Body */}
           <div className="modal-body">
+            {/* Section: Thông tin */}
+            <h6 className="mb-3">Thông tin đặt bàn</h6>
             <div className="row">
-              <div className="col-md-6">
+              <div className="col-md-6 mb-3">
                 <label>Số lượng người lớn:</label>
                 <input
                   type="number"
@@ -40,9 +104,10 @@ const TableModal: React.FC<{
                   onChange={(e) => setAdults(Number(e.target.value))}
                   className="form-control"
                   min="1"
+                  autoFocus
                 />
               </div>
-              <div className="col-md-6">
+              <div className="col-md-6 mb-3">
                 <label>Số lượng trẻ em:</label>
                 <input
                   type="number"
@@ -53,21 +118,56 @@ const TableModal: React.FC<{
                 />
               </div>
             </div>
+
+            {/* Section: Danh sách đặt bàn */}
+            <h6 className="mb-3">Danh sách đặt bàn ngày: <span>{new Date().toLocaleDateString()}</span></h6>
+            <div style={{ maxHeight: '250px', overflowY: 'auto', border: '1px solid #ddd', padding: '10px' }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Họ Tên</th>
+                    <th>SĐT</th>
+                    <th>Thời Gian</th>
+                    <th>Số Người</th>
+                    <th>Ghi Chú</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reservations.length > 0 ? (
+                    reservations.map((reservation, index) => (
+                      <tr key={index} onClick={() => handleRowClick(reservation, index)} className={index === selectedRowIndex ? "table-danger" : ""} style={{ cursor: 'pointer' }}>
+                        <td>{reservation.fullName}</td>
+                        <td>{reservation.phoneNumber}</td>
+                        <td>{reservation.timeToCome}</td>
+                        <td>{reservation.numberPeople}</td>
+                        <td style={{ width: '200px', whiteSpace: "normal", wordWrap: "break-word" }}>
+                          {reservation.note}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="text-center">Không có dữ liệu</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div className="modal-footer">
+
+          {/* Modal Footer */}
+          <div className="modal-footer text-end">
             <button type="button" className="btn btn-secondary" onClick={onClose}>
               Đóng
             </button>
-            <button type="button" className="btn btn-danger" onClick={handleConfirm}>
+            <button type="button" className="btn btn-danger" onClick={() => handleConfirm(Number(reID))}>
               Xác nhận
             </button>
-          </div>
-          <div className="modal-banner">
-            <img src={banerPrice} alt="" style={{ borderRadius: '10px' }} />
           </div>
         </div>
       </div>
     </div>
+
   );
 };
 
@@ -84,17 +184,9 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchTables = async () => {
+    const fetchTable = async () => {
       try {
-        const employeeToken = localStorage.getItem("employeeToken");
-        const response = await fetch('https://wanrenbuffet.online/api-data/Table?page=0&size=50', {
-          method: "GET",
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${employeeToken}`
-          },
-        });
-        const data = await response.json();
+        const data = await fetchTables();
         if (data && data._embedded && data._embedded.tablees) {
           setTables(data._embedded.tablees);
         } else {
@@ -107,7 +199,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
       }
     };
 
-    fetchTables();
+    fetchTable();
   }, []);
 
 
@@ -123,22 +215,12 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
 
   const handleCheckoutStep = async (tableId: number, step: number) => {
     try {
-       const employeeToken = localStorage.getItem("employeeToken");
-      const responseOrderId = await fetch(`https://wanrenbuffet.online/api/order_staff/findOrderIdByTableId/${tableId}`, {
-        method: "GET",
-        headers: {
-          'Content-Type': 'application/json',
-           Authorization: `Bearer ${employeeToken}`
-      },
-      });
-      if (!responseOrderId.ok) throw new Error('Error fetching orderId');
-
-      const orderIdText = await responseOrderId.text();
-      const orderId = orderIdText ? Number(orderIdText) : null;
+      
+      const orderId = await fetchOrderIdByTableId(tableId);
 
       if (orderId !== null) {
         console.log(orderId)
-        navigate(`/checkout/step${step}`, { state: { tableId: tableId, orderId: orderId } });
+        navigate(`/staff/checkout/step${step}`, { state: { tableId: tableId, orderId: orderId } });
       } else {
         console.error('No orderId found for this table');
       }

@@ -87,9 +87,6 @@ const fetchProductInfo = async (productLink: string): Promise<{ image?: string; 
 };
 
 
-
-
-
 // Hàm lấy orders từ API
 export const fetchOrders = async (): Promise<Order[]> => {
   try {

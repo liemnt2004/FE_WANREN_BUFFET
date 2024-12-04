@@ -23,7 +23,7 @@ const CheckoutSucess: React.FC = () => {
                         <div className="btn-wrapper mt-4">
                             {paymentMethod === 'CASH' && (
                                 <p onClick={() =>
-                                    navigate("/checkout/step3", {
+                                    navigate("/staff/checkout/step3", {
                                         state: {
                                             paymentMethod: "CASH",
                                             orderId: orderId,

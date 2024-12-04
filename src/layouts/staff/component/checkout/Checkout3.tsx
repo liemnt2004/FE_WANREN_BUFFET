@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import '../../assets/css/checkout_for_staff.css'
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus, payWithVNPay, getPromotionByOrderId, getLoyaltyPoints, updateLoyaltyPoints } from "../../../../api/apiStaff/orderForStaffApi";
+import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus, payWithVNPay, getPromotionByOrderId, getLoyaltyPoints, updateLoyaltyPoints, updateDiscountPoints, getDiscountPoints } from "../../../../api/apiStaff/orderForStaffApi";
 import OrderDetailsWithNameProduct from "../../../../models/StaffModels/OrderDetailsWithNameProduct";
 import { notification } from 'antd';
 import { InfoCircleOutlined } from "@ant-design/icons";
@@ -39,6 +39,7 @@ const Checkout3: React.FC = () => {
     const [loyaltyPoints, setLoyaltyPoints] = useState<number>(0);
     const [inputValue, setInputValue] = useState<number>();
     const [maxPointsUsable, setMaxPointsUsable] = useState(0);
+    const [pointsUsableDB, setPointsUsableDB] = useState(0);
 
     const openNotification = (message: string, description: string, icon: React.ReactNode, pauseOnHover: boolean = true) => {
         api.open({
@@ -71,15 +72,26 @@ const Checkout3: React.FC = () => {
                 const data = await getPromotionByOrderId(orderId);
                 setPromotion(data);
             } catch (err) {
-                setError("Unable to fetch promotion details.");
-                console.error(err);
             }
         };
 
+        const getDiscount = async () => {
+            try {
+                const result = await getDiscountPoints(orderId);
+                setPointsUsableDB(Number(result));
+            } catch (err) {
+            }
+        }
+
+        getDiscount();
         fetchPromotion();
         loadOrderDetails();
-        fetchLoyaltyPoints(phoneNumber);
+        if (phoneNumber !== null && phoneNumber !== undefined ) {
+            fetchLoyaltyPoints(phoneNumber);
+        }
     }, []);
+
+    console.log(pointsUsableDB)
 
     const fetchLoyaltyPoints = async (phoneNumber: string) => {
         try {
@@ -91,6 +103,7 @@ const Checkout3: React.FC = () => {
             return null;
         }
     };
+    
     useEffect(() => {
         const calculateAmounts = async () => {
             try {
@@ -100,38 +113,44 @@ const Checkout3: React.FC = () => {
                     }
                     return sum;
                 }, 0);
-
+    
                 const maxDiscount = Math.floor(totalAmount * 0.5);
-
+    
                 const discountFromPromotion = promotion ? promotion.promotionValue : 0;
                 const appliedPromotionDiscount = Math.min(discountFromPromotion, maxDiscount);
-
+    
                 const remainingDiscountCap = maxDiscount - appliedPromotionDiscount;
+
                 const discountFromLoyaltyPoints = Math.min(
-                    inputValue || 0,
+                    pointsUsableDB > 0 ? pointsUsableDB : inputValue || 0,
                     loyaltyPoints,
                     remainingDiscountCap
                 );
-
+    
                 setMaxPointsUsable(Math.min(loyaltyPoints, remainingDiscountCap));
-
+    
                 const totalDiscount = appliedPromotionDiscount + discountFromLoyaltyPoints;
                 const discountedAmount = Math.max(totalAmount - totalDiscount, 0);
-
+    
                 const vatAmount = Math.floor(discountedAmount * 0.08);
                 const finalAmount = Math.floor(discountedAmount + vatAmount);
-
+    
+                // Nếu pointsUsableDB có giá trị, trừ trực tiếp vào finalAmount
+                const adjustedAmount = pointsUsableDB > 0 ? finalAmount - pointsUsableDB : finalAmount;
+    
                 setAmount(discountedAmount);
                 setVat(vatAmount);
-                setLastAmount(finalAmount);
+                setLastAmount(adjustedAmount); // Cập nhật lastAmount với giá trị đã trừ
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Failed to calculate amounts';
                 setError(errorMessage);
             }
         };
-
+    
         calculateAmounts();
-    }, [orderDetails, promotion, inputValue, loyaltyPoints]);
+    }, [orderDetails, promotion, inputValue, loyaltyPoints, pointsUsableDB]);
+    
+    
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newInputValue = Number(e.target.value);
@@ -281,8 +300,8 @@ const Checkout3: React.FC = () => {
         setQrPopupVisible(false);
     };
 
-    console.log("Phone: ",phoneNumber)
-    console.log("point: ",inputValue)
+    console.log("Phone: ", phoneNumber)
+    console.log("point: ", inputValue)
 
     const checkoutClick = async () => {
         try {
@@ -293,7 +312,14 @@ const Checkout3: React.FC = () => {
             } else if (choicePayment === "3") {
                 updateAmount(Number(orderId), lastAmount);
                 createPayment("CASH", false);
-                navigate("/checkout/sucessful", { state: { paymentMethod: "CASH", orderId: orderId, lastAmount: lastAmount, employeeUserId: employeeUserId } })
+                if (Number(inputValue) > 0) {
+                    try {
+                        const result = await updateDiscountPoints(orderId, Number(inputValue)); // Gọi API
+                        console.log(result); // Hiển thị thông báo thành công
+                    } catch (err) {
+                    }
+                }
+                navigate("/staff/checkout/sucessful", { state: { paymentMethod: "CASH", orderId: orderId, lastAmount: lastAmount, employeeUserId: employeeUserId } })
             }
         } catch (error) {
             console.error("Cannot checkout");
@@ -337,10 +363,10 @@ const Checkout3: React.FC = () => {
                         updateTableStatus(Number(tableId), "EMPTY_TABLE")
                         updateOrderStatus(Number(orderId), "DELIVERED")
                         createPayment("QR_CODE", true);
-                        if (phoneNumber !== null && phoneNumber.length >=10) {
-                            updateLoyaltyPoints(phoneNumber, Number(inputValue));
+                        if (phoneNumber !== null && phoneNumber.length >= 10) {
+                            updateLoyaltyPoints(phoneNumber, pointsUsableDB > 0 ? pointsUsableDB : Number(inputValue));
                         }
-                        navigate("/checkout/sucessful")
+                        navigate("/staff/checkout/sucessful")
                         setIsSucess(true);
                     } else {
                         console.log("Thanh toán đang cập nhật!")
@@ -452,6 +478,12 @@ const Checkout3: React.FC = () => {
                                     <td>Tổng tiền hàng</td>
                                     <td>{Math.floor(amount).toLocaleString() + " đ"}</td>
                                 </tr>
+                                {pointsUsableDB != null && pointsUsableDB > 0 && (
+                                    <tr>
+                                        <td>Số điểm đã dùng:</td>
+                                        <td>{"-" + pointsUsableDB.toLocaleString() + " đ"}</td>
+                                    </tr>
+                                )}
                                 <tr>
                                     <td>VAT</td>
                                     <td>{Math.floor(vat).toLocaleString() + " đ"}</td>

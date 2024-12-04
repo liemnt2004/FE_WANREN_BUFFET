@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Tables } from '../../../models/StaffModels/Tables';
-import { fetchOrderIdByTableId } from '../../../api/apiStaff/orderForStaffApi';
+import { fetchOrderIdByTableId, fetchTables, transferTable } from '../../../api/apiStaff/orderForStaffApi';
 import { notification } from 'antd';
 import { CloseCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 
@@ -59,15 +59,7 @@ const TransferTableModal: React.FC<{
     useEffect(() => {
         const fetchAvailableTables = async () => {
             try {
-                const employeeToken = localStorage.getItem("employeeToken");
-                const response = await fetch('https://wanrenbuffet.online/api-data/Table?page=0&size=50', {
-                    method: "GET",
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${employeeToken}`
-                    },
-                });
-                const data = await response.json();
+                const data = await fetchTables();
                 if (data && data._embedded && data._embedded.tablees) {
                     setTables(data._embedded.tablees.filter((table: { tableStatus: string; }) => table.tableStatus === 'EMPTY_TABLE'));
                 }
@@ -113,23 +105,7 @@ const TransferTableModal: React.FC<{
     const handleTransfer = async () => {
         if (currentTableId && selectedTableId !== null && currentTableId !== selectedTableId) {
             try {
-                const employeeToken = localStorage.getItem("employeeToken");
-                const response = await fetch(`https://wanrenbuffet.online/api/order_staff/${orderId}/transfer`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${employeeToken}`
-                    },
-                    body: JSON.stringify({
-                        orderId: orderId,
-                        newTableId: selectedTableId,
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error transferring table');
-                }
-
+                transferTable(Number(orderId), selectedTableId);
                 onTransfer(Number(orderId), selectedTableId);
                 onClose();
             } catch (error) {

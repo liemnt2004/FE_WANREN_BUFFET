@@ -67,9 +67,9 @@ export function Routing() {
       (route) =>
         pathname === route ||
         (route === "/orderOnTable" && /^\/orderOnTable\/\d+$/.test(pathname)) ||
-        (route === "/checkout" && /^\/checkout\/step[1-3]$/.test(pathname)) ||
-        (route === "/checkout" && /^\/checkout\/sucessful/.test(pathname)) ||
-        (route === "/checkout" && /^\/checkout\/failed/.test(pathname)) ||
+        (route === "/staff/checkout" && /^\/staff\/checkout\/step[1-3]$/.test(pathname)) ||
+        (route === "/staff/checkout" && /^\/staff\/checkout\/sucessful/.test(pathname)) ||
+        (route === "/staff/checkout" && /^\/staff\/checkout\/failed/.test(pathname)) ||
         (route === "/cashier" && /^\/table/.test(pathname))
     );
   };
@@ -87,7 +87,7 @@ export function Routing() {
     "/admin/employees",
     "/admin/dashboard",
     "/orderOnTable",
-    "/checkout",
+    "/staff/checkout",
     "/admin/manage-product",
     "/cashier",
   ];
@@ -157,7 +157,7 @@ export function Routing() {
           }
         />
         <Route
-          path="/checkout"
+          path="/staff/checkout"
           element={
             <PrivateRoute allowedRoles={["STAFF", "ADMIN"]}>
               <CheckoutLayout />
