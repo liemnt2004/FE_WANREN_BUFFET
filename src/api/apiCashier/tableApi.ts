@@ -13,7 +13,7 @@ export type Table = {
 
 export const fetchTables = async () => {
   try {
-    const response = await axios.get("https://wanrenbuffet.online/Table/all");
+    const response = await axios.get("https://wanrenbuffet.online/api-data/Table/all");
     return response.data;
   } catch (error) {
     console.error("Lỗi khi lấy dữ liệu:", error);
@@ -24,7 +24,7 @@ export const fetchTables = async () => {
 
 export const fetchOrderbyTableId = async (tableId: number) => {
   try {
-    const response = await axios.get(`https://wanrenbuffet.online/Table/${tableId}/orders`);
+    const response = await axios.get(`https://wanrenbuffet.online/api-data/Table/${tableId}/orders`);
     return response.data._embedded.orders;
   } catch (error) {
     console.error("Lỗi khi lấy dữ liệu:", error);
@@ -34,7 +34,7 @@ export const fetchOrderbyTableId = async (tableId: number) => {
 
 export const updateTableStatus = async (tableId: number, newStatus: string) => {
   try {
-    await axios.patch(`https://wanrenbuffet.online/Table/${tableId}`, {
+    await axios.patch(`https://wanrenbuffet.online/api-data/Table/${tableId}`, {
       tableStatus: newStatus
     });
   } catch (error) {
