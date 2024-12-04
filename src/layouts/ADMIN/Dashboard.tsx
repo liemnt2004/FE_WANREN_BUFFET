@@ -26,8 +26,14 @@ const MainDash: React.FC = () => {
   useEffect(() => {
     const fetchMonthlyRevenue = async () => {
       try {
+        const employeeToken = localStorage.getItem("employeeToken");
         const currentYear = new Date().getFullYear(); // Lấy năm hiện tại, bạn có thể thay đổi nếu cần
-        const response = await axios.get(`https://wanrenbuffet.online/api/statistical/monthly-revenue?year=${currentYear}`);
+        const response = await axios.get(`https://wanrenbuffet.online/api/statistical/monthly-revenue?year=${currentYear}`,{
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${employeeToken}`,
+          },
+        });
         setMonthlyRevenue(response.data);
         setIsLoadingMonthly(false);
       } catch (err) {
@@ -43,8 +49,14 @@ const MainDash: React.FC = () => {
   // Fetch dữ liệu doanh thu hàng tuần từ API khi component được mount
   useEffect(() => {
     const fetchWeeklyRevenue = async () => {
+      const employeeToken = localStorage.getItem("employeeToken");
       try {
-        const response = await axios.get(`https://wanrenbuffet.online/api/statistical/weekly`);
+        const response = await axios.get(`https://wanrenbuffet.online/api/statistical/weekly`,{
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${employeeToken}`,
+          },
+        });
         setWeekRevenue(response.data);
         setIsLoadingWeekly(false);
       } catch (err) {
@@ -60,8 +72,14 @@ const MainDash: React.FC = () => {
   // Fetch dữ liệu doanh thu hàng giờ từ API khi component được mount
   useEffect(() => {
     const fetchHourlyRevenue = async () => {
+      const employeeToken = localStorage.getItem("employeeToken");
       try {
-        const response = await axios.get(`https://wanrenbuffet.online/api/statistical/hourly`);
+        const response = await axios.get(`https://wanrenbuffet.online/api/statistical/hourly`,{
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${employeeToken}`,
+          },
+        });
         console.log("Hourly Revenue Data:", response.data);
         setHourlyRevenue(response.data);
         setIsLoadingHourly(false);

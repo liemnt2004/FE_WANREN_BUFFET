@@ -790,7 +790,7 @@ const MenuProfile: React.FC = () => {
         }
     } catch (error) {
         console.error('Invalid or missing token:', error);
-        window.location.href = "https://wanrenbuffet.netlify.app/login"
+        navigate("/")
     }
 
     const [userInfo, setUserInfo] = useState<UserInfo>({
@@ -817,7 +817,7 @@ const MenuProfile: React.FC = () => {
 
     function logout(){
         localStorage.removeItem("token")
-        window.location.reload();
+        navigate("/")
     }
 
     return (

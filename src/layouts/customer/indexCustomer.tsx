@@ -532,7 +532,7 @@ const IndexCustomer: React.FC = () => {
                                 <div className="container text-center text-md-start mt-5 pb-5 border-bottom">
                                     <div className="row mt-3">
                                         <div className="col-md-5">
-                                            <img src={loginfooter} width="100" alt="Logo Footer"/>
+                                            <img src={loginfooter} width="100" alt="Logo Footer" className="img-feeback" />
                                             <p className="mt-3 mb-4">WANREN BUFFET là nhà hàng chuyên về Buffet lẩu hàng
                                                 đầu Việt Nam</p>
                                             <h6 className="fw-bold">Theo dõi chúng tôi trên mạng xã hội:</h6>
@@ -568,7 +568,7 @@ const IndexCustomer: React.FC = () => {
                     </div>
                 </div>
                 {/* Right Section: Smaller Images */}
-                <div className="col-md-3 right-section d-flex flex-column justify-content-between">
+                <div className="col-md-3 right-section">
                     <div className="row d-flex align-items-center justify-content-center">
                         <div className="col-12 image-card text-center">
                             <a href="/menu"><img src={cothaygia} alt="Menu" className="img-fluid"/></a>

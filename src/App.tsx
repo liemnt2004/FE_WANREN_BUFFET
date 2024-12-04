@@ -47,6 +47,7 @@ import ManagementFoodCashier from "./layouts/cashier/managementFoodCashier";
 import ManagementOrdersOnlCashier from "./layouts/cashier/managementOrdersOnlCashier";
 import ManagementReservationCashier from "./layouts/cashier/managementReservationCashier";
 import DashboardCashier from "./layouts/cashier/dashboardCashier";
+import RevenueReport from "./layouts/ADMIN/revenueReport ";
 
 function App() {
   return (
@@ -90,6 +91,7 @@ export function Routing() {
     "/staff/checkout",
     "/admin/manage-product",
     "/cashier",
+    "/admin/revenue-report"
   ];
 
   return (
@@ -209,6 +211,7 @@ export function Routing() {
           <Route path="/admin/manage-product" element={<ProductManagement />} />
           <Route path="/admin/manage-accounts" element={<Management />} />
           <Route path="/admin/manage-work-shifts" element={<WorkShift />} />
+          <Route path="/admin/revenue-report" element={<RevenueReport />} />
         </Route>
 
         {/* Route không tìm thấy */}
