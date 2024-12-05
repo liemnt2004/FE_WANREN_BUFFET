@@ -366,7 +366,7 @@ export const CreateNewOrder = async (
     headers: getHeaders(),
     body: JSON.stringify({
       userId,
-      address: "145 Phan Xích Long",
+      address: "Wanren Buffet",
       notes: "Order tại bàn",
       orderStatus: "IN_TRANSIT",
       totalAmount: 0,
@@ -377,6 +377,25 @@ export const CreateNewOrder = async (
   if (!response.ok) throw new Error("Error creating new order");
   return response.json();
 };
+
+export const createPayment = async (orderId: number,userId: number, amountPaid: number, paymentMethod: string, status: boolean) => {
+  try {
+      const response = await fetch(`${BASE_URL}/payment/create_payment/normal`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({
+              amountPaid: amountPaid,
+              paymentMethod: paymentMethod,
+              paymentStatus: status,
+              orderId: orderId,
+              userId: Number(userId)
+          })
+      });
+      if (!response.ok) throw new Error("Error creating payment");
+  } catch (error) {
+      console.log(error, "Cannot creat payment");
+  }
+}
 
 export const updateOrderDetails = async (orderId: number, details: any) => {
   try {
