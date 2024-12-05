@@ -3,7 +3,7 @@ import { request } from "./Request";
 import OrderDetailsWithNameProduct from "../../models/StaffModels/OrderDetailsWithNameProduct";
 import OrderDetailModel from "../../models/StaffModels/OrderDetaitModel";
 
-const BASE_URL = "http://localhost:8080/api";
+const BASE_URL = "http://localhost:8080";
 
 const getHeaders = () => {
   const employeeToken = localStorage.getItem("employeeToken");
@@ -19,7 +19,7 @@ export async function getAllOrderDetailsByOrderId(
   const rs: OrderDetailModel[] = [];
   try {
     const data = await request(
-      `http://localhost:8080/Orders/${orderId}/orderDetails`
+      `${BASE_URL}/api-data/Orders/${orderId}/orderDetails`
     );
     console.log(data._embedded.orderDetails);
     if (data && data._embedded && data._embedded.orderDetails) {
@@ -47,7 +47,7 @@ export async function getTableNumberByOrderId(
 ): Promise<number> {
   try {
     const response = await request(
-      `http://localhost:8080/Orders/${orderId}/tablee`
+      `${BASE_URL}/api-data/Orders/${orderId}/tablee`
     );
     const tableNumber = response.tableNumber;
     return tableNumber;
@@ -57,14 +57,13 @@ export async function getTableNumberByOrderId(
   }
 }
 
-
 export async function getOrderDetailWithNameProduct(
   orderId: number
 ): Promise<OrderDetailsWithNameProduct[]> {
   const rs: OrderDetailsWithNameProduct[] = [];
   try {
     const data = await request(
-      `${BASE_URL}/orders_detail_staff/get/order_details/with_name/${orderId}`
+      `${BASE_URL}/api/orders_detail_staff/get/order_details/with_name/${orderId}`
     );
     if (data && data.orderDetails) {
       for (const orderDetail of data.orderDetails) {
@@ -88,7 +87,7 @@ export async function getOrderDetailWithNameProduct(
 export async function getOrderAmount(orderId: number): Promise<number> {
   try {
     const amountOfOrder = await request(
-      `${BASE_URL}/order_staff/get_amount/${orderId}`
+      `${BASE_URL}/api/order_staff/get_amount/${orderId}`
     );
     return amountOfOrder.amount;
   } catch (error) {
@@ -100,7 +99,7 @@ export async function getOrderAmount(orderId: number): Promise<number> {
 export async function updateLoyaltyPoint(phoneNumber: string, amount: number) {
   try {
     const loyaltyPoint = await fetch(
-      `${BASE_URL}/customer/loyal_point/${phoneNumber}/${amount}`,
+      `${BASE_URL}/api/customer/loyal_point/${phoneNumber}/${amount}`,
       {
         method: "PUT",
         headers: getHeaders(),
@@ -119,7 +118,7 @@ export async function updateTotalAmount(
 ): Promise<number> {
   try {
     const response = await axios.put(
-      `${BASE_URL}/order_staff/update/total_amount/${orderId}/${total_amount}`,
+      `${BASE_URL}/api/order_staff/update/total_amount/${orderId}/${total_amount}`,
       {
         method: "PUT",
         headers: getHeaders(),
@@ -136,25 +135,31 @@ export async function updateTotalAmount(
 // ORDER ON TABLE
 
 export const fetchOrderDetailsAPI = async (orderId: number) => {
-  const response = await fetch(`${BASE_URL}/orders_detail_staff/${orderId}`, {
-    method: "GET",
-    headers: getHeaders(),
-  });
+  const response = await fetch(
+    `${BASE_URL}/api/orders_detail_staff/${orderId}`,
+    {
+      method: "GET",
+      headers: getHeaders(),
+    }
+  );
   if (!response.ok) throw new Error("Error fetching order details");
   return response.json();
 };
 
 export const fetchOrderStatusAPI = async (orderId: number) => {
-  const response = await fetch(`${BASE_URL}/order_staff/status/${orderId}`, {
-    method: "GET",
-    headers: getHeaders(),
-  });
+  const response = await fetch(
+    `${BASE_URL}/api/order_staff/status/${orderId}`,
+    {
+      method: "GET",
+      headers: getHeaders(),
+    }
+  );
   if (!response.ok) throw new Error("Error fetching order details");
   return response.json();
 };
 
 export const getPromotionByOrderId = async (orderId: number) => {
-  const response = await fetch(`${BASE_URL}/promotions/info/${orderId}`, {
+  const response = await fetch(`${BASE_URL}/api/promotions/info/${orderId}`, {
     method: "GET",
     headers: getHeaders(),
   });
@@ -164,7 +169,7 @@ export const getPromotionByOrderId = async (orderId: number) => {
 
 export const getLoyaltyPoints = async (phoneNumber: string) => {
   const response = await fetch(
-    `${BASE_URL}/customer/loyalty-points?phoneNumber=${phoneNumber}`,
+    `${BASE_URL}/api/customer/loyalty-points?phoneNumber=${phoneNumber}`,
     {
       method: "GET",
       headers: getHeaders(),
@@ -178,36 +183,43 @@ export const updateLoyaltyPoints = async (
   phoneNumber: number,
   pointsToDeduct: number
 ) => {
-  const response = await fetch(`${BASE_URL}/customer/update-loyalty-points`, {
-    method: "PUT",
-    headers: getHeaders(),
-    body: JSON.stringify({
-      phoneNumber: phoneNumber,
-      pointsToDeduct: pointsToDeduct,
-    }),
-  });
+  const response = await fetch(
+    `${BASE_URL}/api/customer/update-loyalty-points`,
+    {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify({
+        phoneNumber: phoneNumber,
+        pointsToDeduct: pointsToDeduct,
+      }),
+    }
+  );
   if (!response.ok) throw new Error("Error updating order amount");
 };
 
 export const transferTable = async (
-  orderId: number, selectedTableId: number
+  orderId: number,
+  selectedTableId: number
 ) => {
-  const response = await fetch(`${BASE_URL}/order_staff/${orderId}/transfer`, {
-    method: 'PUT',
-    headers: getHeaders(),
-    body: JSON.stringify({
+  const response = await fetch(
+    `${BASE_URL}/api/order_staff/${orderId}/transfer`,
+    {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify({
         orderId: orderId,
         newTableId: selectedTableId,
-    }),
-});
+      }),
+    }
+  );
 
-if (!response.ok) {
-    throw new Error('Error transferring table');
-}
+  if (!response.ok) {
+    throw new Error("Error transferring table");
+  }
 };
 
 export const fetchReservations = async () => {
-  const response = await fetch(`${BASE_URL}/reservation/today`, {
+  const response = await fetch(`${BASE_URL}/api/reservation/today`, {
     method: "GET",
     headers: getHeaders(),
   });
@@ -216,7 +228,7 @@ export const fetchReservations = async () => {
 };
 
 export const fetchTables = async () => {
-  const response = await fetch(`http://localhost:8080/Table?page=0&size=50`, {
+  const response = await fetch(`${BASE_URL}/api-data/Table?page=0&size=50`, {
     method: "GET",
     headers: getHeaders(),
   });
@@ -225,7 +237,7 @@ export const fetchTables = async () => {
 };
 
 export const fetchProductDetailsAPI = async (productId: number) => {
-  const response = await fetch(`${BASE_URL}/product/${productId}`, {
+  const response = await fetch(`${BASE_URL}/api/product/${productId}`, {
     method: "GET",
     headers: getHeaders(),
   });
@@ -236,7 +248,7 @@ export const fetchProductDetailsAPI = async (productId: number) => {
 export const checkCustomer = async (orderId: number) => {
   try {
     const response = await fetch(
-      `${BASE_URL}/order_staff/check-customer?orderId=${orderId}`,
+      `${BASE_URL}/api/order_staff/check-customer?orderId=${orderId}`,
       {
         method: "GET",
         headers: getHeaders(),
@@ -257,7 +269,7 @@ export const updateReservationStatus = async (
 ) => {
   try {
     const response = await fetch(
-      `${BASE_URL}/reservation/${reservationId}/status?status=${status}`,
+      `${BASE_URL}/api/reservation/${reservationId}/status?status=${status}`,
       {
         method: "PUT",
         headers: getHeaders(),
@@ -283,7 +295,7 @@ export const updateDiscountPoints = async (
 ) => {
   try {
     const response = await fetch(
-      `${BASE_URL}/order_staff/update-discount-points-order?orderId=${orderId}&discountPoints=${discountPoints}`,
+      `${BASE_URL}/api/order_staff/update-discount-points-order?orderId=${orderId}&discountPoints=${discountPoints}`,
       {
         method: "PUT",
         headers: getHeaders(),
@@ -306,7 +318,7 @@ export const updateDiscountPoints = async (
 export const getDiscountPoints = async (orderId: number) => {
   try {
     const response = await fetch(
-      `${BASE_URL}/order_staff/get-discount-points?orderId=${orderId}`,
+      `${BASE_URL}/api/order_staff/get-discount-points?orderId=${orderId}`,
       {
         method: "GET",
         headers: getHeaders(),
@@ -327,7 +339,7 @@ export const getDiscountPoints = async (orderId: number) => {
 };
 
 export const fetchTableStatus = async (tableId: number) => {
-  const response = await fetch(`${BASE_URL}/table/status/${tableId}`, {
+  const response = await fetch(`${BASE_URL}/api/table/status/${tableId}`, {
     method: "GET",
     headers: getHeaders(),
   });
@@ -342,10 +354,9 @@ export const fetchTableStatus = async (tableId: number) => {
   }
 };
 
-
 export const fetchOrderIdByTableId = async (tableId: number) => {
   const response = await fetch(
-    `${BASE_URL}/order_staff/findOrderIdByTableId/${tableId}`,
+    `${BASE_URL}/api/order_staff/findOrderIdByTableId/${tableId}`,
     {
       method: "GET",
       headers: getHeaders(),
@@ -361,7 +372,7 @@ export const CreateNewOrder = async (
   tableId: number,
   numberPeople: number
 ) => {
-  const response = await fetch(`${BASE_URL}/order_staff/add`, {
+  const response = await fetch(`${BASE_URL}/api/order_staff/add`, {
     method: "POST",
     headers: getHeaders(),
     body: JSON.stringify({
@@ -378,24 +389,33 @@ export const CreateNewOrder = async (
   return response.json();
 };
 
-export const createPayment = async (orderId: number,userId: number, amountPaid: number, paymentMethod: string, status: boolean) => {
+export const createPayment = async (
+  orderId: number,
+  userId: number,
+  amountPaid: number,
+  paymentMethod: string,
+  status: boolean
+) => {
   try {
-      const response = await fetch(`${BASE_URL}/payment/create_payment/normal`, {
-          method: 'POST',
-          headers: getHeaders(),
-          body: JSON.stringify({
-              amountPaid: amountPaid,
-              paymentMethod: paymentMethod,
-              paymentStatus: status,
-              orderId: orderId,
-              userId: Number(userId)
-          })
-      });
-      if (!response.ok) throw new Error("Error creating payment");
+    const response = await fetch(
+      `${BASE_URL}/api/payment/create_payment/normal`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({
+          amountPaid: amountPaid,
+          paymentMethod: paymentMethod,
+          paymentStatus: status,
+          orderId: orderId,
+          userId: Number(userId),
+        }),
+      }
+    );
+    if (!response.ok) throw new Error("Error creating payment");
   } catch (error) {
-      console.log(error, "Cannot creat payment");
+    console.log(error, "Cannot creat payment");
   }
-}
+};
 
 export const updateOrderDetails = async (orderId: number, details: any) => {
   try {
@@ -406,7 +426,7 @@ export const updateOrderDetails = async (orderId: number, details: any) => {
     console.log("Sending update for orderId:", orderId); // Kiểm tra orderId
 
     const response = await fetch(
-      `${BASE_URL}/orders_detail_staff/add_or_update/${orderId}`,
+      `${BASE_URL}/api/orders_detail_staff/add_or_update/${orderId}`,
       {
         method: "POST",
         headers: getHeaders(),
@@ -430,7 +450,7 @@ export const updateOrderDetails = async (orderId: number, details: any) => {
 };
 
 export const updateOrderAmount = async (orderId: number, amount: number) => {
-  const response = await fetch(`${BASE_URL}/order_staff/${orderId}`, {
+  const response = await fetch(`${BASE_URL}/api/order_staff/${orderId}`, {
     method: "PUT",
     headers: getHeaders(),
     body: JSON.stringify({ totalAmount: amount }),
@@ -439,19 +459,22 @@ export const updateOrderAmount = async (orderId: number, amount: number) => {
 };
 
 export const updateOrderStatus = async (orderId: number, status: string) => {
-  const response = await fetch(
-    `${BASE_URL}/api/order_staff/updateStatus/${orderId}`,
-    {
-      method: "PUT",
-      headers: getHeaders(),
-      body: JSON.stringify({ orderStatus: status }),
+  try {
+    const response = await fetch(
+      `http://localhost:8080/api/order_staff/update-status/${orderId}?status=${status}`,
+      {
+        method: "PUT",
+        headers: getHeaders()
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Failed to update order status");
     }
-  );
-  if (!response.ok) throw new Error("Error updating order amount");
+  } catch (error) {}
 };
 
 export const updateTableStatus = async (tableId: number, status: string) => {
-  const response = await fetch(`${BASE_URL}/table/${tableId}`, {
+  const response = await fetch(`${BASE_URL}/api/table/${tableId}`, {
     method: "PUT",
     headers: getHeaders(),
     body: JSON.stringify({ tableStatus: status }),
@@ -461,7 +484,7 @@ export const updateTableStatus = async (tableId: number, status: string) => {
 
 export const updateQuantityOrderDetails = async (details: any) => {
   const response = await fetch(
-    `${BASE_URL}/orders_detail_staff/quantity-update`,
+    `${BASE_URL}/api/orders_detail_staff/quantity-update`,
     {
       method: "PUT",
       headers: getHeaders(),
@@ -496,7 +519,7 @@ export const payWithVNPay = async (
     const employeeToken = localStorage.getItem("employeeToken");
     // formData.append('baseUrl', baseUrl);
     const response = await axios.post(
-      "${BASE_URL}/payment/submit_order_vnpay",
+      `${BASE_URL}/api/payment/submit_order_vnpay`,
       formData,
       {
         headers: {
@@ -519,11 +542,14 @@ export const updateCustomerInOrder = async (
   phoneNumber: string
 ) => {
   try {
-    const response = await fetch(`${BASE_URL}/order_staff/update-customer`, {
-      method: "PUT",
-      headers: getHeaders(),
-      body: JSON.stringify({ orderId: orderId, phoneNumber: phoneNumber }),
-    });
+    const response = await fetch(
+      `${BASE_URL}/api/order_staff/update-customer`,
+      {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify({ orderId: orderId, phoneNumber: phoneNumber }),
+      }
+    );
 
     if (!response.ok) {
       const error = await response.text();
