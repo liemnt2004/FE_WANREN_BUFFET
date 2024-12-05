@@ -120,7 +120,16 @@ const TableModal: React.FC<{
             </div>
 
             {/* Section: Danh sách đặt bàn */}
-            <h6 className="mb-3">Danh sách đặt bàn ngày: <span>{new Date().toLocaleDateString()}</span></h6>
+            <h6 className="mb-3">
+              Danh sách đặt bàn ngày:{" "}
+              <span>
+                {new Intl.DateTimeFormat("vi-VN", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                }).format(new Date())}
+              </span>
+            </h6>
             <div style={{ maxHeight: '250px', overflowY: 'auto', border: '1px solid #ddd', padding: '10px' }}>
               <table className="table">
                 <thead>
@@ -215,7 +224,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
 
   const handleCheckoutStep = async (tableId: number, step: number) => {
     try {
-      
+
       const orderId = await fetchOrderIdByTableId(tableId);
 
       if (orderId !== null) {
