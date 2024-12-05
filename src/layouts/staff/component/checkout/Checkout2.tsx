@@ -68,7 +68,16 @@ const Checkout2: React.FC = () => {
 
     const handleClick = () => {
         try {
-            updatePoints(inputValue, amount);
+            if (inputValue.length < 10) {
+                openNotification(
+                    'Tích điểm',
+                    'Số điện thoại không đúng định dạng!',
+                    <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                );
+            } else {
+                updatePoints(inputValue, amount);
+            }
+            
         } catch (error) {
             console.error("Cannot update loyalty point");
         }

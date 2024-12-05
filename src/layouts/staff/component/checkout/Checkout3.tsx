@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import '../../assets/css/checkout_for_staff.css'
-import { useLocation, useNavigate } from "react-router-dom";
-import { getOrderDetailWithNameProduct, updateTotalAmount, updateTableStatus, payWithVNPay, getPromotionByOrderId, getLoyaltyPoints, updateLoyaltyPoints, updateDiscountPoints, getDiscountPoints, updateOrderStatus, createPayment } from "../../../../api/apiStaff/orderForStaffApi";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus, payWithVNPay, getPromotionByOrderId, getLoyaltyPoints, updateLoyaltyPoints, updateDiscountPoints, getDiscountPoints } from "../../../../api/apiStaff/orderForStaffApi";
 import OrderDetailsWithNameProduct from "../../../../models/StaffModels/OrderDetailsWithNameProduct";
 import { notification } from 'antd';
 import { InfoCircleOutlined } from "@ant-design/icons";
@@ -90,8 +90,6 @@ const Checkout3: React.FC = () => {
             fetchLoyaltyPoints(phoneNumber);
         }
     }, []);
-
-    console.log(pointsUsableDB)
 
     const fetchLoyaltyPoints = async (phoneNumber: string) => {
         try {
@@ -260,6 +258,26 @@ const Checkout3: React.FC = () => {
         }
     }
 
+    const createPayment = async (paymentMethod: string, status: boolean) => {
+        try {
+            const employeeToken = localStorage.getItem("employeeToken");
+            const newOrderResponse = await fetch('https://localhost:8080/api/payment/create_payment/normal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${employeeToken}`
+                },
+                body: JSON.stringify({
+                    amountPaid: lastAmount,
+                    paymentMethod: paymentMethod,
+                    paymentStatus: status,
+                    orderId: orderId,
+                    userId: Number(employeeUserId)
+                })
+            });
+        } catch (error) {
+        }
+    }
 
     useEffect(() => {
         const generateQrCode = (bank: { bank_ID: string; account_NO: string; }, amount: number): string => {
@@ -279,9 +297,6 @@ const Checkout3: React.FC = () => {
         setQrPopupVisible(false);
     };
 
-    console.log("Phone: ", phoneNumber)
-    console.log("point: ", inputValue)
-
     const checkoutClick = async () => {
         try {
             if (choicePayment === "1") {
@@ -290,7 +305,7 @@ const Checkout3: React.FC = () => {
                 setQrPopupVisible(true);
             } else if (choicePayment === "3") {
                 updateAmount(Number(orderId), lastAmount);
-                createPayment(orderId, Number(employeeUserId), lastAmount, "CASH", false);
+                createPayment("CASH", false);
                 if (Number(inputValue) > 0) {
                     try {
                         const result = await updateDiscountPoints(orderId, Number(inputValue)); // Gọi API
@@ -302,6 +317,23 @@ const Checkout3: React.FC = () => {
             }
         } catch (error) {
             console.error("Cannot checkout");
+        }
+    };
+
+    const updateOrderStatus = async (orderId: number, status: string) => {
+        try {
+            const employeeToken = localStorage.getItem("employeeToken");
+            const response = await fetch(`https://wanrenbuffet.online/api/order_staff/update-status/${orderId}?status=${status}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${employeeToken}`
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to update order status');
+            }
+        } catch (error) {
         }
     };
 
@@ -324,7 +356,7 @@ const Checkout3: React.FC = () => {
                     if (lastPrice >= lastAmount && lastDescription.includes(description)) {
                         updateTableStatus(Number(tableId), "EMPTY_TABLE")
                         updateOrderStatus(Number(orderId), "DELIVERED")
-                        createPayment(orderId, Number(employeeUserId), lastAmount, "QR_CODE", true);
+                        createPayment("QR_CODE", true);
                         if (phoneNumber !== null && phoneNumber.length >= 10) {
                             updateLoyaltyPoints(phoneNumber, pointsUsableDB > 0 ? pointsUsableDB : Number(inputValue));
                         }

@@ -21,7 +21,7 @@ const EmployeeLoginComponent = () => {
 
     try {
       // Gọi API đăng nhập
-      const response = await fetch("https://wanrenbuffet.online/api/user/login", {
+      const response = await fetch("http://localhost:8080/api/user/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
