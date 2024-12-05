@@ -1,10 +1,18 @@
 // src/components/MenuAdmin.tsx
-import React from "react";
-import { NavLink } from "react-router-dom";
+import React, {useState} from "react";
+import { NavLink , Navigate, useNavigate } from "react-router-dom";
 import logo from "./assets/img/warenbuffet.png";
 import "./assets/css/CustomerManagement.css";
 
 function MenuAdmin() {
+  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  // Hàm để toggle dropdown
+  function logout() {
+    localStorage.removeItem("employeeToken");
+    window.location.reload()
+  }
+  const toggleDropdown = () => setIsOpen(!isOpen);
   return (
     <div className="admin-layout">
       {/* Top Bar */}
@@ -27,32 +35,48 @@ function MenuAdmin() {
             <i className="fas fa-bell"></i>
             <span className="badge">8</span>
           </div>
-          <div className="profile">
-            <img src="https://i.pravatar.cc/300" alt="User Profile" />
+          <div className="profile   ">
+            <div className="dropdown">
+              {/* Profile image with manual toggle */}
+              <img
+                  src="https://i.pravatar.cc/300"
+                  alt="User Profile"
+                  className="dropdown-toggle"
+                  onClick={toggleDropdown}  // Điều khiển dropdown bằng React state
+                  aria-expanded={isOpen}
+              />
+              {/* Dropdown menu */}
+              {isOpen && (
+                  <ul className="dropdown-menu show">
+                    <li><a className="dropdown-item" onClick={() => logout()}>Đăng xuất</a></li>
+                  </ul>
+              )}
+            </div>
           </div>
+
         </div>
       </div>
 
       {/* Sidebar */}
       <div className="sidebar_admin">
         <div className="logo">
-          <img src={logo} alt="Shop Logo" />
+          <img src={logo} alt="Shop Logo"/>
         </div>
         <div className="menu">
           <NavLink
-            to="/admin"
-            end
-            className={({ isActive }) =>
-              isActive ? "menuItem active" : "menuItem"
-            }
+              to="/admin"
+              end
+              className={({isActive}) =>
+                  isActive ? "menuItem active" : "menuItem"
+              }
           >
             <i className="fas fa-home"></i> Home
           </NavLink>
           <NavLink
-            to="/admin/manage-product"
-            className={({ isActive }) =>
-              isActive ? "menuItem active" : "menuItem"
-            }
+              to="/admin/manage-product"
+              className={({isActive}) =>
+                  isActive ? "menuItem active" : "menuItem"
+              }
           >
             <i className="fas fa-utensils"></i> Manage Dishes
           </NavLink>

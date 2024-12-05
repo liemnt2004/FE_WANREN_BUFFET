@@ -780,9 +780,16 @@ const ProductManagement: React.FC = () => {
                                         rules={[{ required: true, message: "Vui lòng chọn loại món ăn!" }]}
                                     >
                                         <Select placeholder="Chọn loại món ăn">
-                                            <Option value="Mains">Mains</Option>
-                                            <Option value="Desserts">Desserts</Option>
-                                            <Option value="Drinks">Drinks</Option>
+                                            <Option value="hotpot">hotpot</Option>
+                                            <Option value="meat">meat</Option>
+                                            <Option value="seafood">seafood</Option>
+                                            <Option value="noodles">noodles</Option>
+                                            <Option value="mushroom">mushroom</Option>
+                                            <Option value="vegetables">vegetables</Option>
+                                            <Option value="meatballs">meatballs</Option>
+                                            <Option value="buffet_tickets">buffet_tickets</Option>
+                                            <Option value="soft_drinks">soft_drinks</Option>
+                                            <Option value="mixers">mixers</Option>
                                             {/* Thêm các loại khác nếu cần */}
                                         </Select>
                                     </Form.Item>
@@ -948,6 +955,7 @@ const ProductManagement: React.FC = () => {
                                         <Input placeholder="Nhập tên sản phẩm" />
                                     </Form.Item>
                                 </Col>
+                                
                                 <Col span={12}>
                                     <Form.Item
                                         label="Giá"
@@ -973,10 +981,16 @@ const ProductManagement: React.FC = () => {
                                         rules={[{ required: true, message: "Vui lòng chọn loại món ăn!" }]}
                                     >
                                         <Select placeholder="Chọn loại món ăn">
-                                            <Option value="Mains">Mains</Option>
-                                            <Option value="Desserts">Desserts</Option>
-                                            <Option value="Drinks">Drinks</Option>
-                                            {/* Thêm các loại khác nếu cần */}
+                                            <Option value="hotpot">hotpot</Option>
+                                            <Option value="meat">meat</Option>
+                                            <Option value="seafood">seafood</Option>
+                                            <Option value="noodles">noodles</Option>
+                                            <Option value="mushroom">mushroom</Option>
+                                            <Option value="vegetables">vegetables</Option>
+                                            <Option value="meatballs">meatballs</Option>
+                                            <Option value="buffet_tickets">buffet_tickets</Option>
+                                            <Option value="soft_drinks">soft_drinks</Option>
+                                            <Option value="mixers">mixers</Option>
                                         </Select>
                                     </Form.Item>
                                 </Col>

@@ -1,5 +1,5 @@
 import CustomerModelAdmin from "../../models/AdminModels/CustomerModel";
-const API_URL = "http://localhost:8080";
+const API_URL = "https://wanrenbuffet.online";
 
 // Function to fetch the list of customers
 export async function fetchCustomerList(
@@ -12,7 +12,7 @@ export async function fetchCustomerList(
 
   try {
     // Removed the search condition for `fullName`
-    const url = `${API_URL}/Customer?page=${page}`;
+    const url = `${API_URL}/api-data/Customer?page=${page}`;
 
     const response = await fetch(url, {
       method: "GET",

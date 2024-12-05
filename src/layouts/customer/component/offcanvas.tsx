@@ -44,14 +44,18 @@ const CartOffcanvas: React.FC = () => {
                                             </div>
                                         </td>
                                         <td>
-                                            <input
-                                                type="number"
-                                                className="form-control"
-                                                value={item.quantity}
-                                                min="1"
+                                        <input
+                                            type="number"
+                                            className="form-control"
+                                            value={item.quantity}
+                                            min="1"
+                                            onChange={(e) => {
+                                                const newValue = Number(e.target.value);
+                                                const validValue = newValue <= 0 ? 1 : newValue;
+                                                updateQuantity(item.productId, validValue);
+                                            }}
+                                        />
 
-                                                onChange={(e) => updateQuantity(item.productId, Number(e.target.value))}
-                                            />
                                         </td>
                                         <td className="text-end">{formatMoney(item.price * item.quantity)}</td>
                                         <td className="text-end">

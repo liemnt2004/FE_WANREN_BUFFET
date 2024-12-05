@@ -1,7 +1,7 @@
 import axios from "axios";
 import WorkScheduleModel from "../../models/AdminModels/WorkScheduleModel";
 import WorkScheduleFullModel from "../../models/AdminModels/WorkScheduleFullModel";
-const API_URL = "http://localhost:8080/work-schedules";
+const API_URL = "https://wanrenbuffet.online/work-schedules";
 
 // Hàm để lấy token từ localStorage
 function getEmployeeToken(): string {
@@ -52,7 +52,7 @@ export async function getWorkSchedulesByDate(
 
     // Xử lý và trả về danh sách WorkScheduleFullModel
     return response.data.map(
-      (schedule: any) =>
+      (schedule: WorkScheduleFullModel) =>
         new WorkScheduleFullModel(
           schedule.username,
           schedule.fullName,
@@ -61,6 +61,44 @@ export async function getWorkSchedulesByDate(
           schedule.shiftName,
           new Date(schedule.workDate)
         )
+    );
+  } catch (error: any) {
+    // Xử lý lỗi
+    if (error.response) {
+      console.error("Error response:", error.response.data);
+    } else {
+      console.error("Error message:", error.message);
+    }
+    throw error;
+  }
+}
+// Hàm gọi API để cập nhật WorkSchedule
+export async function updateWorkSchedule(
+  workScheduleId: number,
+  workSchedule: WorkScheduleModel
+): Promise<WorkScheduleFullModel> {
+  try {
+    // Gửi request với token
+    const response = await axios.put(
+      `${API_URL}/update/${workScheduleId}`,
+      workSchedule,
+      {
+        headers: {
+          Authorization: `Bearer ${getEmployeeToken()}`, // Đính kèm token trong header
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // Xử lý và trả về WorkScheduleFullModel đã được cập nhật
+    const updatedSchedule = response.data;
+    return new WorkScheduleFullModel(
+      updatedSchedule.username,
+      updatedSchedule.fullName,
+      updatedSchedule.userType,
+      updatedSchedule.shiftId,
+      updatedSchedule.shiftName,
+      new Date(updatedSchedule.workDate)
     );
   } catch (error: any) {
     // Xử lý lỗi

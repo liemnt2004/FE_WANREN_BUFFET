@@ -1,6 +1,6 @@
 // tableApi.ts
 import axios from "axios";
-import { Order } from "./ordersOnl";
+import { BASE_URL } from "./foodApi";
 
 
 const getHeaders = () => {
@@ -22,7 +22,7 @@ export type Table = {
 
 export const fetchTables = async () => {
   try {
-    const response = await axios.get("http://localhost:8080/Table/all", {
+    const response = await axios.get(`${BASE_URL}/Table/all`, {
       method: "GET",
       headers: getHeaders(),
     });
@@ -36,7 +36,7 @@ export const fetchTables = async () => {
 
 export const fetchOrderbyTableId = async (tableId: number) => {
   try {
-    const response = await axios.get(`http://localhost:8080/Table/${tableId}/orders`, {
+    const response = await axios.get(`${BASE_URL}/Table/${tableId}/orders`, {
       method: "GET",
       headers: getHeaders(),
     });
@@ -49,7 +49,7 @@ export const fetchOrderbyTableId = async (tableId: number) => {
 
 export const updateTableStatus = async (tableId: number, newStatus: string) => {
   try {
-    await axios.patch(`http://localhost:8080/Table/${tableId}`, {
+    await axios.patch(`${BASE_URL}/api-data/Table/${tableId}`, {
       tableStatus: newStatus
     }, {
       method: "PATCH",

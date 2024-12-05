@@ -17,8 +17,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent }) => {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
-    window.location.href = "/employee/login";
+    localStorage.removeItem("employeeToken");
+    window.location.reload()
   };
 
   return (

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { BASE_URL } from "./foodApi";
 
 export type Reservation = {
   reservationId: number;
@@ -14,7 +15,7 @@ const getHeaders = () => {
 
 export const fetchReservations = async () => {
   try {
-    const response = await axios.get("http://localhost:8080/Reservation/all", {
+    const response = await axios.get(`${BASE_URL}Reservation/all`, {
       method: "GET",
       headers: getHeaders(),
     });

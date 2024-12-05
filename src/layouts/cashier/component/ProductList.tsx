@@ -17,7 +17,7 @@ const ProductList: React.FC = () => {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const response = await axios.get('http://localhost:8080/Product');
+                const response = await axios.get('https://wanrenbuffet.online/Product');
                 console.log("Dữ liệu trả về từ API:", response.data);
                 setProducts(response.data._embedded.products); // Truy cập vào _embedded.products
             } catch (error) {

@@ -47,9 +47,7 @@ const   ProductMenu: React.FC<Product> = (props) => {
                     type="button"
 
                     className="btn btn-danger"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#offcanvasCart"
-                    aria-controls="offcanvasCart"
+
                     onClick={() => addToCart(product)} // Handle adding to cart
                 >
                     <i className="bi bi-plus-lg"></i>

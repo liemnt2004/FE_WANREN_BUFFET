@@ -1,5 +1,6 @@
 // orderApi.ts
 import axios from "axios";
+import { BASE_URL } from "./foodApi";
 
 const getHeaders = () => {
   const employeeToken = localStorage.getItem("employeeToken");
@@ -101,13 +102,10 @@ const fetchProductInfo = async (productLink: string): Promise<{ image?: string; 
 };
 
 
-
-
-
 // Hàm lấy orders từ API
 export const fetchOrders = async (): Promise<Order[]> => {
   try {
-    const response = await axios.get("http://localhost:8080/Orders", {
+    const response = await axios.get(`${BASE_URL}/Orders`, {
       method: "GET",
       headers: getHeaders(),
     });
@@ -166,7 +164,7 @@ export const fetchTableId = async (tableLink: string): Promise<number | null> =>
 // Hàm cập nhật trạng thái sản phẩm
 export const updateOrderStatus = async (orderId: number, newStatus: string) => {
   try {
-    await axios.patch(`http://localhost:8080/Orders/${orderId}`, {
+    await axios.patch(`${BASE_URL}/Orders/${orderId}`, {
       orderStatus: newStatus
     }, {
       method: "PATCH",
@@ -182,7 +180,7 @@ export const updateOrderStatus = async (orderId: number, newStatus: string) => {
 // Hàm cập nhật trạng thái sản phẩm
 export const updateOrderDetails = async (orderId: number, details: any[]) => {
   try {
-    await axios.put(`http://localhost:8080/Orders/${orderId}/updateOrder`, details, {
+    await axios.put(`${BASE_URL}/Orders/${orderId}/updateOrder`, details, {
       method: "PUT",
       headers: getHeaders(),
     }); // Gửi danh sách đơn giản
@@ -194,7 +192,7 @@ export const updateOrderDetails = async (orderId: number, details: any[]) => {
 
 export const updateTableIdOrder = async (orderId: number, tableId: number) => {
   try {
-    const response = await fetch(`http://localhost:8080/api/order_staff/${orderId}/transfer`, {
+    const response = await fetch(`${BASE_URL}/api/order_staff/${orderId}/transfer`, {
         method: 'PUT',
         headers: getHeaders(),
         body: JSON.stringify({

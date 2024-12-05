@@ -21,7 +21,7 @@ const LoginCashier: React.FC<LoginCashierProps> = ({ onLoginSuccess }) => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/User/findByUsername`, {
+      const response = await axios.get(`https://wanrenbuffet.online/User/findByUsername`, {
         params: { username }
       });
 

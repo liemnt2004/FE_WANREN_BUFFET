@@ -458,7 +458,7 @@ const ManagementTableCashier: React.FC = () => {
 
   const saveEmptyTable = async (tableId: number) => {
     updateTableStatus(tableId, "OCCUPIED_TABLE");
-    const newOrderId = await CreateNewOrder(Number(employeeUserId), tableId);
+    const newOrderId = await CreateNewOrder(Number(employeeUserId), tableId, 2);
     updateOrderDetails(newOrderId.id, orderDetailsTemp);
     loadTablesEmpty();
     loadTablesOccupied();
@@ -514,7 +514,7 @@ const ManagementTableCashier: React.FC = () => {
 
     await updateOrderDetails(order.orderId || 0, currentOrderDetail);
     const newOrderId = (
-      await CreateNewOrder(Number(employeeUserId), selectTableId)
+      await CreateNewOrder(Number(employeeUserId), selectTableId, 2)
     ).id;
     await updateOrderDetails(newOrderId, selectOrderDetail);
     await updateTableStatus(selectTableId, "OCCUPIED_TABLE");

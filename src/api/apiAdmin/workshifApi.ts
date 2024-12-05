@@ -1,7 +1,7 @@
 import axios from "axios";
 import WorkShiftModel from "../../models/AdminModels/WorkShiftModel";
 
-const API_URL = "http://localhost:8080";
+const API_URL = "https://wanrenbuffet.online";
 
 /**
  * Lấy token của nhân viên từ localStorage

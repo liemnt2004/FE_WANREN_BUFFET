@@ -1,52 +1,48 @@
-import React, { useContext } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import MenuCustomer from "./layouts/customer/menuCustomer";
-import MenuProductCustomer from "./layouts/customer/menuProductCustomer";
-import IndexCustomer from "./layouts/customer/indexCustomer";
-import ReservationForm from "./layouts/customer/reservationCustomer";
-import PromotionCustomer from "./layouts/customer/promotionCustomer";
-import MenuProfile from "./layouts/customer/profileCustomer";
-import LoginRegisterComponent from "./layouts/customer/SignIn";
-import CartOffcanvas from "./layouts/customer/component/offcanvas";
-import { CartProvider } from "./layouts/customer/component/CartContext";
-import {
-  AuthProvider,
-  AuthContext,
-} from "./layouts/customer/component/AuthContext";
-import PublicRoute from "./layouts/customer/component/PublicRoute";
-import Checkout from "./layouts/customer/CheckoutCustomer";
-import PromotionDetail from "./layouts/customer/PromotionDetail";
-import Forgotpassword from "./layouts/customer/forgotpassword";
-import EnterOtp from "./layouts/customer/EnterOtp";
-import ResetPasswordOtp from "./layouts/customer/ResetPasswordOtp";
-import PrivateRoute from "./layouts/PrivateRoute";
-import EmployeeLoginComponent from "./layouts/EmployeeLoginComponent";
-import EmployeePublicRoute from "./layouts/EmployeePublicRoute";
-import CustomerManagement from "./layouts/ADMIN/customermanagement";
-import MenuAdmin from "./layouts/ADMIN/menuAdmin";
-import StaffLayout from "./layouts/ADMIN/StaffLayout";
-import EmployeeManagement from "./layouts/ADMIN/employeemanagement";
-import MainDash from "./layouts/ADMIN/Dashboard";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import NotFoundPage from "./layouts/404";
+import MainDash from "./layouts/ADMIN/Dashboard";
+import ProductManagement from "./layouts/ADMIN/ProductManagement";
+import StaffLayout from "./layouts/ADMIN/StaffLayout";
+import WorkShift from "./layouts/ADMIN/WorkShift";
+import CustomerManagement from "./layouts/ADMIN/customermanagement";
+import EmployeeManagement from "./layouts/ADMIN/employeemanagement";
 import Management from "./layouts/ADMIN/manager";
 import PromotionManagement from "./layouts/ADMIN/promotionManagement";
-import StaffIndex from "./layouts/staff/component/StaffIndex";
-import CheckoutLayout from "./layouts/staff/component/checkout/CheckoutLayout";
-import Checkout1 from "./layouts/staff/component/checkout/Checkout1";
-import Checkout2 from "./layouts/staff/component/checkout/Checkout2";
-import Checkout3 from "./layouts/staff/component/checkout/Checkout3";
-import ProductManagement from "./layouts/ADMIN/ProductManagement";
-import OrderOnTable from "./layouts/staff/component/orderOnTable/Order";
-import WorkShift from "./layouts/ADMIN/WorkShift";
-import LoginSuccess from "./layouts/customer/LoginSuccess";
-import CheckoutSucess from "./layouts/staff/component/checkout/CheckoutSucess";
-import CheckoutFailed from "./layouts/staff/component/checkout/CheckoutFailed";
+import RevenueReport from "./layouts/ADMIN/revenueReport ";
+import EmployeeLoginComponent from "./layouts/EmployeeLoginComponent";
+import EmployeePublicRoute from "./layouts/EmployeePublicRoute";
+import PrivateRoute from "./layouts/PrivateRoute";
+import DashboardCashier from "./layouts/cashier/dashboardCashier";
 import MainLayoutCashier from "./layouts/cashier/mainLayoutCashier";
-import ManagementTableCashier from "./layouts/cashier/managementTableCashier";
 import ManagementFoodCashier from "./layouts/cashier/managementFoodCashier";
 import ManagementOrdersOnlCashier from "./layouts/cashier/managementOrdersOnlCashier";
 import ManagementReservationCashier from "./layouts/cashier/managementReservationCashier";
-import DashboardCashier from "./layouts/cashier/dashboardCashier";
+import ManagementTableCashier from "./layouts/cashier/managementTableCashier";
+import Checkout from "./layouts/customer/CheckoutCustomer";
+import EnterOtp from "./layouts/customer/EnterOtp";
+import LoginSuccess from "./layouts/customer/LoginSuccess";
+import PromotionDetail from "./layouts/customer/PromotionDetail";
+import ResetPasswordOtp from "./layouts/customer/ResetPasswordOtp";
+import LoginRegisterComponent from "./layouts/customer/SignIn";
+import { AuthProvider } from "./layouts/customer/component/AuthContext";
+import { CartProvider } from "./layouts/customer/component/CartContext";
+import PublicRoute from "./layouts/customer/component/PublicRoute";
+import CartOffcanvas from "./layouts/customer/component/offcanvas";
+import Forgotpassword from "./layouts/customer/forgotpassword";
+import IndexCustomer from "./layouts/customer/indexCustomer";
+import MenuCustomer from "./layouts/customer/menuCustomer";
+import MenuProductCustomer from "./layouts/customer/menuProductCustomer";
+import MenuProfile from "./layouts/customer/profileCustomer";
+import PromotionCustomer from "./layouts/customer/promotionCustomer";
+import ReservationForm from "./layouts/customer/reservationCustomer";
+import StaffIndex from "./layouts/staff/component/StaffIndex";
+import Checkout1 from "./layouts/staff/component/checkout/Checkout1";
+import Checkout2 from "./layouts/staff/component/checkout/Checkout2";
+import Checkout3 from "./layouts/staff/component/checkout/Checkout3";
+import CheckoutFailed from "./layouts/staff/component/checkout/CheckoutFailed";
+import CheckoutLayout from "./layouts/staff/component/checkout/CheckoutLayout";
+import CheckoutSucess from "./layouts/staff/component/checkout/CheckoutSucess";
+import OrderOnTable from "./layouts/staff/component/orderOnTable/Order";
 
 function App() {
   return (
@@ -87,9 +83,10 @@ export function Routing() {
     "/admin/employees",
     "/admin/dashboard",
     "/orderOnTable",
-    "/checkout",
+    "/staff/checkout",
     "/admin/manage-product",
     "/cashier",
+    "/admin/revenue-report",
   ];
 
   return (
@@ -140,14 +137,6 @@ export function Routing() {
         />
 
         {/* Route dành cho nhân viên */}
-        <Route path="/orderOnTable" element={<OrderOnTable />} />
-        <Route path="/checkout" element={<CheckoutLayout />}>
-          <Route path="step1" element={<Checkout1 />} />
-          <Route path="step2" element={<Checkout2 />} />
-          <Route path="step3" element={<Checkout3 />} />
-          <Route path="sucessful" element={<CheckoutSucess />} />
-          <Route path="failed" element={<CheckoutFailed />} />
-        </Route>
         <Route
           path="/staff"
           element={
@@ -156,6 +145,28 @@ export function Routing() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/orderOnTable"
+          element={
+            <PrivateRoute allowedRoles={["STAFF", "ADMIN"]}>
+              <OrderOnTable />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/staff/checkout"
+          element={
+            <PrivateRoute allowedRoles={["STAFF", "ADMIN"]}>
+              <CheckoutLayout />
+            </PrivateRoute>
+          }
+        >
+          <Route path="step1" index element={<Checkout1 />} />
+          <Route path="step2" element={<Checkout2 />} />
+          <Route path="step3" element={<Checkout3 />} />
+          <Route path="sucessful" element={<CheckoutSucess />} />
+          <Route path="failed" element={<CheckoutFailed />} />
+        </Route>
 
         {/* Route dành cho quản lý */}
         <Route
@@ -195,6 +206,7 @@ export function Routing() {
           <Route path="/admin/manage-product" element={<ProductManagement />} />
           <Route path="/admin/manage-accounts" element={<Management />} />
           <Route path="/admin/manage-work-shifts" element={<WorkShift />} />
+          <Route path="/admin/revenue-report" element={<RevenueReport />} />
         </Route>
 
         {/* Route không tìm thấy */}

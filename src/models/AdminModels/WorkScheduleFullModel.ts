@@ -4,7 +4,7 @@ class WorkScheduleFullModel {
   constructor(
     public username: string,
     public fullName: string,
-    public userType: number,
+    public userType: string,
     public shiftId: number,
     public shiftName: string,
     public workDate: Date
