@@ -119,17 +119,8 @@ span {
 }
 
 
-.accordion-item .accordion-item-design {
-    background-color: #f2f2f2;
-}
 
 
-.accordion-item .accordion-item-design:not(.collapsed) {
-    background-color: var(--colorPrimary);
-    color: #fff;
-    outline: none !important;
-    border: none !important;
-}
 
 .customers-say {
     background-color: #f2f2f2;
@@ -228,10 +219,6 @@ span {
 .left-section::-webkit-scrollbar {
     display: none;
     /* Ẩn thanh cuộn */
-}
-
-.what-can-we-do .accordion {
-    max-height: 900px;
 }
 
 #decrement {
@@ -572,11 +559,7 @@ body {
         font-size: 1rem;
     }
 
-    .what-can-we-do button,
-    .what-can-we-do .accordion-body,
-    .what-can-we-do p {
-        font-size: 0.9rem;
-    }
+
 
     .user p {
         display: none;
