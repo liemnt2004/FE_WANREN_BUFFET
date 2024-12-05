@@ -1,53 +1,48 @@
-import React, { useContext } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import MenuCustomer from "./layouts/customer/menuCustomer";
-import MenuProductCustomer from "./layouts/customer/menuProductCustomer";
-import IndexCustomer from "./layouts/customer/indexCustomer";
-import ReservationForm from "./layouts/customer/reservationCustomer";
-import PromotionCustomer from "./layouts/customer/promotionCustomer";
-import MenuProfile from "./layouts/customer/profileCustomer";
-import LoginRegisterComponent from "./layouts/customer/SignIn";
-import CartOffcanvas from "./layouts/customer/component/offcanvas";
-import { CartProvider } from "./layouts/customer/component/CartContext";
-import {
-  AuthProvider,
-  AuthContext,
-} from "./layouts/customer/component/AuthContext";
-import PublicRoute from "./layouts/customer/component/PublicRoute";
-import Checkout from "./layouts/customer/CheckoutCustomer";
-import PromotionDetail from "./layouts/customer/PromotionDetail";
-import Forgotpassword from "./layouts/customer/forgotpassword";
-import EnterOtp from "./layouts/customer/EnterOtp";
-import ResetPasswordOtp from "./layouts/customer/ResetPasswordOtp";
-import PrivateRoute from "./layouts/PrivateRoute";
-import EmployeeLoginComponent from "./layouts/EmployeeLoginComponent";
-import EmployeePublicRoute from "./layouts/EmployeePublicRoute";
-import CustomerManagement from "./layouts/ADMIN/customermanagement";
-import MenuAdmin from "./layouts/ADMIN/menuAdmin";
-import StaffLayout from "./layouts/ADMIN/StaffLayout";
-import EmployeeManagement from "./layouts/ADMIN/employeemanagement";
-import MainDash from "./layouts/ADMIN/Dashboard";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import NotFoundPage from "./layouts/404";
+import MainDash from "./layouts/ADMIN/Dashboard";
+import ProductManagement from "./layouts/ADMIN/ProductManagement";
+import StaffLayout from "./layouts/ADMIN/StaffLayout";
+import WorkShift from "./layouts/ADMIN/WorkShift";
+import CustomerManagement from "./layouts/ADMIN/customermanagement";
+import EmployeeManagement from "./layouts/ADMIN/employeemanagement";
 import Management from "./layouts/ADMIN/manager";
 import PromotionManagement from "./layouts/ADMIN/promotionManagement";
-import StaffIndex from "./layouts/staff/component/StaffIndex";
-import CheckoutLayout from "./layouts/staff/component/checkout/CheckoutLayout";
-import Checkout1 from "./layouts/staff/component/checkout/Checkout1";
-import Checkout2 from "./layouts/staff/component/checkout/Checkout2";
-import Checkout3 from "./layouts/staff/component/checkout/Checkout3";
-import ProductManagement from "./layouts/ADMIN/ProductManagement";
-import OrderOnTable from "./layouts/staff/component/orderOnTable/Order";
-import WorkShift from "./layouts/ADMIN/WorkShift";
-import LoginSuccess from "./layouts/customer/LoginSuccess";
-import CheckoutSucess from "./layouts/staff/component/checkout/CheckoutSucess";
-import CheckoutFailed from "./layouts/staff/component/checkout/CheckoutFailed";
+import RevenueReport from "./layouts/ADMIN/revenueReport ";
+import EmployeeLoginComponent from "./layouts/EmployeeLoginComponent";
+import EmployeePublicRoute from "./layouts/EmployeePublicRoute";
+import PrivateRoute from "./layouts/PrivateRoute";
+import DashboardCashier from "./layouts/cashier/dashboardCashier";
 import MainLayoutCashier from "./layouts/cashier/mainLayoutCashier";
-import ManagementTableCashier from "./layouts/cashier/managementTableCashier";
 import ManagementFoodCashier from "./layouts/cashier/managementFoodCashier";
 import ManagementOrdersOnlCashier from "./layouts/cashier/managementOrdersOnlCashier";
 import ManagementReservationCashier from "./layouts/cashier/managementReservationCashier";
-import DashboardCashier from "./layouts/cashier/dashboardCashier";
-import RevenueReport from "./layouts/ADMIN/revenueReport ";
+import ManagementTableCashier from "./layouts/cashier/managementTableCashier";
+import Checkout from "./layouts/customer/CheckoutCustomer";
+import EnterOtp from "./layouts/customer/EnterOtp";
+import LoginSuccess from "./layouts/customer/LoginSuccess";
+import PromotionDetail from "./layouts/customer/PromotionDetail";
+import ResetPasswordOtp from "./layouts/customer/ResetPasswordOtp";
+import LoginRegisterComponent from "./layouts/customer/SignIn";
+import { AuthProvider } from "./layouts/customer/component/AuthContext";
+import { CartProvider } from "./layouts/customer/component/CartContext";
+import PublicRoute from "./layouts/customer/component/PublicRoute";
+import CartOffcanvas from "./layouts/customer/component/offcanvas";
+import Forgotpassword from "./layouts/customer/forgotpassword";
+import IndexCustomer from "./layouts/customer/indexCustomer";
+import MenuCustomer from "./layouts/customer/menuCustomer";
+import MenuProductCustomer from "./layouts/customer/menuProductCustomer";
+import MenuProfile from "./layouts/customer/profileCustomer";
+import PromotionCustomer from "./layouts/customer/promotionCustomer";
+import ReservationForm from "./layouts/customer/reservationCustomer";
+import StaffIndex from "./layouts/staff/component/StaffIndex";
+import Checkout1 from "./layouts/staff/component/checkout/Checkout1";
+import Checkout2 from "./layouts/staff/component/checkout/Checkout2";
+import Checkout3 from "./layouts/staff/component/checkout/Checkout3";
+import CheckoutFailed from "./layouts/staff/component/checkout/CheckoutFailed";
+import CheckoutLayout from "./layouts/staff/component/checkout/CheckoutLayout";
+import CheckoutSucess from "./layouts/staff/component/checkout/CheckoutSucess";
+import OrderOnTable from "./layouts/staff/component/orderOnTable/Order";
 
 function App() {
   return (
@@ -68,10 +63,10 @@ export function Routing() {
       (route) =>
         pathname === route ||
         (route === "/orderOnTable" && /^\/orderOnTable\/\d+$/.test(pathname)) ||
-        (route === "/staff/checkout" && /^\/staff\/checkout\/step[1-3]$/.test(pathname)) ||
-        (route === "/staff/checkout" && /^\/staff\/checkout\/sucessful/.test(pathname)) ||
-        (route === "/staff/checkout" && /^\/staff\/checkout\/failed/.test(pathname)) ||
-        (route === "/cashier" && /^\/table/.test(pathname))
+        (route === "/checkout" && /^\/checkout\/step[1-3]$/.test(pathname)) ||
+        (route === "/checkout" && /^\/checkout\/sucessful/.test(pathname)) ||
+        (route === "/checkout" && /^\/checkout\/failed/.test(pathname)) ||
+        (route === "/cashier" && /^\/cashier\/.+$/.test(pathname))
     );
   };
   const hiddenRoutes = [
@@ -91,7 +86,7 @@ export function Routing() {
     "/staff/checkout",
     "/admin/manage-product",
     "/cashier",
-    "/admin/revenue-report"
+    "/admin/revenue-report",
   ];
 
   return (

@@ -30,6 +30,8 @@ import { CreateNewOrder } from "../../api/apiStaff/orderForStaffApi";
 import { AuthContext } from "../customer/component/AuthContext";
 import { useNavigate } from "react-router-dom";
 import CardFoodOrderCashier from "./component/cardFoodOrderCashier";
+import { Input } from "antd";
+import { createPayment } from "../../api/apiCashier/payApt";
 
 const ManagementTableCashier: React.FC = () => {
   const defaultOrder: Order = {
@@ -70,6 +72,8 @@ const ManagementTableCashier: React.FC = () => {
 
   const [popupSplitFood, setPopupSplitFood] = useState<Table | null>(null);
 
+  const [payTable, setPayTable] = useState<Table | null>(null);
+
   const [selectOrderbyTableId, setSelectOrderbyTableId] =
     useState<Order | null>(null);
 
@@ -94,6 +98,8 @@ const ManagementTableCashier: React.FC = () => {
   const [tablesOccupied, setTablesOccupied] = useState<Table[]>([]);
 
   const [selectTable, setSelectTable] = useState<Table | null>(null);
+
+  const [moneyBack, setMoneyBack] = useState<number | 0>(0);
 
   const { employeeUserId } = useContext(AuthContext);
 
@@ -533,6 +539,62 @@ const ManagementTableCashier: React.FC = () => {
     // alert ^
   };
 
+  const unlockTable = async (table: Table, order: Order) => {
+    await updateTableStatus(table.tableId, "OCCUPIED_TABLE");
+    await updateOrderStatus(order.orderId || 0, "IN_TRANSIT");
+    loadTables();
+    closeDetailTable();
+
+    // alert v
+    const newAlert = {
+      id: uuidv4_3(), // Tạo ID duy nhất cho mỗi alert
+      message: "Mở khóa thành công",
+    };
+    setAlerts((prevAlerts) => [...prevAlerts, newAlert]);
+    // Tự động xóa thông báo sau 3 giây
+    setTimeout(() => {
+      setAlerts((prevAlerts) =>
+        prevAlerts.filter((alert) => alert.id !== newAlert.id)
+      );
+    }, 3000);
+    // alert ^
+  };
+
+  const changeMoneyBack = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setMoneyBack(Number(event.target.value));
+  };
+
+  const confirmPay = async (tableId: number, order: Order) => {
+    await createPayment(
+      "CASH",
+      true,
+      order.totalAmount || 0,
+      order.orderId || 0,
+      Number(employeeUserId)
+    );
+    await updateOrderStatus(order.orderId || 0, "DELIVERED");
+    await updateTableStatus(tableId, "EMPTY_TABLE");
+    loadTablesEmpty();
+    loadTablesOccupied();
+    loadTables();
+
+    closePayTable();
+
+    // alert v
+    const newAlert = {
+      id: uuidv4_3(), // Tạo ID duy nhất cho mỗi alert
+      message: "Đóng giao dịch thành công",
+    };
+    setAlerts((prevAlerts) => [...prevAlerts, newAlert]);
+    // Tự động xóa thông báo sau 3 giây
+    setTimeout(() => {
+      setAlerts((prevAlerts) =>
+        prevAlerts.filter((alert) => alert.id !== newAlert.id)
+      );
+    }, 3000);
+    // alert ^
+  };
+
   // các hành động function ^
 
   // các popup v
@@ -617,6 +679,17 @@ const ManagementTableCashier: React.FC = () => {
     // setSelectOrderbyTableId(null);
   };
 
+  const openPayTable = (table: Table) => {
+    setPayTable(table);
+    getOrderbyTableId(table.tableId);
+  };
+  const closePayTable = () => {
+    setPayTable(null);
+    setSelectOrderbyTableId(null);
+  };
+
+  const hehe = () => {};
+
   // các popup ^
 
   useEffect(() => {
@@ -637,8 +710,8 @@ const ManagementTableCashier: React.FC = () => {
                   ? "Trống"
                   : table.tableStatus === "OCCUPIED_TABLE"
                   ? "Có Khách"
-                  : table.tableStatus === "RESERVED_TABLE"
-                  ? "Đặt Trước"
+                  : table.tableStatus === "LOCKED_TABLE"
+                  ? "Thanh Toán"
                   : "Không xác định"
               }
               location={table.location}
@@ -682,9 +755,11 @@ const ManagementTableCashier: React.FC = () => {
               }}
               detailTable={() => {
                 {
-                  table.tableStatus === "OCCUPIED_TABLE"
+                  table.tableStatus === "EMPTY_TABLE"
+                    ? openEmptyTable(table)
+                    : table.tableStatus === "LOCKED_TABLE"
                     ? openDetailTable(table)
-                    : openEmptyTable(table);
+                    : hehe();
                 }
               }}
             />
@@ -812,8 +887,8 @@ const ManagementTableCashier: React.FC = () => {
                               ? "Trống"
                               : table.tableStatus === "OCCUPIED_TABLE"
                               ? "Có Khách"
-                              : table.tableStatus === "RESERVED_TABLE"
-                              ? "Đặt Trước"
+                              : table.tableStatus === "LOCKED_TABLE"
+                              ? "Thanh Toán"
                               : "Không xác định"
                           }
                           detailTable={() => setSelectTable(table)}
@@ -831,8 +906,8 @@ const ManagementTableCashier: React.FC = () => {
                           ? "Trống"
                           : swapTable.tableStatus === "OCCUPIED_TABLE"
                           ? "Có Khách"
-                          : swapTable.tableStatus === "RESERVED_TABLE"
-                          ? "Đặt Trước"
+                          : swapTable.tableStatus === "LOCKED_TABLE"
+                          ? "Thanh Toán"
                           : "Không xác định"
                       }
                       location={swapTable.location}
@@ -898,8 +973,8 @@ const ManagementTableCashier: React.FC = () => {
                               ? "Trống"
                               : table.tableStatus === "OCCUPIED_TABLE"
                               ? "Có Khách"
-                              : table.tableStatus === "RESERVED_TABLE"
-                              ? "Đặt Trước"
+                              : table.tableStatus === "LOCKED_TABLE"
+                              ? "Thanh Toán"
                               : "Không xác định"
                           }
                           detailTable={() => setSelectTable(table)}
@@ -917,8 +992,8 @@ const ManagementTableCashier: React.FC = () => {
                           ? "Trống"
                           : splitTable.tableStatus === "OCCUPIED_TABLE"
                           ? "Có Khách"
-                          : splitTable.tableStatus === "RESERVED_TABLE"
-                          ? "Đặt Trước"
+                          : splitTable.tableStatus === "LOCKED_TABLE"
+                          ? "Thanh Toán"
                           : "Không xác định"
                       }
                       location={splitTable.location}
@@ -991,8 +1066,8 @@ const ManagementTableCashier: React.FC = () => {
                                 ? "Trống"
                                 : table.tableStatus === "OCCUPIED_TABLE"
                                 ? "Có Khách"
-                                : table.tableStatus === "RESERVED_TABLE"
-                                ? "Đặt Trước"
+                                : table.tableStatus === "LOCKED_TABLE"
+                                ? "Thanh Toán"
                                 : "Không xác định"
                             }
                             detailTable={() => setSelectTable(table)}
@@ -1010,8 +1085,8 @@ const ManagementTableCashier: React.FC = () => {
                           ? "Trống"
                           : combineTable.tableStatus === "OCCUPIED_TABLE"
                           ? "Có Khách"
-                          : combineTable.tableStatus === "RESERVED_TABLE"
-                          ? "Đặt Trước"
+                          : combineTable.tableStatus === "LOCKED_TABLE"
+                          ? "Thanh Toán"
                           : "Không xác định"
                       }
                       location={combineTable.location}
@@ -1104,9 +1179,37 @@ const ManagementTableCashier: React.FC = () => {
 
       {detailTable && (
         <PopupOverlay onClick={closeDetailTable}>
-          <PopupCard onClick={(e) => e.stopPropagation()}>
-            this is popup detail table
-            {selectOrderbyTableId?.createdDate}
+          <PopupCard
+            onClick={(e) => e.stopPropagation()}
+            className="d-flex align-items-center justify-content-center"
+          >
+            <StyledWrapperButton>
+              <button
+                onClick={() => {
+                  openPayTable(detailTable);
+                }}
+              >
+                Thanh Toán
+              </button>
+            </StyledWrapperButton>
+            &emsp;
+            <StyledWrapperButton>
+              <button onClick={() => {}}>Voucher</button>
+            </StyledWrapperButton>
+            &emsp;
+            <StyledWrapperButton>
+              <button
+                onClick={async () => {
+                  unlockTable(
+                    detailTable,
+                    (await getOrderbyTableId(detailTable.tableId || 0)) ||
+                      defaultOrder
+                  );
+                }}
+              >
+                Mở bàn
+              </button>
+            </StyledWrapperButton>
           </PopupCard>
         </PopupOverlay>
       )}
@@ -1380,6 +1483,43 @@ const ManagementTableCashier: React.FC = () => {
                 </div>
               </div>
             </PopupCardGrid>
+          </PopupCard>
+        </PopupOverlay>
+      )}
+
+      {payTable && (
+        <PopupOverlay onClick={closePayTable}>
+          <PopupCard onClick={(e) => e.stopPropagation()}>
+            <OrderLabel>Tiền khách trả:</OrderLabel>{" "}
+            <Input
+              onChange={changeMoneyBack}
+              value={moneyBack}
+              type="number"
+              style={{ width: "100px" }}
+            ></Input>
+            <br />
+            <OrderLabel>Tổng hóa đơn:</OrderLabel>{" "}
+            <span>{selectOrderbyTableId?.totalAmount}</span>
+            <br />
+            <OrderLabel>Tiền trả lại:</OrderLabel> <span>{moneyBack}</span>
+            <br />
+            <StyledWrapperButton>
+              <button
+                onClick={async () => {
+                  confirmPay(
+                    payTable.tableId,
+                    (await getOrderbyTableId(payTable.tableId || 0)) ||
+                      defaultOrder
+                  );
+                }}
+              >
+                Xác nhận thanh toán
+              </button>
+            </StyledWrapperButton>
+            <br />
+            <StyledWrapperButton>
+              <button onClick={closePayTable}>Đóng</button>
+            </StyledWrapperButton>
           </PopupCard>
         </PopupOverlay>
       )}
