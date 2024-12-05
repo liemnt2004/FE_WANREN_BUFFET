@@ -424,7 +424,7 @@ const CustomerManagement: React.FC = () => {
             <div className="search-wrapper">
               <input
                 type="text"
-                className="form-control search-input"
+                className=" search-input"
                 placeholder="Search for customers..."
                 onChange={handleSearchChange}
               />

@@ -39,6 +39,7 @@ const WorkShift: React.FC = () => {
             defaultActiveKey="1"
             renderTabBar={renderTabBar}
             items={items}
+            className="workshifts"
           />
         </div>
       </div>

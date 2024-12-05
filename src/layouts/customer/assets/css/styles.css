@@ -243,6 +243,32 @@ span {
     width: 35px;
 }
 
+   .what-can-we-do button,
+.what-can-we-do .accordion-body,
+.what-can-we-do p {
+    font-size: 0.9rem;
+}
+
+.accordion-item .accordion-item-design {
+    background-color: #f2f2f2;
+}
+
+
+.what-can-we-do .accordion {
+    max-height: 900px;
+}
+
+
+
+.accordion-item .accordion-item-design:not(.collapsed) {
+    background-color: var(--colorPrimary);
+    color: #fff;
+    outline: none !important;
+    border: none !important;
+}
+
+
+
 .hot-deal button {
     color: #fff;
     background-color: var(--colorPrimary);

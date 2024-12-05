@@ -456,3 +456,81 @@
 }
 
 
+
+
+@media (max-width: 1000px)  {
+    .admin-layout{
+        width: 100%;
+    }
+
+    .topbar{
+        width: 1000px !important;
+        margin-left: 0px;
+    }
+
+    .main-content{
+        margin: 0;
+        padding: 0;
+    }
+
+    .product-management{
+        padding: 50px 100px;
+    }
+
+    .promotion-management{
+        padding: 50px 100px;
+    }
+
+
+    .employee-management{
+        padding: 50px 100px;
+    }
+
+  
+
+   .admin-layout .menu{
+        display: none ;
+    }
+
+    .sidebar_admin{
+        display: none;
+    }
+
+   
+
+    .topbar{
+        padding: 5% 20% !important;
+        justify-content: space-between;
+    }
+
+    .profile   .dropdown-menu{
+        width: 20px !important;
+    }
+
+   .profile    .dropdown-item {
+        font-size: 10px;
+    
+    }
+
+   .parentContainer{
+    display: flex;
+    justify-content: space-between;
+   }
+
+   .CompactCard{
+        width: 200px;
+        height: 200px;
+        margin-left: 50px;
+   }
+
+   .chart-card{
+        width: 90%;
+   }
+
+   .workshifts{
+        padding: 50px 100px;
+   }
+
+}
+
+

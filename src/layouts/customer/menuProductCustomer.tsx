@@ -153,7 +153,7 @@ const MenuProductCustomer: React.FC = () => {
                                     <div>
                                         <input
                                             type="text"
-                                            className="form-control"
+                                            className="search-input"
                                             placeholder="Tìm Kiếm"
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}

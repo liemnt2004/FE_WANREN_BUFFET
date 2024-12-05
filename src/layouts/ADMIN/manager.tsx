@@ -140,11 +140,16 @@ const Management: React.FC = () => {
       <div className="main-content">
         <div className="employee-management">
           <h2>Manage Admin</h2>
-          <div className="search-filter">
+          <div className="search-filter" style={{
+                marginBottom: 16,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}>
             <div className="search-wrapper">
               <input
                 type="text"
-                className="form-control search-input"
+                className="search-input"
                 placeholder="Search for admins..."
                 onChange={handleSearchChange}
               />
