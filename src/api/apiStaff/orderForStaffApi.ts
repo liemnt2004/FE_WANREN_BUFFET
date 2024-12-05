@@ -21,7 +21,6 @@ export async function getAllOrderDetailsByOrderId(
     const data = await request(
       `http://localhost:8080/api-data/Orders/${orderId}/orderDetails`
     );
-    console.log(data._embedded.orderDetails);
     if (data && data._embedded && data._embedded.orderDetails) {
       for (const orderDetail of data._embedded.orderDetails) {
         const orderDetailModel = new OrderDetailModel(
@@ -52,11 +51,9 @@ export async function getTableNumberByOrderId(
     const tableNumber = response.tableNumber;
     return tableNumber;
   } catch (error) {
-    console.error(error, "Cannot log the number of table");
     return 0;
   }
 }
-
 
 export async function getOrderDetailWithNameProduct(
   orderId: number
@@ -80,7 +77,6 @@ export async function getOrderDetailWithNameProduct(
       return [];
     }
   } catch (error) {
-    console.error(error, "Cannot log all orderDetail by orderId");
     return [];
   }
 }
@@ -92,23 +88,54 @@ export async function getOrderAmount(orderId: number): Promise<number> {
     );
     return amountOfOrder.amount;
   } catch (error) {
-    console.log(error, "Cannot get amount of order");
     return 0;
+  }
+}
+
+export const updateOStatus = async (orderId: number, status: string) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/order_staff/update-status/${orderId}?status=${status}`,
+      {
+        method: "PUT",
+        headers: getHeaders()
+      }
+    );
+  } catch (error) {}
+};
+
+export const createPayment = async (lastAmount: number, orderId:number, employeeUserId: number, paymentMethod: string, status: boolean) => {
+  try {
+      const newOrderResponse = await fetch(`${BASE_URL}/payment/create_payment/normal`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({
+              amountPaid: lastAmount,
+              paymentMethod: paymentMethod,
+              paymentStatus: status,
+              orderId: orderId,
+              userId: Number(employeeUserId)
+          })
+      });
+  } catch (error) {
+    console.log(error)
   }
 }
 
 export async function updateLoyaltyPoint(phoneNumber: string, amount: number) {
   try {
-    const loyaltyPoint = await fetch(
+    const response = await fetch(
       `${BASE_URL}/customer/loyal_point/${phoneNumber}/${amount}`,
       {
         method: "PUT",
         headers: getHeaders(),
       }
     );
-    if (!loyaltyPoint.ok) throw new Error("Error updating loyaltyPoint");
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
   } catch (error) {
-    console.log(error, "Cannot accumulate points");
     return "Không thể thực hiện tích điểm";
   }
 }
@@ -128,7 +155,6 @@ export async function updateTotalAmount(
     const data = response.data;
     return data.amount_last;
   } catch (error) {
-    console.error(error, "Cannot update total amount");
     return 0;
   }
 }
@@ -140,7 +166,6 @@ export const fetchOrderDetailsAPI = async (orderId: number) => {
     method: "GET",
     headers: getHeaders(),
   });
-  if (!response.ok) throw new Error("Error fetching order details");
   return response.json();
 };
 
@@ -149,7 +174,6 @@ export const fetchOrderStatusAPI = async (orderId: number) => {
     method: "GET",
     headers: getHeaders(),
   });
-  if (!response.ok) throw new Error("Error fetching order details");
   return response.json();
 };
 
@@ -184,24 +208,20 @@ export const updateLoyaltyPoints = async (
       pointsToDeduct: pointsToDeduct,
     }),
   });
-  if (!response.ok) throw new Error("Error updating order amount");
 };
 
 export const transferTable = async (
-  orderId: number, selectedTableId: number
+  orderId: number,
+  selectedTableId: number
 ) => {
   const response = await fetch(`${BASE_URL}/order_staff/${orderId}/transfer`, {
-    method: 'PUT',
+    method: "PUT",
     headers: getHeaders(),
     body: JSON.stringify({
-        orderId: orderId,
-        newTableId: selectedTableId,
+      orderId: orderId,
+      newTableId: selectedTableId,
     }),
-});
-
-if (!response.ok) {
-    throw new Error('Error transferring table');
-}
+  });
 };
 
 export const fetchReservations = async () => {
@@ -209,16 +229,17 @@ export const fetchReservations = async () => {
     method: "GET",
     headers: getHeaders(),
   });
-  if (!response.ok) throw new Error(`Error fetching table`);
   return response.json();
 };
 
 export const fetchTables = async () => {
-  const response = await fetch(`http://localhost:8080/api-data/Table?page=0&size=50`, {
-    method: "GET",
-    headers: getHeaders(),
-  });
-  if (!response.ok) throw new Error(`Error fetching table`);
+  const response = await fetch(
+    `http://localhost:8080/api-data/Table?page=0&size=50`,
+    {
+      method: "GET",
+      headers: getHeaders(),
+    }
+  );
   return response.json();
 };
 
@@ -227,7 +248,6 @@ export const fetchProductDetailsAPI = async (productId: number) => {
     method: "GET",
     headers: getHeaders(),
   });
-  if (!response.ok) throw new Error(`Error fetching product ${productId}`);
   return response.json();
 };
 
@@ -243,10 +263,7 @@ export const checkCustomer = async (orderId: number) => {
 
     const text = await response.text();
     return text;
-  } catch (error) {
-    console.error("API call failed:", error);
-    throw error;
-  }
+  } catch (error) {}
 };
 
 export const updateReservationStatus = async (
@@ -267,12 +284,8 @@ export const updateReservationStatus = async (
       return message;
     } else {
       const errorMessage = await response.text();
-      throw new Error(errorMessage);
     }
-  } catch (error) {
-    console.error("Failed to update reservation status:", error);
-    throw error;
-  }
+  } catch (error) {}
 };
 
 export const updateDiscountPoints = async (
@@ -293,12 +306,8 @@ export const updateDiscountPoints = async (
       return message;
     } else {
       const errorMessage = await response.text();
-      throw new Error(errorMessage);
     }
-  } catch (error) {
-    console.error("Failed to update discount points:", error);
-    throw error;
-  }
+  } catch (error) {}
 };
 
 export const getDiscountPoints = async (orderId: number) => {
@@ -315,10 +324,8 @@ export const getDiscountPoints = async (orderId: number) => {
       const discountPoints = await response.json();
       return discountPoints;
     } else {
-      console.log("Không có discoutPoint trước đó!")
     }
-  } catch (error) {
-  }
+  } catch (error) {}
 };
 
 export const fetchTableStatus = async (tableId: number) => {
@@ -332,11 +339,9 @@ export const fetchTableStatus = async (tableId: number) => {
     const data = JSON.parse(responseText);
     return data;
   } catch (error) {
-    console.error("Error parsing response as JSON:", error);
     return responseText;
   }
 };
-
 
 export const fetchOrderIdByTableId = async (tableId: number) => {
   const response = await fetch(
@@ -346,7 +351,6 @@ export const fetchOrderIdByTableId = async (tableId: number) => {
       headers: getHeaders(),
     }
   );
-  if (!response.ok) throw new Error("Error fetching order ID");
   const text = await response.text();
   return text ? Number(text) : null;
 };
@@ -369,7 +373,6 @@ export const CreateNewOrder = async (
       numberPeople: numberPeople,
     }),
   });
-  if (!response.ok) throw new Error("Error creating new order");
   return response.json();
 };
 
@@ -378,8 +381,6 @@ export const updateOrderDetails = async (orderId: number, details: any) => {
     if (!orderId || orderId <= 0) {
       throw new Error("Invalid orderId passed to updateOrderDetails");
     }
-
-    console.log("Sending update for orderId:", orderId); // Kiểm tra orderId
 
     const response = await fetch(
       `${BASE_URL}/orders_detail_staff/add_or_update/${orderId}`,
@@ -390,19 +391,9 @@ export const updateOrderDetails = async (orderId: number, details: any) => {
       }
     );
 
-    if (!response.ok) {
-      const errorMessage = `Failed to update order details: ${response.status} - ${response.statusText}`;
-      console.error(errorMessage);
-      throw new Error(errorMessage);
-    }
-
     const responseData = await response.json();
-    console.log("API response:", responseData);
     return responseData;
-  } catch (error) {
-    console.error("Fetch error:", error);
-    throw error;
-  }
+  } catch (error) {}
 };
 
 export const updateOrderAmount = async (orderId: number, amount: number) => {
@@ -411,7 +402,6 @@ export const updateOrderAmount = async (orderId: number, amount: number) => {
     headers: getHeaders(),
     body: JSON.stringify({ totalAmount: amount }),
   });
-  if (!response.ok) throw new Error("Error updating order amount");
 };
 
 export const updateOrderStatus = async (orderId: number, status: string) => {
@@ -423,7 +413,6 @@ export const updateOrderStatus = async (orderId: number, status: string) => {
       body: JSON.stringify({ orderStatus: status }),
     }
   );
-  if (!response.ok) throw new Error("Error updating order amount");
 };
 
 export const updateTableStatus = async (tableId: number, status: string) => {
@@ -432,7 +421,6 @@ export const updateTableStatus = async (tableId: number, status: string) => {
     headers: getHeaders(),
     body: JSON.stringify({ tableStatus: status }),
   });
-  if (!response.ok) throw new Error("Error updating table status");
 };
 
 export const updateQuantityOrderDetails = async (details: any) => {
@@ -444,7 +432,6 @@ export const updateQuantityOrderDetails = async (details: any) => {
       body: JSON.stringify(details),
     }
   );
-  if (!response.ok) throw new Error("Error updating order amount");
   return response.json();
 };
 
@@ -485,9 +472,7 @@ export const payWithVNPay = async (
     console.log(response.data);
 
     window.location.href = paymentUrl; // Redirect to VNPay payment gateway
-  } catch (error) {
-    console.error("Error creating payment:", error);
-  }
+  } catch (error) {}
 };
 
 export const updateCustomerInOrder = async (
@@ -507,8 +492,5 @@ export const updateCustomerInOrder = async (
     }
 
     return await response.text();
-  } catch (error) {
-    console.error("Failed to update customer in order:", error);
-    throw error;
-  }
+  } catch (error) {}
 };

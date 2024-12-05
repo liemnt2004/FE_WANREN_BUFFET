@@ -237,6 +237,7 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
                             const totalProductQuantity = getTotalProductQuantity(product.productId);
                             return (
                                 <ProductCard
+                                    key={product.productId}
                                     tableId={tableId}
                                     onAddToCart={handleAddToCart}
                                     product={product}
