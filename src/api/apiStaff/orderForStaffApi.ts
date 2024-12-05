@@ -234,7 +234,7 @@ export const fetchReservations = async () => {
 
 export const fetchTables = async () => {
   const response = await fetch(
-    `http://localhost:8080/api-data/Table?page=0&size=50`,
+    `https://wanrenbuffet.online/api-data/Table?page=0&size=50`,
     {
       method: "GET",
       headers: getHeaders(),
