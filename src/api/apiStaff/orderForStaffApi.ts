@@ -3,7 +3,7 @@ import { request } from "./Request";
 import OrderDetailsWithNameProduct from "../../models/StaffModels/OrderDetailsWithNameProduct";
 import OrderDetailModel from "../../models/StaffModels/OrderDetaitModel";
 
-const BASE_URL = "http://localhost:8080/api";
+const BASE_URL = "https://wanrenbuffet.online/api";
 
 const getHeaders = () => {
   const employeeToken = localStorage.getItem("employeeToken");
@@ -19,7 +19,7 @@ export async function getAllOrderDetailsByOrderId(
   const rs: OrderDetailModel[] = [];
   try {
     const data = await request(
-      `http://localhost:8080/api-data/Orders/${orderId}/orderDetails`
+      `https://wanrenbuffet.online/api-data/Orders/${orderId}/orderDetails`
     );
     if (data && data._embedded && data._embedded.orderDetails) {
       for (const orderDetail of data._embedded.orderDetails) {
@@ -46,7 +46,7 @@ export async function getTableNumberByOrderId(
 ): Promise<number> {
   try {
     const response = await request(
-      `http://localhost:8080/api-data/Orders/${orderId}/tablee`
+      `https://wanrenbuffet.online/api-data/Orders/${orderId}/tablee`
     );
     const tableNumber = response.tableNumber;
     return tableNumber;

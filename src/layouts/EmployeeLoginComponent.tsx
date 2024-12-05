@@ -21,7 +21,7 @@ const EmployeeLoginComponent = () => {
 
     try {
       // Gọi API đăng nhập
-      const response = await fetch("http://localhost:8080/api/user/login", {
+      const response = await fetch("https://wanrenbuffet.online/api/user/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,11 +51,11 @@ const EmployeeLoginComponent = () => {
 
   return (
     <section
-      className="h-100 gradient-form"
+      className="gradient-form "
       style={{ backgroundColor: "#eee" }}
     >
-      <div className="container py-5 h-100 container-fluid" >
-        <div className="row d-flex justify-content-center align-items-center h-100 main-content">
+      <div className="container py-5 h-100  container-fluid" >
+        <div className="row d-flex justify-content-center align-items-center h-100 ">
           <div className="col-xl-10">
             <div className="card rounded-3 text-black">
               <div className="row g-0">
