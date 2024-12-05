@@ -1,7 +1,7 @@
 // productApi.ts
 import axios from "axios";
 
-export const BASE_URL = "http://localhost:8080";
+export const BASE_URL = "https://wanrenbuffet.online";
 //export const BASE_URL = "https://wanrenbuffet.online";
 
 const getHeaders = () => {
@@ -30,7 +30,7 @@ export type Product = {
 // Hàm lấy danh sách sản phẩm
 export const fetchProducts = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/Product/all`, {
+    const response = await axios.get(`${BASE_URL}/api-data/Product/all`, {
       method: "GET",
       headers: getHeaders(),
     });
@@ -44,7 +44,7 @@ export const fetchProducts = async () => {
 export const fetchProductsInStock = async () => {
   try {
     // Gọi API để lấy danh sách tất cả sản phẩm
-    const response = await axios.get(`${BASE_URL}/Product/all`, {
+    const response = await axios.get(`${BASE_URL}/api-data//Product/all`, {
       method: "GET",
       headers: getHeaders(),
     });
@@ -66,7 +66,7 @@ export const fetchProductsInStock = async () => {
 // Hàm cập nhật trạng thái sản phẩm
 export const updateProductStatus = async (productId: number, newStatus: string) => {
   try {
-    await axios.patch(`${BASE_URL}/Product/${productId}`, {
+    await axios.patch(`${BASE_URL}/api-data/Product/${productId}`, {
       productStatus: newStatus
     }, {
       method: "PATCH",
@@ -81,7 +81,7 @@ export const updateProductStatus = async (productId: number, newStatus: string) 
 export const findProductById = async (productId: number) => {
   try {
     // Gọi API để lấy thông tin sản phẩm
-    const response = await axios.get(`${BASE_URL}/Product/${productId}`, {
+    const response = await axios.get(`${BASE_URL}/api-data/Product/${productId}`, {
       method: "GET",
       headers: getHeaders(),
     });

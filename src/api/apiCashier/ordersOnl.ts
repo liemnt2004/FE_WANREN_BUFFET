@@ -105,7 +105,7 @@ const fetchProductInfo = async (productLink: string): Promise<{ image?: string; 
 // Hàm lấy orders từ API
 export const fetchOrders = async (): Promise<Order[]> => {
   try {
-    const response = await axios.get(`${BASE_URL}/Orders`, {
+    const response = await axios.get(`${BASE_URL}/api-data/Orders`, {
       method: "GET",
       headers: getHeaders(),
     });
@@ -164,7 +164,7 @@ export const fetchTableId = async (tableLink: string): Promise<number | null> =>
 // Hàm cập nhật trạng thái sản phẩm
 export const updateOrderStatus = async (orderId: number, newStatus: string) => {
   try {
-    await axios.patch(`${BASE_URL}/Orders/${orderId}`, {
+    await axios.patch(`${BASE_URL}/api-data/Orders/${orderId}`, {
       orderStatus: newStatus
     }, {
       method: "PATCH",
@@ -180,7 +180,7 @@ export const updateOrderStatus = async (orderId: number, newStatus: string) => {
 // Hàm cập nhật trạng thái sản phẩm
 export const updateOrderDetails = async (orderId: number, details: any[]) => {
   try {
-    await axios.put(`${BASE_URL}/Orders/${orderId}/updateOrder`, details, {
+    await axios.put(`${BASE_URL}/api-data/Orders/${orderId}/updateOrder`, details, {
       method: "PUT",
       headers: getHeaders(),
     }); // Gửi danh sách đơn giản
