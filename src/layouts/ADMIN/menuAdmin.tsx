@@ -1,12 +1,12 @@
 // src/components/MenuAdmin.tsx
 import React, {useState} from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink , Navigate, useNavigate } from "react-router-dom";
 import logo from "./assets/img/warenbuffet.png";
 import "./assets/css/CustomerManagement.css";
 
 function MenuAdmin() {
   const [isOpen, setIsOpen] = useState(false);
-
+  const navigate = useNavigate();
   // Hàm để toggle dropdown
   function logout() {
     localStorage.removeItem("employeeToken");

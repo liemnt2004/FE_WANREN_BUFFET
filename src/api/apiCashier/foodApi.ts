@@ -1,6 +1,17 @@
 // productApi.ts
 import axios from "axios";
 
+export const BASE_URL = "https://wanrenbuffet.online";
+//export const BASE_URL = "https://wanrenbuffet.online";
+
+const getHeaders = () => {
+  const employeeToken = localStorage.getItem("employeeToken");
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${employeeToken}`,
+  };
+};
+
 
 export type Product = {
   productId?: number;
@@ -19,7 +30,10 @@ export type Product = {
 // Hàm lấy danh sách sản phẩm
 export const fetchProducts = async () => {
   try {
-    const response = await axios.get('https://wanrenbuffet.online/Product/all');
+    const response = await axios.get(`${BASE_URL}/api-data/Product/all`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
     return response.data;
   } catch (error) {
     console.error("Lỗi khi lấy dữ liệu sản phẩm:", error);
@@ -30,7 +44,10 @@ export const fetchProducts = async () => {
 export const fetchProductsInStock = async () => {
   try {
     // Gọi API để lấy danh sách tất cả sản phẩm
-    const response = await axios.get('https://wanrenbuffet.online/Product/all');
+    const response = await axios.get(`${BASE_URL}/api-data//Product/all`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
     const allProducts = response.data;
 
     // Lọc sản phẩm có trạng thái IN_STOCK
@@ -49,8 +66,11 @@ export const fetchProductsInStock = async () => {
 // Hàm cập nhật trạng thái sản phẩm
 export const updateProductStatus = async (productId: number, newStatus: string) => {
   try {
-    await axios.patch(`https://wanrenbuffet.online/Product/${productId}`, {
+    await axios.patch(`${BASE_URL}/api-data/Product/${productId}`, {
       productStatus: newStatus
+    }, {
+      method: "PATCH",
+      headers: getHeaders(),
     });
   } catch (error) {
     console.error("Lỗi khi cập nhật trạng thái sản phẩm:", error);
@@ -61,7 +81,10 @@ export const updateProductStatus = async (productId: number, newStatus: string) 
 export const findProductById = async (productId: number) => {
   try {
     // Gọi API để lấy thông tin sản phẩm
-    const response = await axios.get(`https://wanrenbuffet.online/Product/${productId}`);
+    const response = await axios.get(`${BASE_URL}/api-data/Product/${productId}`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
     return response.data; // Trả về dữ liệu sản phẩm
   } catch (error) {
     console.error("Lỗi khi lấy dữ liệu sản phẩm:", error);

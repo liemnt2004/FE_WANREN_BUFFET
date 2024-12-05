@@ -54,8 +54,8 @@ const EmployeeLoginComponent = () => {
       className="h-100 gradient-form"
       style={{ backgroundColor: "#eee" }}
     >
-      <div className="container py-5 h-100">
-        <div className="row d-flex justify-content-center align-items-center h-100">
+      <div className="container py-5 h-100 container-fluid" >
+        <div className="row d-flex justify-content-center align-items-center h-100 main-content">
           <div className="col-xl-10">
             <div className="card rounded-3 text-black">
               <div className="row g-0">

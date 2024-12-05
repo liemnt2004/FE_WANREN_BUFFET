@@ -72,6 +72,9 @@ span {
 
 .right-section {
     padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .right-section .image-card {
@@ -116,17 +119,8 @@ span {
 }
 
 
-.accordion-item .accordion-item-design {
-    background-color: #f2f2f2;
-}
 
 
-.accordion-item .accordion-item-design:not(.collapsed) {
-    background-color: var(--colorPrimary);
-    color: #fff;
-    outline: none !important;
-    border: none !important;
-}
 
 .customers-say {
     background-color: #f2f2f2;
@@ -225,10 +219,6 @@ span {
 .left-section::-webkit-scrollbar {
     display: none;
     /* Ẩn thanh cuộn */
-}
-
-.what-can-we-do .accordion {
-    max-height: 900px;
 }
 
 #decrement {
@@ -523,6 +513,7 @@ body {
         top: 0;
         left: 0;
         border-radius: 0;
+        padding: 5px 5px;
     }
 
     .menu-bar i {
@@ -568,11 +559,7 @@ body {
         font-size: 1rem;
     }
 
-    .what-can-we-do button,
-    .what-can-we-do .accordion-body,
-    .what-can-we-do p {
-        font-size: 0.9rem;
-    }
+
 
     .user p {
         display: none;
@@ -653,18 +640,6 @@ body {
     .hot-deal .card__price {
         font-weight: bold;
         color: var(--colorPrimary);
-    }
-
-
-
-
-
-
-
-
-
-    . css-dev-only-do-not-override-apn68{
-        width: 50px !important;
     }
 
 
@@ -873,7 +848,53 @@ body {
     color: var(--colorPrimary); /* Thay đổi màu tiêu đề khi hover */
     text-decoration: underline; /* Gạch chân tiêu đề */
   }
+
+  .mobile-layout{
+    margin-left: 2px !important;
+  }
+
+  .btn-book{
+    width: 23%;
+    height: 3rem;
+    font-size: 15px;
+    padding: 0 !important;
+    padding-top: 10px !important;
+    padding-left: 7px !important;
+
+  }
   
+      .cart{
+        width: 50px;
+        margin: 0 !important;
+      }
+
+      .brand img{
+        margin: 0px !important;
+      }
+
+      .about{
+        text-align: center;
+      }
+
+      .help{
+        padding: 50px
+      }
+
+     
+
+      .profile-img{
+        padding-left: 35%;
+      }
+
+      
+      .right-section{
+        display: none !important; 
+      }
+      .carousel-inner{
+        padding: 0 !important;
+        padding-right: 15px !important;
+      }
+
       
 
 }

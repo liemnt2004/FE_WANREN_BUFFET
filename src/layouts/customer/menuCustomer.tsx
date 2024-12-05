@@ -33,7 +33,8 @@ function MenuCustomer() {
         };
 
 
-
+       
+        
 
 
     return (
@@ -58,19 +59,36 @@ function MenuCustomer() {
             <Link to="/reservation" className="btn-book">Đặt Bàn</Link>
 
             {/* Cart Icon */}
-            <a
-                data-bs-toggle="offcanvas"
-                data-bs-target="#offcanvasCart"
-                aria-controls="offcanvasCart"
-                onClick={()=>handleOffcanvasClose()}
+            {fullName ? (
+                    <a
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#offcanvasCart"
+                    aria-controls="offcanvasCart"
+                    className="cart"
+                    onClick={()=>handleOffcanvasClose()}
+                >
+                    <div className="position-relative">
+                        <i className="bi bi-bag cart-icon"></i>
+                        <span className="position-absolute top-2 p-2 start-100 translate-middle badge bg-danger">
+                            {cartContext?.cartItems.length}
+                        </span>
+                    </div>
+                </a>
+            ) : (
+                <a
+        
+                className="cart"
+            
             >
                 <div className="position-relative">
                     <i className="bi bi-bag cart-icon"></i>
                     <span className="position-absolute top-2 p-2 start-100 translate-middle badge bg-danger">
-    {cartContext?.cartItems.length}
-  </span>
+                        {0}
+                    </span>
                 </div>
             </a>
+            )}
+            
 
             {/* User Info */}
             <div className="d-flex align-items-center user">

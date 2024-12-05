@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import '../../assets/css/checkout_for_staff.css'
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus, payWithVNPay, getPromotionByOrderId, getLoyaltyPoints, updateLoyaltyPoints, updateDiscountPoints, getDiscountPoints, updateOrderStatus } from "../../../../api/apiStaff/orderForStaffApi";
+import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus, payWithVNPay, getPromotionByOrderId, getLoyaltyPoints, updateLoyaltyPoints, updateDiscountPoints, getDiscountPoints } from "../../../../api/apiStaff/orderForStaffApi";
 import OrderDetailsWithNameProduct from "../../../../models/StaffModels/OrderDetailsWithNameProduct";
 import { notification } from 'antd';
 import { InfoCircleOutlined } from "@ant-design/icons";
@@ -90,8 +90,6 @@ const Checkout3: React.FC = () => {
             fetchLoyaltyPoints(phoneNumber);
         }
     }, []);
-
-    console.log(pointsUsableDB)
 
     const fetchLoyaltyPoints = async (phoneNumber: string) => {
         try {
@@ -263,7 +261,7 @@ const Checkout3: React.FC = () => {
     const createPayment = async (paymentMethod: string, status: boolean) => {
         try {
             const employeeToken = localStorage.getItem("employeeToken");
-            const newOrderResponse = await fetch('https://wanrenbuffet.online/api/payment/create_payment/normal', {
+            const newOrderResponse = await fetch('https://localhost:8080/api/payment/create_payment/normal', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -278,7 +276,6 @@ const Checkout3: React.FC = () => {
                 })
             });
         } catch (error) {
-            console.log(error, "Cannot creat payment");
         }
     }
 
@@ -299,9 +296,6 @@ const Checkout3: React.FC = () => {
     const closeQrPopup = () => {
         setQrPopupVisible(false);
     };
-
-    console.log("Phone: ", phoneNumber)
-    console.log("point: ", inputValue)
 
     const checkoutClick = async () => {
         try {
@@ -325,6 +319,24 @@ const Checkout3: React.FC = () => {
             console.error("Cannot checkout");
         }
     };
+
+    const updateOrderStatus = async (orderId: number, status: string) => {
+        try {
+            const employeeToken = localStorage.getItem("employeeToken");
+            const response = await fetch(`https://wanrenbuffet.online/api/order_staff/update-status/${orderId}?status=${status}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${employeeToken}`
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to update order status');
+            }
+        } catch (error) {
+        }
+    };
+
 
     async function checkPaid(price: number, description: string) {
         if (isSucess) {

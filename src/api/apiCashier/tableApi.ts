@@ -1,6 +1,15 @@
 // tableApi.ts
 import axios from "axios";
-import { Order } from "./ordersOnl";
+import { BASE_URL } from "./foodApi";
+
+
+const getHeaders = () => {
+  const employeeToken = localStorage.getItem("employeeToken");
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${employeeToken}`,
+  };
+};
 
 export type Table = {
   createdDate: string;
@@ -13,7 +22,10 @@ export type Table = {
 
 export const fetchTables = async () => {
   try {
-    const response = await axios.get("https://wanrenbuffet.online/Table/all");
+    const response = await axios.get(`${BASE_URL}/api-data/Table/all`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
     return response.data;
   } catch (error) {
     console.error("Lỗi khi lấy dữ liệu:", error);
@@ -24,7 +36,10 @@ export const fetchTables = async () => {
 
 export const fetchOrderbyTableId = async (tableId: number) => {
   try {
-    const response = await axios.get(`https://wanrenbuffet.online/Table/${tableId}/orders`);
+    const response = await axios.get(`${BASE_URL}/api-data/Table/${tableId}/orders`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
     return response.data._embedded.orders;
   } catch (error) {
     console.error("Lỗi khi lấy dữ liệu:", error);
@@ -34,8 +49,11 @@ export const fetchOrderbyTableId = async (tableId: number) => {
 
 export const updateTableStatus = async (tableId: number, newStatus: string) => {
   try {
-    await axios.patch(`https://wanrenbuffet.online/Table/${tableId}`, {
+    await axios.patch(`${BASE_URL}/api-data/Table/${tableId}`, {
       tableStatus: newStatus
+    }, {
+      method: "PATCH",
+      headers: getHeaders(),
     });
   } catch (error) {
     console.error("Lỗi khi cập nhật trạng thái sản phẩm:", error);

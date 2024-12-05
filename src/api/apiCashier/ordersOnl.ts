@@ -1,5 +1,14 @@
 // orderApi.ts
 import axios from "axios";
+import { BASE_URL } from "./foodApi";
+
+const getHeaders = () => {
+  const employeeToken = localStorage.getItem("employeeToken");
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${employeeToken}`,
+  };
+};
 
 // Định nghĩa kiểu Order
 export type Order = {
@@ -36,7 +45,10 @@ export type OrderDetail = {
 // Hàm lấy thông tin chi tiết đơn hàng từ link
 export const fetchOrderDetails = async (orderDetailsLink: string): Promise<OrderDetail[]> => {
   try {
-    const response = await axios.get(orderDetailsLink);
+    const response = await axios.get(orderDetailsLink, {
+      method: "GET",
+      headers: getHeaders(),
+    });
     const orderDetailsData = response.data._embedded.orderDetails;
 
     return Promise.all(
@@ -70,7 +82,10 @@ export const fetchOrderDetails = async (orderDetailsLink: string): Promise<Order
 
 const fetchProductInfo = async (productLink: string): Promise<{ image?: string; productName?: string; productId?: number } | undefined> => {
   try {
-    const productResponse = await axios.get(productLink);
+    const productResponse = await axios.get(productLink, {
+      method: "GET",
+      headers: getHeaders(),
+    });
     return {
       image: productResponse.data.image,
       productName: productResponse.data.productName,
@@ -90,7 +105,10 @@ const fetchProductInfo = async (productLink: string): Promise<{ image?: string; 
 // Hàm lấy orders từ API
 export const fetchOrders = async (): Promise<Order[]> => {
   try {
-    const response = await axios.get("https://wanrenbuffet.online/Orders");
+    const response = await axios.get(`${BASE_URL}/api-data/Orders`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
     const ordersData = response.data._embedded.orders;
 
     return ordersData.map((order: any) => ({
@@ -112,7 +130,10 @@ export const fetchOrders = async (): Promise<Order[]> => {
 
 export const fetchCustomerUsername = async (customerLink: string): Promise<string | undefined> => {
   try {
-    const customerResponse = await axios.get(customerLink);
+    const customerResponse = await axios.get(customerLink, {
+      method: "GET",
+      headers: getHeaders(),
+    });
     return customerResponse.data.fullName;
   } catch (error: any) {
     if (axios.isAxiosError(error) && error.response?.status === 404) {
@@ -125,7 +146,10 @@ export const fetchCustomerUsername = async (customerLink: string): Promise<strin
 
 export const fetchTableId = async (tableLink: string): Promise<number | null> => {
   try {
-    const tableResponse = await axios.get(tableLink);
+    const tableResponse = await axios.get(tableLink, {
+      method: "GET",
+      headers: getHeaders(),
+    });
     return tableResponse.data.tableId;
   } catch (error: any) {
     if (axios.isAxiosError(error) && error.response?.status === 404) {
@@ -140,8 +164,11 @@ export const fetchTableId = async (tableLink: string): Promise<number | null> =>
 // Hàm cập nhật trạng thái sản phẩm
 export const updateOrderStatus = async (orderId: number, newStatus: string) => {
   try {
-    await axios.patch(`https://wanrenbuffet.online/Orders/${orderId}`, {
+    await axios.patch(`${BASE_URL}/api-data/Orders/${orderId}`, {
       orderStatus: newStatus
+    }, {
+      method: "PATCH",
+      headers: getHeaders(),
     });
   } catch (error) {
     console.error("Lỗi khi cập nhật trạng thái sản phẩm:", error);
@@ -153,7 +180,10 @@ export const updateOrderStatus = async (orderId: number, newStatus: string) => {
 // Hàm cập nhật trạng thái sản phẩm
 export const updateOrderDetails = async (orderId: number, details: any[]) => {
   try {
-    await axios.put(`https://wanrenbuffet.online/Orders/${orderId}/updateOrder`, details); // Gửi danh sách đơn giản
+    await axios.put(`${BASE_URL}/api-data/Orders/${orderId}/updateOrder`, details, {
+      method: "PUT",
+      headers: getHeaders(),
+    }); // Gửi danh sách đơn giản
   } catch (error) {
     console.error("Lỗi khi cập nhật chi tiết đơn hàng:", error);
     throw error;
@@ -162,11 +192,9 @@ export const updateOrderDetails = async (orderId: number, details: any[]) => {
 
 export const updateTableIdOrder = async (orderId: number, tableId: number) => {
   try {
-    const response = await fetch(`https://wanrenbuffet.online/api/order_staff/${orderId}/transfer`, {
+    const response = await fetch(`${BASE_URL}/api/order_staff/${orderId}/transfer`, {
         method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: getHeaders(),
         body: JSON.stringify({
             orderId: orderId,
             newTableId: tableId,

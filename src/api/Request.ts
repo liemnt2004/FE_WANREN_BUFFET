@@ -1,4 +1,6 @@
 export async function request(endpoint: string, method: string = "GET", body?: any) {
+    console.log(endpoint);
+    
     try {
         const response = await fetch(endpoint, {
             method: method,

@@ -1,6 +1,6 @@
 // PrivateRoute.tsx
 import React from 'react';
-import { Navigate } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import {jwtDecode} from "jwt-decode"; // Sửa cách import
 import { DecodedToken } from "./customer/component/AuthContext"; // Đảm bảo đúng import
 
@@ -12,7 +12,9 @@ interface PrivateRouteProps {
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ allowedRoles, children }) => {
     const employeeToken = localStorage.getItem("employeeToken");
     const customerToken = localStorage.getItem("token");
-
+   const useParam = window.location.pathname
+    
+    
     let decoded: DecodedToken | null = null;
 
     try {
@@ -28,7 +30,13 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ allowedRoles, children }) =
     }
 
     if (!decoded) {
-        // Không có token nào
+        if(useParam.includes("staff")){
+            return <Navigate to="/employee/login" replace />;
+        }else if(useParam.includes("admin")){
+            return <Navigate to="/employee/login" replace />;
+        }else if(useParam.includes("cashier")){
+            return <Navigate to="/employee/login" replace />;
+        }
         return <Navigate to="/login" replace />;
     }
 
