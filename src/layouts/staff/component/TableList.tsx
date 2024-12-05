@@ -228,7 +228,6 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
       const orderId = await fetchOrderIdByTableId(tableId);
 
       if (orderId !== null) {
-        console.log(orderId)
         navigate(`/staff/checkout/step${step}`, { state: { tableId: tableId, orderId: orderId } });
       } else {
         console.error('No orderId found for this table');

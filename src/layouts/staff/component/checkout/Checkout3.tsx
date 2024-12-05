@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import '../../assets/css/checkout_for_staff.css'
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus, payWithVNPay, getPromotionByOrderId, getLoyaltyPoints, updateLoyaltyPoints, updateDiscountPoints, getDiscountPoints } from "../../../../api/apiStaff/orderForStaffApi";
+import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus, payWithVNPay, getPromotionByOrderId, getLoyaltyPoints, updateLoyaltyPoints, updateDiscountPoints, getDiscountPoints, updateOStatus, createPayment } from "../../../../api/apiStaff/orderForStaffApi";
 import OrderDetailsWithNameProduct from "../../../../models/StaffModels/OrderDetailsWithNameProduct";
 import { notification } from 'antd';
 import { InfoCircleOutlined } from "@ant-design/icons";
@@ -60,10 +60,8 @@ const Checkout3: React.FC = () => {
                 const validOrderDetails = fetchedOrderDetails.filter((item: any) => item.quantity > 0 && item.price > 0);
                 setOrderDetails(validOrderDetails);
                 await updateTableStatus(Number(tableId), "LOCKED_TABLE");
-                updateOrderStatus(orderId, "WAITING");
+                updateOStatus(orderId, "WAITING");
             } catch (err) {
-                const errorMessage = err instanceof Error ? err.message : 'Failed to fetch orderDetails';
-                setError(errorMessage);
             }
         };
 
@@ -86,7 +84,7 @@ const Checkout3: React.FC = () => {
         getDiscount();
         fetchPromotion();
         loadOrderDetails();
-        if (phoneNumber !== null && phoneNumber !== undefined ) {
+        if (phoneNumber !== null && phoneNumber !== undefined) {
             fetchLoyaltyPoints(phoneNumber);
         }
     }, []);
@@ -97,11 +95,11 @@ const Checkout3: React.FC = () => {
             const loyaltyPoints = data.loyaltyPoints;
             setLoyaltyPoints(loyaltyPoints);
         } catch (error) {
-            console.error("Failed to fetch loyalty points:", error);
+            console.log("Failed to fetch loyalty points");
             return null;
         }
     };
-    
+
     useEffect(() => {
         const calculateAmounts = async () => {
             try {
@@ -111,12 +109,12 @@ const Checkout3: React.FC = () => {
                     }
                     return sum;
                 }, 0);
-    
+
                 const maxDiscount = Math.floor(totalAmount * 0.5);
-    
+
                 const discountFromPromotion = promotion ? promotion.promotionValue : 0;
                 const appliedPromotionDiscount = Math.min(discountFromPromotion, maxDiscount);
-    
+
                 const remainingDiscountCap = maxDiscount - appliedPromotionDiscount;
 
                 const discountFromLoyaltyPoints = Math.min(
@@ -124,31 +122,29 @@ const Checkout3: React.FC = () => {
                     loyaltyPoints,
                     remainingDiscountCap
                 );
-    
+
                 setMaxPointsUsable(Math.min(loyaltyPoints, remainingDiscountCap));
-    
+
                 const totalDiscount = appliedPromotionDiscount + discountFromLoyaltyPoints;
                 const discountedAmount = Math.max(totalAmount - totalDiscount, 0);
-    
+
                 const vatAmount = Math.floor(discountedAmount * 0.08);
                 const finalAmount = Math.floor(discountedAmount + vatAmount);
-    
+
                 // Nếu pointsUsableDB có giá trị, trừ trực tiếp vào finalAmount
                 const adjustedAmount = pointsUsableDB > 0 ? finalAmount - pointsUsableDB : finalAmount;
-    
+
                 setAmount(discountedAmount);
                 setVat(vatAmount);
                 setLastAmount(adjustedAmount); // Cập nhật lastAmount với giá trị đã trừ
             } catch (err) {
-                const errorMessage = err instanceof Error ? err.message : 'Failed to calculate amounts';
-                setError(errorMessage);
             }
         };
-    
+
         calculateAmounts();
     }, [orderDetails, promotion, inputValue, loyaltyPoints, pointsUsableDB]);
-    
-    
+
+
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newInputValue = Number(e.target.value);
@@ -258,27 +254,6 @@ const Checkout3: React.FC = () => {
         }
     }
 
-    const createPayment = async (paymentMethod: string, status: boolean) => {
-        try {
-            const employeeToken = localStorage.getItem("employeeToken");
-            const newOrderResponse = await fetch('https://wanrenbuffet.online/api/payment/create_payment/normal', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${employeeToken}`
-                },
-                body: JSON.stringify({
-                    amountPaid: lastAmount,
-                    paymentMethod: paymentMethod,
-                    paymentStatus: status,
-                    orderId: orderId,
-                    userId: Number(employeeUserId)
-                })
-            });
-        } catch (error) {
-        }
-    }
-
     useEffect(() => {
         const generateQrCode = (bank: { bank_ID: string; account_NO: string; }, amount: number): string => {
             return `https://img.vietqr.io/image/${bank.bank_ID}-${bank.account_NO}-compact.png?amount=${amount}&addInfo=${(description)}`;
@@ -305,7 +280,7 @@ const Checkout3: React.FC = () => {
                 setQrPopupVisible(true);
             } else if (choicePayment === "3") {
                 updateAmount(Number(orderId), lastAmount);
-                createPayment("CASH", false);
+                createPayment(lastAmount, orderId, Number(employeeUserId), "CASH", false);
                 if (Number(inputValue) > 0) {
                     try {
                         const result = await updateDiscountPoints(orderId, Number(inputValue)); // Gọi API
@@ -316,27 +291,9 @@ const Checkout3: React.FC = () => {
                 navigate("/staff/checkout/sucessful", { state: { paymentMethod: "CASH", orderId: orderId, lastAmount: lastAmount, employeeUserId: employeeUserId } })
             }
         } catch (error) {
-            console.error("Cannot checkout");
+            console.log("Cannot checkout");
         }
     };
-
-    const updateOrderStatus = async (orderId: number, status: string) => {
-        try {
-            const employeeToken = localStorage.getItem("employeeToken");
-            const response = await fetch(`https://wanrenbuffet.online/api/order_staff/update-status/${orderId}?status=${status}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${employeeToken}`
-                },
-            });
-            if (!response.ok) {
-                throw new Error('Failed to update order status');
-            }
-        } catch (error) {
-        }
-    };
-
 
     async function checkPaid(price: number, description: string) {
         if (isSucess) {
@@ -355,8 +312,8 @@ const Checkout3: React.FC = () => {
                     const lastDescription = lastPaid["Mô tả"];
                     if (lastPrice >= lastAmount && lastDescription.includes(description)) {
                         updateTableStatus(Number(tableId), "EMPTY_TABLE")
-                        updateOrderStatus(Number(orderId), "DELIVERED")
-                        createPayment("QR_CODE", true);
+                        updateOStatus(Number(orderId), "DELIVERED")
+                        createPayment(lastAmount, orderId, Number(employeeUserId), "QR_CODE", true);
                         if (phoneNumber !== null && phoneNumber.length >= 10) {
                             updateLoyaltyPoints(phoneNumber, pointsUsableDB > 0 ? pointsUsableDB : Number(inputValue));
                         }
@@ -430,58 +387,60 @@ const Checkout3: React.FC = () => {
                     <div className="container-table">
                         <div>
                             <table className="all-sp">
-                                {orderDetails.map((orderDetail, index) => (
-                                    <tr key={index}>
-                                        <td>{orderDetail.quantity + " x " + orderDetail.productName}</td>
-                                        <td>{orderDetail.price?.toLocaleString() + " đ"}</td>
-                                    </tr>
-                                ))}
-                                <tr>
-                                    <td colSpan={2} style={{ height: '20px' }}></td>
-                                </tr>
-                                {promotion != null && (
+                                <tbody>
+                                    {orderDetails.map((orderDetail, index) => (
+                                        <tr key={index}>
+                                            <td>{orderDetail.quantity + " x " + orderDetail.productName}</td>
+                                            <td>{orderDetail.price?.toLocaleString() + " đ"}</td>
+                                        </tr>
+                                    ))}
                                     <tr>
-                                        <td>{promotion?.promotionName}</td>
-                                        <td>{"- " + Math.floor(Number(promotion?.promotionValue)).toLocaleString() + " đ"}</td>
-                                    </tr>)
-                                }
-                                {phoneNumber != null && phoneNumber.length >= 10 && (
-                                    <tr>
-                                        <td>Số điểm hiện có: {loyaltyPoints.toLocaleString() + " điểm"}</td>
-                                        <td>
-                                            <input
-                                                style={{ borderBottom: '1px solid gray' }}
-                                                className="w-50 m-0 p-0 fs-5"
-                                                type="number"
-                                                id="loyaltyPointsInput"
-                                                value={inputValue}
-                                                onChange={handleInputChange}
-                                                placeholder="Nhập số điểm"
-                                            />
-                                        </td>
+                                        <td colSpan={2} style={{ height: '20px' }}></td>
                                     </tr>
-                                )}
+                                    {promotion != null && (
+                                        <tr>
+                                            <td>{promotion?.promotionName}</td>
+                                            <td>{"- " + Math.floor(Number(promotion?.promotionValue)).toLocaleString() + " đ"}</td>
+                                        </tr>)
+                                    }
+                                    {phoneNumber != null && phoneNumber.length >= 10 && (
+                                        <tr>
+                                            <td>Số điểm hiện có: {loyaltyPoints.toLocaleString() + " điểm"}</td>
+                                            <td>
+                                                <input
+                                                    style={{ borderBottom: '1px solid gray' }}
+                                                    className="w-50 m-0 p-0 fs-5"
+                                                    type="number"
+                                                    id="loyaltyPointsInput"
+                                                    value={inputValue}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Nhập số điểm"
+                                                />
+                                            </td>
+                                        </tr>
+                                    )}
 
-                                {phoneNumber != null && phoneNumber.length >= 10 && (
+                                    {phoneNumber != null && phoneNumber.length >= 10 && (
+                                        <tr>
+                                            <td>Số điểm có thể dùng: {maxPointsUsable.toLocaleString() + " điểm"}</td>
+                                            <td></td>
+                                        </tr>
+                                    )}
                                     <tr>
-                                        <td>Số điểm có thể dùng: {maxPointsUsable.toLocaleString() + " điểm"}</td>
-                                        <td></td>
+                                        <td>Tổng tiền hàng</td>
+                                        <td>{Math.floor(amount).toLocaleString() + " đ"}</td>
                                     </tr>
-                                )}
-                                <tr>
-                                    <td>Tổng tiền hàng</td>
-                                    <td>{Math.floor(amount).toLocaleString() + " đ"}</td>
-                                </tr>
-                                {pointsUsableDB != null && pointsUsableDB > 0 && (
+                                    {pointsUsableDB != null && pointsUsableDB > 0 && (
+                                        <tr>
+                                            <td>Số điểm đã dùng:</td>
+                                            <td>{"-" + pointsUsableDB.toLocaleString() + " đ"}</td>
+                                        </tr>
+                                    )}
                                     <tr>
-                                        <td>Số điểm đã dùng:</td>
-                                        <td>{"-" + pointsUsableDB.toLocaleString() + " đ"}</td>
+                                        <td>VAT</td>
+                                        <td>{Math.floor(vat).toLocaleString() + " đ"}</td>
                                     </tr>
-                                )}
-                                <tr>
-                                    <td>VAT</td>
-                                    <td>{Math.floor(vat).toLocaleString() + " đ"}</td>
-                                </tr>
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -489,8 +448,10 @@ const Checkout3: React.FC = () => {
                         <div>
                             <table className="price-all-sp">
                                 <thead>
-                                    <th>Tổng tiền cần thanh toán</th>
-                                    <th>{lastAmount.toLocaleString() + " VNĐ"}</th>
+                                    <tr>
+                                        <th>Tổng tiền cần thanh toán</th>
+                                        <th>{lastAmount.toLocaleString() + " VNĐ"}</th>
+                                    </tr>
                                 </thead>
                             </table>
                         </div>
