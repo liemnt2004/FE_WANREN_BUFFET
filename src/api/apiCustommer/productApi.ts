@@ -99,7 +99,7 @@ export async function fetchProductsByType(typeFood: string): Promise<ProductMode
 export async function getOrderDetail(OrderDetailId:number): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        const data = await request(`https://wanrenbuffet.online/Order_detail/${OrderDetailId}/product`);
+        const data = await request(`https://wanrenbuffet.online/api-data/Order_detail/${OrderDetailId}/product`);
         // Spring Data REST thường trả về dữ liệu trong _embedded
         if (data && data._embedded && data._embedded.products) {
             for (const product of data._embedded.products) {
@@ -128,7 +128,7 @@ export async function getOrderDetail(OrderDetailId:number): Promise<ProductModel
 export async function SearchProduct(foodname: string): Promise<ProductModel[]> {
     const rs: ProductModel[] = [];
     try {
-        const data = await request(`https://wanrenbuffet.online/Product/search/findByProductNameContaining?productName=${foodname}`);
+        const data = await request(`https://wanrenbuffet.online/api-data/Product/search/findByProductNameContaining?productName=${foodname}`);
         // Spring Data REST thường trả về dữ liệu trong _embedded
         if (data && data._embedded && data._embedded.products) {
             for (const product of data._embedded.products) {
