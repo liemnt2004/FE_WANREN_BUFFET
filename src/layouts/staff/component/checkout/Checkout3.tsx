@@ -261,7 +261,7 @@ const Checkout3: React.FC = () => {
     const createPayment = async (paymentMethod: string, status: boolean) => {
         try {
             const employeeToken = localStorage.getItem("employeeToken");
-            const newOrderResponse = await fetch('https://localhost:8080/api/payment/create_payment/normal', {
+            const newOrderResponse = await fetch('https://wanrenbuffet.online/api/payment/create_payment/normal', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
