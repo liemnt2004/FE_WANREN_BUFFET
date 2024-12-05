@@ -3,7 +3,7 @@ import { request } from "./Request";
 import OrderDetailsWithNameProduct from "../../models/StaffModels/OrderDetailsWithNameProduct";
 import OrderDetailModel from "../../models/StaffModels/OrderDetaitModel";
 
-const BASE_URL = "https://wanrenbuffet.online/api";
+const BASE_URL = "http://localhost:8080/api";
 
 const getHeaders = () => {
   const employeeToken = localStorage.getItem("employeeToken");
@@ -19,7 +19,7 @@ export async function getAllOrderDetailsByOrderId(
   const rs: OrderDetailModel[] = [];
   try {
     const data = await request(
-      `https://wanrenbuffet.online/api-data/Orders/${orderId}/orderDetails`
+      `http://localhost:8080/api-data/Orders/${orderId}/orderDetails`
     );
     console.log(data._embedded.orderDetails);
     if (data && data._embedded && data._embedded.orderDetails) {
@@ -47,7 +47,7 @@ export async function getTableNumberByOrderId(
 ): Promise<number> {
   try {
     const response = await request(
-      `https://wanrenbuffet.online/api-data/Orders/${orderId}/tablee`
+      `http://localhost:8080/api-data/Orders/${orderId}/tablee`
     );
     const tableNumber = response.tableNumber;
     return tableNumber;
@@ -158,7 +158,6 @@ export const getPromotionByOrderId = async (orderId: number) => {
     method: "GET",
     headers: getHeaders(),
   });
-  if (!response.ok) throw new Error("Error fetching order details");
   return response.json();
 };
 
@@ -170,7 +169,6 @@ export const getLoyaltyPoints = async (phoneNumber: string) => {
       headers: getHeaders(),
     }
   );
-  if (!response.ok) throw new Error("Error fetching getLoyaltyPoints");
   return response.json();
 };
 
@@ -216,7 +214,7 @@ export const fetchReservations = async () => {
 };
 
 export const fetchTables = async () => {
-  const response = await fetch(`https://wanrenbuffet.online/api-data/Table?page=0&size=50`, {
+  const response = await fetch(`http://localhost:8080/api-data/Table?page=0&size=50`, {
     method: "GET",
     headers: getHeaders(),
   });
@@ -317,12 +315,9 @@ export const getDiscountPoints = async (orderId: number) => {
       const discountPoints = await response.json();
       return discountPoints;
     } else {
-      const errorMessage = await response.text();
-      throw new Error(errorMessage);
+      console.log("Không có discoutPoint trước đó!")
     }
   } catch (error) {
-    console.error("Failed to fetch discount points:", error);
-    throw error;
   }
 };
 
@@ -366,7 +361,7 @@ export const CreateNewOrder = async (
     headers: getHeaders(),
     body: JSON.stringify({
       userId,
-      address: "Wanren Buffet",
+      address: "145 Phan Xích Long",
       notes: "Order tại bàn",
       orderStatus: "IN_TRANSIT",
       totalAmount: 0,
@@ -377,25 +372,6 @@ export const CreateNewOrder = async (
   if (!response.ok) throw new Error("Error creating new order");
   return response.json();
 };
-
-export const createPayment = async (orderId: number,userId: number, amountPaid: number, paymentMethod: string, status: boolean) => {
-  try {
-      const response = await fetch(`${BASE_URL}/payment/create_payment/normal`, {
-          method: 'POST',
-          headers: getHeaders(),
-          body: JSON.stringify({
-              amountPaid: amountPaid,
-              paymentMethod: paymentMethod,
-              paymentStatus: status,
-              orderId: orderId,
-              userId: Number(userId)
-          })
-      });
-      if (!response.ok) throw new Error("Error creating payment");
-  } catch (error) {
-      console.log(error, "Cannot creat payment");
-  }
-}
 
 export const updateOrderDetails = async (orderId: number, details: any) => {
   try {
@@ -496,7 +472,7 @@ export const payWithVNPay = async (
     const employeeToken = localStorage.getItem("employeeToken");
     // formData.append('baseUrl', baseUrl);
     const response = await axios.post(
-      "${BASE_URL}/payment/submit_order_vnpay",
+      `${BASE_URL}/payment/submit_order_vnpay`,
       formData,
       {
         headers: {
