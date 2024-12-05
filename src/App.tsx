@@ -70,7 +70,7 @@ export function Routing() {
         (route === "/checkout" && /^\/checkout\/step[1-3]$/.test(pathname)) ||
         (route === "/checkout" && /^\/checkout\/sucessful/.test(pathname)) ||
         (route === "/checkout" && /^\/checkout\/failed/.test(pathname)) ||
-        (route === "/cashier" && /^\/table/.test(pathname))
+        (route === "/cashier" && /^\/cashier\/.+$/.test(pathname))
     );
   };
   const hiddenRoutes = [

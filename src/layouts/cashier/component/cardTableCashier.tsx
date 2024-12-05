@@ -75,7 +75,7 @@ const CardTableCashier = ({
           <div className="right-side">
             <div>
               <div className="hour">
-                {status === "Có Khách"
+                {status === "Có Khách" || status === "Thanh Toán"
                   ? `${new Date(
                       latestOrder?.createdDate || ""
                     ).toLocaleTimeString("vi-VN", {
@@ -85,7 +85,7 @@ const CardTableCashier = ({
                   : ""}
               </div>
               <div className="date">
-                {status === "Có Khách"
+                {status === "Có Khách" || status === "Thanh Toán"
                   ? `${new Date(
                       latestOrder?.createdDate || ""
                     ).toLocaleDateString("vi-VN", {
@@ -143,7 +143,14 @@ const StyledWrapper = styled.div<{ status?: string }>`
     justify-content: space-between;
     width: 100%;
     height: 75%;
-    color: black;
+    color: ${({ status }) =>
+      status === "Có Khách"
+        ? "black"
+        : status === "Thanh Toán"
+        ? "#fff"
+        : status === "Trống"
+        ? "black"
+        : "black"};
   }
 
   .left-side {
@@ -215,13 +222,25 @@ const StyledWrapper = styled.div<{ status?: string }>`
     height: 100%;
     width: 100%;
     background-color: ${({ status }) =>
-      status === "Có Khách" ? "#ffedbc" : status === "Trống" ? "#fff" : "#fff"};
+      status === "Có Khách"
+        ? "#ffedbc"
+        : status === "Thanh Toán"
+        ? "#ec7263"
+        : status === "Trống"
+        ? "#fff"
+        : "#fff"};
     overflow: hidden;
   }
 
   .circle {
     background-color: ${({ status }) =>
-      status === "Có Khách" ? "#ffb88c" : status === "Trống" ? "#fff" : "#fff"};
+      status === "Có Khách"
+        ? "#ffb88c"
+        : status === "Thanh Toán"
+        ? "#efc745"
+        : status === "Trống"
+        ? "#fff"
+        : "#fff"};
   }
 
   .circle:nth-child(1) {
@@ -264,6 +283,8 @@ const StyledWrapper = styled.div<{ status?: string }>`
     background-color: ${({ status }) =>
       status === "Có Khách"
         ? "#ffedbc"
+        : status === "Thanh Toán"
+        ? "#974859"
         : status === "Trống"
         ? "#f5f5f5"
         : "#fff"};
@@ -272,6 +293,8 @@ const StyledWrapper = styled.div<{ status?: string }>`
       ${({ status }) =>
         status === "Có Khách"
           ? "#ffedbc"
+          : status === "Thanh Toán"
+          ? "#974859"
           : status === "Trống"
           ? "#f5f5f5"
           : "#fff"};
@@ -286,6 +309,8 @@ const StyledWrapper = styled.div<{ status?: string }>`
     background-color: ${({ status }) =>
       status === "Có Khách"
         ? "#f7bb97"
+        : status === "Thanh Toán"
+        ? "#a75265"
         : status === "Trống"
         ? "#f5f5f5"
         : "#fff"};
@@ -293,6 +318,8 @@ const StyledWrapper = styled.div<{ status?: string }>`
       ${({ status }) =>
         status === "Có Khách"
           ? "#f7bb97"
+          : status === "Thanh Toán"
+          ? "#974859"
           : status === "Trống"
           ? "#f5f5f5"
           : "#fff"};
@@ -309,7 +336,14 @@ const StyledWrapper = styled.div<{ status?: string }>`
   .days-section .day {
     font-size: 10pt;
     font-weight: 500;
-    color: black;
+    color: ${({ status }) =>
+      status === "Có Khách"
+        ? "black"
+        : status === "Thanh Toán"
+        ? "#fff"
+        : status === "Trống"
+        ? "black"
+        : "black"};
     opacity: 0.7;
   }
 

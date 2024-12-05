@@ -1,6 +1,14 @@
 // productApi.ts
 import axios from "axios";
 
+const getHeaders = () => {
+  const employeeToken = localStorage.getItem("employeeToken");
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${employeeToken}`,
+  };
+};
+
 
 export type Product = {
   productId?: number;
@@ -19,7 +27,10 @@ export type Product = {
 // Hàm lấy danh sách sản phẩm
 export const fetchProducts = async () => {
   try {
-    const response = await axios.get('http://localhost:8080/Product/all');
+    const response = await axios.get('http://localhost:8080/Product/all', {
+      method: "GET",
+      headers: getHeaders(),
+    });
     return response.data;
   } catch (error) {
     console.error("Lỗi khi lấy dữ liệu sản phẩm:", error);
@@ -30,7 +41,10 @@ export const fetchProducts = async () => {
 export const fetchProductsInStock = async () => {
   try {
     // Gọi API để lấy danh sách tất cả sản phẩm
-    const response = await axios.get('http://localhost:8080/Product/all');
+    const response = await axios.get('http://localhost:8080/Product/all', {
+      method: "GET",
+      headers: getHeaders(),
+    });
     const allProducts = response.data;
 
     // Lọc sản phẩm có trạng thái IN_STOCK
@@ -51,6 +65,9 @@ export const updateProductStatus = async (productId: number, newStatus: string) 
   try {
     await axios.patch(`http://localhost:8080/Product/${productId}`, {
       productStatus: newStatus
+    }, {
+      method: "PATCH",
+      headers: getHeaders(),
     });
   } catch (error) {
     console.error("Lỗi khi cập nhật trạng thái sản phẩm:", error);
@@ -61,7 +78,10 @@ export const updateProductStatus = async (productId: number, newStatus: string) 
 export const findProductById = async (productId: number) => {
   try {
     // Gọi API để lấy thông tin sản phẩm
-    const response = await axios.get(`http://localhost:8080/Product/${productId}`);
+    const response = await axios.get(`http://localhost:8080/Product/${productId}`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
     return response.data; // Trả về dữ liệu sản phẩm
   } catch (error) {
     console.error("Lỗi khi lấy dữ liệu sản phẩm:", error);
