@@ -30,7 +30,7 @@ export type Product = {
 // Hàm lấy danh sách sản phẩm
 export const fetchProducts = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/api-data/Product/all`, {
+    const response = await axios.get(`${BASE_URL}/Product/all`, {
       method: "GET",
       headers: getHeaders(),
     });
@@ -44,7 +44,7 @@ export const fetchProducts = async () => {
 export const fetchProductsInStock = async () => {
   try {
     // Gọi API để lấy danh sách tất cả sản phẩm
-    const response = await axios.get(`${BASE_URL}/api-data//Product/all`, {
+    const response = await axios.get(`${BASE_URL}/Product/all`, {
       method: "GET",
       headers: getHeaders(),
     });

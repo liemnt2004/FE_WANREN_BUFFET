@@ -53,22 +53,20 @@ const PromotionManagement: React.FC = () => {
   });
 
   const fetchPromotions = async () => {
-    if (loading || !hasMore) return;
     setLoading(true);
-
+  
     try {
       const promotionsData = await getAllPromotions();
-      if (promotionsData.length > 0) {
-        setPromotions(promotionsData);
-      } else {
-        setHasMore(false);
-      }
+      console.log("Total promotions fetched:", promotionsData.length);
+      setPromotions(promotionsData);
     } catch (error) {
       console.error("Failed to fetch promotions:", error);
+      message.error("Đã xảy ra lỗi khi tải dữ liệu khuyến mãi.");
     } finally {
       setLoading(false);
     }
   };
+  
 
   const handleAddPromotion = async (values: Partial<PromotionAdmin>) => {
     try {
@@ -331,15 +329,7 @@ const PromotionManagement: React.FC = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value || "");
   };
-  // Filter customers based on search query
-  const filteredEmloyees = promotions.filter((promotions) => {
-    const promotionName = promotions.promotionName.toLowerCase() || "";
-    const promotionType = promotions.promotionType.toLowerCase() || "";
-    return (
-      promotionName.includes(searchQuery.toLowerCase() || "") ||
-      promotionType.includes(searchQuery.toLowerCase() || "")
-    );
-  });
+
   return (
     <React.Fragment>
       <div className="container-fluid">
@@ -401,55 +391,47 @@ const PromotionManagement: React.FC = () => {
                     <th style={{ width: 110 }}>Actions</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {filteredEmloyees.length > 0 ? (
-                    filteredEmloyees.map((promotion) => (
-                      <tr key={promotion.promotion}>
-                        <td>{promotion.promotion}</td>
-                        <td>{promotion.promotionName}</td>
-                        <td>{promotion.description}</td>
-                        <td>{promotion.promotionType}</td>
-                        <td>{promotion.promotionValue}</td>
-                        <td>
-                          {dayjs(promotion.startDate).format(
-                            "YYYY-MM-DD HH:mm"
-                          )}
-                        </td>
-                        <td>
-                          {dayjs(promotion.endDate).format("YYYY-MM-DD HH:mm")}
-                        </td>
-                        <td>
-                          <Switch checked={promotion.promotionStatus} />
-                        </td>
-                        <td>
-                          <Button
-                            className="icon-button-edit"
-                            icon={<i className="fas fa-edit"></i>}
-                            onClick={() => showUpdateModal(promotion)}
-                          />
-                          <Button
-                            className="icon-button-remove"
-                            icon={<i className="fas fa-trash"></i>}
-                            onClick={() => confirmDelete(promotion.promotion)}
-                          />
+              <tbody>
+                    {promotions.length > 0 ? (
+                      promotions.map((promotion) => (
+                        <tr key={promotion.promotion}>
+                          <td>{promotion.promotion}</td>
+                          <td>{promotion.promotionName}</td>
+                          <td>{promotion.description}</td>
+                          <td>{promotion.promotionType}</td>
+                          <td>{promotion.promotionValue}</td>
+                          <td>
+                            {dayjs(promotion.startDate).format("YYYY-MM-DD HH:mm")}
+                          </td>
+                          <td>
+                            {dayjs(promotion.endDate).format("YYYY-MM-DD HH:mm")}
+                          </td>
+                          <td>
+                            <Switch checked={promotion.promotionStatus} />
+                          </td>
+                          <td>
+                            <Button
+                              className="icon-button-edit"
+                              icon={<i className="fas fa-edit"></i>}
+                              onClick={() => showUpdateModal(promotion)}
+                            />
+                            <Button
+                              className="icon-button-remove"
+                              icon={<i className="fas fa-trash"></i>}
+                              onClick={() => confirmDelete(promotion.promotion)}
+                            />
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={9} className="text-center">
+                          No promotions found
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={9} className="text-center">
-                        No promotions found
-                      </td>
-                    </tr>
-                  )}
-                  {loading && (
-                    <tr>
-                      <td colSpan={9} className="text-center">
-                        Loading promotions...
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
+                    )}
+              </tbody>
+
               </table>
             </div>
           </div>

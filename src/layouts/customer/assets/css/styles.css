@@ -18,8 +18,7 @@
 
 body {
     font-family: 'Montserrat', sans-serif;
-    color: #1e1e2f;
-    background-color: var(--colorMain);
+    
     padding: 0;
 }
 
@@ -104,9 +103,7 @@ span {
     border: none;
 }
 
-.right-section .btn:hover {
-    background-color: #8f2828;
-}
+
 
 .text-overlay {
     position: absolute;
@@ -122,22 +119,17 @@ span {
 
 
 
-.customers-say {
-    background-color: #f2f2f2;
-}
 
-.carousel-custom button {
-    background-color: var(--colorPrimary) !important;
-}
+
 
 /* Menu Bar Styles */
 .menu-bar {
     position: absolute;
-    top: 45px;
-    left: 50px;
+    top: 20px;
+    left: 20px;
     background-color: var(--colorMain);
     padding: 10px 30px;
-    width: auto;
+    width: 55%;
     height: 60px;
     display: flex;
     align-items: center;
@@ -243,15 +235,16 @@ span {
     width: 35px;
 }
 
+.profile-img{
+    margin-left: 45%;
+}
+
    .what-can-we-do button,
 .what-can-we-do .accordion-body,
 .what-can-we-do p {
     font-size: 0.9rem;
 }
 
-.accordion-item .accordion-item-design {
-    background-color: #f2f2f2;
-}
 
 
 .what-can-we-do .accordion {
@@ -535,6 +528,7 @@ body {
 
     /* Menu Bar Styles */
     .menu-bar {
+        width: 100%;
         position: relative;
         top: 0;
         left: 0;
@@ -617,7 +611,7 @@ body {
     }
 
     .hot-deal .card h5 {
-        font-size: 0.9rem; /* Giảm kích thước chữ */
+        font-size: 0.9rem !important; /* Giảm kích thước chữ */
         margin-top: 0.5rem;
     }
 
@@ -627,9 +621,11 @@ body {
     }
 
     .hot-deal .card__price {
+        margin-top: 0;
         font-weight: bold;
         color: var(--colorPrimary);
     }
+
 
 
     .hot-deal .col-6 {
@@ -664,6 +660,7 @@ body {
     }
 
     .hot-deal .card__price {
+        margin-top: 0 !important;
         font-weight: bold;
         color: var(--colorPrimary);
     }
@@ -722,7 +719,7 @@ body {
     
       
       .checkout__order {
-        height: 60vh !important;
+        height: 100% !important;
         width: 36vh !important; /* Chiếm toàn bộ chiều ngang */
         padding: 1rem; /* Khoảng cách bên trong */
         background-color: var(--bs-light);

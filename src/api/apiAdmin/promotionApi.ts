@@ -13,40 +13,35 @@ function getEmployeeToken(): string {
 }
 
 // Fetch all promotions with pagination
+// Fetch all promotions with pagination
 export const getAllPromotions = async (): Promise<PromotionAdmin[]> => {
-  let page = 0;
   let allPromotions: PromotionAdmin[] = [];
-  let totalPages: number = 1;
 
   try {
-    do {
-      const response = await axios.get(`${API_BASE_URL}?page=${page}`, {
-        headers: {
-          Authorization: `Bearer ${getEmployeeToken()}`,
-        },
-      });
+    const response = await axios.get(`${API_BASE_URL}`, {
+      headers: {
+        Authorization: `Bearer ${getEmployeeToken()}`,
+      },
+    });
 
-      const promotionsData = response.data?._embedded?.promotions || [];
-      const promotions = promotionsData.map(
-        (promotion: any) =>
-          new PromotionAdmin(
-            promotion.createdDate,
-            promotion.updatedDate,
-            promotion.promotionName,
-            promotion.description,
-            promotion.promotionType,
-            promotion.promotionValue,
-            promotion.startDate,
-            promotion.endDate,
-            promotion.promotionStatus,
-            promotion.promotion
-          )
-      );
+    const promotionsData = response.data?._embedded?.promotions || [];
+    const promotions = promotionsData.map(
+      (promotion: any) =>
+        new PromotionAdmin(
+          promotion.createdDate,
+          promotion.updatedDate,
+          promotion.promotionName,
+          promotion.description,
+          promotion.promotionType,
+          promotion.promotionValue,
+          promotion.startDate,
+          promotion.endDate,
+          promotion.promotionStatus,
+          promotion.promotion
+        )
+    );
 
-      allPromotions = [...allPromotions, ...promotions];
-      totalPages = response.data.page?.totalPages || 1;
-      page += 1;
-    } while (page < totalPages);
+    allPromotions = promotions; // Gán promotions vào allPromotions
 
     return allPromotions;
   } catch (error) {
@@ -54,6 +49,7 @@ export const getAllPromotions = async (): Promise<PromotionAdmin[]> => {
     throw error;
   }
 };
+
 
 // Create a new promotion
 export async function createPromotion(

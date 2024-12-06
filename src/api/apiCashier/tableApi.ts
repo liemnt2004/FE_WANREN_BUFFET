@@ -22,7 +22,7 @@ export type Table = {
 
 export const fetchTables = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/api-data/Table/all`, {
+    const response = await axios.get(`${BASE_URL}/Table/all`, {
       method: "GET",
       headers: getHeaders(),
     });
