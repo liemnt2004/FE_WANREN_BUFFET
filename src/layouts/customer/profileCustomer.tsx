@@ -562,6 +562,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                     <div className="product-info">
                                         <h5>{order.producHistorytDTOList[0]._productName}</h5>
                                         <p dangerouslySetInnerHTML={{__html: order.producHistorytDTOList[0]._description}}></p>
+                                        <p>{order.producHistorytDTOList[0]._productStatus == "PREPARING_ORDER"}</p>
                                         <p>x {order.producHistorytDTOList[0]._quantity}</p>
                                         <button
                                             onClick={() => handleBuyAgain(order.producHistorytDTOList)}
@@ -817,7 +818,7 @@ const MenuProfile: React.FC = () => {
 
     function logout(){
         localStorage.removeItem("token")
-        navigate("/")
+        window.location.href = "https://wanrenbuffet.netlify.app/"
     }
 
     return (

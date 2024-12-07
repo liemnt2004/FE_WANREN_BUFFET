@@ -129,7 +129,7 @@ span {
     left: 20px;
     background-color: var(--colorMain);
     padding: 10px 30px;
-    width: 55%;
+    width: auto;
     height: 60px;
     display: flex;
     align-items: center;
@@ -226,7 +226,6 @@ span {
 }
 
 .hot-deal input[type="number"] {
-    -moz-appearance: textfield;
     text-align: center;
     font-size: 16px;
     border: none;
