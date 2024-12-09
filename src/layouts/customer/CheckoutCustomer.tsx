@@ -110,20 +110,21 @@ const CheckoutCustomer: React.FC = () => {
 
     // Show Modal based on Query Params
     useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const success = queryParams.get('success');
+        const error = queryParams.get('error');
+    
         if (success) {
             setModalMessage(decodeURIComponent(success));
             setModalType('success');
             setShowModal(true);
-            navigate("/checkout", { replace: true });
-            navigate("/profile")
         } else if (error) {
             setModalMessage(decodeURIComponent(error));
             setModalType('error');
             setShowModal(true);
-            navigate("/checkout", { replace: true });
-            navigate("/")
         }
-    }, [success, error, navigate]);
+    }, [location.search]);
+    
 
     // Form Data State
     const [formData, setFormData] = useState<CheckoutFormData>({
