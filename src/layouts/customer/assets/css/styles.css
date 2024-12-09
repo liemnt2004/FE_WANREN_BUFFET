@@ -718,7 +718,6 @@ body {
     
       
       .checkout__order {
-        height: 100% !important;
         width: 36vh !important; /* Chiếm toàn bộ chiều ngang */
         padding: 1rem; /* Khoảng cách bên trong */
         background-color: var(--bs-light);

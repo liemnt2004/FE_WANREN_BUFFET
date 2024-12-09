@@ -88,7 +88,6 @@ const MenuProductCustomer: React.FC = () => {
         ));
     };
 
-    console.log(selectedCategory)
     return (
         <>
             <div className="container-fluid row mobile-layout">

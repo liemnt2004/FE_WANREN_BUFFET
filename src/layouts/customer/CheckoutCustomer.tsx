@@ -115,11 +115,13 @@ const CheckoutCustomer: React.FC = () => {
             setModalType('success');
             setShowModal(true);
             navigate("/checkout", { replace: true });
+            navigate("/profile")
         } else if (error) {
             setModalMessage(decodeURIComponent(error));
             setModalType('error');
             setShowModal(true);
             navigate("/checkout", { replace: true });
+            navigate("/")
         }
     }, [success, error, navigate]);
 

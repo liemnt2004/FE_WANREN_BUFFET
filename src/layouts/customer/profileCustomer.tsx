@@ -307,6 +307,8 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
         setEditing(false);
     };
 
+    
+
     return (
         <div className="card p-3 rounded-0 mb-3">
             {authContext.userId?.includes("@") && !editing && (
@@ -330,7 +332,7 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                 </div>
             )}
 
-            {authContext.userId?.includes("@") && editing && (
+            {authContext.username?.includes("@") && editing && (
                 <div id="editPasswordInfo">
                     <input
                         type="password"

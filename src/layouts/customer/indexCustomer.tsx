@@ -66,19 +66,36 @@ const IndexCustomer: React.FC = () => {
 // useEffect to show modal when a product is selected
     useEffect(() => {
         if (selectedProduct) {
+            
+
+            
             const modalElement = document.getElementById(`productModal${selectedProduct.productId}`);
             if (modalElement) {
                 const modal = new window.bootstrap.Modal(modalElement);
                 modal.show();
+                
             }
         }
     }, [selectedProduct]);
+
+
+    const closeModal = () => {
+        setSelectedProduct(null); // Xóa selectedProduct khi đóng modal
+        const modalElement = document.getElementById(`productModal${selectedProduct?.productId}`);
+        if (modalElement) {
+            setModalQuantities({})
+            const modal = new window.bootstrap.Modal(modalElement);
+            
+            modal.hide(); // Đóng modal
+        }
+    };
+    
 
 // Hàm để thêm sản phẩm vào giỏ hàng với số lượng cụ thể
     const addProductToCart = (product: ProductModel) => {
         if (!fullName) {
             alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
-            navigate("/login");
+            window.location.href = "https://wanrenbuffet.netlify.app/login";
             return;
         }
 
@@ -129,8 +146,17 @@ const IndexCustomer: React.FC = () => {
         updateQuantity(productId, newQuantity);
     };
 
+    
+
     const handleProductClick = (product: ProductModel) => {
-        setSelectedProduct(product);
+        // Nếu bấm vào sản phẩm đã được chọn, ta sẽ đặt lại `selectedProduct` thành null để đóng modal
+        if (selectedProduct && selectedProduct.productId === product.productId) {
+            setSelectedProduct(null); // Đóng modal nếu bấm lại vào sản phẩm đã chọn
+        } else {
+            product.quantity = 1;
+            setSelectedProduct(product); // Mở modal cho sản phẩm được chọn
+
+        }
     };
 
      
@@ -213,104 +239,104 @@ const IndexCustomer: React.FC = () => {
                             ) : (
                                 <div className="d-flex justify-content-center">
                                     <div className="row g-4 mb-5">
-                                        {listProduct.map((product) => (
-                                            <React.Fragment key={product.productId}>
-                                                <div className="col-6 col-md-3"
-                                                     onClick={() => handleProductClick(product)}>
-                                                    <div className="card border border-0 p-3 card-custom text-center">
-                                                        <img
-                                                            src={product.image || lau3}
-                                                            className="rounded-3"
-                                                            alt={product.productName || 'Product Image'}
-                                                            style={{height: 200, width: 250}}
-                                                        />
-                                                        <div className="card-body p-0">
-                                                            <h5 className="card-title fs-6 m-0 p-0 ">{product.productName}</h5>
-                                                        </div>
-                                                        <div
-                                                            className="mt-4 mb-2 d-flex justify-content-around align-items-center card__price">
-                                                            <h6 className=" fw-bold">{formatMoney(product.price)}</h6>
-                                                            <button
-                                                                id="increment"
-                                                                onClick={() => addProductToCart(product)} // Chỉ thêm sản phẩm vào giỏ hàng, không mở modal
-                                                                disabled={!fullName} // Vô hiệu hóa nếu chưa đăng nhập
-                                                                title={fullName ? "Thêm vào giỏ hàng" : "Vui lòng đăng nhập để thêm vào giỏ hàng"}
-                                                            >
-                                                                <i className="bi bi-plus-lg"></i>
-                                                            </button>
+                                    {listProduct.map((product) => (
+    <React.Fragment key={product.productId}>
+        <div className="col-6 col-md-3" onClick={() => handleProductClick(product)}>
+            <div className="card border border-0 p-3 card-custom text-center">
+                <img
+                    src={product.image || lau3}
+                    className="rounded-3"
+                    alt={product.productName || 'Product Image'}
+                    style={{height: 200, width: 250}}
+                />
+                <div className="card-body p-0">
+                    <h5 className="card-title fs-6 m-0 p-0 ">{product.productName}</h5>
+                </div>
+                <div className="mt-4 mb-2 d-flex justify-content-around align-items-center card__price">
+                    <h6 className=" fw-bold">{formatMoney(product.price)}</h6>
+                    <button
+                        id="increment"
+                        onClick={() => addProductToCart(product)} // Chỉ thêm sản phẩm vào giỏ hàng, không mở modal
+                        disabled={!fullName} // Vô hiệu hóa nếu chưa đăng nhập
+                        title={fullName ? "Thêm vào giỏ hàng" : "Vui lòng đăng nhập để thêm vào giỏ hàng"}
+                    >
+                        <i className="bi bi-plus-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
 
-                                                        </div>
-                                                    </div>
-                                                </div>
+        {/* Modal cho mỗi sản phẩm */}
+        {selectedProduct && selectedProduct.productId === product.productId && (
+    <div
+        className="modal fade ps36231"
+        id={`productModal${selectedProduct.productId}`}
+        tabIndex={-1}
+        aria-hidden="true"
+        onClick={(e) => {
+            if (e.target === e.currentTarget) { // Kiểm tra xem người dùng có click vào phần nền (background) của modal không
+                closeModal();
+            }
+        }}
+    >
+        <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+                <div className="container-modal">
+                    <div className="container-modal-header">
+                        <div className="control-img">
+                            <img
+                                src={selectedProduct.image}
+                                alt={selectedProduct.productName}
+                            />
+                        </div>
+                    </div>
+                    <div className="container-modal-footer">
+                        <div className="name-item">{selectedProduct.productName}</div>
+                        <div className="capacity-item">{selectedProduct.description}</div>
+                        <div className="container-price-quantity">
+                            <div className="price">
+                                <span>Giá: {formatMoney(selectedProduct.price)}</span>
+                            </div>
 
-                                                {/* Modal cho mỗi sản phẩm */}
-                                                {selectedProduct && selectedProduct.productId === product.productId && (
-                                                    <div
-                                                        className="modal fade ps36231"
-                                                        id={`productModal${selectedProduct.productId}`}
-                                                        tabIndex={-1}
-                                                        aria-hidden="true"
-                                                    >
-                                                        <div className="modal-dialog modal-dialog-centered">
-                                                            <div className="modal-content">
-                                                                <div className="container-modal">
-                                                                    <div className="container-modal-header">
-                                                                        <div className="control-img">
-                                                                            <img
-                                                                                src={selectedProduct.image}
-                                                                                alt={selectedProduct.productName}
-                                                                            />
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="container-modal-footer">
-                                                                        <div
-                                                                            className="name-item">{selectedProduct.productName}</div>
-                                                                        <div
-                                                                            className="capacity-item">{selectedProduct.description}</div>
-                                                                        <div className="container-price-quantity">
-                                                                            <div className="price">
-                                                                                <span>Giá: {formatMoney(selectedProduct.price)}</span>
-                                                                            </div>
-
-                                                                            <button
-                                                                                className="control-btn-add-to-cart btn"
-                                                                                onClick={() => addProductToCart(selectedProduct)}>
-                                                                                Thêm vào giỏ hàng
-                                                                            </button>
-                                                                            <span>
-                                                                                <div className="quantity-control">
-                                                                                <button
-                                                                                    className="btn"
-                                                                                    onClick={() => decreaseQuantity(selectedProduct.productId)}
-                                                                                >
-                                                                                    -
-                                                                                </button>
-                                                                                <input
-
-                                                                                    type="number"
-                                                                                    value={modalQuantities[selectedProduct.productId] || 1}
-                                                                                    onChange={(e) =>
-                                                                                        handleQuantityChange(selectedProduct.productId, e)
-                                                                                    }
-                                                                                    min="1"
-                                                                                />
-                                                                                <button
-                                                                                    className="btn"
-                                                                                    onClick={() => increaseQuantity(selectedProduct.productId)}
-                                                                                >
-                                                                                    +
-                                                                                </button>
-                                                                            </div>
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </React.Fragment>
-                                        ))}
+                            <button
+                                className="control-btn-add-to-cart btn"
+                                onClick={() => addProductToCart(selectedProduct)}
+                            >
+                                Thêm vào giỏ hàng
+                            </button>
+                            <span>
+                                <div className="quantity-control">
+                                    <button
+                                        className="btn"
+                                        onClick={() => decreaseQuantity(selectedProduct.productId)}
+                                    >
+                                        -
+                                    </button>
+                                    <input
+                                        type="number"
+                                        value={modalQuantities[selectedProduct.productId] || 1}
+                                        onChange={(e) =>
+                                            handleQuantityChange(selectedProduct.productId, e)
+                                        }
+                                        min="1"
+                                    />
+                                    <button
+                                        className="btn"
+                                        onClick={() => increaseQuantity(selectedProduct.productId)}
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+)}
+    </React.Fragment>
+))}
                                     </div>
                                 </div>
                             )}
