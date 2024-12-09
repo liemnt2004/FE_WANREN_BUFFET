@@ -913,6 +913,11 @@ body {
         padding-right: 15px !important;
       }
 
-      
+      #decrement, #increment {
+        width: 25px !important;
+        height: 25px !important;
+        border-radius: 50%;
+        padding: 0;
+      }
 
 }

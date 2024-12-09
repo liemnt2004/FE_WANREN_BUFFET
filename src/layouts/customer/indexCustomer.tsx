@@ -14,11 +14,11 @@ import khichi from './assets/img/Kichi.svg';
 import loginfooter from './assets/img/Cream and Black Simple Illustration Catering Logo.png';
 import ProductModel from "../../models/ProductModel";
 import { getProductHot } from "../../api/apiCustommer/productApi";
-import {CartItem, useCart} from "./component/CartContext"; // Sử dụng custom hook
+import { CartContext, CartItem, useCart } from "./component/CartContext"; // Sử dụng custom hook
 import formatMoney from "./component/FormatMoney";
 import { AuthContext } from "./component/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Accordion     } from 'react-bootstrap';
+import { Accordion } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { AccordionEventKey } from "react-bootstrap/esm/AccordionContext";
 const IndexCustomer: React.FC = () => {
@@ -28,22 +28,22 @@ const IndexCustomer: React.FC = () => {
     const [selectedProduct, setSelectedProduct] = useState<ProductModel | null>(null); // Lưu sản phẩm đang chọn
 
     const { fullName, logout } = useContext(AuthContext);
-    const { cartItems, addToCart, updateQuantity } = useCart();
+    const { cartItems, addToCart, updateQuantity, decreaseQuantity } = useCart();
     const navigate = useNavigate();
     const [activeKey, setActiveKey] = React.useState<AccordionEventKey>('0');
 
     // Hàm xử lý sự kiện khi Accordion thay đổi
     const handleAccordionSelect = (eventKey: AccordionEventKey, e: React.SyntheticEvent<unknown>) => {
-      // Cập nhật activeKey nếu sự kiện này có eventKey hợp lệ
-      console.log(eventKey);
-      
-      setActiveKey(eventKey);
+        // Cập nhật activeKey nếu sự kiện này có eventKey hợp lệ
+        console.log(eventKey);
+
+        setActiveKey(eventKey);
     };
-  
-// State để quản lý số lượng của sản phẩm trong modal
+
+    // State để quản lý số lượng của sản phẩm trong modal
     const [modalQuantities, setModalQuantities] = useState<{ [key: number]: number }>({});
 
-// Lấy sản phẩm hot khi component được render
+    // Lấy sản phẩm hot khi component được render
     useEffect(() => {
         getProductHot()
             .then(product => {
@@ -63,67 +63,76 @@ const IndexCustomer: React.FC = () => {
             });
     }, []);
 
-// useEffect to show modal when a product is selected
+    // useEffect to show modal when a product is selected
     useEffect(() => {
         if (selectedProduct) {
-            
 
-            
+
+
             const modalElement = document.getElementById(`productModal${selectedProduct.productId}`);
             if (modalElement) {
                 const modal = new window.bootstrap.Modal(modalElement);
                 modal.show();
-                
+
             }
         }
     }, [selectedProduct]);
 
 
     const closeModal = () => {
-        setSelectedProduct(null); // Xóa selectedProduct khi đóng modal
+        setSelectedProduct(null);
         const modalElement = document.getElementById(`productModal${selectedProduct?.productId}`);
+
         if (modalElement) {
-            setModalQuantities({})
+            setModalQuantities({});
             const modal = new window.bootstrap.Modal(modalElement);
-            
+
             modal.hide(); // Đóng modal
+            modalElement.classList.remove('show');
+            document.body.classList.remove('modal-open');
+            document.querySelector('.modal-backdrop')?.remove();
         }
     };
-    
 
-// Hàm để thêm sản phẩm vào giỏ hàng với số lượng cụ thể
+
+
+    // Hàm để thêm sản phẩm vào giỏ hàng với số lượng cụ thể
     const addProductToCart = (product: ProductModel) => {
-        if (!fullName) {
-            alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
-            window.location.href = "https://wanrenbuffet.netlify.app/login";
-            return;
-        }
-
         const quantity = modalQuantities[product.productId] || 1;
 
-        const cartItem: CartItem = {
-            productId: product.productId,
-            productName: product.productName,
-            price: product.price,
-            image: product.image,
-            quantity: quantity,
-        };
+        const existingCartItem = cartItems.find(item => item.productId === product.productId);
 
-        addToCart(cartItem);
+        if (existingCartItem) {
+            const updatedCartItem = {
+                ...existingCartItem,
+                quantity: existingCartItem.quantity + quantity
+            };
 
-        // Sau đó, nếu người dùng muốn thay đổi số lượng, gọi updateQuantity
-        if (quantity > 1) {
-            updateQuantity(product.productId, quantity);
+            updateQuantity(product.productId, updatedCartItem.quantity);
+        } else {
+            const cartItem: CartItem = {
+                productId: product.productId,
+                productName: product.productName,
+                price: product.price,
+                image: product.image,
+                quantity: quantity,
+            };
+
+            addToCart(cartItem);
         }
+
+        closeModal();
+
     };
 
-    const decreaseQuantity = (productId: number) => {
+
+    const decreaseQuantityModal = (productId: number) => {
         const newQuantity = Math.max((modalQuantities[productId] || 1) - 1, 1); // Không để số lượng nhỏ hơn 1
         setModalQuantities(prev => ({
             ...prev,
             [productId]: newQuantity
         }));
-        updateQuantity(productId, newQuantity);
+        // updateQuantity(productId, newQuantity);
     };
 
     const handleQuantityChange = (productId: number, event: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,9 +141,6 @@ const IndexCustomer: React.FC = () => {
             ...prevQuantities,
             [productId]: value
         }));
-
-        // Cập nhật số lượng trong giỏ hàng sau khi thay đổi
-        updateQuantity(productId, value);
     };
 
     const increaseQuantity = (productId: number) => {
@@ -143,10 +149,9 @@ const IndexCustomer: React.FC = () => {
             ...prev,
             [productId]: newQuantity
         }));
-        updateQuantity(productId, newQuantity);
     };
 
-    
+
 
     const handleProductClick = (product: ProductModel) => {
         // Nếu bấm vào sản phẩm đã được chọn, ta sẽ đặt lại `selectedProduct` thành null để đóng modal
@@ -159,7 +164,6 @@ const IndexCustomer: React.FC = () => {
         }
     };
 
-     
 
 
 
@@ -172,40 +176,40 @@ const IndexCustomer: React.FC = () => {
         <div className="container-fluid">
             <div className="row mobile-layout">
                 <div className="col-md-9 position-relative left-section"
-                     style={{ overflowY: "auto", maxHeight: "100vh", scrollbarWidth: "none", msOverflowStyle: "none" }}>
-                    <div style={{height: "2000px"}} className="about-left">
+                    style={{ overflowY: "auto", maxHeight: "100vh", scrollbarWidth: "none", msOverflowStyle: "none" }}>
+                    <div style={{ height: "2000px" }} className="about-left">
                         {/* Banner Section */}
                         <section className="banner">
                             <div id="carouselExampleIndicators" className="carousel slide">
                                 <div className="carousel-indicators">
                                     <button type="button" data-bs-target="#carouselExampleIndicators"
-                                            data-bs-slide-to="0"
-                                            className="active" aria-current="true" aria-label="Slide 1"></button>
+                                        data-bs-slide-to="0"
+                                        className="active" aria-current="true" aria-label="Slide 1"></button>
                                     <button type="button" data-bs-target="#carouselExampleIndicators"
-                                            data-bs-slide-to="1"
-                                            aria-label="Slide 2"></button>
+                                        data-bs-slide-to="1"
+                                        aria-label="Slide 2"></button>
                                     <button type="button" data-bs-target="#carouselExampleIndicators"
-                                            data-bs-slide-to="2"
-                                            aria-label="Slide 3"></button>
+                                        data-bs-slide-to="2"
+                                        aria-label="Slide 3"></button>
                                 </div>
                                 <div className="carousel-inner">
                                     <div className="carousel-item active">
-                                        <img src={websiteGreen} className="d-block w-100 img-fluid" alt="..."/>
+                                        <img src={websiteGreen} className="d-block w-100 img-fluid" alt="..." />
                                     </div>
                                     <div className="carousel-item">
-                                        <img src={bannerHome} className="d-block w-100 img-fluid" alt="..."/>
+                                        <img src={bannerHome} className="d-block w-100 img-fluid" alt="..." />
                                     </div>
                                     <div className="carousel-item">
-                                        <img src={image1500x700} className="d-block w-100 img-fluid" alt="..."/>
+                                        <img src={image1500x700} className="d-block w-100 img-fluid" alt="..." />
                                     </div>
                                 </div>
                                 <button className="carousel-control-prev" type="button"
-                                        data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+                                    data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
                                     <span className="carousel-control-prev-icon" aria-hidden="true"></span>
                                     <span className="visually-hidden">Previous</span>
                                 </button>
                                 <button className="carousel-control-next" type="button"
-                                        data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+                                    data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
                                     <span className="carousel-control-next-icon" aria-hidden="true"></span>
                                     <span className="visually-hidden">Next</span>
                                 </button>
@@ -213,7 +217,7 @@ const IndexCustomer: React.FC = () => {
                         </section>
 
                         {/* Main Dish Image */}
-                        <img src={bannerBuffet} alt="Main Dish Image" className="img-fluid"/>
+                        <img src={bannerBuffet} alt="Main Dish Image" className="img-fluid" />
 
                         {/* About Section */}
                         <section className="bg-white row pb-5 about-section">
@@ -225,12 +229,12 @@ const IndexCustomer: React.FC = () => {
                                 </div>
                             </div>
                             <div className="col-md-6">
-                                <img src={kichiHomeAll} alt="" className="img-fluid rounded-3 text-center"/>
+                                <img src={kichiHomeAll} alt="" className="img-fluid rounded-3 text-center" />
                             </div>
                         </section>
 
                         {/* Hot Deal Section */}
-                        <section className="hot-deal" style={{backgroundColor: 'white'}}>
+                        <section className="hot-deal" style={{ backgroundColor: 'white' }}>
                             <h4 className="fw-bold">HOT DEAL</h4>
                             {loading ? (
                                 <div>Đang tải sản phẩm...</div>
@@ -239,104 +243,138 @@ const IndexCustomer: React.FC = () => {
                             ) : (
                                 <div className="d-flex justify-content-center">
                                     <div className="row g-4 mb-5">
-                                    {listProduct.map((product) => (
-    <React.Fragment key={product.productId}>
-        <div className="col-6 col-md-3" onClick={() => handleProductClick(product)}>
-            <div className="card border border-0 p-3 card-custom text-center">
-                <img
-                    src={product.image || lau3}
-                    className="rounded-3"
-                    alt={product.productName || 'Product Image'}
-                    style={{height: 200, width: 250}}
-                />
-                <div className="card-body p-0">
-                    <h5 className="card-title fs-6 m-0 p-0 ">{product.productName}</h5>
-                </div>
-                <div className="mt-4 mb-2 d-flex justify-content-around align-items-center card__price">
-                    <h6 className=" fw-bold">{formatMoney(product.price)}</h6>
-                    <button
-                        id="increment"
-                        onClick={() => addProductToCart(product)} // Chỉ thêm sản phẩm vào giỏ hàng, không mở modal
-                        disabled={!fullName} // Vô hiệu hóa nếu chưa đăng nhập
-                        title={fullName ? "Thêm vào giỏ hàng" : "Vui lòng đăng nhập để thêm vào giỏ hàng"}
-                    >
-                        <i className="bi bi-plus-lg"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
+                                        {listProduct.map((product) => (
+                                            <React.Fragment key={product.productId}>
+                                                <div className="col-6 col-md-3">
+                                                    <div className="card border border-0 p-3 card-custom">
+                                                        <img
+                                                            src={product.image || lau3}
+                                                            className="rounded-3"
+                                                            alt={product.productName || 'Product Image'}
+                                                            onClick={() => handleProductClick(product)}
+                                                        />
+                                                        <div className="card-body p-0">
+                                                            <h5 className="card-title fs-6 m-0 p-0 pt-3 ">{product.productName}</h5>
+                                                        </div>
+                                                        <div className="mt-3 d-flex align-items-center card__price justify-content-between">
+                                                            <h6 className="fw-bold">{formatMoney(product.price)}</h6>
+                                                            <div className="col-3 d-flex w-50 add-to-cart justify-content-end">
+                                                                {/* Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa */}
+                                                                {cartItems && cartItems.length > 0 ? (
+                                                                    cartItems.map((item) => {
+                                                                        if (item.productId === product.productId) {
+                                                                            const quantity = item.quantity;
 
-        {/* Modal cho mỗi sản phẩm */}
-        {selectedProduct && selectedProduct.productId === product.productId && (
-    <div
-        className="modal fade ps36231"
-        id={`productModal${selectedProduct.productId}`}
-        tabIndex={-1}
-        aria-hidden="true"
-        onClick={(e) => {
-            if (e.target === e.currentTarget) { // Kiểm tra xem người dùng có click vào phần nền (background) của modal không
-                closeModal();
-            }
-        }}
-    >
-        <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-                <div className="container-modal">
-                    <div className="container-modal-header">
-                        <div className="control-img">
-                            <img
-                                src={selectedProduct.image}
-                                alt={selectedProduct.productName}
-                            />
-                        </div>
-                    </div>
-                    <div className="container-modal-footer">
-                        <div className="name-item">{selectedProduct.productName}</div>
-                        <div className="capacity-item">{selectedProduct.description}</div>
-                        <div className="container-price-quantity">
-                            <div className="price">
-                                <span>Giá: {formatMoney(selectedProduct.price)}</span>
-                            </div>
+                                                                            return (
+                                                                                <div className="d-flex align-items-center" key={item.productId}>
+                                                                                    {quantity > 0 && (
+                                                                                        <button
+                                                                                            id="decrement"
+                                                                                            type="button"
+                                                                                            className="btn btn-danger ms-2"
+                                                                                            onClick={() => decreaseQuantity(item.productId)} // Giảm số lượng
+                                                                                        >
+                                                                                            <i className="bi bi-dash-lg"></i>
+                                                                                        </button>
+                                                                                    )}
+                                                                                    {quantity > 0 && (
+                                                                                        <span className="mx-2">{quantity}</span>
+                                                                                    )}
+                                                                                </div>
+                                                                            );
+                                                                        }
+                                                                        return null;
+                                                                    })
+                                                                ) : null}
+                                                                <button
+                                                                    type="button"
+                                                                    id="increment"
+                                                                    className="btn btn-danger"
+                                                                    onClick={() => addToCart(product)}
+                                                                >
+                                                                    <i className="bi bi-plus-lg"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-                            <button
-                                className="control-btn-add-to-cart btn"
-                                onClick={() => addProductToCart(selectedProduct)}
-                            >
-                                Thêm vào giỏ hàng
-                            </button>
-                            <span>
-                                <div className="quantity-control">
-                                    <button
-                                        className="btn"
-                                        onClick={() => decreaseQuantity(selectedProduct.productId)}
-                                    >
-                                        -
-                                    </button>
-                                    <input
-                                        type="number"
-                                        value={modalQuantities[selectedProduct.productId] || 1}
-                                        onChange={(e) =>
-                                            handleQuantityChange(selectedProduct.productId, e)
-                                        }
-                                        min="1"
-                                    />
-                                    <button
-                                        className="btn"
-                                        onClick={() => increaseQuantity(selectedProduct.productId)}
-                                    >
-                                        +
-                                    </button>
-                                </div>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-)}
-    </React.Fragment>
-))}
+                                                {/* Modal cho mỗi sản phẩm */}
+                                                {selectedProduct && selectedProduct.productId === product.productId && (
+                                                    <div
+                                                        className="modal fade ps36231"
+                                                        id={`productModal${selectedProduct.productId}`}
+                                                        tabIndex={-1}
+                                                        aria-hidden="true"
+                                                        onClick={(e) => {
+                                                            if (e.target === e.currentTarget) { // Kiểm tra xem người dùng có click vào phần nền (background) của modal không
+                                                                closeModal();
+                                                            }
+                                                        }}
+                                                    >
+                                                        <div className="modal-dialog modal-dialog-centered">
+                                                            <div className="modal-content p-0">
+                                                                <div className="container-modal">
+                                                                    <div className="container-modal-header">
+                                                                        <div className="control-img">
+                                                                            <img
+                                                                                src={selectedProduct.image}
+                                                                                alt={selectedProduct.productName}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="container-modal-footer">
+                                                                        <div className="name-item">{selectedProduct.productName}</div>
+                                                                        <div className="capacity-item">{selectedProduct.description}</div>
+                                                                        <div className="container-price-quantity">
+                                                                            <div className="price">
+                                                                                <span>Giá: {formatMoney(selectedProduct.price)}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="quantity-control d-flex justify-content-between align-items-center">
+                                                                            <div>
+                                                                                <button
+                                                                                    id="increment"
+                                                                                    type="button"
+                                                                                    className="btn btn-danger"
+                                                                                    onClick={() => decreaseQuantityModal(selectedProduct.productId)}
+                                                                                >
+                                                                                    <i className="bi bi-dash-lg"></i>
+                                                                                </button>
+                                                                                <input
+                                                                                    type="number"
+                                                                                    value={modalQuantities[selectedProduct.productId] || 1}
+                                                                                    onChange={(e) =>
+                                                                                        handleQuantityChange(selectedProduct.productId, e)
+                                                                                    }
+                                                                                    min="1"
+                                                                                />
+                                                                                <button
+                                                                                    id="increment"
+                                                                                    type="button"
+                                                                                    className="btn btn-danger"
+                                                                                    onClick={() => increaseQuantity(selectedProduct.productId)}
+                                                                                >
+                                                                                    <i className="bi bi-plus-lg"></i>
+                                                                                </button>
+                                                                            </div>
+                                                                            <div>
+                                                                                <button
+                                                                                    className="btn btn-danger p-2"
+                                                                                    onClick={() => addProductToCart(selectedProduct)}
+                                                                                >
+                                                                                    Thêm vào giỏ hàng
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </React.Fragment>
+                                        ))}
                                     </div>
                                 </div>
                             )}
@@ -344,69 +382,69 @@ const IndexCustomer: React.FC = () => {
 
 
                         {/* What Can We Do Section */}
-                        <section className="what-can-we-do mt-3 pb-4" style={{backgroundColor: 'white'}}>
+                        <section className="what-can-we-do mt-3 pb-4" style={{ backgroundColor: 'white' }}>
                             <div className="container">
                                 <div className="row">
-                                    <div className="col-md-6 help" style={{paddingLeft: 0, paddingRight: '50px'}}>
+                                    <div className="col-md-6 help" style={{ paddingLeft: 0, paddingRight: '50px' }}>
                                         <h4 className="fw-bold pb-4">CHÚNG TÔI CÓ THỂ GIÚP GÌ CHO BẠN ?</h4>
                                         <div className="container mt-5">
-      <Accordion activeKey={activeKey} onSelect={handleAccordionSelect} flush>
-        <Accordion.Item eventKey="0">
-          <Accordion.Header>1. Cách thức đặt hàng như thế nào?</Accordion.Header>
-          <div
-            className="accordion-body"
-            style={{ display: activeKey === '0' ? 'block' : 'none' }}
-          >
-            Để đặt hàng, bạn chỉ cần chọn sản phẩm, thêm vào giỏ hàng, sau đó điền thông tin giao hàng và tiến hành thanh toán.
-          </div>
-        </Accordion.Item>
+                                            <Accordion activeKey={activeKey} onSelect={handleAccordionSelect} flush>
+                                                <Accordion.Item eventKey="0">
+                                                    <Accordion.Header>1. Cách thức đặt hàng như thế nào?</Accordion.Header>
+                                                    <div
+                                                        className="accordion-body"
+                                                        style={{ display: activeKey === '0' ? 'block' : 'none' }}
+                                                    >
+                                                        Để đặt hàng, bạn chỉ cần chọn sản phẩm, thêm vào giỏ hàng, sau đó điền thông tin giao hàng và tiến hành thanh toán.
+                                                    </div>
+                                                </Accordion.Item>
 
-        <Accordion.Item eventKey="1">
-          <Accordion.Header>2. Tôi có thể thanh toán bằng phương thức nào?</Accordion.Header>
-          <div
-            className="accordion-body"
-            style={{ display: activeKey === '1' ? 'block' : 'none' }}
-          >
-            Chúng tôi hỗ trợ nhiều phương thức thanh toán như thẻ tín dụng, chuyển khoản ngân hàng, và thanh toán khi nhận hàng (COD).
-          </div>
-        </Accordion.Item>
+                                                <Accordion.Item eventKey="1">
+                                                    <Accordion.Header>2. Tôi có thể thanh toán bằng phương thức nào?</Accordion.Header>
+                                                    <div
+                                                        className="accordion-body"
+                                                        style={{ display: activeKey === '1' ? 'block' : 'none' }}
+                                                    >
+                                                        Chúng tôi hỗ trợ nhiều phương thức thanh toán như thẻ tín dụng, chuyển khoản ngân hàng, và thanh toán khi nhận hàng (COD).
+                                                    </div>
+                                                </Accordion.Item>
 
-        <Accordion.Item eventKey="2">
-          <Accordion.Header>3. Thời gian giao hàng mất bao lâu?</Accordion.Header>
-          <div
-            className="accordion-body"
-            style={{ display: activeKey === '2' ? 'block' : 'none' }}
-          >
-            Thời gian giao hàng phụ thuộc vào khu vực của bạn. Thường sẽ giao trong vòng 1h giờ làm việc.
-          </div>
-        </Accordion.Item>
+                                                <Accordion.Item eventKey="2">
+                                                    <Accordion.Header>3. Thời gian giao hàng mất bao lâu?</Accordion.Header>
+                                                    <div
+                                                        className="accordion-body"
+                                                        style={{ display: activeKey === '2' ? 'block' : 'none' }}
+                                                    >
+                                                        Thời gian giao hàng phụ thuộc vào khu vực của bạn. Thường sẽ giao trong vòng 1h giờ làm việc.
+                                                    </div>
+                                                </Accordion.Item>
 
-        <Accordion.Item eventKey="3">
-          <Accordion.Header>4. Làm thế nào để kiểm tra tình trạng đơn hàng?</Accordion.Header>
-          <div
-            className="accordion-body"
-            style={{ display: activeKey === '3' ? 'block' : 'none' }}
-          >
-            Sau khi đơn hàng được xử lý, bạn sẽ nhận được mã số đơn hàng và có thể theo dõi tình trạng đơn hàng qua website của chúng tôi.
-          </div>
-        </Accordion.Item>
+                                                <Accordion.Item eventKey="3">
+                                                    <Accordion.Header>4. Làm thế nào để kiểm tra tình trạng đơn hàng?</Accordion.Header>
+                                                    <div
+                                                        className="accordion-body"
+                                                        style={{ display: activeKey === '3' ? 'block' : 'none' }}
+                                                    >
+                                                        Sau khi đơn hàng được xử lý, bạn sẽ nhận được mã số đơn hàng và có thể theo dõi tình trạng đơn hàng qua website của chúng tôi.
+                                                    </div>
+                                                </Accordion.Item>
 
-        <Accordion.Item eventKey="4">
-          <Accordion.Header>5. Tôi có thể đổi hoặc trả lại sản phẩm không?</Accordion.Header>
-          <div
-            className="accordion-body"
-            style={{ display: activeKey === '4' ? 'block' : 'none' }}
-          >
-            Có, bạn có thể đổi hoặc trả lại sản phẩm trong vòng 7 ngày nếu sản phẩm còn nguyên vẹn và không có dấu hiệu sử dụng.
-          </div>
-        </Accordion.Item>
-      </Accordion>
-    </div>
+                                                <Accordion.Item eventKey="4">
+                                                    <Accordion.Header>5. Tôi có thể đổi hoặc trả lại sản phẩm không?</Accordion.Header>
+                                                    <div
+                                                        className="accordion-body"
+                                                        style={{ display: activeKey === '4' ? 'block' : 'none' }}
+                                                    >
+                                                        Có, bạn có thể đổi hoặc trả lại sản phẩm trong vòng 7 ngày nếu sản phẩm còn nguyên vẹn và không có dấu hiệu sử dụng.
+                                                    </div>
+                                                </Accordion.Item>
+                                            </Accordion>
+                                        </div>
                                     </div>
-                                    <div className="col-md-6" style={{paddingRight: 0}}>
+                                    <div className="col-md-6" style={{ paddingRight: 0 }}>
                                         <h4 className="fw-bold pb-4">KHÁCH HÀNG NÓI GÌ?</h4>
                                         <div id="carouselExampleCaptions" className="carousel slide"
-                                             data-bs-ride="carousel">
+                                            data-bs-ride="carousel">
                                             {/* Carousel Indicators */}
                                             <div className="carousel-indicators">
                                                 <button
@@ -443,7 +481,7 @@ const IndexCustomer: React.FC = () => {
                                                                 width="70"
                                                                 height="70"
                                                                 className="img-fluid"
-                                                                style={{borderRadius: '50%'}}
+                                                                style={{ borderRadius: '50%' }}
                                                             />
                                                         </div>
                                                         <div className="comment py-5">
@@ -468,12 +506,12 @@ const IndexCustomer: React.FC = () => {
                                                                 width="70"
                                                                 height="70"
                                                                 className="img-fluid"
-                                                                style={{borderRadius: '50%'}}
+                                                                style={{ borderRadius: '50%' }}
                                                             />
                                                         </div>
                                                         <div className="comment py-5">
                                                             <p>
-                                                               Phục vụ nhanh, nhân viên thân thiện
+                                                                Phục vụ nhanh, nhân viên thân thiện
                                                             </p>
                                                         </div>
                                                         <div className="profile-info">
@@ -493,7 +531,7 @@ const IndexCustomer: React.FC = () => {
                                                                 width="70"
                                                                 height="70"
                                                                 className="img-fluid"
-                                                                style={{borderRadius: '50%'}}
+                                                                style={{ borderRadius: '50%' }}
                                                             />
                                                         </div>
                                                         <div className="comment py-5">
@@ -562,7 +600,7 @@ const IndexCustomer: React.FC = () => {
                                             <section className="ratio ratio-16x9">
                                                 <iframe
                                                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.177875756147!2d106.68670197570356!3d10.79768475879993!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135adedecb7bc5f%3A0xa3f78f8a3e35f1b0!2zTOG6qXUgQsSDbmcgQ2h1eeG7gW4gS2ljaGkgS2ljaGk!5e0!3m2!1svi!2s!4v1727163707823!5m2!1svi!2s"
-                                                    width="300" height="200" style={{border: 0}}
+                                                    width="300" height="200" style={{ border: 0 }}
                                                     loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                                             </section>
                                         </div>
@@ -579,19 +617,19 @@ const IndexCustomer: React.FC = () => {
                 <div className="col-md-3 right-section">
                     <div className="row d-flex align-items-center justify-content-center">
                         <div className="col-12 image-card text-center">
-                            <a href="/menu"><img src={cothaygia} alt="Menu" className="img-fluid"/></a>
+                            <a href="/menu"><img src={cothaygia} alt="Menu" className="img-fluid" /></a>
                             <a href="/menu" className="btn btn-outline-light mt-2">Thực Đơn →</a>
                         </div>
                     </div>
                     <div className="row d-flex align-items-center justify-content-center">
                         <div className="col-12 image-card text-center">
-                            <a href="/reservation"><img src={bannerHome} alt="Reservation" className="img-fluid"/></a>
+                            <a href="/reservation"><img src={bannerHome} alt="Reservation" className="img-fluid" /></a>
                             <a href="/reservation" className="btn btn-outline-light mt-2">Đặt Bàn →</a>
                         </div>
                     </div>
                     <div className="row d-flex align-items-center justify-content-center">
                         <div className="col-12 image-card text-center">
-                            <a href="/promotion"><img src={publicAvif} alt="Promotion" className="img-fluid"/></a>
+                            <a href="/promotion"><img src={publicAvif} alt="Promotion" className="img-fluid" /></a>
                             <a href="/promotion" className="btn btn-outline-light mt-2">Ưu Đãi →</a>
                         </div>
                     </div>
