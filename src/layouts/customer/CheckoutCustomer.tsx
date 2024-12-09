@@ -331,6 +331,7 @@ const CheckoutCustomer: React.FC = () => {
             payment: formData.payment,
             notes: formData.note,
             totalAmount: total,
+            promotion: selectedPromotion?.PromotionId || null,
             promotionCode: selectedPromotion ? selectedPromotion.promotionName : null,
             orderDetails: listCart.map(item => ({
                 productId: item.productId,

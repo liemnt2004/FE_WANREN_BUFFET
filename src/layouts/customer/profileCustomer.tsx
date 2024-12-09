@@ -307,11 +307,11 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
         setEditing(false);
     };
 
-    
-
     return (
         <div className="card p-3 rounded-0 mb-3">
-            {authContext.userId?.includes("@") && !editing && (
+            {/* Check if username contains "@" */}
+            {authContext.username && authContext.username.includes("@") ? (
+                // Don't allow editing if username contains "@"
                 <div id="passwordInfo">
                     <h4 className="py-3">Mật Khẩu</h4>
                     <span className="tinh-fs12" id="passwordDisplay">
@@ -319,20 +319,33 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                     </span>
                     <br />
                     <hr />
-                    <a
-                        href="#"
-                        className="text-black none-underline tinh-fs14"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            setEditing(true);
-                        }}
-                    >
-                        Sửa
-                    </a>
+                    <p className="text-muted">Bạn không thể thay đổi mật khẩu nếu tài khoản này có chứa '@'.</p>
                 </div>
+            ) : (
+                // Allow editing only if username doesn't contain "@"
+                !editing && (
+                    <div id="passwordInfo">
+                        <h4 className="py-3">Mật Khẩu</h4>
+                        <span className="tinh-fs12" id="passwordDisplay">
+                            *********
+                        </span>
+                        <br />
+                        <hr />
+                        <a
+                            href="#"
+                            className="text-black none-underline tinh-fs14"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setEditing(true);
+                            }}
+                        >
+                            Sửa
+                        </a>
+                    </div>
+                )
             )}
 
-            {authContext.username?.includes("@") && editing && (
+            {!authContext.username?.includes("@") && editing && (
                 <div id="editPasswordInfo">
                     <input
                         type="password"
@@ -377,6 +390,7 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
         </div>
     );
 };
+
 
 
 
