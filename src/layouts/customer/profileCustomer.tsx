@@ -415,6 +415,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [totalmodal, setTotalmodal] = useState<number | null>(null);
+    const [promotion,setPromotion] = useState<string | "">("");
     const cartContext = useContext(CartContext);
 
     // State variables for order review
@@ -466,7 +467,15 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                 (sum, product) => sum + product._price * product._quantity,
                 0
             );
-            setTotalmodal(total + 15000);
+            setTotalmodal(total);
+        }
+    }, [orderDetails, selectedOrderId]);
+
+    useEffect(() => {
+        // Calculate total whenever orderDetails changes
+        if (selectedOrderId != null) {
+            const order = listOrder.find(order => order.orderId === selectedOrderId);
+            setPromotion(order?.promotion || "0");
         }
     }, [orderDetails, selectedOrderId]);
 
@@ -682,7 +691,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                                     <strong>Phí Giao Hàng:</strong> {formatMoney(15000)}
                                                 </h6>
                                                 <h6>
-                                                    <strong>Voucher:</strong> -{formatMoney(0)}
+                                                    <strong>Voucher:</strong> {promotion}
                                                 </h6>
                                                 <h6>
                                                     <strong>Tổng Tiền:</strong>{" "}

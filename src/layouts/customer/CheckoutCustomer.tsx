@@ -836,7 +836,9 @@ const CheckoutCustomer: React.FC = () => {
                                     </div>
 
                                     {/* Payment Methods */}
-                                    <div className="checkout__input__checkbox mb-3">
+                                    <div className='d-flex'>
+                                        <div>
+                                        <div className="checkout__input__checkbox mb-3">
                                         <label>
                                             Thanh Toán Khi Nhận Hàng
                                             <input
@@ -864,8 +866,10 @@ const CheckoutCustomer: React.FC = () => {
                                             <span className="checkmark"></span>
                                         </label>
                                     </div>
+                                        </div>
+                                    
 
-                                    <div className="checkout__input__checkbox mb-3">
+                                    <div className="checkout__input__checkbox ms-2">
                                         <label>
                                             QR CODE
                                             <input
@@ -879,6 +883,8 @@ const CheckoutCustomer: React.FC = () => {
                                             <span className="checkmark"></span>
                                         </label>
                                     </div>
+                                    </div>
+                                    
                                     <div className='checkoyt_submit'>
                                         <button
                                             type="submit"
