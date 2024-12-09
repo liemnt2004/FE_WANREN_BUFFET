@@ -110,20 +110,21 @@ const CheckoutCustomer: React.FC = () => {
 
     // Show Modal based on Query Params
     useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const success = queryParams.get('success');
+        const error = queryParams.get('error');
+    
         if (success) {
             setModalMessage(decodeURIComponent(success));
             setModalType('success');
             setShowModal(true);
-            navigate("/checkout", { replace: true });
-            navigate("/profile")
         } else if (error) {
             setModalMessage(decodeURIComponent(error));
             setModalType('error');
             setShowModal(true);
-            navigate("/checkout", { replace: true });
-            navigate("/")
         }
-    }, [success, error, navigate]);
+    }, [location.search]);
+    
 
     // Form Data State
     const [formData, setFormData] = useState<CheckoutFormData>({
@@ -331,6 +332,7 @@ const CheckoutCustomer: React.FC = () => {
             payment: formData.payment,
             notes: formData.note,
             totalAmount: total,
+            promotion: selectedPromotion?.PromotionId || null,
             promotionCode: selectedPromotion ? selectedPromotion.promotionName : null,
             orderDetails: listCart.map(item => ({
                 productId: item.productId,
@@ -835,7 +837,9 @@ const CheckoutCustomer: React.FC = () => {
                                     </div>
 
                                     {/* Payment Methods */}
-                                    <div className="checkout__input__checkbox mb-3">
+                                    <div className='d-flex'>
+                                        <div>
+                                        <div className="checkout__input__checkbox mb-3">
                                         <label>
                                             Thanh Toán Khi Nhận Hàng
                                             <input
@@ -863,8 +867,10 @@ const CheckoutCustomer: React.FC = () => {
                                             <span className="checkmark"></span>
                                         </label>
                                     </div>
+                                        </div>
+                                    
 
-                                    <div className="checkout__input__checkbox mb-3">
+                                    <div className="checkout__input__checkbox ms-2">
                                         <label>
                                             QR CODE
                                             <input
@@ -878,6 +884,8 @@ const CheckoutCustomer: React.FC = () => {
                                             <span className="checkmark"></span>
                                         </label>
                                     </div>
+                                    </div>
+                                    
                                     <div className='checkoyt_submit'>
                                         <button
                                             type="submit"

@@ -307,11 +307,11 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
         setEditing(false);
     };
 
-    
-
     return (
         <div className="card p-3 rounded-0 mb-3">
-            {authContext.userId?.includes("@") && !editing && (
+            {/* Check if username contains "@" */}
+            {authContext.username && authContext.username.includes("@") ? (
+                // Don't allow editing if username contains "@"
                 <div id="passwordInfo">
                     <h4 className="py-3">Mật Khẩu</h4>
                     <span className="tinh-fs12" id="passwordDisplay">
@@ -319,20 +319,33 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                     </span>
                     <br />
                     <hr />
-                    <a
-                        href="#"
-                        className="text-black none-underline tinh-fs14"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            setEditing(true);
-                        }}
-                    >
-                        Sửa
-                    </a>
+                    <p className="text-muted">Bạn không thể thay đổi mật khẩu nếu tài khoản này có chứa '@'.</p>
                 </div>
+            ) : (
+                // Allow editing only if username doesn't contain "@"
+                !editing && (
+                    <div id="passwordInfo">
+                        <h4 className="py-3">Mật Khẩu</h4>
+                        <span className="tinh-fs12" id="passwordDisplay">
+                            *********
+                        </span>
+                        <br />
+                        <hr />
+                        <a
+                            href="#"
+                            className="text-black none-underline tinh-fs14"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setEditing(true);
+                            }}
+                        >
+                            Sửa
+                        </a>
+                    </div>
+                )
             )}
 
-            {authContext.username?.includes("@") && editing && (
+            {!authContext.username?.includes("@") && editing && (
                 <div id="editPasswordInfo">
                     <input
                         type="password"
@@ -380,6 +393,7 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
 
 
 
+
 const AccountContent: React.FC<UserInfoProps> = ({userInfo, setUserInfo}) => (
 
     <div
@@ -396,11 +410,13 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                                         listOrder,
                                                         setListOrder,
                                                     }) => {
+                                                
     const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
     const [orderDetails, setOrderDetails] = useState<ProductDetail[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [totalmodal, setTotalmodal] = useState<number | null>(null);
+    const [promotion,setPromotion] = useState<string | "">("");
     const cartContext = useContext(CartContext);
 
     // State variables for order review
@@ -410,7 +426,8 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
     const [reviewSubmitting, setReviewSubmitting] = useState<boolean>(false);
     const [reviewError, setReviewError] = useState<string | null>(null);
 
-
+                                                        console.log(listOrder);
+                                                        
 
     useEffect(() => {
         if (selectedOrderId) {
@@ -452,7 +469,15 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                 (sum, product) => sum + product._price * product._quantity,
                 0
             );
-            setTotalmodal(total + 15000);
+            setTotalmodal(total);
+        }
+    }, [orderDetails, selectedOrderId]);
+
+    useEffect(() => {
+        // Calculate total whenever orderDetails changes
+        if (selectedOrderId != null) {
+            const order = listOrder.find(order => order.orderId === selectedOrderId);
+            setPromotion(order?.promotion || "0");
         }
     }, [orderDetails, selectedOrderId]);
 
@@ -564,7 +589,45 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                     <div className="product-info">
                                         <h5>{order.producHistorytDTOList[0]._productName}</h5>
                                         <p dangerouslySetInnerHTML={{__html: order.producHistorytDTOList[0]._description}}></p>
-                                        <p>{order.producHistorytDTOList[0]._productStatus == "PREPARING_ORDER"}</p>
+                                        {/* Trạng thái sản phẩm */}
+    <p>
+        {(() => {
+            const status = order.orderStatus;
+
+            switch (status) {
+                case "PREPARING_ORDER":
+                    return (
+                        <span>
+                            <i className="fas fa-cogs"></i> Đang chuẩn bị hàng
+                        </span>
+                    );
+                case "WAITING":
+                    return (
+                        <span>
+                            <i className="fas fa-clock"></i> Đang chờ xử lý
+                        </span>
+                    );
+                case "IN_TRANSIT":
+                    return (
+                        <span>
+                            <i className="fas fa-truck"></i> Đang giao hàng
+                        </span>
+                    );
+                case "DELIVERED":
+                    return (
+                        <span>
+                            <i className="fas fa-check-circle"></i> Đã giao hàng
+                        </span>
+                    );
+                default:
+                    return (
+                        <span>
+                            <i className="fas fa-question-circle"></i> Trạng thái không xác định
+                        </span>
+                    );
+            }
+        })()}
+    </p>
                                         <p>x {order.producHistorytDTOList[0]._quantity}</p>
                                         <button
                                             onClick={() => handleBuyAgain(order.producHistorytDTOList)}
@@ -668,7 +731,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                                     <strong>Phí Giao Hàng:</strong> {formatMoney(15000)}
                                                 </h6>
                                                 <h6>
-                                                    <strong>Voucher:</strong> -{formatMoney(0)}
+                                                    <strong>Voucher:</strong> {promotion}
                                                 </h6>
                                                 <h6>
                                                     <strong>Tổng Tiền:</strong>{" "}
@@ -806,6 +869,8 @@ const MenuProfile: React.FC = () => {
     useEffect(() => {
         getPreparingOrders(Number(decoded?.userId))
             .then(Order =>{
+            console.log(Order);
+                
                 setListOrder(Order)
 
             })
