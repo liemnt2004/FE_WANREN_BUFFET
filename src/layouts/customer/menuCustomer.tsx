@@ -10,6 +10,10 @@ function MenuCustomer() {
     const closeRef = useRef<HTMLButtonElement>(null);  // Ref for the modal close button
     const cartContext = useContext(CartContext);
 
+    if (!cartContext) {
+        return null;
+    }
+
     function login() {
         window.location.href = "https://wanrenbuffet.netlify.app/login";
     }
@@ -60,31 +64,23 @@ function MenuCustomer() {
             <Link to="/reservation" className="btn-book" onClick={hideActiveModal}>Đặt Bàn</Link>
 
             {/* Cart Icon */}
-            {fullName ? (
-                <a
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#offcanvasCart"
-                    aria-controls="offcanvasCart"
-                    className="cart"
-                    onClick={handleOffcanvasClose}
-                >
-                    <div className="position-relative">
-                        <i className="bi bi-bag cart-icon"></i>
-                        <span className="position-absolute top-2 p-2 start-100 translate-middle badge bg-danger">
-                            {cartContext?.cartItems.length}
+            <a
+                data-bs-toggle="offcanvas"
+                data-bs-target="#offcanvasCart"
+                aria-controls="offcanvasCart"
+                className="cart"
+                onClick={handleOffcanvasClose}
+            >
+                <div className="position-relative">
+                    <i className="bi bi-bag cart-icon cursor-pointer"></i>
+                    {cartContext?.cartItems?.length > 0 && (
+                        <span className="position-absolute top-2 p-2 start-100 translate-middle badge badge-custom bg-danger rounded-circle">
+                            {cartContext.cartItems.length}
                         </span>
-                    </div>
-                </a>
-            ) : (
-                <a className="cart">
-                    <div className="position-relative">
-                        <i className="bi bi-bag cart-icon"></i>
-                        <span className="position-absolute top-2 p-2 start-100 translate-middle badge bg-danger">
-                            {0}
-                        </span>
-                    </div>
-                </a>
-            )}
+                    )}
+                </div>
+            </a>
+
 
             {/* User Info */}
             <div className="d-flex align-items-center user">
