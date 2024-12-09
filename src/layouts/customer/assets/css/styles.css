@@ -875,14 +875,11 @@ body {
     margin-left: 2px !important;
   }
 
-  .btn-book{
+  a .btn-book{
     width: 23%;
     height: 3rem;
     font-size: 15px;
-    padding: 0 !important;
-    padding-top: 10px !important;
-    padding-left: 7px !important;
-
+    padding: 5px 15px;
   }
   
       .cart{
