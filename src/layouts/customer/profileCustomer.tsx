@@ -410,6 +410,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                                         listOrder,
                                                         setListOrder,
                                                     }) => {
+                                                
     const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
     const [orderDetails, setOrderDetails] = useState<ProductDetail[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -425,7 +426,8 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
     const [reviewSubmitting, setReviewSubmitting] = useState<boolean>(false);
     const [reviewError, setReviewError] = useState<string | null>(null);
 
-
+                                                        console.log(listOrder);
+                                                        
 
     useEffect(() => {
         if (selectedOrderId) {
@@ -587,7 +589,45 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                     <div className="product-info">
                                         <h5>{order.producHistorytDTOList[0]._productName}</h5>
                                         <p dangerouslySetInnerHTML={{__html: order.producHistorytDTOList[0]._description}}></p>
-                                        <p>{order.producHistorytDTOList[0]._productStatus == "PREPARING_ORDER"}</p>
+                                        {/* Trạng thái sản phẩm */}
+    <p>
+        {(() => {
+            const status = order.orderStatus;
+
+            switch (status) {
+                case "PREPARING_ORDER":
+                    return (
+                        <span>
+                            <i className="fas fa-cogs"></i> Đang chuẩn bị hàng
+                        </span>
+                    );
+                case "WAITING":
+                    return (
+                        <span>
+                            <i className="fas fa-clock"></i> Đang chờ xử lý
+                        </span>
+                    );
+                case "IN_TRANSIT":
+                    return (
+                        <span>
+                            <i className="fas fa-truck"></i> Đang giao hàng
+                        </span>
+                    );
+                case "DELIVERED":
+                    return (
+                        <span>
+                            <i className="fas fa-check-circle"></i> Đã giao hàng
+                        </span>
+                    );
+                default:
+                    return (
+                        <span>
+                            <i className="fas fa-question-circle"></i> Trạng thái không xác định
+                        </span>
+                    );
+            }
+        })()}
+    </p>
                                         <p>x {order.producHistorytDTOList[0]._quantity}</p>
                                         <button
                                             onClick={() => handleBuyAgain(order.producHistorytDTOList)}
@@ -829,6 +869,8 @@ const MenuProfile: React.FC = () => {
     useEffect(() => {
         getPreparingOrders(Number(decoded?.userId))
             .then(Order =>{
+            console.log(Order);
+                
                 setListOrder(Order)
 
             })
