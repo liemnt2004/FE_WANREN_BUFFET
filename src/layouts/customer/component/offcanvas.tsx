@@ -13,6 +13,13 @@ const CartOffcanvas: React.FC = () => {
         return null; // Hoặc hiển thị một thông báo lỗi
     }
 
+    const hideActiveModal = () => {
+        const modal = document.getElementsByClassName('offcanvas show')[0];
+        const fade = document.getElementsByClassName('offcanvas-backdrop show')[0];
+        if (modal) modal.classList.remove('show');
+        if (fade) fade.classList.remove('show');
+    };
+
     const { cartItems, updateQuantity, removeFromCart, subtotal } = cartContext;
     return (
         <>
@@ -86,7 +93,7 @@ const CartOffcanvas: React.FC = () => {
                             </tbody>
                         </table>
                     </div>
-                    <Link to={"/checkout"} className="btn btn-danger w-100 mt-3">Tiến hành thanh toán</Link>
+                    <Link to={"/checkout" } onClick={hideActiveModal} className="btn btn-danger w-100 mt-3">Tiến hành thanh toán</Link>
                 </div>
             </div>
         </>
