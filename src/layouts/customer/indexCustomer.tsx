@@ -18,7 +18,9 @@ import {CartItem, useCart} from "./component/CartContext"; // Sử dụng custom
 import formatMoney from "./component/FormatMoney";
 import { AuthContext } from "./component/AuthContext";
 import { useNavigate } from "react-router-dom";
-import {Modal} from "bootstrap"
+import { Accordion     } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { AccordionEventKey } from "react-bootstrap/esm/AccordionContext";
 const IndexCustomer: React.FC = () => {
     const [listProduct, setListProduct] = useState<ProductModel[]>([]);
     const [loading, setLoading] = useState(true);
@@ -28,7 +30,16 @@ const IndexCustomer: React.FC = () => {
     const { fullName, logout } = useContext(AuthContext);
     const { cartItems, addToCart, updateQuantity } = useCart();
     const navigate = useNavigate();
+    const [activeKey, setActiveKey] = React.useState<AccordionEventKey>('0');
 
+    // Hàm xử lý sự kiện khi Accordion thay đổi
+    const handleAccordionSelect = (eventKey: AccordionEventKey, e: React.SyntheticEvent<unknown>) => {
+      // Cập nhật activeKey nếu sự kiện này có eventKey hợp lệ
+      console.log(eventKey);
+      
+      setActiveKey(eventKey);
+    };
+  
 // State để quản lý số lượng của sản phẩm trong modal
     const [modalQuantities, setModalQuantities] = useState<{ [key: number]: number }>({});
 
@@ -121,6 +132,8 @@ const IndexCustomer: React.FC = () => {
     const handleProductClick = (product: ProductModel) => {
         setSelectedProduct(product);
     };
+
+     
 
 
 
@@ -310,38 +323,59 @@ const IndexCustomer: React.FC = () => {
                                 <div className="row">
                                     <div className="col-md-6 help" style={{paddingLeft: 0, paddingRight: '50px'}}>
                                         <h4 className="fw-bold pb-4">CHÚNG TÔI CÓ THỂ GIÚP GÌ CHO BẠN ?</h4>
-                                        <div className="accordion accordion-flush" id="accordionFlushExample">
-  <div className="accordion-item">
-    <h2 className="accordion-header">
-      <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
-        Cách Đặt Món
-      </button>
-    </h2>
-    <div id="flush-collapseOne" className="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-      <p className="accordion-body">Placeholder content for this accordion, which is intended to demonstrate the <code>.accordion-flush</code> class. This is the first item's accordion body.</p>
+                                        <div className="container mt-5">
+      <Accordion activeKey={activeKey} onSelect={handleAccordionSelect} flush>
+        <Accordion.Item eventKey="0">
+          <Accordion.Header>1. Cách thức đặt hàng như thế nào?</Accordion.Header>
+          <div
+            className="accordion-body"
+            style={{ display: activeKey === '0' ? 'block' : 'none' }}
+          >
+            Để đặt hàng, bạn chỉ cần chọn sản phẩm, thêm vào giỏ hàng, sau đó điền thông tin giao hàng và tiến hành thanh toán.
+          </div>
+        </Accordion.Item>
+
+        <Accordion.Item eventKey="1">
+          <Accordion.Header>2. Tôi có thể thanh toán bằng phương thức nào?</Accordion.Header>
+          <div
+            className="accordion-body"
+            style={{ display: activeKey === '1' ? 'block' : 'none' }}
+          >
+            Chúng tôi hỗ trợ nhiều phương thức thanh toán như thẻ tín dụng, chuyển khoản ngân hàng, và thanh toán khi nhận hàng (COD).
+          </div>
+        </Accordion.Item>
+
+        <Accordion.Item eventKey="2">
+          <Accordion.Header>3. Thời gian giao hàng mất bao lâu?</Accordion.Header>
+          <div
+            className="accordion-body"
+            style={{ display: activeKey === '2' ? 'block' : 'none' }}
+          >
+            Thời gian giao hàng phụ thuộc vào khu vực của bạn. Thường sẽ giao trong vòng 1h giờ làm việc.
+          </div>
+        </Accordion.Item>
+
+        <Accordion.Item eventKey="3">
+          <Accordion.Header>4. Làm thế nào để kiểm tra tình trạng đơn hàng?</Accordion.Header>
+          <div
+            className="accordion-body"
+            style={{ display: activeKey === '3' ? 'block' : 'none' }}
+          >
+            Sau khi đơn hàng được xử lý, bạn sẽ nhận được mã số đơn hàng và có thể theo dõi tình trạng đơn hàng qua website của chúng tôi.
+          </div>
+        </Accordion.Item>
+
+        <Accordion.Item eventKey="4">
+          <Accordion.Header>5. Tôi có thể đổi hoặc trả lại sản phẩm không?</Accordion.Header>
+          <div
+            className="accordion-body"
+            style={{ display: activeKey === '4' ? 'block' : 'none' }}
+          >
+            Có, bạn có thể đổi hoặc trả lại sản phẩm trong vòng 7 ngày nếu sản phẩm còn nguyên vẹn và không có dấu hiệu sử dụng.
+          </div>
+        </Accordion.Item>
+      </Accordion>
     </div>
-  </div>
-  <div className="accordion-item">
-    <h2 className="accordion-header">
-      <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
-        Accordion Item #2
-      </button>
-    </h2>
-    <div id="flush-collapseTwo" className="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-      <div className="accordion-body">Placeholder content for this accordion, which is intended to demonstrate the <code>.accordion-flush</code> class. This is the second item's accordion body. Let's imagine this being filled with some actual content.</div>
-    </div>
-  </div>
-  <div className="accordion-item">
-    <h2 className="accordion-header">
-      <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
-        Accordion Item #3
-      </button>
-    </h2>
-    <div id="flush-collapseThree" className="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-      <div className="accordion-body">Placeholder content for this accordion, which is intended to demonstrate the <code>.accordion-flush</code> class. This is the third item's accordion body. Nothing more exciting happening here in terms of content, but just filling up the space to make it look, at least at first glance, a bit more representative of how this would look in a real-world application.</div>
-    </div>
-  </div>
-</div>
                                     </div>
                                     <div className="col-md-6" style={{paddingRight: 0}}>
                                         <h4 className="fw-bold pb-4">KHÁCH HÀNG NÓI GÌ?</h4>
@@ -388,14 +422,12 @@ const IndexCustomer: React.FC = () => {
                                                         </div>
                                                         <div className="comment py-5">
                                                             <p>
-                                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                                Magni nesciunt tempore, dolore voluptatibus
-                                                                reprehenderit vel!
+                                                                Đồ ăn ngon, nhân viên nhiệt tình
                                                             </p>
                                                         </div>
                                                         <div className="profile-info">
                                                             <h5 className="name">Nguyen Hoai Nam</h5>
-                                                            <p>Customer</p>
+                                                            <p>Khách Hàng</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -415,14 +447,12 @@ const IndexCustomer: React.FC = () => {
                                                         </div>
                                                         <div className="comment py-5">
                                                             <p>
-                                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                                Magni nesciunt tempore, dolore voluptatibus
-                                                                reprehenderit vel!
+                                                               Phục vụ nhanh, nhân viên thân thiện
                                                             </p>
                                                         </div>
                                                         <div className="profile-info">
                                                             <h5 className="name">Mai Thi My Linh</h5>
-                                                            <p>Customer</p>
+                                                            <p>Khách Hàng</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -442,14 +472,12 @@ const IndexCustomer: React.FC = () => {
                                                         </div>
                                                         <div className="comment py-5">
                                                             <p>
-                                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                                Magni nesciunt tempore, dolore voluptatibus
-                                                                reprehenderit vel!
+                                                                Đồ ăn ra nhanh
                                                             </p>
                                                         </div>
                                                         <div className="profile-info">
                                                             <h5 className="name">Luong Cong Huan</h5>
-                                                            <p>Customer</p>
+                                                            <p>Khách Hàng</p>
                                                         </div>
                                                     </div>
                                                 </div>
