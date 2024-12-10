@@ -214,7 +214,7 @@ export function Routing() {
       </Routes>
 
       {/* Bao gồm CartOffcanvas trên tất cả các trang */}
-      <CartOffcanvas />
+      <CartOffcanvas show={false} onHide={() => {}} />
     </>
   );
 }
