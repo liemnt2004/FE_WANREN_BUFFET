@@ -1,14 +1,18 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import logo from './assets/img/warenbuffet.png';
 import { AuthContext } from "./component/AuthContext";
 import './assets/css/menu.css';
 import { CartContext } from './component/CartContext';
+import { Offcanvas } from 'react-bootstrap';
+import CartOffcanvas from "./component/offcanvas";
 
 function MenuCustomer() {
     const { fullName } = useContext(AuthContext);
-    const closeRef = useRef<HTMLButtonElement>(null);  // Ref for the modal close button
     const cartContext = useContext(CartContext);
+
+    const [showOffcanvas, setShowOffcanvas] = useState(false);      // State cho menu
+    const [showCartOffcanvas, setShowCartOffcanvas] = useState(false); // State cho giỏ hàng
 
     if (!cartContext) {
         return null;
@@ -18,39 +22,18 @@ function MenuCustomer() {
         window.location.href = "https://wanrenbuffet.netlify.app/login";
     }
 
-    // Close modal function
-    const hideActiveModal = () => {
-        const modal = document.getElementsByClassName('offcanvas show')[0];
-        const fade = document.getElementsByClassName('offcanvas-backdrop show')[0];
-        if (modal) modal.classList.remove('show');
-        if (fade) fade.classList.remove('show');
-    };
+    const handleShowMenu = () => setShowOffcanvas(true);
+    const handleCloseMenu = () => setShowOffcanvas(false);
 
-    const handleOffcanvasClose = () => {
-        const backdrops = document.querySelectorAll('.offcanvas-backdrop');
-
-        // If no backdrop, create one and add necessary classes
-        if (backdrops.length === 0) {
-            const newBackdrop = document.createElement('div');
-            newBackdrop.classList.add('offcanvas-backdrop', 'fade', 'show');
-            document.body.appendChild(newBackdrop);
-        }
-
-        // If more than 1 backdrop, remove the first one
-        if (backdrops.length > 1) {
-            backdrops[0].remove();
-        }
-    };
+    const handleShowCart = () => setShowCartOffcanvas(true);
+    const handleCloseCart = () => setShowCartOffcanvas(false);
 
     return (
         <nav className="menu-bar d-flex align-items-center">
             {/* Menu Icon */}
             <i
                 className="bi bi-list"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#offcanvasMenu"
-                aria-controls="offcanvasMenu"
-                onClick={handleOffcanvasClose}
+                onClick={handleShowMenu}
             ></i>
 
             {/* Brand Logo */}
@@ -59,17 +42,14 @@ function MenuCustomer() {
             </Link>
 
             {/* Navigation Links */}
-            <Link to="/menu" className="nav-link" onClick={hideActiveModal}>Thực Đơn</Link>
-            <Link to="/promotion" className="nav-link" onClick={hideActiveModal}>Ưu Đãi</Link>
-            <Link to="/reservation" className="btn-book" onClick={hideActiveModal}>Đặt Bàn</Link>
+            <Link to="/menu" className="nav-link" onClick={handleCloseMenu}>Thực Đơn</Link>
+            <Link to="/promotion" className="nav-link" onClick={handleCloseMenu}>Ưu Đãi</Link>
+            <Link to="/reservation" className="btn-book" onClick={handleCloseMenu}>Đặt Bàn</Link>
 
             {/* Cart Icon */}
-            <a
-                data-bs-toggle="offcanvas"
-                data-bs-target="#offcanvasCart"
-                aria-controls="offcanvasCart"
-                className="cart"
-                onClick={handleOffcanvasClose}
+            <button
+                className="cart btn p-0 border-0 bg-transparent"
+                onClick={handleShowCart}
             >
                 <div className="position-relative">
                     <i className="bi bi-bag cart-icon cursor-pointer"></i>
@@ -79,8 +59,7 @@ function MenuCustomer() {
                         </span>
                     )}
                 </div>
-            </a>
-
+            </button>
 
             {/* User Info */}
             <div className="d-flex align-items-center user">
@@ -93,56 +72,47 @@ function MenuCustomer() {
                     </>
                 ) : (
                     <>
-                        <a onClick={login} className="btn-user">
+                        <button onClick={login} className="btn-user">
                             <i className="bi bi-box-arrow-in-right"></i>
-                        </a>
+                        </button>
                         <p style={{ margin: 0 }}>Xin chào, Khách</p>
                     </>
                 )}
             </div>
 
             {/* Offcanvas Sidebar Menu */}
-            <div
-                className="offcanvas offcanvas-start"
-                tabIndex={-1}
-                id="offcanvasMenu"
-                aria-labelledby="offcanvasMenuLabel"
-            >
-                <div className="offcanvas-header">
-                    <h5 className="offcanvas-title" id="offcanvasMenuLabel">Menu</h5>
-                    <button
-                        type="button"
-                        className="btn-close"
-                        data-bs-dismiss="offcanvas"
-                        aria-label="Close"
-                        ref={closeRef} // Correctly assign the ref here
-                        onClick={hideActiveModal}  // Close modal when clicking the close button
-                    ></button>
-                </div>
-                <div className="offcanvas-body">
+            <Offcanvas show={showOffcanvas} onHide={handleCloseMenu} placement="start" id="offcanvasMenu">
+                <Offcanvas.Header closeButton>
+                    <Offcanvas.Title>Menu</Offcanvas.Title>
+                </Offcanvas.Header>
+                <Offcanvas.Body>
                     <Link
                         to="/menu"
                         className="nav-link nav-link-menu"
-                        onClick={hideActiveModal}
+                        onClick={handleCloseMenu}
                     >
                         Thực Đơn
                     </Link>
                     <Link
                         to="/promotion"
                         className="nav-link nav-link-menu"
-                        onClick={hideActiveModal}
+                        onClick={handleCloseMenu}
                     >
                         Ưu Đãi
                     </Link>
                     <Link
                         to="/reservation"
                         className="nav-link nav-link-menu"
-                        onClick={hideActiveModal}
+                        onClick={handleCloseMenu}
                     >
                         Đặt Bàn
                     </Link>
-                </div>
-            </div>
+                </Offcanvas.Body>
+            </Offcanvas>
+
+            {/* Offcanvas Cart */}
+            <CartOffcanvas show={showCartOffcanvas} onHide={handleCloseCart} />
+
         </nav>
     );
 }

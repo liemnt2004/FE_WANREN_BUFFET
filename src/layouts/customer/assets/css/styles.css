@@ -600,7 +600,10 @@ body {
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Tạo bóng nhẹ */
         padding: 0.75rem; /* Giảm padding trong card */
         max-width: 100%; /* Đảm bảo card không vượt quá 100% chiều rộng */
+        height: 220px !important;
     }
+
+   
 
     .hot-deal img {
         width: 100%; /* Đảm bảo hình ảnh chiếm toàn bộ chiều ngang card */
@@ -710,6 +713,7 @@ body {
       }
     
       .checkout .checkout__form {
+        
         padding: 1rem; /* Khoảng cách bên trong */
         border-radius: 8px; /* Bo góc form */
         background-color: #fff; /* Màu nền */
@@ -901,8 +905,10 @@ body {
      
 
       .profile-img{
-        padding-left: 35%;
+        margin-left: 40%;
       }
+
+      
 
       
       .right-section{
@@ -910,7 +916,18 @@ body {
       }
       .carousel-inner{
         padding: 0 !important;
-        padding-right: 15px !important;
+      }
+
+      .card-footer .btn{
+        font-size: 12px;
+      }
+
+      .tinh-height90{
+        padding: 0  !important;
+      }
+
+      .checkout .checkout__form {
+        text-align: center;
       }
 
       

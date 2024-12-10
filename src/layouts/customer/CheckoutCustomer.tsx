@@ -110,21 +110,20 @@ const CheckoutCustomer: React.FC = () => {
 
     // Show Modal based on Query Params
     useEffect(() => {
-        const queryParams = new URLSearchParams(location.search);
-        const success = queryParams.get('success');
-        const error = queryParams.get('error');
-    
         if (success) {
             setModalMessage(decodeURIComponent(success));
             setModalType('success');
             setShowModal(true);
+            navigate("/checkout", { replace: true });
+            navigate("/profile")
         } else if (error) {
             setModalMessage(decodeURIComponent(error));
             setModalType('error');
             setShowModal(true);
+            navigate("/checkout", { replace: true });
+            navigate("/")
         }
-    }, [location.search]);
-    
+    }, [success, error, navigate]);
 
     // Form Data State
     const [formData, setFormData] = useState<CheckoutFormData>({
@@ -428,7 +427,6 @@ const CheckoutCustomer: React.FC = () => {
                 setModalMessage("Đặt hàng thành công. Chúng tôi sẽ liên hệ với bạn sớm.");
                 setModalType('success');
                 setShowModal(true);
-                window.location.reload()
             }else if(formData.payment === "QR_CODE"){
                 const createOrderResponse = await fetch('https://wanrenbuffet.online/api/orders', {
                     method: 'POST',

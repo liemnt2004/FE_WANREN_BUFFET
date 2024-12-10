@@ -48,7 +48,7 @@ const ProductMenu: React.FC<Product> = (props) => {
                 <img src={image} style={{ height: "80px" }} alt={name} className="img-fluid rounded" />
             </div>
             <div className="col-6">
-                <div className="row m-0 align-items-center">
+                <div className="row m-0 align-items-center ms-2">
                     <span style={{ fontWeight: "bold" }}>{name}</span>
                     <span style={{ fontSize: "15px" }}>{formatMoney(price)}</span>
                 </div>
