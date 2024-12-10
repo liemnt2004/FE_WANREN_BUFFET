@@ -3,7 +3,7 @@ import { request } from "./Request";
 import OrderDetailsWithNameProduct from "../../models/StaffModels/OrderDetailsWithNameProduct";
 import OrderDetailModel from "../../models/StaffModels/OrderDetaitModel";
 
-const BASE_URL = "https://wanrenbuffet.online/api";
+const BASE_URL = "http://localhost:8080/api";
 
 const getHeaders = () => {
   const employeeToken = localStorage.getItem("employeeToken");
@@ -234,7 +234,7 @@ export const fetchReservations = async () => {
 
 export const fetchTables = async () => {
   const response = await fetch(
-    `https://wanrenbuffet.online/api-data/Table?page=0&size=50`,
+    `http://localhost:8080/api-data/Table?page=0&size=50`,
     {
       method: "GET",
       headers: getHeaders(),
