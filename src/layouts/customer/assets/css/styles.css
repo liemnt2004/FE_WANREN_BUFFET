@@ -930,6 +930,11 @@ body {
         text-align: center;
       }
 
-      
+      #decrement, #increment {
+        width: 25px !important;
+        height: 25px !important;
+        border-radius: 50%;
+        padding: 0;
+      }
 
 }
