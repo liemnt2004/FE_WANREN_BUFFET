@@ -3,7 +3,7 @@ import axios from "axios";
 import { request } from "./Request";
 
 // Get all products
-const BASE_URL = "https://wanrenbuffet.online";
+const BASE_URL = "http://localhost:8080";
 
 export async function getAllProduct(): Promise<ProductModel[]> {
   const rs: ProductModel[] = [];

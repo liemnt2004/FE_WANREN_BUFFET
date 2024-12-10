@@ -65,17 +65,17 @@ function MenuCustomer() {
             <div className="d-flex align-items-center user">
                 {fullName ? (
                     <>
-                        <Link to="/profile" className="btn-user">
+                        <Link to="/profile" className="btn-user cursor-pointer">
                             <i className="bi bi-person-fill"></i>
                         </Link>
                         <p style={{ margin: 0 }}>Xin chào, {fullName}</p>
                     </>
                 ) : (
                     <>
-                        <button onClick={login} className="btn-user">
+                        <button onClick={login} className="btn-user cursor-pointer">
                             <i className="bi bi-box-arrow-in-right"></i>
                         </button>
-                        <p style={{ margin: 0 }}>Xin chào, Khách</p>
+                        <p style={{ margin: 0 }}>Wanren Xin Chào!</p>
                     </>
                 )}
             </div>
