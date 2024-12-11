@@ -38,7 +38,7 @@ const CartOffcanvas: React.FC<CartOffcanvasProps> = ({ show, onHide }) => {
                             {cartItems.length > 0 ? (
                                 cartItems.map((item) => (
                                     <tr key={item.productId}>
-                                        <td className="cart-info d-flex align-items-center">
+                                        <td className="cart-info d-flex align-items-center" style={{ width: '100%' }}>
                                             <img 
                                                 src={item.image} 
                                                 className="rounded me-2" 
@@ -49,7 +49,7 @@ const CartOffcanvas: React.FC<CartOffcanvasProps> = ({ show, onHide }) => {
                                                 <p style={{ margin: 0, fontWeight: 'bold' }}>{item.productName}</p>
                                             </div>
                                         </td>
-                                        <td>
+                                        <td style={{ width: '5%' }}>
                                             <input
                                                 type="number"
                                                 className="form-control"
