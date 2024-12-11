@@ -11,7 +11,7 @@ import './assets/css/checkout.css';
 import './assets/css/styles.css';
 import { CartContext, CartItem } from './component/CartContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import FormatMoney from "./component/FormatMoney";
 import { request } from "../../api/Request";
 import { DecodedToken } from "./component/AuthContext";
@@ -67,17 +67,17 @@ const CheckoutCustomer: React.FC = () => {
     // State để hiển thị modal QR Code
     const [showQRCodeModal, setShowQRCodeModal] = useState(false);
 
-// URL của ảnh QR code
+    // URL của ảnh QR code
     const [qrCodeUrl, setQrCodeUrl] = useState("");
 
-// Hàm mở modal và cập nhật URL QR Code
-    const handleShowQRCodeModal = (qrCodeUrl:string) => {
+    // Hàm mở modal và cập nhật URL QR Code
+    const handleShowQRCodeModal = (qrCodeUrl: string) => {
         setQrCodeUrl(qrCodeUrl);  // Lưu URL ảnh QR
         setShowQRCodeModal(true);  // Mở modal
         setIsUpdating(true)
     };
 
-// Hàm đóng modal và đặt lại giá trị success
+    // Hàm đóng modal và đặt lại giá trị success
     const handleCloseQRCodeModal = () => {
         console.log("Đã Tăt")
         setIsUpdating(false)
@@ -427,7 +427,7 @@ const CheckoutCustomer: React.FC = () => {
                 setModalMessage("Đặt hàng thành công. Chúng tôi sẽ liên hệ với bạn sớm.");
                 setModalType('success');
                 setShowModal(true);
-            }else if(formData.payment === "QR_CODE"){
+            } else if (formData.payment === "QR_CODE") {
                 const createOrderResponse = await fetch('https://wanrenbuffet.online/api/orders', {
                     method: 'POST',
                     headers: {
@@ -446,7 +446,7 @@ const CheckoutCustomer: React.FC = () => {
 
                 const createOrderResult = await createOrderResponse.json();
                 console.log(createOrderResult)
-                const orderId:number = createOrderResult.orderId;
+                const orderId: number = createOrderResult.orderId;
 
                 console.log(orderId)
 
@@ -476,7 +476,7 @@ const CheckoutCustomer: React.FC = () => {
 
 
                 setDescription(orderId + " Thanh toan tai Wanren Buffet");
-                setLastAmount( Number(2000))
+                setLastAmount(Number(2000))
 
 
                 const generateQrCode = (bank: { bank_ID: string; account_NO: string; }, amount: number): string => {
@@ -515,7 +515,7 @@ const CheckoutCustomer: React.FC = () => {
         return () => clearInterval(interval);
     }, [isUpdating, lastAmount, description]);
 
-    async function checkPaid(price: number , description: string) {
+    async function checkPaid(price: number, description: string) {
         console.log(description)
         if (isSucess) {
             return;
@@ -535,7 +535,7 @@ const CheckoutCustomer: React.FC = () => {
                         console.log("thành công")
                         handleCloseQRCodeModal()
                         cartContext?.clearCart();
-                        window.location.href = `https://wanrenbuffet.online/api/payment/callbck_qrcode/${description.trim().slice(0,2)}`;
+                        window.location.href = `https://wanrenbuffet.online/api/payment/callbck_qrcode/${description.trim().slice(0, 2)}`;
 
                     } else {
                         console.log("Thanh toán đang cập nhật!")
@@ -579,14 +579,14 @@ const CheckoutCustomer: React.FC = () => {
                 <div className="checkout__form mt-3">
                     <h4>Thông Tin Thanh Toán</h4>
                     <form onSubmit={handleSubmit}>
-                        <div className="row">
+                        <div className="row w-100">
                             {/* Payment Information Form */}
                             <div className="col-lg-8 col-md-6">
                                 {/* Button Toggle Address */}
                                 <div className="checkout__input mb-3">
                                     <button
                                         type="button"
-                                        className="btn btn-primary mb-3"
+                                        className="btn btn-danger mb-3"
                                         onClick={() => {
                                             setShowNewAddressForm(!showNewAddressForm);
                                         }}
@@ -762,14 +762,14 @@ const CheckoutCustomer: React.FC = () => {
                             </div>
 
                             {/* Order Summary */}
-                            <div className="col-lg-4 col-md-6">
-                                <div className="checkout__order">
+                            <div className="col-lg-4 col-md-6 p-0">
+                                <div className="checkout__order w-100 mb-5">
                                     <h4>Đơn Hàng</h4>
                                     <div className="checkout__order__products d-flex justify-content-between">
                                         <span>Sản Phẩm</span>
-                                        <span>Tổng Tiền</span>
+                                        <span className='pe-2'>Tổng Tiền</span>
                                     </div>
-                                    <ul className="list-group mb-3">
+                                    <ul className="list-group mb-3 ">
                                         {listCart.length > 0 ? (
                                             listCart.map((item, index) => (
                                                 <li
@@ -777,7 +777,7 @@ const CheckoutCustomer: React.FC = () => {
                                                     className="list-group-item d-flex justify-content-between align-items-center"
                                                 >
                                                     {item.productName} x {item.quantity}
-                                                    <span>{FormatMoney(item.price * item.quantity)}</span>
+                                                    <span className='pe-2'>{FormatMoney(item.price * item.quantity)}</span>
                                                 </li>
                                             ))
                                         ) : (
@@ -791,15 +791,15 @@ const CheckoutCustomer: React.FC = () => {
 
                                     {/* Promotion Code Selection */}
                                     {listCart.length > 0 && (
-                                        <div className="checkout__input mb-3">
-                                            <label>Mã Giảm Giá</label>
-                                            <div className="d-flex align-items-center">
+                                        <div className="checkout__input mb-2">
+                                            <div className="d-flex align-items-center justify-content-between">
+                                                <label>Mã Giảm Giá</label>
                                                 {selectedPromotion ? (
                                                     <>
                                                         <span>{selectedPromotion.promotionName}</span>
                                                         <button
                                                             type="button"
-                                                            className="btn btn-danger ms-2"
+                                                            className="btn btn-danger"
                                                             onClick={handleRemovePromotion}
                                                         >
                                                             Xóa
@@ -808,7 +808,7 @@ const CheckoutCustomer: React.FC = () => {
                                                 ) : (
                                                     <button
                                                         type="button"
-                                                        className="btn btn-primary"
+                                                        className="btn btn-danger"
                                                         onClick={handleOpenPromotionModal}
                                                     >
                                                         Chọn Mã Giảm Giá
@@ -837,57 +837,57 @@ const CheckoutCustomer: React.FC = () => {
                                     {/* Payment Methods */}
                                     <div className='d-flex'>
                                         <div>
-                                        <div className="checkout__input__checkbox mb-3">
-                                        <label>
-                                            Thanh Toán Khi Nhận Hàng
-                                            <input
-                                                type="radio"
-                                                name="payment"
-                                                value="CASH"
-                                                checked={formData.payment === 'CASH'}
-                                                onChange={handleChange}
-                                                required
-                                            />
-                                            <span className="checkmark"></span>
-                                        </label>
-                                    </div>
-                                    <div className="checkout__input__checkbox mb-3">
-                                        <label>
-                                            VN PAY
-                                            <input
-                                                type="radio"
-                                                name="payment"
-                                                value="VNPAY"
-                                                checked={formData.payment === 'VNPAY'}
-                                                onChange={handleChange}
-                                                required
-                                            />
-                                            <span className="checkmark"></span>
-                                        </label>
-                                    </div>
+                                            <div className="checkout__input__checkbox me-3">
+                                                <label className='text-dark'>
+                                                    Thanh Toán Khi Nhận Hàng
+                                                    <input
+                                                        type="radio"
+                                                        name="payment"
+                                                        value="CASH"
+                                                        checked={formData.payment === 'CASH'}
+                                                        onChange={handleChange}
+                                                        required
+                                                    />
+                                                    <span className="checkmark"></span>
+                                                </label>
+                                            </div>
+                                            <div className="checkout__input__checkbox">
+                                                <label className='text-dark'>
+                                                    VN PAY
+                                                    <input
+                                                        type="radio"
+                                                        name="payment"
+                                                        value="VNPAY"
+                                                        checked={formData.payment === 'VNPAY'}
+                                                        onChange={handleChange}
+                                                        required
+                                                    />
+                                                    <span className="checkmark"></span>
+                                                </label>
+                                            </div>
                                         </div>
-                                    
 
-                                    <div className="checkout__input__checkbox ms-2">
-                                        <label>
-                                            QR CODE
-                                            <input
-                                                type="radio"
-                                                name="payment"
-                                                value="QR_CODE"
-                                                checked={formData.payment === 'QR_CODE'}
-                                                onChange={handleChange}
-                                                required
-                                            />
-                                            <span className="checkmark"></span>
-                                        </label>
+
+                                        <div className="checkout__input__checkbox ms-2">
+                                            <label className='text-dark'>
+                                                QR CODE
+                                                <input
+                                                    type="radio"
+                                                    name="payment"
+                                                    value="QR_CODE"
+                                                    checked={formData.payment === 'QR_CODE'}
+                                                    onChange={handleChange}
+                                                    required
+                                                />
+                                                <span className="checkmark"></span>
+                                            </label>
+                                        </div>
                                     </div>
-                                    </div>
-                                    
-                                    <div className='checkoyt_submit'>
+
+                                    <div className='text-center'>
                                         <button
                                             type="submit"
-                                            className="site-btn"
+                                            className="btn btn-danger"
                                             disabled={listCart.length === 0 || isSubmitting}
                                         >
                                             {isSubmitting ? 'Đang xử lý...' : 'ĐẶT HÀNG'}
@@ -911,7 +911,7 @@ const CheckoutCustomer: React.FC = () => {
                             <p className="text-danger">{errorPromotions}</p>
                         ) : promotions.length > 0 ? (
                             <ul className="list-group">
-                            {promotions.map((promo) => (
+                                {promotions.map((promo) => (
                                     <li
                                         key={promo.PromotionId}
                                         className="list-group-item d-flex justify-content-between align-items-center"

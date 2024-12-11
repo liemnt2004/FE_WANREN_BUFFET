@@ -59,7 +59,7 @@ const Checkout3: React.FC = () => {
                 const fetchedOrderDetails = await getOrderDetailWithNameProduct(Number(orderId));
                 const validOrderDetails = fetchedOrderDetails.filter((item: any) => item.quantity > 0 && item.price > 0);
                 setOrderDetails(validOrderDetails);
-                await updateTableStatus(Number(tableId), "LOCKED_TABLE");
+                await updateTableStatus(Number(tableId), "PAYING_TABLE");
                 updateOStatus(orderId, "WAITING");
             } catch (err) {
             }
