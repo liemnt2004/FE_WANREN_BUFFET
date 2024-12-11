@@ -1,48 +1,63 @@
 import React, { useContext, useEffect, useState } from "react";
-import CardTableCashier from "./component/cardTableCashier";
 import styled from "styled-components";
-import axios from "axios";
-import {
-  fetchOrderbyTableId,
-  fetchTables,
-  Table,
-  updateTableStatus,
-} from "../../api/apiCashier/tableApi";
-import {
-  Order,
-  OrderDetail,
-  fetchOrderDetails,
-  updateOrderDetails,
-  updateOrderStatus,
-  updateTableIdOrder,
-} from "../../api/apiCashier/ordersOnl";
-import CardFoodEditCashier from "./component/cardFoodEditCashier";
-import CardFoodOrderCashierEdit from "./component/cardFoodOrderCashierEdit";
+import { v4 as uuidv4_3 } from "uuid";
 import {
   Product,
   fetchProductsInStock,
   findProductById,
 } from "../../api/apiCashier/foodApi";
-import { v4 as uuidv4_3 } from "uuid";
-import { table } from "console";
-import AlertSuccess from "./component/alertSuccess";
+import {
+  Order,
+  OrderDetail,
+  fetchOrderDetailsByOrderId,
+  updateOrderDetails,
+  updateOrderStatus,
+  updateTableIdOrder,
+} from "../../api/apiCashier/ordersOnl";
+import { createPayment } from "../../api/apiCashier/payApt";
+import {
+  Table,
+  fetchOrderbyTableId,
+  fetchTables,
+  updateTableStatus,
+} from "../../api/apiCashier/tableApi";
 import { CreateNewOrder } from "../../api/apiStaff/orderForStaffApi";
 import { AuthContext } from "../customer/component/AuthContext";
-import { useNavigate } from "react-router-dom";
+import AlertSuccess from "./component/alertSuccess";
+import CardFoodEditCashier from "./component/cardFoodEditCashier";
 import CardFoodOrderCashier from "./component/cardFoodOrderCashier";
-import { Input } from "antd";
-import { createPayment } from "../../api/apiCashier/payApt";
+import CardFoodOrderCashierEdit from "./component/cardFoodOrderCashierEdit";
+import CardTableCashier from "./component/cardTableCashier";
 
 const ManagementTableCashier: React.FC = () => {
+  // const defaultOrder: Order = {
+  //   orderId: 0,
+  //   orderStatus: "EMPTY", // hoặc giá trị mặc định phù hợp
+  //   totalAmount: 0,
+  //   notes: "",
+  //   address: "",
+  //   customerLink: undefined,
+  //   tableLink: undefined,
+  //   orderDetailsLink: undefined,
+  // };
   const defaultOrder: Order = {
-    orderId: 0,
-    orderStatus: "EMPTY", // hoặc giá trị mặc định phù hợp
-    totalAmount: 0,
-    notes: "",
-    address: "",
-    customerLink: undefined,
-    tableLink: undefined,
-    orderDetailsLink: undefined,
+    createdDate: "", // Thời gian tạo đơn hàng (ISO 8601 string)
+    orderId: 0, // ID của đơn hàng
+    orderStatus: "", // Trạng thái đơn hàng (tùy thuộc vào enum OrderStatus)
+    totalAmount: 0, // Tổng tiền
+    notes: "", // Ghi chú đơn hàng
+    address: "", // Địa chỉ giao hàng
+    discountPointUsed: 0, // Điểm khuyến mãi đã sử dụng
+    numberPeople: 0, // Số người
+    phoneNumber: "", // Số điện thoại khách hàng
+    fullName: "", // Tên đầy đủ của khách hàng
+    tableId: 0, // ID của bàn
+    tableLink: "",
+    customerLink: "",
+    orderDetailsLink: "",
+    _links: {
+      orderDetails: { href: "" },
+    },
   };
   const defaultTable: Table = {
     createdDate: "",
@@ -74,6 +89,8 @@ const ManagementTableCashier: React.FC = () => {
 
   const [payTable, setPayTable] = useState<Table | null>(null);
 
+  const [lockTable, setLockTable] = useState<Table | null>(null);
+
   const [selectOrderbyTableId, setSelectOrderbyTableId] =
     useState<Order | null>(null);
 
@@ -99,7 +116,7 @@ const ManagementTableCashier: React.FC = () => {
 
   const [selectTable, setSelectTable] = useState<Table | null>(null);
 
-  const [moneyBack, setMoneyBack] = useState<number | 0>(0);
+  const [totalAmount, setTotalAmount] = useState<number | 0>(0);
 
   const { employeeUserId } = useContext(AuthContext);
 
@@ -108,14 +125,11 @@ const ManagementTableCashier: React.FC = () => {
   // lấy dữ liệu từ api v
 
   const loadOrderDetails = async () => {
-    if (
-      selectOrderbyTableId &&
-      selectOrderbyTableId?._links?.orderDetails?.href
-    ) {
+    if (selectOrderbyTableId) {
       setIsLoading(true);
       try {
-        const details = await fetchOrderDetails(
-          selectOrderbyTableId?._links?.orderDetails?.href
+        const details = await fetchOrderDetailsByOrderId(
+          selectOrderbyTableId.orderId
         );
         setOrderDetails(details);
       } catch (error) {
@@ -132,9 +146,7 @@ const ManagementTableCashier: React.FC = () => {
   }, [selectOrderbyTableId]);
 
   const loadOrderDetails2 = async (order: Order) => {
-    const details = await fetchOrderDetails(
-      order?._links?.orderDetails?.href || ""
-    );
+    const details = await fetchOrderDetailsByOrderId(order.orderId);
     return details;
   };
 
@@ -146,7 +158,7 @@ const ManagementTableCashier: React.FC = () => {
       return currentDate > latestDate ? current : latest;
     }, null); // Giá trị khởi tạo là null
 
-    setSelectOrderbyTableId(latestOrder); // Lưu order mới nhất.
+    // setSelectOrderbyTableId(latestOrder); // Lưu order mới nhất.
     return latestOrder;
   };
 
@@ -159,14 +171,34 @@ const ManagementTableCashier: React.FC = () => {
     loadTables();
   }, []);
 
-  useEffect(() => {
-    const loadProducts = async () => {
-      const data = await fetchProductsInStock();
-      setProducts(data); // Đảm bảo đúng đường dẫn `_embedded.tables`
-    };
+  // useEffect(() => {
+  const loadProducts = async (table: Table) => {
+    const data = await fetchProductsInStock();
 
-    loadProducts();
-  }, []);
+    // Kiểm tra điều kiện table.location và chỉnh sửa giá sản phẩm
+    const updatedProducts = data.map((product: Product) => {
+      if (table.location !== "GDeli") {
+        // Nếu table.location khác "GDeli", giá món ăn = 0 trừ các món có type_food là buffet_tickets, soft_drinks, mixers
+        if (
+          !["buffet_tickets", "soft_drinks", "mixers"].includes(
+            product.typeFood || ""
+          )
+        ) {
+          return {
+            ...product,
+            price: 0,
+          };
+        }
+      }
+      return product;
+    });
+
+    // Cập nhật state với danh sách sản phẩm đã chỉnh sửa
+    setProducts(updatedProducts);
+  };
+
+  //   loadProducts();
+  // }, []);
 
   const loadTablesEmpty = async () => {
     try {
@@ -301,7 +333,7 @@ const ManagementTableCashier: React.FC = () => {
     );
   };
 
-  const saveEditDetail = async (orderId: number) => {
+  const saveEditDetail = async (orderId: number, table: Table) => {
     try {
       const updatedDetails = orderDetailsTemp.map((detail) => ({
         orderDetailId: detail.orderDetailId, // ID của chi tiết đơn hàng
@@ -333,13 +365,13 @@ const ManagementTableCashier: React.FC = () => {
     } catch (error) {
       console.error("Lỗi khi cập nhật trạng thái sản phẩm:", error);
     }
-    closeFoodTable();
+    closeFoodTable(table);
   };
 
   const saveSwapTable = async (
     orderId: number,
     selectTable: number,
-    currentTable: number
+    currentTable: Table
   ) => {
     if (selectTable !== 0) {
       await updateTableIdOrder(orderId, selectTable);
@@ -347,7 +379,7 @@ const ManagementTableCashier: React.FC = () => {
       loadTablesOccupied();
       setTables([]);
       loadTables();
-      closeSwapTable();
+      closeSwapTable2();
 
       // alert v
       const newAlert = {
@@ -376,6 +408,7 @@ const ManagementTableCashier: React.FC = () => {
   ) => {
     if (selectTableId !== 0) {
       // closeSplitTable();
+
       openPopupSplitFood(selectTable);
       //   // alert v
       //   const newAlert = {
@@ -399,10 +432,10 @@ const ManagementTableCashier: React.FC = () => {
     orderId: number,
     selectTable: number,
     selectOrder: Order,
-    currentTable: number
+    currentTable: Table
   ) => {
     if (selectTable !== 0) {
-      closeCombineTable();
+      closeCombineTable(currentTable);
       const order1: OrderDetail[] = orderDetailsTemp;
       const order2: OrderDetail[] = await loadOrderDetails2(selectOrder);
 
@@ -427,8 +460,6 @@ const ManagementTableCashier: React.FC = () => {
 
         return acc;
       }, []);
-
-      console.log(order3);
 
       await updateOrderDetails(selectOrder.orderId || 0, orderWithEmptyDetails);
       await updateOrderStatus(selectOrder.orderId || 0, "DELIVERED");
@@ -507,9 +538,10 @@ const ManagementTableCashier: React.FC = () => {
     order: Order,
     selectTableId: number,
     currentOrderDetail: OrderDetail[],
-    selectOrderDetail: OrderDetail[]
+    selectOrderDetail: OrderDetail[],
+    table: Table
   ) => {
-    closeSplitTable();
+    closeSplitTable(table);
     closePopupSplitFood();
 
     await updateOrderDetails(order.orderId || 0, currentOrderDetail);
@@ -560,10 +592,6 @@ const ManagementTableCashier: React.FC = () => {
     // alert ^
   };
 
-  const changeMoneyBack = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setMoneyBack(Number(event.target.value));
-  };
-
   const confirmPay = async (tableId: number, order: Order) => {
     await createPayment(
       "CASH",
@@ -579,6 +607,7 @@ const ManagementTableCashier: React.FC = () => {
     loadTables();
 
     closePayTable();
+    closeDetailTable();
 
     // alert v
     const newAlert = {
@@ -595,54 +624,174 @@ const ManagementTableCashier: React.FC = () => {
     // alert ^
   };
 
+  const getTimeOrderByTableId = async (tableId: number) => {
+    const time = await getOrderbyTableId(tableId);
+    return time?.createdDate || "";
+  };
+
+  const [times, setTimes] = useState<{ [key: number]: string }>({});
+
+  useEffect(() => {
+    const fetchTimes = async () => {
+      const newTimes: { [key: number]: string } = {};
+      for (const table of tables) {
+        if (
+          table.tableStatus === "OCCUPIED_TABLE" ||
+          table.tableStatus === "PAYING_TABLE" ||
+          table.tableStatus === "LOCKED_TABLE"
+        ) {
+          const time = await getTimeOrderByTableId(table.tableId);
+          newTimes[table.tableId] = time.toString();
+        } else {
+          newTimes[table.tableId] = ""; // Gán giá trị rỗng nếu không thỏa điều kiện
+        }
+      }
+      setTimes(newTimes);
+    };
+    fetchTimes();
+  }, [tables]);
+
+  // search
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState(products);
+
+  useEffect(() => {
+    setFilteredProducts(products); // Cập nhật lại danh sách khi `products` thay đổi
+  }, [products]);
+
+  const handleSearchChange = (event: { target: { value: string } }) => {
+    const value = event.target.value.toLowerCase();
+    setSearchTerm(value);
+
+    const filtered = products.filter((product) =>
+      product.productName?.toLowerCase().includes(value)
+    );
+    setFilteredProducts(filtered);
+  };
+
+  // filter
+
+  // Step 1: Declare a state for the selected filter value
+  const [filter, setFilter] = useState("all"); // Default to 'Tất cả'
+
+  // Step 2: Filter tables based on selected radio button
+  const filteredTables = tables.filter((table) => {
+    if (filter === "all") return table.location !== "GDeli"; // Show all tables
+    if (filter === "paying") return table.tableStatus === "PAYING_TABLE"; // Show all tables
+    if (filter === "empty")
+      return table.tableStatus === "EMPTY_TABLE" && table.location !== "GDeli"; // Only empty tables
+    if (filter === "gdeli") return table.location === "GDeli"; // Only GDeli tables
+    return true; // Default case (shouldn't happen)
+  });
+
+  // Step 3: Handle radio button change
+  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFilter(event.target.value); // Update filter based on the selected radio button
+  };
+
+  const unlockTableWhenAction = async (table: Table) => {
+    await updateTableStatus(table.tableId, "OCCUPIED_TABLE");
+    console.log("đã unlock");
+  };
+
+  const lockTableWhenAction = async (table: Table) => {
+    await updateTableStatus(table.tableId, "LOCKED_TABLE");
+    console.log("đã lock");
+  };
+
+  useEffect(() => {
+    const takeTotalAmount = () => {
+      let total = 0;
+      orderDetailsTemp.map((detail) => {
+        total += (detail.unitPrice || 0) * (detail.quantity || 0);
+      });
+      setTotalAmount(total);
+    };
+    takeTotalAmount();
+  }, [orderDetailsTemp]);
+
+  // thanh toán của cashier
+  const [customerPayment, setCustomerPayment] = useState(0);
+  const [change, setChange] = useState(0);
+
+  // Hàm xử lý khi khách nhập số tiền
+  const handleCustomerPaymentChange = (value: string, totalAmount: number) => {
+    const payment = Number(value); // Chuyển đổi giá trị nhập thành số
+    setCustomerPayment(payment);
+
+    // Tính số tiền trả lại
+    const calculatedChange = payment - totalAmount;
+    setChange(calculatedChange > 0 ? calculatedChange : 0);
+  };
+
   // các hành động function ^
 
   // các popup v
 
   const openFoodTable = (table: Table, order: Order) => {
+    loadProducts(table);
+    lockTableWhenAction(table);
     setFoodTable(table); // Mở popup sau khi có đủ dữ liệu
     setSelectOrderbyTableId(order);
   };
 
-  const closeFoodTable = () => {
+  const closeFoodTable = (table: Table) => {
+    unlockTableWhenAction(table);
     setFoodTable(null);
     setSelectOrderbyTableId(null);
     setOrderDetailsTemp([]);
+    setSearchTerm("");
+    setFilteredProducts(products);
   };
 
-  const openSwapTable = (table: Table) => {
+  const openSwapTable = (table: Table, order: Order) => {
+    lockTableWhenAction(table);
     setSwapTable(table);
+    setSelectOrderbyTableId(order);
     getOrderbyTableId(table.tableId);
   };
-  const closeSwapTable = () => {
+  const closeSwapTable = (table: Table) => {
+    unlockTableWhenAction(table);
+    setSwapTable(null);
+    setSelectOrderbyTableId(null);
+    setSelectTable(null);
+  };
+  const closeSwapTable2 = () => {
     setSwapTable(null);
     setSelectOrderbyTableId(null);
     setSelectTable(null);
   };
 
-  const openSplitTable = (table: Table) => {
+  const openSplitTable = (table: Table, order: Order) => {
+    lockTableWhenAction(table);
     setSplitTable(table);
+    setSelectOrderbyTableId(order);
     getOrderbyTableId(table.tableId);
   };
-  const closeSplitTable = () => {
+  const closeSplitTable = (table: Table) => {
+    unlockTableWhenAction(table);
     setSplitTable(null);
     setSelectOrderbyTableId(null);
     setSelectTable(null);
     setOrderDetailsTemp2([]);
   };
 
-  const openCombineTable = (table: Table) => {
+  const openCombineTable = (table: Table, order: Order) => {
+    lockTableWhenAction(table);
     setCombineTable(table);
+    setSelectOrderbyTableId(order);
     getOrderbyTableId(table.tableId);
   };
-  const closeCombineTable = () => {
+  const closeCombineTable = (table: Table) => {
+    unlockTableWhenAction(table);
     setCombineTable(null);
     setSelectOrderbyTableId(null);
     setSelectTable(null);
   };
 
-  const openDeleteTable = (table: Table) => {
+  const openDeleteTable = (table: Table, order: Order) => {
     setDeleteTable(table);
+    setSelectOrderbyTableId(order);
     getOrderbyTableId(table.tableId);
   };
   const closeDeleteTable = () => {
@@ -651,8 +800,9 @@ const ManagementTableCashier: React.FC = () => {
     setSelectTable(null);
   };
 
-  const openDetailTable = (table: Table) => {
+  const openDetailTable = (table: Table, order: Order) => {
     setDetailTable(table);
+    setSelectOrderbyTableId(order);
     getOrderbyTableId(table.tableId);
   };
   const closeDetailTable = () => {
@@ -661,6 +811,7 @@ const ManagementTableCashier: React.FC = () => {
   };
 
   const openEmptyTable = (table: Table) => {
+    loadProducts(table);
     setEmptyTable(table);
     // getOrderbyTableId(table.tableId);
   };
@@ -668,6 +819,8 @@ const ManagementTableCashier: React.FC = () => {
     setEmptyTable(null);
     setSelectOrderbyTableId(null);
     setOrderDetailsTemp([]);
+    setSearchTerm("");
+    setFilteredProducts(products);
   };
 
   const openPopupSplitFood = (table: Table) => {
@@ -685,6 +838,15 @@ const ManagementTableCashier: React.FC = () => {
   };
   const closePayTable = () => {
     setPayTable(null);
+    // setSelectOrderbyTableId(null);
+  };
+
+  const openLockTable = (table: Table) => {
+    setLockTable(table);
+    // getOrderbyTableId(table.tableId);
+  };
+  const closeLockTable = () => {
+    setLockTable(null);
     setSelectOrderbyTableId(null);
   };
 
@@ -698,8 +860,52 @@ const ManagementTableCashier: React.FC = () => {
 
   return (
     <div>
+      <StyledWrapperTab style={{ marginBottom: "25px", marginTop: "-25px" }}>
+        <div className="radio-inputs">
+          <label className="radio">
+            <input
+              type="radio"
+              name="radio"
+              value="all"
+              checked={filter === "all"}
+              onChange={handleRadioChange}
+            />
+            <span className="name">Tất cả</span>
+          </label>
+          <label className="radio">
+            <input
+              type="radio"
+              name="radio"
+              value="paying"
+              checked={filter === "paying"}
+              onChange={handleRadioChange}
+            />
+            <span className="name">Thanh toán</span>
+          </label>
+          <label className="radio">
+            <input
+              type="radio"
+              name="radio"
+              value="empty"
+              checked={filter === "empty"}
+              onChange={handleRadioChange}
+            />
+            <span className="name">Bàn trống</span>
+          </label>
+          <label className="radio">
+            <input
+              type="radio"
+              name="radio"
+              value="gdeli"
+              checked={filter === "gdeli"}
+              onChange={handleRadioChange}
+            />
+            <span className="name">GDeli</span>
+          </label>
+        </div>
+      </StyledWrapperTab>
       <StyledWrapper>
-        {tables.map((table) => (
+        {filteredTables.map((table) => (
           <div className="d-flex justify-content-center" key={table.tableId}>
             <CardTableCashier
               key={table.tableId}
@@ -710,11 +916,14 @@ const ManagementTableCashier: React.FC = () => {
                   ? "Trống"
                   : table.tableStatus === "OCCUPIED_TABLE"
                   ? "Có Khách"
-                  : table.tableStatus === "LOCKED_TABLE"
+                  : table.tableStatus === "PAYING_TABLE"
                   ? "Thanh Toán"
+                  : table.tableStatus === "LOCKED_TABLE"
+                  ? "Khóa"
                   : "Không xác định"
               }
               location={table.location}
+              timeOrder={times[table.tableId] || ""}
               foodTable={async () => {
                 {
                   table.tableStatus === "OCCUPIED_TABLE"
@@ -725,50 +934,71 @@ const ManagementTableCashier: React.FC = () => {
                     : void null;
                 }
               }}
-              swapTable={() => {
+              swapTable={async () => {
                 {
                   table.tableStatus === "OCCUPIED_TABLE"
-                    ? openSwapTable(table)
+                    ? openSwapTable(
+                        table,
+                        (await getOrderbyTableId(table.tableId)) || defaultOrder
+                      )
                     : void null;
                 }
               }}
-              splitTable={() => {
+              splitTable={async () => {
                 {
                   table.tableStatus === "OCCUPIED_TABLE"
-                    ? openSplitTable(table)
+                    ? openSplitTable(
+                        table,
+                        (await getOrderbyTableId(table.tableId)) || defaultOrder
+                      )
                     : void null;
                 }
               }}
-              combineTable={() => {
+              combineTable={async () => {
                 {
                   table.tableStatus === "OCCUPIED_TABLE"
-                    ? openCombineTable(table)
+                    ? openCombineTable(
+                        table,
+                        (await getOrderbyTableId(table.tableId)) || defaultOrder
+                      )
                     : void null;
                 }
               }}
-              deleteTable={() => {
+              deleteTable={async () => {
                 {
                   table.tableStatus === "OCCUPIED_TABLE"
-                    ? openDeleteTable(table)
+                    ? openDeleteTable(
+                        table,
+                        (await getOrderbyTableId(table.tableId)) || defaultOrder
+                      )
                     : void null;
                 }
               }}
-              detailTable={() => {
+              detailTable={async () => {
                 {
                   table.tableStatus === "EMPTY_TABLE"
                     ? openEmptyTable(table)
+                    : table.tableStatus === "PAYING_TABLE"
+                    ? openDetailTable(
+                        table,
+                        (await getOrderbyTableId(table.tableId)) || defaultOrder
+                      )
                     : table.tableStatus === "LOCKED_TABLE"
-                    ? openDetailTable(table)
+                    ? openLockTable(table)
                     : hehe();
                 }
               }}
             />
+            {/* {table.tableStatus === "OCCUPIED_TABLE" ||
+            table.tableStatus === "LOCKED_TABLE"
+              ? times[table.tableId] || ""
+              : ""} */}
           </div>
         ))}
       </StyledWrapper>
 
       {foodTable && (
-        <PopupOverlay onClick={closeFoodTable}>
+        <PopupOverlay onClick={() => closeFoodTable(foodTable)}>
           <PopupCard onClick={(e) => e.stopPropagation()}>
             <PopupCardGrid>
               <div className="grid-container-edit">
@@ -779,6 +1009,8 @@ const ManagementTableCashier: React.FC = () => {
                       name="text"
                       type="text"
                       placeholder="Search..."
+                      value={searchTerm}
+                      onChange={handleSearchChange}
                     />
                   </StyledWrapperSearchEdit>
                   &ensp;
@@ -789,7 +1021,7 @@ const ManagementTableCashier: React.FC = () => {
                   <span>{selectOrderbyTableId?.orderId}</span>
                 </div>
                 <div className="box-food" key={selectOrderbyTableId?.orderId}>
-                  {products.map((product) => (
+                  {filteredProducts.map((product) => (
                     <div className="d-flex justify-content-center">
                       <CardFoodEditCashier
                         img={product.image}
@@ -834,13 +1066,16 @@ const ManagementTableCashier: React.FC = () => {
                 </div>
                 <div className="box d-flex align-items-center justify-content-center">
                   <OrderLabel>Tổng Số Tiền:</OrderLabel>{" "}
-                  <PriceText>{selectOrderbyTableId?.totalAmount}đ</PriceText>
+                  <PriceText>{totalAmount}đ</PriceText>
                 </div>
                 <div className="box d-flex align-items-center justify-content-end">
                   <StyledWrapperButton>
                     <button
                       onClick={() =>
-                        saveEditDetail(selectOrderbyTableId?.orderId || 0)
+                        saveEditDetail(
+                          selectOrderbyTableId?.orderId || 0,
+                          foodTable
+                        )
                       }
                     >
                       Lưu
@@ -848,7 +1083,9 @@ const ManagementTableCashier: React.FC = () => {
                   </StyledWrapperButton>
                   &emsp;
                   <StyledWrapperButton>
-                    <button onClick={closeFoodTable}>Đóng</button>
+                    <button onClick={() => closeFoodTable(foodTable)}>
+                      Đóng
+                    </button>
                   </StyledWrapperButton>
                 </div>
               </div>
@@ -858,7 +1095,7 @@ const ManagementTableCashier: React.FC = () => {
       )}
 
       {swapTable && (
-        <PopupOverlay onClick={closeSwapTable}>
+        <PopupOverlay onClick={() => closeSwapTable(swapTable)}>
           <PopupCard onClick={(e) => e.stopPropagation()}>
             <PopupCardGrid>
               <div
@@ -873,29 +1110,37 @@ const ManagementTableCashier: React.FC = () => {
                     <OrderLabel>Bàn hiện tại</OrderLabel>
                   </div>
                   <div className="box box-table">
-                    {tablesEmpty.map((table) => (
-                      <div
-                        className="d-flex justify-content-center"
-                        key={table.tableId}
-                      >
-                        <CardTableCashier
+                    {tablesEmpty
+                      .filter(
+                        (table) =>
+                          table.tableId !== swapTable.tableId &&
+                          table.location !== "GDeli"
+                      )
+                      .map((table) => (
+                        <div
+                          className="d-flex justify-content-center"
                           key={table.tableId}
-                          tableId={table.tableId}
-                          tableNumber={table.tableNumber}
-                          status={
-                            table.tableStatus === "EMPTY_TABLE"
-                              ? "Trống"
-                              : table.tableStatus === "OCCUPIED_TABLE"
-                              ? "Có Khách"
-                              : table.tableStatus === "LOCKED_TABLE"
-                              ? "Thanh Toán"
-                              : "Không xác định"
-                          }
-                          detailTable={() => setSelectTable(table)}
-                          location={table.location}
-                        />
-                      </div>
-                    ))}
+                        >
+                          <CardTableCashier
+                            key={table.tableId}
+                            tableId={table.tableId}
+                            tableNumber={table.tableNumber}
+                            status={
+                              table.tableStatus === "EMPTY_TABLE"
+                                ? "Trống"
+                                : table.tableStatus === "OCCUPIED_TABLE"
+                                ? "Có Khách"
+                                : table.tableStatus === "PAYING_TABLE"
+                                ? "Thanh Toán"
+                                : table.tableStatus === "LOCKED_TABLE"
+                                ? "Khóa"
+                                : "Không xác định"
+                            }
+                            detailTable={() => setSelectTable(table)}
+                            location={table.location}
+                          />
+                        </div>
+                      ))}
                   </div>
                   <div className="box d-flex align-items-center justify-content-center">
                     <CardTableCashier
@@ -906,8 +1151,10 @@ const ManagementTableCashier: React.FC = () => {
                           ? "Trống"
                           : swapTable.tableStatus === "OCCUPIED_TABLE"
                           ? "Có Khách"
-                          : swapTable.tableStatus === "LOCKED_TABLE"
+                          : swapTable.tableStatus === "PAYING_TABLE"
                           ? "Thanh Toán"
+                          : swapTable.tableStatus === "LOCKED_TABLE"
+                          ? "Khóa"
                           : "Không xác định"
                       }
                       location={swapTable.location}
@@ -924,7 +1171,7 @@ const ManagementTableCashier: React.FC = () => {
                           saveSwapTable(
                             selectOrderbyTableId?.orderId || 0,
                             selectTable?.tableId || 0,
-                            swapTable.tableId
+                            swapTable
                           )
                         }
                       >
@@ -933,7 +1180,9 @@ const ManagementTableCashier: React.FC = () => {
                     </StyledWrapperButton>
                     &emsp;
                     <StyledWrapperButton>
-                      <button onClick={closeSwapTable}>Đóng</button>
+                      <button onClick={() => closeSwapTable(swapTable)}>
+                        Đóng
+                      </button>
                     </StyledWrapperButton>
                   </div>
                 </div>
@@ -944,7 +1193,7 @@ const ManagementTableCashier: React.FC = () => {
       )}
 
       {splitTable && (
-        <PopupOverlay onClick={closeSplitTable}>
+        <PopupOverlay onClick={() => closeSplitTable(splitTable)}>
           <PopupCard onClick={(e) => e.stopPropagation()}>
             <PopupCardGrid>
               <div
@@ -959,29 +1208,37 @@ const ManagementTableCashier: React.FC = () => {
                     <OrderLabel>Bàn hiện tại</OrderLabel>
                   </div>
                   <div className="box box-table">
-                    {tablesEmpty.map((table) => (
-                      <div
-                        className="d-flex justify-content-center"
-                        key={table.tableId}
-                      >
-                        <CardTableCashier
+                    {tablesEmpty
+                      .filter(
+                        (table) =>
+                          table.tableId !== splitTable.tableId &&
+                          table.location !== "GDeli"
+                      )
+                      .map((table) => (
+                        <div
+                          className="d-flex justify-content-center"
                           key={table.tableId}
-                          tableId={table.tableId}
-                          tableNumber={table.tableNumber}
-                          status={
-                            table.tableStatus === "EMPTY_TABLE"
-                              ? "Trống"
-                              : table.tableStatus === "OCCUPIED_TABLE"
-                              ? "Có Khách"
-                              : table.tableStatus === "LOCKED_TABLE"
-                              ? "Thanh Toán"
-                              : "Không xác định"
-                          }
-                          detailTable={() => setSelectTable(table)}
-                          location={table.location}
-                        />
-                      </div>
-                    ))}
+                        >
+                          <CardTableCashier
+                            key={table.tableId}
+                            tableId={table.tableId}
+                            tableNumber={table.tableNumber}
+                            status={
+                              table.tableStatus === "EMPTY_TABLE"
+                                ? "Trống"
+                                : table.tableStatus === "OCCUPIED_TABLE"
+                                ? "Có Khách"
+                                : table.tableStatus === "PAYING_TABLE"
+                                ? "Thanh Toán"
+                                : table.tableStatus === "LOCKED_TABLE"
+                                ? "Khóa"
+                                : "Không xác định"
+                            }
+                            detailTable={() => setSelectTable(table)}
+                            location={table.location}
+                          />
+                        </div>
+                      ))}
                   </div>
                   <div className="box d-flex align-items-center justify-content-center">
                     <CardTableCashier
@@ -992,8 +1249,10 @@ const ManagementTableCashier: React.FC = () => {
                           ? "Trống"
                           : splitTable.tableStatus === "OCCUPIED_TABLE"
                           ? "Có Khách"
-                          : splitTable.tableStatus === "LOCKED_TABLE"
+                          : splitTable.tableStatus === "PAYING_TABLE"
                           ? "Thanh Toán"
+                          : splitTable.tableStatus === "LOCKED_TABLE"
+                          ? "Khóa"
                           : "Không xác định"
                       }
                       location={splitTable.location}
@@ -1020,7 +1279,9 @@ const ManagementTableCashier: React.FC = () => {
                     </StyledWrapperButton>
                     &emsp;
                     <StyledWrapperButton>
-                      <button onClick={closeSplitTable}>Đóng</button>
+                      <button onClick={() => closeSplitTable(splitTable)}>
+                        Đóng
+                      </button>
                     </StyledWrapperButton>
                   </div>
                 </div>
@@ -1031,7 +1292,7 @@ const ManagementTableCashier: React.FC = () => {
       )}
 
       {combineTable && (
-        <PopupOverlay onClick={closeCombineTable}>
+        <PopupOverlay onClick={() => closeCombineTable(combineTable)}>
           <PopupCard onClick={(e) => e.stopPropagation()}>
             <PopupCardGrid>
               <div
@@ -1066,8 +1327,10 @@ const ManagementTableCashier: React.FC = () => {
                                 ? "Trống"
                                 : table.tableStatus === "OCCUPIED_TABLE"
                                 ? "Có Khách"
-                                : table.tableStatus === "LOCKED_TABLE"
+                                : table.tableStatus === "PAYING_TABLE"
                                 ? "Thanh Toán"
+                                : table.tableStatus === "LOCKED_TABLE"
+                                ? "Khóa"
                                 : "Không xác định"
                             }
                             detailTable={() => setSelectTable(table)}
@@ -1085,8 +1348,10 @@ const ManagementTableCashier: React.FC = () => {
                           ? "Trống"
                           : combineTable.tableStatus === "OCCUPIED_TABLE"
                           ? "Có Khách"
-                          : combineTable.tableStatus === "LOCKED_TABLE"
+                          : combineTable.tableStatus === "PAYING_TABLE"
                           ? "Thanh Toán"
+                          : combineTable.tableStatus === "LOCKED_TABLE"
+                          ? "Khóa"
                           : "Không xác định"
                       }
                       location={combineTable.location}
@@ -1106,7 +1371,7 @@ const ManagementTableCashier: React.FC = () => {
                             (await getOrderbyTableId(
                               selectTable?.tableId || 0
                             )) || defaultOrder,
-                            combineTable.tableId
+                            combineTable
                           )
                         }
                       >
@@ -1115,7 +1380,9 @@ const ManagementTableCashier: React.FC = () => {
                     </StyledWrapperButton>
                     &emsp;
                     <StyledWrapperButton>
-                      <button onClick={closeCombineTable}>Đóng</button>
+                      <button onClick={() => closeCombineTable(combineTable)}>
+                        Đóng
+                      </button>
                     </StyledWrapperButton>
                   </div>
                 </div>
@@ -1179,7 +1446,7 @@ const ManagementTableCashier: React.FC = () => {
 
       {detailTable && (
         <PopupOverlay onClick={closeDetailTable}>
-          <PopupCard
+          {/* <PopupCard
             onClick={(e) => e.stopPropagation()}
             className="d-flex align-items-center justify-content-center"
           >
@@ -1210,7 +1477,38 @@ const ManagementTableCashier: React.FC = () => {
                 Mở bàn
               </button>
             </StyledWrapperButton>
-          </PopupCard>
+          </PopupCard> */}
+          <StyleDetail onClick={(e) => e.stopPropagation()}>
+            <div className="d-flex">
+              <div className="cash" onClick={() => openPayTable(detailTable)}>
+                <div className="text-center">
+                  <i className="bi bi-cash fs-3 borderIn"></i>
+                  <p>Thanh&#160;toán</p>
+                </div>
+              </div>
+              <div className="sale">
+                <div className="text-center">
+                  <i className="bi bi-tags fs-3 borderIn"></i>
+                  <p>Mã&#160;giảm&#160;giá</p>
+                </div>
+              </div>
+              <div
+                className="unlock"
+                onClick={async () => {
+                  unlockTable(
+                    detailTable,
+                    (await getOrderbyTableId(detailTable.tableId || 0)) ||
+                      defaultOrder
+                  );
+                }}
+              >
+                <div className="text-center">
+                  <i className="bi bi-key fs-3 borderIn"></i>
+                  <p>Mở&#160;khóa</p>
+                </div>
+              </div>
+            </div>
+          </StyleDetail>
         </PopupOverlay>
       )}
 
@@ -1226,6 +1524,8 @@ const ManagementTableCashier: React.FC = () => {
                       name="text"
                       type="text"
                       placeholder="Search..."
+                      value={searchTerm}
+                      onChange={handleSearchChange}
                     />
                   </StyledWrapperSearchEdit>
                   &ensp;
@@ -1236,7 +1536,7 @@ const ManagementTableCashier: React.FC = () => {
                   <span>{selectOrderbyTableId?.orderId}</span>
                 </div>
                 <div className="box-food" key={selectOrderbyTableId?.orderId}>
-                  {products.map((product) => (
+                  {filteredProducts.map((product) => (
                     <div className="d-flex justify-content-center">
                       <CardFoodEditCashier
                         img={product.image}
@@ -1281,7 +1581,7 @@ const ManagementTableCashier: React.FC = () => {
                 </div>
                 <div className="box d-flex align-items-center justify-content-center">
                   <OrderLabel>Tổng Số Tiền:</OrderLabel>{" "}
-                  <PriceText>{selectOrderbyTableId?.totalAmount}đ</PriceText>
+                  <PriceText>{totalAmount}đ</PriceText>
                 </div>
                 <div className="box d-flex align-items-center justify-content-end">
                   <StyledWrapperButton>
@@ -1463,7 +1763,8 @@ const ManagementTableCashier: React.FC = () => {
                             defaultOrder,
                           popupSplitFood.tableId,
                           orderDetailsTemp,
-                          orderDetailsTemp2
+                          orderDetailsTemp2,
+                          splitTable || defaultTable
                         )
                       }
                     >
@@ -1490,7 +1791,103 @@ const ManagementTableCashier: React.FC = () => {
       {payTable && (
         <PopupOverlay onClick={closePayTable}>
           <PopupCard onClick={(e) => e.stopPropagation()}>
-            <OrderLabel>Tiền khách trả:</OrderLabel>{" "}
+            <PopupCardGrid>
+              <div className="grid-container-pay">
+                <div className="box d-flex align-items-center justify-content-center">
+                  <OrderLabel>Các món đã gọi</OrderLabel>
+                </div>
+                <div className="box d-flex align-items-center justify-content-center">
+                  <OrderLabel>Thanh toán</OrderLabel>
+                </div>
+                <div className="box">
+                  <div
+                    className="border rounded p-2 h-100"
+                    style={{ overflowY: "auto" }}
+                  >
+                    {isLoading ? (
+                      <p>Đang tải chi tiết đơn hàng...</p>
+                    ) : orderDetails.length > 0 ? (
+                      orderDetails.map((detail) => (
+                        <CardSpacing key={detail.orderDetailId}>
+                          <CardFoodOrderCashier
+                            imageUrl={detail.productImage}
+                            productName={detail.productName}
+                            price={detail.unitPrice}
+                            quantity={detail.quantity}
+                          />
+                        </CardSpacing>
+                      ))
+                    ) : (
+                      <p>Không có chi tiết đơn hàng.</p>
+                    )}
+                  </div>
+                </div>
+                <StylePay>
+                  <div className="box payment-box">
+                    <div className="payment-info">
+                      <div className="form-group">
+                        <label htmlFor="customerPayment">
+                          Số tiền khách đưa:
+                        </label>
+                        <input
+                          id="customerPayment"
+                          type="number"
+                          className="form-control"
+                          placeholder="Nhập số tiền khách đưa"
+                          onChange={(e) =>
+                            handleCustomerPaymentChange(
+                              e.target.value,
+                              selectOrderbyTableId?.totalAmount || 0
+                            )
+                          }
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="totalBill">Tổng hóa đơn:</label>
+                        <span id="totalBill" className="amount">
+                          {selectOrderbyTableId?.totalAmount} đ
+                        </span>
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="change">Số tiền cần trả lại:</label>
+                        <span id="change" className="amount">
+                          {change} đ
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </StylePay>
+
+                <div className="box"></div>
+                <div className="box d-flex align-items-center justify-content-end">
+                  <StyledWrapperButton>
+                    <button
+                      onClick={async () => {
+                        if (
+                          customerPayment <
+                          (selectOrderbyTableId?.totalAmount || 0)
+                        ) {
+                          alert("Số tiền khách đưa không đủ để thanh toán.");
+                          return;
+                        }
+                        await confirmPay(
+                          payTable.tableId,
+                          (await getOrderbyTableId(payTable.tableId || 0)) ||
+                            defaultOrder
+                        );
+                      }}
+                    >
+                      Xác nhận thanh toán
+                    </button>
+                  </StyledWrapperButton>
+                  &emsp;
+                  <StyledWrapperButton>
+                    <button onClick={closePayTable}>Đóng</button>
+                  </StyledWrapperButton>
+                </div>
+              </div>
+            </PopupCardGrid>
+            {/* <OrderLabel>Tiền khách trả:</OrderLabel>{" "}
             <Input
               onChange={changeMoneyBack}
               value={moneyBack}
@@ -1519,8 +1916,29 @@ const ManagementTableCashier: React.FC = () => {
             <br />
             <StyledWrapperButton>
               <button onClick={closePayTable}>Đóng</button>
-            </StyledWrapperButton>
+            </StyledWrapperButton> */}
           </PopupCard>
+        </PopupOverlay>
+      )}
+
+      {lockTable && (
+        <PopupOverlay onClick={closeLockTable}>
+          <StyleDetail onClick={(e) => e.stopPropagation()}>
+            <div
+              className="unlock"
+              onClick={async () => {
+                await unlockTableWhenAction(lockTable);
+                closeLockTable();
+                setTables([]);
+                loadTables();
+              }}
+            >
+              <div className="text-center">
+                <i className="bi bi-key fs-3 borderIn"></i>
+                <p>Mở khóa</p>
+              </div>
+            </div>
+          </StyleDetail>
         </PopupOverlay>
       )}
 
@@ -1609,6 +2027,24 @@ const PopupCardGrid = styled.div`
     display: grid;
     grid-template-columns: 50% 50%;
     grid-template-rows: 7.5vh 65vh 7.5vh;
+  }
+  .grid-container-pay {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    grid-template-rows: 7.5vh 65vh 7.5vh;
+  }
+
+  @media (max-width: 1146px) {
+    /* Điều chỉnh độ rộng màn hình theo yêu cầu */
+    .grid-container-pay {
+      grid-template-columns: 100%; /* Chuyển sang bố cục một cột */
+      grid-template-rows: auto; /* Hàng có chiều cao tự động */
+    }
+
+    .grid-container-pay .box:nth-child(3),
+    .grid-container-pay .box:nth-child(5) {
+      display: none; /* Ẩn các box 1, 3, và 5 */
+    }
   }
   .grid-container-swapTable {
     display: grid;
@@ -1798,6 +2234,128 @@ const StyledWrapper = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
   gap: 20px;
+`;
+
+const StyledWrapperTab = styled.div`
+  .radio-inputs {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 0.5rem;
+    background-color: #eee;
+    box-sizing: border-box;
+    box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
+    padding: 0.25rem;
+    width: 300px;
+    font-size: 14px;
+  }
+
+  .radio-inputs .radio {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
+  .radio-inputs .radio input {
+    display: none;
+  }
+
+  .radio-inputs .radio .name {
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    border: none;
+    padding: 0.5rem 0;
+    color: rgba(51, 65, 85, 1);
+    transition: all 0.15s ease-in-out;
+    height: 30px;
+  }
+
+  .radio-inputs .radio input:checked + .name {
+    background-color: #fff;
+    font-weight: 600;
+  }
+`;
+
+const StyleDetail = styled.div`
+  .cash {
+    width: 175px;
+    height: 175px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #85bb65;
+    border: 1px solid black;
+    border-radius: 15px;
+    box-shadow: 20px 20px 15px 0 #ababab4d;
+    margin: 0 10px;
+  }
+  .sale {
+    width: 175px;
+    height: 175px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #66ccff;
+    border: 1px solid black;
+    border-radius: 15px;
+    box-shadow: 20px 20px 15px 0 #ababab4d;
+    margin: 0 10px;
+  }
+  .unlock {
+    width: 175px;
+    height: 175px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffff99;
+    border: 1px solid black;
+    border-radius: 15px;
+    box-shadow: 20px 20px 15px 0 #ababab4d;
+    margin: 0 10px;
+  }
+  .borderIn {
+    border: 2px solid black;
+    border-radius: 13.5px;
+    padding: 50px 65px 75px;
+  }
+`;
+
+const StylePay = styled.div`
+  .payment-box {
+    padding: 15px;
+    border: none;
+  }
+
+  .payment-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  label {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  input[type="number"] {
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .amount {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+  }
 `;
 
 export default ManagementTableCashier;

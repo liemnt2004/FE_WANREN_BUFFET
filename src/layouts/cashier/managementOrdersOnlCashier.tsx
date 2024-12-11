@@ -1,29 +1,26 @@
 import { useEffect, useState } from "react";
-import CardOrdersOnlCashier from "./component/cardOrdersOnlCashier";
 import styled from "styled-components";
 import { v4 as uuidv4_2 } from "uuid";
+import { Product, fetchProductsInStock } from "../../api/apiCashier/foodApi";
 import {
-  fetchOrders,
-  fetchCustomerUsername,
-  fetchTableId,
   Order,
   OrderDetail,
-  fetchOrderDetails,
-  updateOrderStatus,
+  fetchOrderDetailsByOrderId,
+  fetchOrders,
   updateOrderDetails,
+  updateOrderStatus,
 } from "../../api/apiCashier/ordersOnl";
-import CardFoodOrderCashier from "./component/cardFoodOrderCashier";
-import CardFoodEditCashier from "./component/cardFoodEditCashier";
-import {
-  Product,
-  fetchProducts,
-  fetchProductsInStock,
-} from "../../api/apiCashier/foodApi";
-import CardFoodOrderCashierEdit from "./component/cardFoodOrderCashierEdit";
 import AlertSuccess from "./component/alertSuccess";
+import CardFoodEditCashier from "./component/cardFoodEditCashier";
+import CardFoodOrderCashier from "./component/cardFoodOrderCashier";
+import CardFoodOrderCashierEdit from "./component/cardFoodOrderCashierEdit";
+import CardOrdersOnlCashier from "./component/cardOrdersOnlCashier";
 
 const ManagementOrdersOnlCashier = () => {
+  // useState v
+
   const [orders, setOrders] = useState<Order[]>([]);
+
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null); // Trạng thái lưu order được chọn
 
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false); // Quản lý trạng thái popup sửa
@@ -34,64 +31,6 @@ const ManagementOrdersOnlCashier = () => {
 
   const [alerts, setAlerts] = useState<{ id: string; message: string }[]>([]);
 
-  useEffect(() => {
-    const loadProducts = async () => {
-      const data = await fetchProductsInStock();
-      setProducts(data); // Đảm bảo đúng đường dẫn `_embedded.tables`
-    };
-
-    loadProducts();
-  }, []);
-
-  const loadOrders = async () => {
-    try {
-      const ordersWithLinks = await fetchOrders();
-
-      const updatedOrders = await Promise.all(
-        ordersWithLinks.map(async (order) => {
-          const username = order.customerLink
-            ? await fetchCustomerUsername(order.customerLink)
-            : "";
-          const tableId = order.tableLink
-            ? await fetchTableId(order.tableLink)
-            : null;
-
-          return { ...order, username, tableId };
-        })
-      );
-
-      setOrders(updatedOrders);
-    } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu:", error);
-    }
-  };
-  useEffect(() => {
-    loadOrders();
-  }, []);
-
-  // Hàm mở popup và lưu order được chọn
-
-  const handleCardClick = (order: Order) => {
-    setOrderStatus(order.orderStatus || "");
-    setSelectedOrder(order);
-  };
-
-  // Hàm đóng popup
-  const closePopup = () => {
-    setSelectedOrder(null);
-    setOrderDetails([]); // Đảm bảo xóa thông tin chi tiết đơn hàng
-    setOrderStatus("");
-  };
-
-  const openEditPopup = (orderDetails: OrderDetail[]) => {
-    setOrderDetailsTemp(orderDetails);
-    setIsEditPopupOpen(true);
-  };
-  const closeEditPopup = () => {
-    setOrderDetailsTemp([]);
-    setIsEditPopupOpen(false);
-  };
-
   const [orderDetails, setOrderDetails] = useState<OrderDetail[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -100,11 +39,64 @@ const ManagementOrdersOnlCashier = () => {
     selectedOrder?.orderStatus || ""
   ); // Trạng thái được chọn
 
+  const [totalAmount, setTotalAmount] = useState<number | 0>(0);
+
+  // useState ^
+
+  // Lấy api v
+
+  const loadProducts = async () => {
+    const data = await fetchProductsInStock();
+    setProducts(data); // Đảm bảo đúng đường dẫn `_embedded.tables`
+  };
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadOrders = async () => {
+    try {
+      const data = await fetchOrders();
+      setOrders(data.reverse());
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadOrders();
+  }, []);
+  // const loadOrders = async () => {
+  //   try {
+  //     const ordersWithLinks = await fetchOrders();
+
+  //     const updatedOrders = await Promise.all(
+  //       ordersWithLinks.map(async (order) => {
+  //         const username = order.customerLink
+  //           ? await fetchCustomerUsername(order.customerLink)
+  //           : "";
+  //         const tableId = order.tableLink
+  //           ? await fetchTableId(order.tableLink)
+  //           : null;
+
+  //         return { ...order, username, tableId };
+  //       })
+  //     );
+
+  //     setOrders(updatedOrders);
+  //   } catch (error) {
+  //     console.error("Lỗi khi lấy dữ liệu:", error);
+  //   }
+  // };
+  // useEffect(() => {
+  //   loadOrders();
+  // }, []);
+
   const loadOrderDetails = async () => {
-    if (selectedOrder && selectedOrder.orderDetailsLink) {
+    if (selectedOrder) {
       setIsLoading(true);
       try {
-        const details = await fetchOrderDetails(selectedOrder.orderDetailsLink);
+        const details = await fetchOrderDetailsByOrderId(selectedOrder.orderId);
         setOrderDetails(details);
       } catch (error) {
         console.error("Lỗi khi tải chi tiết đơn hàng:", error);
@@ -118,6 +110,10 @@ const ManagementOrdersOnlCashier = () => {
   useEffect(() => {
     loadOrderDetails();
   }, [selectedOrder]);
+
+  // Lấy api ^
+
+  // function v
 
   const handleSave = async (orderId: number) => {
     const newStatus = orderStatus;
@@ -206,7 +202,7 @@ const ManagementOrdersOnlCashier = () => {
         updatedDate: new Date().toISOString(), // Cập nhật lại ngày sửa
       }));
 
-      console.table(updatedDetails);
+      // console.table(updatedDetails);
 
       // Gọi API để cập nhật trạng thái
       await updateOrderDetails(orderId, updatedDetails);
@@ -233,29 +229,147 @@ const ManagementOrdersOnlCashier = () => {
     closeEditPopup();
   };
 
+  useEffect(() => {
+    const takeTotalAmount = () => {
+      let total = 0;
+      orderDetailsTemp.map((detail) => {
+        total += (detail.unitPrice || 0) * (detail.quantity || 0);
+      });
+      setTotalAmount(total);
+    };
+    takeTotalAmount();
+  }, [orderDetailsTemp]);
+
+  // search
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState(products);
+
+  useEffect(() => {
+    setFilteredProducts(products); // Cập nhật lại danh sách khi `products` thay đổi
+  }, [products]);
+
+  const handleSearchChange = (event: { target: { value: string } }) => {
+    const value = event.target.value.toLowerCase();
+    setSearchTerm(value);
+
+    const filtered = products.filter((product) =>
+      product.productName?.toLowerCase().includes(value)
+    );
+    setFilteredProducts(filtered);
+  };
+
+  // filter
+
+  // Step 1: Declare a state for the selected filter value
+  const [filter, setFilter] = useState("all"); // Default to 'Tất cả'
+
+  // Step 2: Filter tables based on selected radio button
+  const filteredOrders = orders.filter((order) => {
+    if (filter === "all") return order.orderStatus === "PREPARING_ORDER"; // Show all tables
+    if (filter === "intransit") return order.orderStatus === "IN_TRANSIT"; // Only empty tables
+    if (filter === "delivered") return order.orderStatus === "DELIVERED"; // Only GDeli tables
+    if (filter === "all2") return true; // Show all tables
+    return true; // Default case (shouldn't happen)
+  });
+
+  // Step 3: Handle radio button change
+  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFilter(event.target.value); // Update filter based on the selected radio button
+  };
+
+  // function ^
+
+  // popup v
+
+  const handleCardClick = (order: Order) => {
+    setOrderStatus(order.orderStatus || "");
+    setSelectedOrder(order);
+  };
+
+  // Hàm đóng popup
+  const closePopup = () => {
+    setSelectedOrder(null);
+    setOrderDetails([]); // Đảm bảo xóa thông tin chi tiết đơn hàng
+    setOrderStatus("");
+  };
+
+  const openEditPopup = (orderDetails: OrderDetail[]) => {
+    // loadProducts();
+    setOrderDetailsTemp(orderDetails);
+    setIsEditPopupOpen(true);
+  };
+  const closeEditPopup = () => {
+    setOrderDetailsTemp([]);
+    setIsEditPopupOpen(false);
+    setSearchTerm("");
+    loadProducts();
+  };
+
+  // popup ^
+
   return (
     <div>
+      <StyledWrapperTab style={{ marginBottom: "25px", marginTop: "-25px" }}>
+        <div className="radio-inputs">
+          <label className="radio">
+            <input
+              type="radio"
+              name="radio"
+              value="all"
+              checked={filter === "all"}
+              onChange={handleRadioChange}
+            />
+            <span className="name">Chờ xác nhận</span>
+          </label>
+          <label className="radio">
+            <input
+              type="radio"
+              name="radio"
+              value="intransit"
+              checked={filter === "intransit"}
+              onChange={handleRadioChange}
+            />
+            <span className="name">Đã xác nhận</span>
+          </label>
+          <label className="radio">
+            <input
+              type="radio"
+              name="radio"
+              value="delivered"
+              checked={filter === "delivered"}
+              onChange={handleRadioChange}
+            />
+            <span className="name">Hoàn thành</span>
+          </label>
+          <label className="radio">
+            <input
+              type="radio"
+              name="radio"
+              value="all2"
+              checked={filter === "all2"}
+              onChange={handleRadioChange}
+            />
+            <span className="name">Tất cả</span>
+          </label>
+        </div>
+      </StyledWrapperTab>
       <CardGrid>
-        {orders.map(
-          (order) =>
-            order.tableId === null && (
-              <div
-                className="d-flex justify-content-center"
-                key={order.orderId}
-              >
-                <CardOrdersOnlCashier
-                  key={order.orderId}
-                  orderId={order.orderId}
-                  orderStatus={order.orderStatus}
-                  totalAmount={order.totalAmount}
-                  notes={order.notes}
-                  address={order.address}
-                  username={order.username}
-                  onClick={() => handleCardClick(order)} // Thêm sự kiện onClick
-                />
-              </div>
-            )
-        )}
+        {filteredOrders.map((order) => (
+          <div className="d-flex justify-content-center" key={order.orderId}>
+            <CardOrdersOnlCashier
+              key={order.orderId}
+              orderId={order.orderId}
+              orderStatus={order.orderStatus}
+              totalAmount={order.totalAmount}
+              notes={order.notes || "Không có ghi chú"}
+              address={order.address || "Không có địa chỉ"}
+              username={order.fullName || "Vô danh"}
+              date={order.createdDate}
+              phoneNumber={order.phoneNumber || "Không có SĐT"}
+              onClick={() => handleCardClick(order)} // Thêm sự kiện onClick
+            />
+          </div>
+        ))}
       </CardGrid>
 
       {/* Popup hiển thị khi có selectedOrder */}
@@ -301,9 +415,10 @@ const ManagementOrdersOnlCashier = () => {
                         value={orderStatus}
                         onChange={(e) => setOrderStatus(e.target.value)} // Cập nhật trạng thái được chọn
                       >
-                        <option value="WAITING">Đang đợi</option>
-                        <option value="PREPARING_ORDER">Đang chuẩn bị</option>
-                        <option value="DELIVERED">Đã hoàn thành</option>
+                        <option value="WAITING">Chờ thanh toán</option>
+                        <option value="PREPARING_ORDER">Chờ xác nhận</option>
+                        <option value="IN_TRANSIT">Xác nhận</option>
+                        <option value="DELIVERED">Hoàn thành</option>
                       </SelectStatus>
                     </OrderDetailRow>
                     <OrderDetailRow>
@@ -316,7 +431,7 @@ const ManagementOrdersOnlCashier = () => {
                     </OrderDetailRow>
                     <OrderDetailRow>
                       <OrderLabel>Tên Người Dùng:</OrderLabel>{" "}
-                      <span>{selectedOrder.username}</span>
+                      <span>{selectedOrder.fullName}</span>
                     </OrderDetailRow>
                     <OrderDetailRow>
                       <OrderLabel>Ghi Chú:</OrderLabel>{" "}
@@ -328,7 +443,10 @@ const ManagementOrdersOnlCashier = () => {
                 </div>
                 <div className="box d-flex align-items-center justify-content-center">
                   <StyledWrapperButton>
-                    <button onClick={() => openEditPopup(orderDetails)}>
+                    <button
+                      onClick={() => openEditPopup(orderDetails)}
+                      disabled={selectedOrder.orderStatus === "DELIVERED"}
+                    >
                       Sửa
                     </button>
                   </StyledWrapperButton>
@@ -365,6 +483,8 @@ const ManagementOrdersOnlCashier = () => {
                       name="text"
                       type="text"
                       placeholder="Search..."
+                      value={searchTerm}
+                      onChange={handleSearchChange}
                     />
                   </StyledWrapperSearchEdit>
                 </div>
@@ -373,7 +493,7 @@ const ManagementOrdersOnlCashier = () => {
                   <span>{selectedOrder?.orderId}</span>
                 </div>
                 <div className="box-food" key={selectedOrder?.orderId}>
-                  {products.map((product) => (
+                  {filteredProducts.map((product) => (
                     <div className="d-flex justify-content-center">
                       <CardFoodEditCashier
                         img={product.image}
@@ -418,7 +538,7 @@ const ManagementOrdersOnlCashier = () => {
                 </div>
                 <div className="box d-flex align-items-center justify-content-center">
                   <OrderLabel>Tổng Số Tiền:</OrderLabel>{" "}
-                  <PriceText>{selectedOrder?.totalAmount}đ</PriceText>
+                  <PriceText>{totalAmount}đ</PriceText>
                 </div>
                 <div className="box d-flex align-items-center justify-content-end">
                   <StyledWrapperButton>
@@ -607,6 +727,48 @@ const StyledWrapperSearchEdit = styled.div`
 
   .input:focus {
     border: 2px solid grey;
+  }
+`;
+
+const StyledWrapperTab = styled.div`
+  .radio-inputs {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 0.5rem;
+    background-color: #eee;
+    box-sizing: border-box;
+    box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
+    padding: 0.25rem;
+    width: 35%;
+    font-size: 14px;
+  }
+
+  .radio-inputs .radio {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
+  .radio-inputs .radio input {
+    display: none;
+  }
+
+  .radio-inputs .radio .name {
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    border: none;
+    padding: 0.5rem 0;
+    color: rgba(51, 65, 85, 1);
+    transition: all 0.15s ease-in-out;
+    height: 30px;
+  }
+
+  .radio-inputs .radio input:checked + .name {
+    background-color: #fff;
+    font-weight: 600;
   }
 `;
 function uuidv4() {
