@@ -130,7 +130,3 @@
     background-color: var(--colorPrimary);
     color: white;
 }
-
-.card-footer button{
-    height: 50px;
-}
