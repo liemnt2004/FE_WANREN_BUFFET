@@ -12,6 +12,7 @@ import useDebounce from "./component/useDebounce";
 import { fetchProductsByCategory, SearchProduct } from "../../api/apiCustommer/productApi";
 import ProductMenu from "./component/productMenu";
 import { CartContext } from "./component/CartContext";
+import Banner from "./component/Banner";
 
 
 // Định nghĩa loại Category
@@ -96,24 +97,7 @@ const MenuProductCustomer: React.FC = () => {
             <div className="container-fluid row mobile-layout m-0">
                 {/* Left Section */}
                 <div className="col-md-8 position-relative left-section" style={{ paddingBottom: 0 }}>
-                    <section className="banner">
-                        <div id="carouselExampleIndicators" className="carousel slide">
-                            <div className="carousel-indicators">
-                                <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0"
-                                    className="active" aria-current="true" aria-label="Slide 1"></button>
-                                <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"
-                                    aria-label="Slide 2"></button>
-                            </div>
-                            <div className="carousel-inner">
-                                <div className="carousel-item active">
-                                    <img src={websiteGreen} className="d-block w-100 img-fluid" alt="Slide 1" />
-                                </div>
-                                <div className="carousel-item">
-                                    <img src={bannerHome} className="d-block w-100 img-fluid" alt="Slide 2" />
-                                </div>
-                            </div>
-                        </div>
-                    </section>
+                    <Banner></Banner>
                     <img src={bannerBuffet} alt="Main Dish Image" className="img-fluid" />
                 </div>
 
