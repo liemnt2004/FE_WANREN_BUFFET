@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ProductModel from '../../../../models/StaffModels/ProductModel';
 import Header from './Header';
@@ -8,6 +8,7 @@ import MainContent from './MainContent';
 import ExitModal from './ExitModal';
 import SwitchTableModal from './SwitchTableModal';
 import '../../assets/css/styles.css'
+import { fetchOrderIdByTableId, fetchOrderStatusAPI, updateTableStatus } from '../../../../api/apiStaff/orderForStaffApi';
 
 type ContentType =
     | 'hotpot'
@@ -37,6 +38,15 @@ const OrderOnTable: React.FC = () => {
     const [selectedItemsSubtotal, setSelectedItemsSubtotal] = useState(0);
     const [cartItems, setCartItems] = useState<{ product: ProductModel; quantity: number; note: string; totalPrice: number }[]>([]);
 
+    useEffect(() => {
+        if (tableId) {
+            const updateStatus = async () => {
+                await updateTableStatus(Number(tableId), "LOCKED_TABLE");
+            };
+            updateStatus();
+        }
+    }, [tableId]);
+
     const getTotalQuantity = () => {
         return cartItems.reduce((total, item) => total + item.quantity, 0);
     };
@@ -60,10 +70,27 @@ const OrderOnTable: React.FC = () => {
         setIsModalOpen(false);
     };
 
-    const handleConfirmSwitchTable = () => {
-        navigate('/staff');
-        setIsSwitchTableModalOpen(false);
+    const handleConfirmSwitchTable = async () => {
+        try {
+            let newStatus = "EMPTY_TABLE";
+
+            const orderId = await fetchOrderIdByTableId(Number(tableId));
+            if (orderId) {
+                const orderData = await fetchOrderStatusAPI(orderId);
+                if (orderData.orderStatus === "IN_TRANSIT") {
+                    newStatus = "OCCUPIED_TABLE";
+                }
+            }
+
+            await updateTableStatus(Number(tableId), newStatus);
+            navigate('/staff');
+        } catch (error) {
+            console.error("Error handling table switch:", error);
+        } finally {
+            setIsSwitchTableModalOpen(false);
+        }
     };
+
 
     const handleOpenExitModal = () => {
         setIsModalOpen(true);
@@ -123,5 +150,4 @@ const OrderOnTable: React.FC = () => {
         </div>
     );
 };
-
 export default OrderOnTable;

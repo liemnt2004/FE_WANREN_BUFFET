@@ -48,14 +48,23 @@ const Checkout2: React.FC = () => {
 
     const updatePoints = async (phoneNumber: string, amount: number) => {
         try {
-            updateLoyaltyPoint(phoneNumber, amount);
-            updateCustomerInOrder(orderId, phoneNumber);
-            openNotification(
-                'Tích điểm',
-                'Tích điểm thành công!',
-                <CheckCircleOutlined style={{ color: '#52c41a' }} />
-            );
-            setDisable(true);
+            const data = await updateLoyaltyPoint(phoneNumber, amount);
+            if (data.loyal_phone !== null) {
+                updateCustomerInOrder(orderId, phoneNumber);
+                openNotification(
+                    'Tích điểm',
+                    'Tích điểm thành công!',
+                    <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                );
+                setDisable(true);
+            } else {
+                openNotification(
+                    'Tích điểm',
+                    'Số điện thoại chưa được đăng kí!',
+                    <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                );
+            }
+
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Không thể tích điểm!';
             openNotification(
@@ -68,9 +77,18 @@ const Checkout2: React.FC = () => {
 
     const handleClick = () => {
         try {
-            updatePoints(inputValue, amount);
+            if (inputValue.length < 10) {
+                openNotification(
+                    'Tích điểm',
+                    'Số điện thoại không đúng định dạng!',
+                    <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                );
+            } else {
+                updatePoints(inputValue, amount);
+            }
+
         } catch (error) {
-            console.error("Cannot update loyalty point");
+            console.log("Cannot update loyalty point");
         }
     };
 
@@ -88,7 +106,7 @@ const Checkout2: React.FC = () => {
 
     return (
         <>
-        {contextHolder}
+            {contextHolder}
             <div className="ps36231-checkout-staff-1">
                 <div className="call-staff">
                     <div className="d-flex justify-content-between align-items-center">

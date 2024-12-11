@@ -454,6 +454,7 @@ const EmployeeManagement: React.FC = () => {
                     className="search-input"
                     placeholder="Search for employees..."
                     onChange={handleSearchChange}
+                     style={{width:300}}
                   />
                   <i className="fas fa-search search-icon"></i>
                 </div>

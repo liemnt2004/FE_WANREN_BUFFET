@@ -247,7 +247,7 @@
 
 .orders-table th {
     background-color: #f4f4f9;
-    color: #333;
+    color: #333;  
 }
 
 .orders-table tr {
@@ -453,6 +453,289 @@
 #chart, #revenueChart, #expensesChart, #activityChart, #paymentChart {
     width: 100%;
     height: 100%; /* Ensure charts take full height */
+}
+
+
+
+
+@media (max-width: 1000px)  {
+    .MainDash{
+    margin-left: 0%;
+    padding: 1.5rem;
+    }
+    .admin-layout{
+        width: 90%;
+    }
+
+    .topbar{
+        width: 1000px !important;
+        margin-left: 0px;
+    }
+
+    .main-content{
+        margin: 0;
+        padding: 0;
+    }
+
+    .product-management{
+        padding: 50px 100px;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    .promotion-management{
+        padding: 50px 100px;
+    }
+
+
+
+    .promotion-management {
+        padding: 10px; /* Giảm khoảng cách padding để phù hợp với màn hình nhỏ */
+      }
+    
+      .search-filter {
+        flex-direction: column; /* Chuyển đổi thành cột để hiển thị gọn gàng */
+        align-items: flex-start;
+        gap: 10px; /* Tạo khoảng cách giữa các phần tử */
+      }
+    
+      .search-wrapper {
+        width: 100%; /* Chiếm toàn bộ chiều rộng */
+      }
+    
+      .search-input {
+        width: 100%; /* Đầu vào tìm kiếm chiếm toàn bộ khung */
+      }
+    
+      .btn-export-excel {
+        flex-wrap: wrap; /* Đưa các nút xuống dòng nếu không đủ không gian */
+        justify-content: flex-start;
+        gap: 10px; /* Tạo khoảng cách giữa các nút */
+      }
+    
+      .table-container {
+        width: 100vw; /* Chiếm toàn bộ chiều rộng màn hình */
+        overflow-x: auto; /* Thêm thanh cuộn ngang nếu bảng quá rộng */
+        margin-left: -10px; /* Loại bỏ khoảng trống từ container cha */
+        margin-right: -10px;
+      }
+    
+      table {
+        width: 100%; /* Đảm bảo bảng chiếm toàn bộ khung container */
+      }
+    
+      thead th {
+        font-size: 12px; /* Thu nhỏ kích thước chữ ở tiêu đề bảng */
+        white-space: nowrap; /* Đảm bảo tiêu đề không bị xuống dòng */
+      }
+    
+      tbody td {
+        font-size: 12px; /* Thu nhỏ kích thước chữ trong bảng */
+        white-space: nowrap; /* Giữ văn bản trên một dòng */
+      }
+    
+      .icon-button-edit,
+      .icon-button-remove {
+        padding: 5px; /* Giảm kích thước nút để phù hợp với không gian nhỏ */
+        font-size: 10px;
+      }
+    
+      .add-employee-btn {
+        width: 100%; /* Đặt nút Add Promotion chiếm toàn bộ chiều rộng */
+        text-align: center;
+      }
+
+
+
+
+
+
+
+
+
+
+
+    .chart-row {
+        display: flex;
+        flex-wrap: wrap; /* Cho phép các chart tự xuống dòng */
+        justify-content: center; /* Canh giữa nội dung */
+        gap: 15px; /* Khoảng cách giữa các chart */
+        margin: 0 auto; /* Căn giữa cả hàng */
+        padding: 10px; /* Khoảng cách xung quanh */
+      }
+    
+      .chart-card {
+        height: 100%;
+        width: 100%; /* Đảm bảo chart chiếm toàn bộ chiều rộng của màn hình nhỏ */
+        max-width: 500px; /* Giới hạn chiều rộng tối đa để không quá lớn */
+        margin: 0 auto; /* Căn giữa từng chart */
+        padding: 15px; /* Khoảng cách trong mỗi chart */
+        
+        border-radius: 8px; /* Bo góc */
+        
+      }
+    
+      .chart-card h3 {
+        font-size: 1.1rem; /* Giảm kích thước tiêu đề cho màn nhỏ */
+        text-align: center;
+        margin-bottom: 10px;
+        color: #ffffff; /* Giữ màu chữ trắng */
+      }
+    
+      .chart-card p {
+        text-align: center; /* Căn giữa thông báo 'Loading...' hoặc lỗi */
+        color: #f0f2f5;
+      }
+
+
+  
+
+
+
+
+
+      .main-content {
+        padding: 10px; /* Giảm khoảng cách thụt vào */
+      }
+    
+      .employee-management h2 {
+        font-size: 1.5rem; /* Giảm kích thước tiêu đề */
+        text-align: center; /* Căn giữa tiêu đề */
+      }
+    
+      .search-filter {
+        flex-direction: column; /* Chuyển thành dạng cột */
+        align-items: flex-start; /* Căn trái các phần tử */
+        gap: 10px; /* Thêm khoảng cách giữa các phần tử */
+      }
+    
+      .search-wrapper {
+        width: 100%; /* Chiếm toàn bộ chiều rộng */
+        position: relative;
+      }
+    
+      .search-input {
+        width: 100%; /* Đảm bảo input vừa khung */
+        padding: 8px 35px 8px 10px; /* Điều chỉnh khoảng cách bên trong */
+      }
+    
+      .search-icon {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        font-size: 1.2rem;
+        color: #aaa;
+      }
+    
+    
+      table {
+        font-size: 0.9rem; /* Giảm kích thước chữ */
+        width: 100%; /* Chiếm toàn bộ chiều rộng */
+      }
+    
+      table thead th {
+        white-space: nowrap; /* Ngăn tiêu đề bảng bị ngắt dòng */
+      }
+    
+      table tbody td {
+        white-space: nowrap; /* Ngăn dữ liệu trong bảng bị ngắt dòng */
+        text-overflow: ellipsis; /* Hiển thị dấu "..." nếu dữ liệu quá dài */
+        overflow: hidden;
+      }
+    
+      .icon-button-edit,
+      .icon-button-remove {
+        padding: 5px; /* Giảm kích thước các nút chỉnh sửa/xóa */
+        font-size: 0.8rem;
+      }
+    
+      .add-employee-btn {
+        width: 100%; /* Đặt nút thêm nhân viên chiếm toàn bộ chiều rộng */
+        text-align: center;
+      }
+
+      .table-container {
+        width: 92vw; /* Chiếm toàn bộ chiều rộng màn hình */
+        margin-left: 10px;
+        margin-right: -10px;
+        overflow-x: auto; /* Đảm bảo bảng có thể cuộn ngang nếu nội dung quá lớn */
+      }
+    
+      table {
+        width: 100%; /* Đảm bảo bảng chiếm toàn bộ chiều rộng khung */
+      }
+    
+      .main-content {
+        padding: 10px 0; /* Loại bỏ khoảng cách ngang để khớp với màn hình */
+      }
+      
+
+
+
+
+
+
+
+
+   .admin-layout .menu{
+        display: none ;
+    }
+
+    .sidebar_admin{
+        display: none;
+    }
+
+   
+
+    .topbar{
+        padding: 5% 20% !important;
+        justify-content: space-between;
+    }
+
+    .profile   .dropdown-menu{
+        width: 20px !important;
+    }
+
+   .profile    .dropdown-item {
+        font-size: 10px;
+    
+    }
+
+   .parentContainer{
+    display: flex;
+    justify-content: space-between;
+    margin-left: -auto123px;
+   }
+
+   .CompactCard{
+    width: 187px; /* Smaller width */
+    height: 180px; /* Smaller height */
+    margin: 10px auto; /* Center the cards with a small margin */
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+   }
+
+   .workshifts{
+        padding: 50px 100px;
+   }
+
 }
 
 

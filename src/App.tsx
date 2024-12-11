@@ -63,9 +63,9 @@ export function Routing() {
       (route) =>
         pathname === route ||
         (route === "/orderOnTable" && /^\/orderOnTable\/\d+$/.test(pathname)) ||
-        (route === "/checkout" && /^\/checkout\/step[1-3]$/.test(pathname)) ||
-        (route === "/checkout" && /^\/checkout\/sucessful/.test(pathname)) ||
-        (route === "/checkout" && /^\/checkout\/failed/.test(pathname)) ||
+        (route === "/staff/checkout" && /^\/staff\/checkout\/step[1-3]$/.test(pathname)) ||
+        (route === "/staff/checkout" && /^\/staff\/checkout\/sucessful/.test(pathname)) ||
+        (route === "/staff/checkout" && /^\/staff\/checkout\/failed/.test(pathname)) ||
         (route === "/cashier" && /^\/cashier\/.+$/.test(pathname))
     );
   };
@@ -214,7 +214,7 @@ export function Routing() {
       </Routes>
 
       {/* Bao gồm CartOffcanvas trên tất cả các trang */}
-      <CartOffcanvas />
+      <CartOffcanvas show={false} onHide={() => {}} />
     </>
   );
 }

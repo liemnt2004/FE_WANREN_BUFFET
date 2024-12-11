@@ -14,11 +14,19 @@ import khichi from './assets/img/Kichi.svg';
 import loginfooter from './assets/img/Cream and Black Simple Illustration Catering Logo.png';
 import ProductModel from "../../models/ProductModel";
 import { getProductHot } from "../../api/apiCustommer/productApi";
-import {CartItem, useCart} from "./component/CartContext"; // Sử dụng custom hook
+import { CartContext, CartItem, useCart } from "./component/CartContext"; // Sử dụng custom hook
 import formatMoney from "./component/FormatMoney";
 import { AuthContext } from "./component/AuthContext";
 import { useNavigate } from "react-router-dom";
-import {Modal} from "bootstrap"
+import { Accordion } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { AccordionEventKey } from "react-bootstrap/esm/AccordionContext";
+import Banner from "./component/Banner";
+
+
+
+
+  
 const IndexCustomer: React.FC = () => {
     const [listProduct, setListProduct] = useState<ProductModel[]>([]);
     const [loading, setLoading] = useState(true);
@@ -26,13 +34,22 @@ const IndexCustomer: React.FC = () => {
     const [selectedProduct, setSelectedProduct] = useState<ProductModel | null>(null); // Lưu sản phẩm đang chọn
 
     const { fullName, logout } = useContext(AuthContext);
-    const { cartItems, addToCart, updateQuantity } = useCart();
+    const { cartItems, addToCart, updateQuantity, decreaseQuantity } = useCart();
     const navigate = useNavigate();
+    const [activeKey, setActiveKey] = React.useState<AccordionEventKey>('0');
 
-// State để quản lý số lượng của sản phẩm trong modal
+    // Hàm xử lý sự kiện khi Accordion thay đổi
+    const handleAccordionSelect = (eventKey: AccordionEventKey, e: React.SyntheticEvent<unknown>) => {
+        // Cập nhật activeKey nếu sự kiện này có eventKey hợp lệ
+        console.log(eventKey);
+
+        setActiveKey(eventKey);
+    };
+
+    // State để quản lý số lượng của sản phẩm trong modal
     const [modalQuantities, setModalQuantities] = useState<{ [key: number]: number }>({});
 
-// Lấy sản phẩm hot khi component được render
+    // Lấy sản phẩm hot khi component được render
     useEffect(() => {
         getProductHot()
             .then(product => {
@@ -52,50 +69,76 @@ const IndexCustomer: React.FC = () => {
             });
     }, []);
 
-// useEffect to show modal when a product is selected
+    // useEffect to show modal when a product is selected
     useEffect(() => {
         if (selectedProduct) {
+
+
+
             const modalElement = document.getElementById(`productModal${selectedProduct.productId}`);
             if (modalElement) {
                 const modal = new window.bootstrap.Modal(modalElement);
                 modal.show();
+
             }
         }
     }, [selectedProduct]);
 
-// Hàm để thêm sản phẩm vào giỏ hàng với số lượng cụ thể
-    const addProductToCart = (product: ProductModel) => {
-        if (!fullName) {
-            alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
-            navigate("/login");
-            return;
-        }
 
-        const quantity = modalQuantities[product.productId] || 1;
+    const closeModal = () => {
+        setSelectedProduct(null);
+        const modalElement = document.getElementById(`productModal${selectedProduct?.productId}`);
 
-        const cartItem: CartItem = {
-            productId: product.productId,
-            productName: product.productName,
-            price: product.price,
-            image: product.image,
-            quantity: quantity,
-        };
+        if (modalElement) {
+            setModalQuantities({});
+            const modal = new window.bootstrap.Modal(modalElement);
 
-        addToCart(cartItem);
-
-        // Sau đó, nếu người dùng muốn thay đổi số lượng, gọi updateQuantity
-        if (quantity > 1) {
-            updateQuantity(product.productId, quantity);
+            modal.hide(); // Đóng modal
+            modalElement.classList.remove('show');
+            document.body.classList.remove('modal-open');
+            document.querySelector('.modal-backdrop')?.remove();
         }
     };
 
-    const decreaseQuantity = (productId: number) => {
+
+
+    // Hàm để thêm sản phẩm vào giỏ hàng với số lượng cụ thể
+    const addProductToCart = (product: ProductModel) => {
+        const quantity = modalQuantities[product.productId] || 1;
+
+        const existingCartItem = cartItems.find(item => item.productId === product.productId);
+
+        if (existingCartItem) {
+            const updatedCartItem = {
+                ...existingCartItem,
+                quantity: existingCartItem.quantity + quantity
+            };
+
+            updateQuantity(product.productId, updatedCartItem.quantity);
+        } else {
+            const cartItem: CartItem = {
+                productId: product.productId,
+                productName: product.productName,
+                price: product.price,
+                image: product.image,
+                quantity: quantity,
+            };
+
+            addToCart(cartItem);
+        }
+
+        closeModal();
+
+    };
+
+
+    const decreaseQuantityModal = (productId: number) => {
         const newQuantity = Math.max((modalQuantities[productId] || 1) - 1, 1); // Không để số lượng nhỏ hơn 1
         setModalQuantities(prev => ({
             ...prev,
             [productId]: newQuantity
         }));
-        updateQuantity(productId, newQuantity);
+        // updateQuantity(productId, newQuantity);
     };
 
     const handleQuantityChange = (productId: number, event: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,9 +147,6 @@ const IndexCustomer: React.FC = () => {
             ...prevQuantities,
             [productId]: value
         }));
-
-        // Cập nhật số lượng trong giỏ hàng sau khi thay đổi
-        updateQuantity(productId, value);
     };
 
     const increaseQuantity = (productId: number) => {
@@ -115,12 +155,26 @@ const IndexCustomer: React.FC = () => {
             ...prev,
             [productId]: newQuantity
         }));
-        updateQuantity(productId, newQuantity);
     };
 
+
+
     const handleProductClick = (product: ProductModel) => {
-        setSelectedProduct(product);
+        // Nếu bấm vào sản phẩm đã được chọn, ta sẽ đặt lại `selectedProduct` thành null để đóng modal
+        if (selectedProduct && selectedProduct.productId === product.productId) {
+            setSelectedProduct(null); // Đóng modal nếu bấm lại vào sản phẩm đã chọn
+        } else {
+            product.quantity = 1;
+            setSelectedProduct(product); // Mở modal cho sản phẩm được chọn
+
+        }
     };
+
+   
+    
+  
+      
+
 
 
 
@@ -133,48 +187,14 @@ const IndexCustomer: React.FC = () => {
         <div className="container-fluid">
             <div className="row mobile-layout">
                 <div className="col-md-9 position-relative left-section"
-                     style={{ overflowY: "auto", maxHeight: "100vh", scrollbarWidth: "none", msOverflowStyle: "none" }}>
-                    <div style={{height: "2000px"}} className="about-left">
+                    style={{ overflowY: "auto", maxHeight: "100vh", scrollbarWidth: "none", msOverflowStyle: "none" }}>
+                    <div style={{ height: "2000px" }} className="about-left">
                         {/* Banner Section */}
-                        <section className="banner">
-                            <div id="carouselExampleIndicators" className="carousel slide">
-                                <div className="carousel-indicators">
-                                    <button type="button" data-bs-target="#carouselExampleIndicators"
-                                            data-bs-slide-to="0"
-                                            className="active" aria-current="true" aria-label="Slide 1"></button>
-                                    <button type="button" data-bs-target="#carouselExampleIndicators"
-                                            data-bs-slide-to="1"
-                                            aria-label="Slide 2"></button>
-                                    <button type="button" data-bs-target="#carouselExampleIndicators"
-                                            data-bs-slide-to="2"
-                                            aria-label="Slide 3"></button>
-                                </div>
-                                <div className="carousel-inner">
-                                    <div className="carousel-item active">
-                                        <img src={websiteGreen} className="d-block w-100 img-fluid" alt="..."/>
-                                    </div>
-                                    <div className="carousel-item">
-                                        <img src={bannerHome} className="d-block w-100 img-fluid" alt="..."/>
-                                    </div>
-                                    <div className="carousel-item">
-                                        <img src={image1500x700} className="d-block w-100 img-fluid" alt="..."/>
-                                    </div>
-                                </div>
-                                <button className="carousel-control-prev" type="button"
-                                        data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-                                    <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span className="visually-hidden">Previous</span>
-                                </button>
-                                <button className="carousel-control-next" type="button"
-                                        data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-                                    <span className="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span className="visually-hidden">Next</span>
-                                </button>
-                            </div>
-                        </section>
+                        <Banner></Banner>
+
 
                         {/* Main Dish Image */}
-                        <img src={bannerBuffet} alt="Main Dish Image" className="img-fluid"/>
+                        <img src={bannerBuffet} alt="Main Dish Image" className="img-fluid" />
 
                         {/* About Section */}
                         <section className="bg-white row pb-5 about-section">
@@ -186,12 +206,12 @@ const IndexCustomer: React.FC = () => {
                                 </div>
                             </div>
                             <div className="col-md-6">
-                                <img src={kichiHomeAll} alt="" className="img-fluid rounded-3 text-center"/>
+                                <img src={kichiHomeAll} alt="" className="img-fluid rounded-3 text-center" />
                             </div>
                         </section>
 
                         {/* Hot Deal Section */}
-                        <section className="hot-deal" style={{backgroundColor: 'white'}}>
+                        <section className="hot-deal" style={{ backgroundColor: 'white' }}>
                             <h4 className="fw-bold">HOT DEAL</h4>
                             {loading ? (
                                 <div>Đang tải sản phẩm...</div>
@@ -202,30 +222,56 @@ const IndexCustomer: React.FC = () => {
                                     <div className="row g-4 mb-5">
                                         {listProduct.map((product) => (
                                             <React.Fragment key={product.productId}>
-                                                <div className="col-6 col-md-3"
-                                                     onClick={() => handleProductClick(product)}>
-                                                    <div className="card border border-0 p-3 card-custom text-center">
+                                                <div className="col-6 col-md-3">
+                                                    <div className="card border border-0 p-3 card-custom">
                                                         <img
                                                             src={product.image || lau3}
                                                             className="rounded-3"
                                                             alt={product.productName || 'Product Image'}
-                                                            style={{height: 200, width: 250}}
+                                                            onClick={() => handleProductClick(product)}
                                                         />
                                                         <div className="card-body p-0">
-                                                            <h5 className="card-title fs-6 m-0 p-0">{product.productName}</h5>
+                                                            <h5 className="card-title fs-6 m-0 p-0 pt-3 ">{product.productName}</h5>
                                                         </div>
-                                                        <div
-                                                            className="mt-4 mb-2 d-flex justify-content-around align-items-center">
-                                                            <h6 className="card__price fw-bold">{formatMoney(product.price)}</h6>
-                                                            <button
-                                                                id="increment"
-                                                                onClick={() => addProductToCart(product)} // Chỉ thêm sản phẩm vào giỏ hàng, không mở modal
-                                                                disabled={!fullName} // Vô hiệu hóa nếu chưa đăng nhập
-                                                                title={fullName ? "Thêm vào giỏ hàng" : "Vui lòng đăng nhập để thêm vào giỏ hàng"}
-                                                            >
-                                                                <i className="bi bi-plus-lg"></i>
-                                                            </button>
+                                                        <div className="mt-3 d-flex align-items-center card__price justify-content-between">
+                                                            <h6 className="fw-bold">{formatMoney(product.price)}</h6>
+                                                            <div className="col-3 d-flex w-50 add-to-cart justify-content-end">
+                                                                {/* Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa */}
+                                                                {cartItems && cartItems.length > 0 ? (
+                                                                    cartItems.map((item) => {
+                                                                        if (item.productId === product.productId) {
+                                                                            const quantity = item.quantity;
 
+                                                                            return (
+                                                                                <div className="d-flex align-items-center" key={item.productId}>
+                                                                                    {quantity > 0 && (
+                                                                                        <button
+                                                                                            id="decrement"
+                                                                                            type="button"
+                                                                                            className="btn btn-danger ms-2"
+                                                                                            onClick={() => decreaseQuantity(item.productId)} // Giảm số lượng
+                                                                                        >
+                                                                                            <i className="bi bi-dash-lg"></i>
+                                                                                        </button>
+                                                                                    )}
+                                                                                    {quantity > 0 && (
+                                                                                        <span className="mx-2">{quantity}</span>
+                                                                                    )}
+                                                                                </div>
+                                                                            );
+                                                                        }
+                                                                        return null;
+                                                                    })
+                                                                ) : null}
+                                                                <button
+                                                                    type="button"
+                                                                    id="increment"
+                                                                    className="btn btn-danger"
+                                                                    onClick={() => addToCart(product)}
+                                                                >
+                                                                    <i className="bi bi-plus-lg"></i>
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -237,9 +283,14 @@ const IndexCustomer: React.FC = () => {
                                                         id={`productModal${selectedProduct.productId}`}
                                                         tabIndex={-1}
                                                         aria-hidden="true"
+                                                        onClick={(e) => {
+                                                            if (e.target === e.currentTarget) { // Kiểm tra xem người dùng có click vào phần nền (background) của modal không
+                                                                closeModal();
+                                                            }
+                                                        }}
                                                     >
                                                         <div className="modal-dialog modal-dialog-centered">
-                                                            <div className="modal-content">
+                                                            <div className="modal-content p-0">
                                                                 <div className="container-modal">
                                                                     <div className="container-modal-header">
                                                                         <div className="control-img">
@@ -250,30 +301,24 @@ const IndexCustomer: React.FC = () => {
                                                                         </div>
                                                                     </div>
                                                                     <div className="container-modal-footer">
-                                                                        <div
-                                                                            className="name-item">{selectedProduct.productName}</div>
-                                                                        <div
-                                                                            className="capacity-item">{selectedProduct.description}</div>
+                                                                        <div className="name-item">{selectedProduct.productName}</div>
+                                                                        <div className="capacity-item">{selectedProduct.description}</div>
                                                                         <div className="container-price-quantity">
                                                                             <div className="price">
                                                                                 <span>Giá: {formatMoney(selectedProduct.price)}</span>
                                                                             </div>
-
-                                                                            <button
-                                                                                className="control-btn-add-to-cart btn"
-                                                                                onClick={() => addProductToCart(selectedProduct)}>
-                                                                                Thêm vào giỏ hàng
-                                                                            </button>
-                                                                            <span>
-                                                                                <div className="quantity-control">
+                                                                        </div>
+                                                                        <div className="quantity-control d-flex justify-content-between align-items-center">
+                                                                            <div>
                                                                                 <button
-                                                                                    className="btn"
-                                                                                    onClick={() => decreaseQuantity(selectedProduct.productId)}
+                                                                                    id="increment"
+                                                                                    type="button"
+                                                                                    className="btn btn-danger"
+                                                                                    onClick={() => decreaseQuantityModal(selectedProduct.productId)}
                                                                                 >
-                                                                                    -
+                                                                                    <i className="bi bi-dash-lg"></i>
                                                                                 </button>
                                                                                 <input
-
                                                                                     type="number"
                                                                                     value={modalQuantities[selectedProduct.productId] || 1}
                                                                                     onChange={(e) =>
@@ -282,13 +327,22 @@ const IndexCustomer: React.FC = () => {
                                                                                     min="1"
                                                                                 />
                                                                                 <button
-                                                                                    className="btn"
+                                                                                    id="increment"
+                                                                                    type="button"
+                                                                                    className="btn btn-danger"
                                                                                     onClick={() => increaseQuantity(selectedProduct.productId)}
                                                                                 >
-                                                                                    +
+                                                                                    <i className="bi bi-plus-lg"></i>
                                                                                 </button>
                                                                             </div>
-                                                                            </span>
+                                                                            <div>
+                                                                                <button
+                                                                                    className="btn btn-danger p-2"
+                                                                                    onClick={() => addProductToCart(selectedProduct)}
+                                                                                >
+                                                                                    Thêm vào giỏ hàng
+                                                                                </button>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -305,94 +359,69 @@ const IndexCustomer: React.FC = () => {
 
 
                         {/* What Can We Do Section */}
-                        <section className="what-can-we-do mt-3 pb-4" style={{backgroundColor: 'white'}}>
+                        <section className="what-can-we-do mt-3 pb-4" style={{ backgroundColor: 'white' }}>
                             <div className="container">
                                 <div className="row">
-                                    <div className="col-md-6 help" style={{paddingLeft: 0, paddingRight: '50px'}}>
+                                    <div className="col-md-6 help" style={{ paddingLeft: 0, paddingRight: '50px' }}>
                                         <h4 className="fw-bold pb-4">CHÚNG TÔI CÓ THỂ GIÚP GÌ CHO BẠN ?</h4>
-                                        <div className="accordion" id="accordionExample">
-                                            {/* Accordion Item 1 */}
-                                            <div className="accordion-item my-3 mt-0 rounded-0">
-                                                <h2 className="accordion-header rounded-0">
-                                                    <button
-                                                        className="accordion-button accordion-item-design collapsed rounded-0"
-                                                        type="button" data-bs-toggle="collapse"
-                                                        data-bs-target="#collapseOne" aria-expanded="false"
-                                                        aria-controls="collapseOne">
-                                                        Accordion Item #1
-                                                    </button>
-                                                </h2>
-                                                <div id="collapseOne" className="accordion-collapse collapse"
-                                                     data-bs-parent="#accordionExample">
-                                                    <div className="accordion-body">
-                                                        <strong>This is the first item's accordion body.</strong> It is
-                                                        hidden by default.
+                                        <div className="container mt-5">
+                                            <Accordion activeKey={activeKey} onSelect={handleAccordionSelect} flush>
+                                                <Accordion.Item eventKey="0">
+                                                    <Accordion.Header>1. Cách thức đặt hàng như thế nào?</Accordion.Header>
+                                                    <div
+                                                        className="accordion-body"
+                                                        style={{ display: activeKey === '0' ? 'block' : 'none' }}
+                                                    >
+                                                        Để đặt hàng, bạn chỉ cần chọn sản phẩm, thêm vào giỏ hàng, sau đó điền thông tin giao hàng và tiến hành thanh toán.
                                                     </div>
-                                                </div>
-                                            </div>
-                                            {/* Accordion Item 2 */}
-                                            <div className="accordion-item my-3 rounded-0">
-                                                <h2 className="accordion-header rounded-0">
-                                                    <button
-                                                        className="accordion-button accordion-item-design collapsed rounded-0"
-                                                        type="button" data-bs-toggle="collapse"
-                                                        data-bs-target="#collapseTwo" aria-expanded="false"
-                                                        aria-controls="collapseTwo">
-                                                        Accordion Item #2
-                                                    </button>
-                                                </h2>
-                                                <div id="collapseTwo" className="accordion-collapse collapse"
-                                                     data-bs-parent="#accordionExample">
-                                                    <div className="accordion-body">
-                                                        <strong>This is the second item's accordion body.</strong> It is
-                                                        hidden by default.
+                                                </Accordion.Item>
+
+                                                <Accordion.Item eventKey="1">
+                                                    <Accordion.Header>2. Tôi có thể thanh toán bằng phương thức nào?</Accordion.Header>
+                                                    <div
+                                                        className="accordion-body"
+                                                        style={{ display: activeKey === '1' ? 'block' : 'none' }}
+                                                    >
+                                                        Chúng tôi hỗ trợ nhiều phương thức thanh toán như thẻ tín dụng, chuyển khoản ngân hàng, và thanh toán khi nhận hàng (COD).
                                                     </div>
-                                                </div>
-                                            </div>
-                                            {/* Accordion Item 3 */}
-                                            <div className="accordion-item my-3 rounded-0">
-                                                <h2 className="accordion-header rounded-0">
-                                                    <button
-                                                        className="accordion-button accordion-item-design collapsed rounded-0"
-                                                        type="button" data-bs-toggle="collapse"
-                                                        data-bs-target="#collapseThree" aria-expanded="false"
-                                                        aria-controls="collapseThree">
-                                                        Accordion Item #3
-                                                    </button>
-                                                </h2>
-                                                <div id="collapseThree" className="accordion-collapse collapse"
-                                                     data-bs-parent="#accordionExample">
-                                                    <div className="accordion-body">
-                                                        <strong>This is the third item's accordion body.</strong> It is
-                                                        hidden by default.
+                                                </Accordion.Item>
+
+                                                <Accordion.Item eventKey="2">
+                                                    <Accordion.Header>3. Thời gian giao hàng mất bao lâu?</Accordion.Header>
+                                                    <div
+                                                        className="accordion-body"
+                                                        style={{ display: activeKey === '2' ? 'block' : 'none' }}
+                                                    >
+                                                        Thời gian giao hàng phụ thuộc vào khu vực của bạn. Thường sẽ giao trong vòng 1h giờ làm việc.
                                                     </div>
-                                                </div>
-                                            </div>
-                                            {/* Accordion Item 4 */}
-                                            <div className="accordion-item my-3 rounded-0">
-                                                <h2 className="accordion-header rounded-0">
-                                                    <button
-                                                        className="accordion-button accordion-item-design collapsed rounded-0"
-                                                        type="button" data-bs-toggle="collapse"
-                                                        data-bs-target="#collapseFour" aria-expanded="false"
-                                                        aria-controls="collapseFour">
-                                                        Accordion Item #4
-                                                    </button>
-                                                </h2>
-                                                <div id="collapseFour" className="accordion-collapse collapse"
-                                                     data-bs-parent="#accordionExample">
-                                                    <div className="accordion-body">
-                                                        <strong>This is the fourth item's accordion body.</strong> It is
-                                                        hidden by default.
+                                                </Accordion.Item>
+
+                                                <Accordion.Item eventKey="3">
+                                                    <Accordion.Header>4. Làm thế nào để kiểm tra tình trạng đơn hàng?</Accordion.Header>
+                                                    <div
+                                                        className="accordion-body"
+                                                        style={{ display: activeKey === '3' ? 'block' : 'none' }}
+                                                    >
+                                                        Sau khi đơn hàng được xử lý, bạn sẽ nhận được mã số đơn hàng và có thể theo dõi tình trạng đơn hàng qua website của chúng tôi.
                                                     </div>
-                                                </div>
-                                            </div>
+                                                </Accordion.Item>
+
+                                                <Accordion.Item eventKey="4">
+                                                    <Accordion.Header>5. Tôi có thể đổi hoặc trả lại sản phẩm không?</Accordion.Header>
+                                                    <div
+                                                        className="accordion-body"
+                                                        style={{ display: activeKey === '4' ? 'block' : 'none' }}
+                                                    >
+                                                        Có, bạn có thể đổi hoặc trả lại sản phẩm trong vòng 7 ngày nếu sản phẩm còn nguyên vẹn và không có dấu hiệu sử dụng.
+                                                    </div>
+                                                </Accordion.Item>
+                                            </Accordion>
                                         </div>
                                     </div>
-                                    <div className="col-md-6" style={{paddingRight: 0}}>
+                                    <div className="col-md-6" style={{ paddingRight: 0 }}>
                                         <h4 className="fw-bold pb-4">KHÁCH HÀNG NÓI GÌ?</h4>
                                         <div id="carouselExampleCaptions" className="carousel slide"
-                                             data-bs-ride="carousel">
+                                            data-bs-ride="carousel">
                                             {/* Carousel Indicators */}
                                             <div className="carousel-indicators">
                                                 <button
@@ -429,19 +458,17 @@ const IndexCustomer: React.FC = () => {
                                                                 width="70"
                                                                 height="70"
                                                                 className="img-fluid"
-                                                                style={{borderRadius: '50%'}}
+                                                                style={{ borderRadius: '50%' }}
                                                             />
                                                         </div>
                                                         <div className="comment py-5">
                                                             <p>
-                                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                                Magni nesciunt tempore, dolore voluptatibus
-                                                                reprehenderit vel!
+                                                                Đồ ăn ngon, nhân viên nhiệt tình
                                                             </p>
                                                         </div>
                                                         <div className="profile-info">
                                                             <h5 className="name">Nguyen Hoai Nam</h5>
-                                                            <p>Customer</p>
+                                                            <p>Khách Hàng</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -456,19 +483,17 @@ const IndexCustomer: React.FC = () => {
                                                                 width="70"
                                                                 height="70"
                                                                 className="img-fluid"
-                                                                style={{borderRadius: '50%'}}
+                                                                style={{ borderRadius: '50%' }}
                                                             />
                                                         </div>
                                                         <div className="comment py-5">
                                                             <p>
-                                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                                Magni nesciunt tempore, dolore voluptatibus
-                                                                reprehenderit vel!
+                                                                Phục vụ nhanh, nhân viên thân thiện
                                                             </p>
                                                         </div>
                                                         <div className="profile-info">
                                                             <h5 className="name">Mai Thi My Linh</h5>
-                                                            <p>Customer</p>
+                                                            <p>Khách Hàng</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -483,19 +508,17 @@ const IndexCustomer: React.FC = () => {
                                                                 width="70"
                                                                 height="70"
                                                                 className="img-fluid"
-                                                                style={{borderRadius: '50%'}}
+                                                                style={{ borderRadius: '50%' }}
                                                             />
                                                         </div>
                                                         <div className="comment py-5">
                                                             <p>
-                                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                                Magni nesciunt tempore, dolore voluptatibus
-                                                                reprehenderit vel!
+                                                                Đồ ăn ra nhanh
                                                             </p>
                                                         </div>
                                                         <div className="profile-info">
                                                             <h5 className="name">Luong Cong Huan</h5>
-                                                            <p>Customer</p>
+                                                            <p>Khách Hàng</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -554,7 +577,7 @@ const IndexCustomer: React.FC = () => {
                                             <section className="ratio ratio-16x9">
                                                 <iframe
                                                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.177875756147!2d106.68670197570356!3d10.79768475879993!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135adedecb7bc5f%3A0xa3f78f8a3e35f1b0!2zTOG6qXUgQsSDbmcgQ2h1eeG7gW4gS2ljaGkgS2ljaGk!5e0!3m2!1svi!2s!4v1727163707823!5m2!1svi!2s"
-                                                    width="300" height="200" style={{border: 0}}
+                                                    width="300" height="200" style={{ border: 0 }}
                                                     loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                                             </section>
                                         </div>
@@ -571,19 +594,19 @@ const IndexCustomer: React.FC = () => {
                 <div className="col-md-3 right-section">
                     <div className="row d-flex align-items-center justify-content-center">
                         <div className="col-12 image-card text-center">
-                            <a href="/menu"><img src={cothaygia} alt="Menu" className="img-fluid"/></a>
+                            <a href="/menu"><img src={cothaygia} alt="Menu" className="img-fluid" /></a>
                             <a href="/menu" className="btn btn-outline-light mt-2">Thực Đơn →</a>
                         </div>
                     </div>
                     <div className="row d-flex align-items-center justify-content-center">
                         <div className="col-12 image-card text-center">
-                            <a href="/reservation"><img src={bannerHome} alt="Reservation" className="img-fluid"/></a>
+                            <a href="/reservation"><img src={bannerHome} alt="Reservation" className="img-fluid" /></a>
                             <a href="/reservation" className="btn btn-outline-light mt-2">Đặt Bàn →</a>
                         </div>
                     </div>
                     <div className="row d-flex align-items-center justify-content-center">
                         <div className="col-12 image-card text-center">
-                            <a href="/promotion"><img src={publicAvif} alt="Promotion" className="img-fluid"/></a>
+                            <a href="/promotion"><img src={publicAvif} alt="Promotion" className="img-fluid" /></a>
                             <a href="/promotion" className="btn btn-outline-light mt-2">Ưu Đãi →</a>
                         </div>
                     </div>

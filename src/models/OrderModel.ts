@@ -12,6 +12,7 @@ export interface OrderModel {
     notes: string;
     address: string;
     payment: string;
+    promotion:string;
     createdDate: string;
     updatedDate?: string | null;
     producHistorytDTOList:ProductDetail[];

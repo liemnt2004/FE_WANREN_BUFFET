@@ -84,7 +84,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const decodeToken = (token: string, isEmployee: boolean = false) => {
         try {
             const decoded: DecodedToken = jwtDecode<DecodedToken>(token);
-
+        
+            
             if (isEmployee) {
                 setEmployeeUserId(decoded.userId || "");
                 setEmployeeUsername(decoded.sub || null);
@@ -104,6 +105,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 setRoles(decoded.roles || null);
                 setAddress(decoded.address || null); // Lưu address
             }
+            
+            
+            
 
 
         } catch (error) {

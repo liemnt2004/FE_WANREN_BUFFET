@@ -1,4 +1,5 @@
 export async function request(endpoint: string, method: string = "GET", body?: any) {
+    
     try {
         const response = await fetch(endpoint, {
             method: method,

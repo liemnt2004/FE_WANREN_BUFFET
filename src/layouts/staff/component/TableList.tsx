@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tables } from '../../../models/StaffModels/Tables';
 import { fetchOrderIdByTableId, fetchReservations, fetchTables, updateReservationStatus } from '../../../api/apiStaff/orderForStaffApi';
+import { notification } from 'antd';
+import { CloseCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 interface Reservation {
   reservationId: number;
   userId: number;
@@ -78,6 +80,8 @@ const TableModal: React.FC<{
     }
     onClose();
   };
+
+
 
   if (!table) return null;
 
@@ -166,7 +170,7 @@ const TableModal: React.FC<{
 
           {/* Modal Footer */}
           <div className="modal-footer text-end">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>
+            <button type="button" className="btn btn-secondary rounder" onClick={onClose}>
               Đóng
             </button>
             <button type="button" className="btn btn-danger" onClick={() => handleConfirm(Number(reID))}>
@@ -191,6 +195,19 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [orderId, setOrderId] = useState<number>();
   const navigate = useNavigate();
+  const [api, contextHolder] = notification.useNotification();
+
+  const openNotification = (message: string, description: string, icon: React.ReactNode, pauseOnHover: boolean = true) => {
+    api.open({
+      message,
+      description,
+      showProgress: true,
+      pauseOnHover,
+      placement: 'topRight',
+      duration: 3,
+      icon,
+    });
+  };
 
   useEffect(() => {
     const fetchTable = async () => {
@@ -228,7 +245,6 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
       const orderId = await fetchOrderIdByTableId(tableId);
 
       if (orderId !== null) {
-        console.log(orderId)
         navigate(`/staff/checkout/step${step}`, { state: { tableId: tableId, orderId: orderId } });
       } else {
         console.error('No orderId found for this table');
@@ -242,8 +258,14 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
     if (table.tableStatus === 'EMPTY_TABLE') {
       setSelectedTable(table);
       setShowModal(true);
-    } else if (table.tableStatus === 'LOCKED_TABLE') {
+    } else if (table.tableStatus === 'PAYING_TABLE') {
       handleCheckoutStep(table.tableId, 3);
+    } else if (table.tableStatus === 'LOCKED_TABLE') {
+      openNotification(
+        'Bàn khóa',
+        'Bàn đang khóa bởi nhân viên!',
+        <InfoCircleOutlined style={{ color: '#1890ff' }} />
+      );
     } else {
       navigate(`/orderOnTable`, { state: { tableId: table.tableId, tableNumber: table.tableNumber, adults: 2, children: 0, tableLocation: table.location } });
     }
@@ -270,41 +292,51 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
   }
 
   return (
-    <div className="row" style={{ paddingLeft: '20px', width: '100%' }}>
-      {filteredTables.length > 0 ? (
-        filteredTables.map((table) => (
-          <div className="col-md-3" key={table.tableId} onClick={() => handleTableClick(table)}>
-            <div className={`card table-card position-relative ${table.tableStatus === 'EMPTY_TABLE' ? '' : 'table-card-active'}`}>
-              {table.tableStatus === 'LOCKED_TABLE' && (
-                <>
-                  <p className="position-absolute translate-middle" style={{ top: '10px', right: '-25px' }}>
-                    <i className="bi bi-shield-lock-fill fs-3 text-danger"></i>
-                  </p>
-                </>)
-              }
-              <div className="card-body">
-                <h5 className="card-title text-center">Bàn {table.tableNumber} <span style={{ fontWeight: 'bold' }}>{table.location === 'GDeli' ? '(Deli)' : ''}</span> </h5>
-                {table.tableStatus !== 'EMPTY_TABLE' && table.tableStatus !== 'LOCKED_TABLE' && (
+    <>
+    {contextHolder}
+      <div className="row" style={{ paddingLeft: '20px', width: '100%' }}>
+        {filteredTables.length > 0 ? (
+          filteredTables.map((table) => (
+            <div className="col-md-3" key={table.tableId} onClick={() => handleTableClick(table)}>
+              <div className={`card table-card position-relative ${table.tableStatus === 'EMPTY_TABLE' ? '' : 'table-card-active'}`}>
+                {table.tableStatus === 'LOCKED_TABLE' && (
                   <>
-                    <p className="table-status">{table.tableStatus === 'OCCUPIED_TABLE' && ('2h05')}</p>
-                    <p key={table.tableId} onClick={() => handleCheckoutStep(table.tableId, 1)} className="btn btn-danger rounder-0 mt-4">Thanh toán</p>
-                  </>
-                )}
+                    <p className="position-absolute translate-middle" style={{ top: '10px', right: '-25px' }}>
+                      <i className="bi bi-shield-lock-fill fs-3 text-danger"></i>
+                    </p>
+                  </>)
+                }
+                {table.tableStatus === 'PAYING_TABLE' && (
+                  <>
+                    <p className="position-absolute translate-middle" style={{ top: '10px', right: '-25px' }}>
+                      <i className="bi bi-credit-card-2-front-fill fs-3 text-danger"></i>
+                    </p>
+                  </>)
+                }
+                <div className="card-body">
+                  <h5 className="card-title text-center">Bàn {table.tableNumber} <span style={{ fontWeight: 'bold' }}>{table.location === 'GDeli' ? '(Deli)' : ''}</span> </h5>
+                  {table.tableStatus !== 'EMPTY_TABLE' && table.tableStatus !== 'LOCKED_TABLE' && table.tableStatus !== 'PAYING_TABLE' && (
+                    <>
+                      <p className="table-status">{table.tableStatus === 'OCCUPIED_TABLE' && ('2h05')}</p>
+                      <p key={table.tableId} onClick={() => handleCheckoutStep(table.tableId, 1)} className="btn btn-danger rounder-0 mt-4">Thanh toán</p>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))
-      ) : (
-        <div>No tables available</div>
-      )}
-      {showModal && (
-        <TableModal
-          table={selectedTable}
-          onClose={() => setShowModal(false)}
-          onConfirm={handleConfirm}
-        />
-      )}
-    </div>
+          ))
+        ) : (
+          <div>No tables available</div>
+        )}
+        {showModal && (
+          <TableModal
+            table={selectedTable}
+            onClose={() => setShowModal(false)}
+            onConfirm={handleConfirm}
+          />
+        )}
+      </div>
+    </>
   );
 };
 

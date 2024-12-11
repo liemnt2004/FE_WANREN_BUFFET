@@ -416,7 +416,7 @@ const CustomerManagement: React.FC = () => {
     );
   });
   return (
-    <div className="container-fluid">
+    <div className="container">
       <div className="main-content">
         <div className="employee-management">
           <h2>Manage Customers</h2>
@@ -424,7 +424,7 @@ const CustomerManagement: React.FC = () => {
             <div className="search-wrapper">
               <input
                 type="text"
-                className="form-control search-input"
+                className=" search-input"
                 placeholder="Search for customers..."
                 onChange={handleSearchChange}
               />

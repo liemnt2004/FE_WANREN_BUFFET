@@ -1,51 +1,39 @@
-// src/layouts/customer/MenuCustomer.tsx
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import logo from './assets/img/warenbuffet.png';
 import { AuthContext } from "./component/AuthContext";
 import './assets/css/menu.css';
 import { CartContext } from './component/CartContext';
+import { Offcanvas } from 'react-bootstrap';
+import CartOffcanvas from "./component/offcanvas";
 
 function MenuCustomer() {
     const { fullName } = useContext(AuthContext);
+    const cartContext = useContext(CartContext);
+
+    const [showOffcanvas, setShowOffcanvas] = useState(false);      // State cho menu
+    const [showCartOffcanvas, setShowCartOffcanvas] = useState(false); // State cho giỏ hàng
+
+    if (!cartContext) {
+        return null;
+    }
 
     function login() {
         window.location.href = "https://wanrenbuffet.netlify.app/login";
     }
 
-    const cartContext = useContext(CartContext);
+    const handleShowMenu = () => setShowOffcanvas(true);
+    const handleCloseMenu = () => setShowOffcanvas(false);
 
-
-        const handleOffcanvasClose = () => {
-            const backdrops = document.querySelectorAll('.offcanvas-backdrop');
-
-            // Nếu không có backdrop nào, tạo và thêm mới một cái với các lớp cần thiết
-            if (backdrops.length === 0) {
-                const newBackdrop = document.createElement('div');
-                newBackdrop.classList.add('offcanvas-backdrop', 'fade', 'show');  // Thêm các lớp "fade" và "show"
-                document.body.appendChild(newBackdrop);  // Thêm vào body hoặc nơi bạn muốn
-            }
-
-            // Nếu có nhiều hơn 1 backdrop, chỉ xóa phần tử đầu tiên
-            if (backdrops.length > 1) {
-                backdrops[0].remove();  // Xóa phần tử đầu tiên
-            }
-        };
-
-
-       
-        
-
+    const handleShowCart = () => setShowCartOffcanvas(true);
+    const handleCloseCart = () => setShowCartOffcanvas(false);
 
     return (
         <nav className="menu-bar d-flex align-items-center">
             {/* Menu Icon */}
             <i
                 className="bi bi-list"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#offcanvasMenu"
-                aria-controls="offcanvasMenu"
-                onClick={()=>handleOffcanvasClose()}
+                onClick={handleShowMenu}
             ></i>
 
             {/* Brand Logo */}
@@ -53,99 +41,78 @@ function MenuCustomer() {
                 <img src={logo} alt="WAREN BUFFET Logo" className="logo" />
             </Link>
 
-            {/* Navigation Links (visible on medium to large screens) */}
-            <Link to="/menu" className="nav-link">Thực Đơn</Link>
-            <Link to="/promotion" className="nav-link">Ưu Đãi</Link>
-            <Link to="/reservation" className="btn-book">Đặt Bàn</Link>
+            {/* Navigation Links */}
+            <Link to="/menu" className="nav-link" onClick={handleCloseMenu}>Thực Đơn</Link>
+            <Link to="/promotion" className="nav-link" onClick={handleCloseMenu}>Ưu Đãi</Link>
+            <Link to="/reservation" className="btn-book" onClick={handleCloseMenu}>Đặt Bàn</Link>
 
             {/* Cart Icon */}
-            {fullName ? (
-                    <a
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#offcanvasCart"
-                    aria-controls="offcanvasCart"
-                    className="cart"
-                    onClick={()=>handleOffcanvasClose()}
-                >
-                    <div className="position-relative">
-                        <i className="bi bi-bag cart-icon"></i>
-                        <span className="position-absolute top-2 p-2 start-100 translate-middle badge bg-danger">
-                            {cartContext?.cartItems.length}
-                        </span>
-                    </div>
-                </a>
-            ) : (
-                <a
-        
-                className="cart"
-            
+            <button
+                className="cart btn p-0 border-0 bg-transparent"
+                onClick={handleShowCart}
             >
                 <div className="position-relative">
-                    <i className="bi bi-bag cart-icon"></i>
-                    <span className="position-absolute top-2 p-2 start-100 translate-middle badge bg-danger">
-                        {0}
-                    </span>
+                    <i className="bi bi-bag cart-icon cursor-pointer"></i>
+                    {cartContext?.cartItems?.length > 0 && (
+                        <span className="position-absolute top-2 p-2 start-100 translate-middle badge badge-custom bg-danger rounded-circle">
+                            {cartContext.cartItems.length}
+                        </span>
+                    )}
                 </div>
-            </a>
-            )}
-            
+            </button>
 
             {/* User Info */}
             <div className="d-flex align-items-center user">
                 {fullName ? (
                     <>
-                    <Link to="/profile" className="btn-user">
+                        <Link to="/profile" className="btn-user cursor-pointer">
                             <i className="bi bi-person-fill"></i>
                         </Link>
                         <p style={{ margin: 0 }}>Xin chào, {fullName}</p>
                     </>
                 ) : (
                     <>
-                        <a onClick={login} className="btn-user">
+                        <button onClick={login} className="btn-user cursor-pointer">
                             <i className="bi bi-box-arrow-in-right"></i>
-                        </a>
-                        <p style={{ margin: 0 }}>Xin chào, Khách</p>
+                        </button>
+                        <p style={{ margin: 0 }}>Wanren Xin Chào!</p>
                     </>
                 )}
             </div>
 
             {/* Offcanvas Sidebar Menu */}
-            <div
-                className="offcanvas offcanvas-start"
-                tabIndex={-1}
-                id="offcanvasMenu"
-                aria-labelledby="offcanvasMenuLabel"
-            >
-                <div className="offcanvas-header">
-                    <h5 className="offcanvas-title" id="offcanvasMenuLabel">Menu</h5>
-                    <button
-                        type="button"
-                        className="btn-close"
-                        data-bs-dismiss="offcanvas"
-                        aria-label="Close"
-                    ></button>
-                </div>
-                <div className="offcanvas-body">
+            <Offcanvas show={showOffcanvas} onHide={handleCloseMenu} placement="start" id="offcanvasMenu">
+                <Offcanvas.Header closeButton>
+                    <Offcanvas.Title>Menu</Offcanvas.Title>
+                </Offcanvas.Header>
+                <Offcanvas.Body>
                     <Link
                         to="/menu"
                         className="nav-link nav-link-menu"
+                        onClick={handleCloseMenu}
                     >
                         Thực Đơn
                     </Link>
                     <Link
                         to="/promotion"
                         className="nav-link nav-link-menu"
+                        onClick={handleCloseMenu}
                     >
                         Ưu Đãi
                     </Link>
                     <Link
                         to="/reservation"
                         className="nav-link nav-link-menu"
+                        onClick={handleCloseMenu}
                     >
                         Đặt Bàn
                     </Link>
-                </div>
-            </div>
+                </Offcanvas.Body>
+            </Offcanvas>
+
+            {/* Offcanvas Cart */}
+            <CartOffcanvas show={showCartOffcanvas} onHide={handleCloseCart} />
+
         </nav>
     );
 }

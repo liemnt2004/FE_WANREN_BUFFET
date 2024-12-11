@@ -113,7 +113,7 @@ const Scheduleworkshifts: React.FC = () => {
           opacity: isPast ? 0.5 : 1,
         }}
       >
-        <div className={cellClass}>{date.date()}</div>
+        <div className={cellClass} id="workshifts">{date.date()}</div>
         {visibleDate === dateString && (
           <Popover
             content={

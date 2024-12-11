@@ -151,7 +151,7 @@ body{
 	width: 100%;
 	height: 46px;
 	border: 1px solid #ebebeb;
-	padding-left: 20px;
+	padding-left: 10px;
 	font-size: 16px;
 	color: #b2b2b2;
 	border-radius: 4px;
@@ -160,7 +160,7 @@ body{
 .checkout__input textarea {
 	width: 100%;
 	border: 1px solid #ebebeb;
-	padding-left: 20px;
+	padding-left: 10px;
 	font-size: 16px;
 	color: #b2b2b2;
 	border-radius: 4px;
@@ -235,7 +235,6 @@ body{
 	border-radius: 10px;
 	padding: 10px;
 	width: 65vh;
-	height: 72vh;
 }
 
 .checkout__order h4 {
@@ -315,21 +314,6 @@ body{
 	color: #dd2222;
 }
 
-.checkout__order button {
-	font-size: 18px;
-	padding: 10px 10px;
-	border-radius: 20px;
-	letter-spacing: 2px;
-	width: 100%;
-	margin-top: 10px;
-	color: var(--colorPrimary);
-	border: 2px solid var(--colorPrimary);
-	font-weight: bold;
-	background: none;
-	width: 16rem;
-	display: flex;
-	justify-content: center;
-}
 .checkoyt_submit{
 	display: flex;
 	justify-content: center;
