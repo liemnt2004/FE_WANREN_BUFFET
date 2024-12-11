@@ -1,19 +1,19 @@
 
 
-import React, {useContext, useEffect, useState} from "react";
+import React, { useContext, useEffect, useState } from "react";
 import "./assets/css/styles.css";
 import "./assets/css/Tinh_Style.css";
 import "./assets/css/order_history.css";
 import kichi from "./assets/img/Cream and Black Simple Illustration Catering Logo.png";
-import {AuthContext, DecodedToken} from "./component/AuthContext";
-import {jwtDecode} from "jwt-decode"; // Corrected import
+import { AuthContext, DecodedToken } from "./component/AuthContext";
+import { jwtDecode } from "jwt-decode"; // Corrected import
 import { useNavigate } from "react-router-dom";
-import {getProductHot} from "../../api/apiCustommer/productApi";
-import {getPreparingOrders} from "../../api/apiCustommer/OrderApi";
+import { getProductHot } from "../../api/apiCustommer/productApi";
+import { getPreparingOrders } from "../../api/apiCustommer/OrderApi";
 import formatMoney from "./component/FormatMoney";
 import axios from "axios";
-import {OrderModel} from "../../models/OrderModel";
-import {CartContext, CartItem} from "./component/CartContext";
+import { OrderModel } from "../../models/OrderModel";
+import { CartContext, CartItem } from "./component/CartContext";
 
 interface UserInfo {
     fullName: string;
@@ -32,9 +32,9 @@ export interface ProductDetail {
     _price: number;
     _typefood: string;
     _image: string;
-    _quantity:number;
-    _productStatus:string;
-    _total:number
+    _quantity: number;
+    _productStatus: string;
+    _total: number
 }
 
 
@@ -43,9 +43,9 @@ interface UserInfoProps {
     setUserInfo: React.Dispatch<React.SetStateAction<UserInfo>>;
 }
 
-interface HistoryOrderProps{
+interface HistoryOrderProps {
     listOrder: OrderModel[];
-    setListOrder:React.Dispatch<React.SetStateAction<OrderModel[]>>;
+    setListOrder: React.Dispatch<React.SetStateAction<OrderModel[]>>;
 }
 
 
@@ -109,7 +109,7 @@ const MenuList: React.FC<TogglePanelProps> = ({ togglePanel }) => (
     <div className="row tinh-height90 m-0 p-3 align-items-center" id="leftContent2" >
         <div className="row tinh-height30 m-0 p-2 px-3 d-flex align-items-center justify-content-center" >
             <div className="row m-0 p-0 d-flex justify-content-center" >
-                <img src={kichi} className="rounded-circle w-50 " alt="User Logo" style={{width:10}} />
+                <img src={kichi} className="rounded-circle w-50 " alt="User Logo" style={{ width: 10 }} />
             </div>
         </div>
         <div className="d-flex flex-column justify-content-between">
@@ -156,7 +156,7 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
             const updatedUser = await response.json();
             console.log(updatedUser)
             setUserInfo(updatedUser);
-            localStorage.setItem("token",updatedUser.jwtToken);
+            localStorage.setItem("token", updatedUser.jwtToken);
             window.location.reload();
             setEditing(false);
         } catch (error) {
@@ -171,25 +171,25 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
 
     return (
         <div className="col-12 col-sm-4 ">
-            <h4 className="py-3">Thông tin cá nhân</h4>
+            <h4 className="py-3 fw-bold text-dark">Thông tin cá nhân</h4>
             {!editing ? (
                 <div id="personalInfo">
-                    <span className="tinh-fs12" id="nameDisplay">
+                    <span id="nameDisplay">
                         {userInfo.fullName}
                     </span>
-                    <br/>
-                    <span className="tinh-fs12" id="phoneDisplay">
+                    <br />
+                    <span id="phoneDisplay">
                         {userInfo.phoneNumber}
                     </span>
-                    <br/>
-                    <span className="tinh-fs12" id="email">
+                    <br />
+                    <span id="email">
                         {userInfo.email}
                     </span>
-                    <br/>
-                    <hr/>
+                    <br />
+                    <hr />
                     <a
                         href="#"
-                        className="text-black none-underline tinh-fs14"
+                        className="text-black none-underline"
                         onClick={(e) => {
                             e.preventDefault();
                             setEditing(true);
@@ -205,23 +205,23 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                         id="nameInput"
                         className="form-control tinh-fs14 tinh-no-outline my-2"
                         value={tempInfo.fullName} // use tempInfo instead of userInfo
-                        onChange={(e) => setTempInfo({...tempInfo, fullName: e.target.value})}
+                        onChange={(e) => setTempInfo({ ...tempInfo, fullName: e.target.value })}
                     />
                     <input
                         type="text"
                         id="phoneInput"
                         className="form-control tinh-fs14 tinh-no-outline my-2"
                         value={tempInfo.phoneNumber} // use tempInfo instead of userInfo
-                        onChange={(e) => setTempInfo({...tempInfo, phoneNumber: e.target.value})}
+                        onChange={(e) => setTempInfo({ ...tempInfo, phoneNumber: e.target.value })}
                     />
                     <input
                         type="email"
                         id="emailInput"
                         className="form-control tinh-fs14 tinh-no-outline my-2"
                         value={userInfo.email}
-                        onChange={(e) => setTempInfo({...tempInfo, email: e.target.value})}
+                        onChange={(e) => setTempInfo({ ...tempInfo, email: e.target.value })}
                     />
-                    <hr/>
+                    <hr />
                     <a
                         href="#"
                         className="text-black none-underline tinh-fs14 tinh-mr"
@@ -394,29 +394,29 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
 
 
 
-const AccountContent: React.FC<UserInfoProps> = ({userInfo, setUserInfo}) => (
+const AccountContent: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => (
 
     <div
         className="row tinh-height90 m-0 align-items-center tinh-overflowScroll"
-        style={{padding: "100px 40px 0 40px"}}
+        style={{ padding: "100px 40px 0 40px" }}
     >
-        <PersonalInfo userInfo={userInfo} setUserInfo={setUserInfo}/>
+        <PersonalInfo userInfo={userInfo} setUserInfo={setUserInfo} />
 
         <PasswordInfo userInfo={userInfo} setUserInfo={setUserInfo} />
     </div>
 );
 
 const OrdersContent: React.FC<HistoryOrderProps> = ({
-                                                        listOrder,
-                                                        setListOrder,
-                                                    }) => {
-                                                
+    listOrder,
+    setListOrder,
+}) => {
+
     const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
     const [orderDetails, setOrderDetails] = useState<ProductDetail[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [totalmodal, setTotalmodal] = useState<number | null>(null);
-    const [promotion,setPromotion] = useState<string | "">("");
+    const [promotion, setPromotion] = useState<string | "">("");
     const cartContext = useContext(CartContext);
 
     // State variables for order review
@@ -426,8 +426,8 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
     const [reviewSubmitting, setReviewSubmitting] = useState<boolean>(false);
     const [reviewError, setReviewError] = useState<string | null>(null);
 
-                                                        console.log(listOrder);
-                                                        
+    console.log(listOrder);
+
 
     useEffect(() => {
         if (selectedOrderId) {
@@ -564,16 +564,16 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
     return (
         <div
             className="row tinh-height90 m-0 align-items-center tinh-overflowScroll order_history"
-            style={{ padding: "100px 40px 0 40px" }}
+            style={{ padding: "20px 40px 0 40px" }}
         >
             <div className="container mt-5">
                 {listOrder.map((order) => (
                     <div className="card mb-3" key={order.orderId}>
                         <div className="card-header order-header">
-                            <span>Mã Đơn Hàng: {order.orderId}</span>
-                            <span className="float-end order-total">
-                {formatMoney(order.totalAmount)}
-              </span>
+                            <span className="fs-6">Mã Đơn Hàng: {order.orderId}</span>
+                            <span className="float-end fs-6">
+                                {formatMoney(order.totalAmount)}
+                            </span>
                         </div>
                         <div className="card-body">
                             <p className="order-info">Địa Chỉ Giao Hàng: {order.address}</p>
@@ -581,68 +581,62 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                 <div className="col-md-2">
                                     <img
                                         src={order.producHistorytDTOList[0]._image}
-                                        className="img-fluid rounded-start"
+                                        className="img-fluid rounded w-100"
                                         alt="Product"
                                     />
                                 </div>
-                                <div className="col-md-10 mx-2">
+                                <div className="col-md-10 px-3">
                                     <div className="product-info">
                                         <h5>{order.producHistorytDTOList[0]._productName}</h5>
-                                        <p dangerouslySetInnerHTML={{__html: order.producHistorytDTOList[0]._description}}></p>
+                                        <p dangerouslySetInnerHTML={{ __html: order.producHistorytDTOList[0]._description }}></p>
                                         {/* Trạng thái sản phẩm */}
-    <p>
-        {(() => {
-            const status = order.orderStatus;
+                                        <p>
+                                            {(() => {
+                                                const status = order.orderStatus;
 
-            switch (status) {
-                case "PREPARING_ORDER":
-                    return (
-                        <span>
-                            <i className="fas fa-cogs"></i> Đang chuẩn bị hàng
-                        </span>
-                    );
-                case "WAITING":
-                    return (
-                        <span>
-                            <i className="fas fa-clock"></i> Đang chờ xử lý
-                        </span>
-                    );
-                case "IN_TRANSIT":
-                    return (
-                        <span>
-                            <i className="fas fa-truck"></i> Đang giao hàng
-                        </span>
-                    );
-                case "DELIVERED":
-                    return (
-                        <span>
-                            <i className="fas fa-check-circle"></i> Đã giao hàng
-                        </span>
-                    );
-                default:
-                    return (
-                        <span>
-                            <i className="fas fa-question-circle"></i> Trạng thái không xác định
-                        </span>
-                    );
-            }
-        })()}
-    </p>
+                                                switch (status) {
+                                                    case "PREPARING_ORDER":
+                                                        return (
+                                                            <span>
+                                                                <i className="fas fa-cogs"></i> Đang chuẩn bị hàng
+                                                            </span>
+                                                        );
+                                                    case "WAITING":
+                                                        return (
+                                                            <span>
+                                                                <i className="fas fa-clock"></i> Đang chờ xử lý
+                                                            </span>
+                                                        );
+                                                    case "IN_TRANSIT":
+                                                        return (
+                                                            <span>
+                                                                <i className="fas fa-truck"></i> Đang giao hàng
+                                                            </span>
+                                                        );
+                                                    case "DELIVERED":
+                                                        return (
+                                                            <span>
+                                                                <i className="fas fa-check-circle"></i> Đã giao hàng
+                                                            </span>
+                                                        );
+                                                    default:
+                                                        return (
+                                                            <span>
+                                                                <i className="fas fa-question-circle"></i> Trạng thái không xác định
+                                                            </span>
+                                                        );
+                                                }
+                                            })()}
+                                        </p>
                                         <p>x {order.producHistorytDTOList[0]._quantity}</p>
-                                        <button
-                                            onClick={() => handleBuyAgain(order.producHistorytDTOList)}
-                                            className="btn btn-outline-secondary btn-buy-again"
-                                        >
-                                            Mua Lại
-                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="card-footer ">
+                        <div className="card-footer card-footer-custom">
                             <button
                                 type="button"
-                                className="btn btn-outline-primary btn-view-order"
+                                className="btn btn-primary btn-view-order"
                                 onClick={() => handleViewMore(order.orderId)}
                             >
                                 <i className="fas fa-info-circle"></i> Chi Tiết Sản Phẩm Đã Mua
@@ -651,16 +645,22 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                             {/* Conditionally render the review button */}
                             {!order.isReviewed ? (
                                 <button
-                                    className="btn btn-outline-secondary "
+                                    className="btn btn-secondary btn-view-order"
                                     onClick={() => openOrderReviewModal(order)}
                                 >
                                     Đánh Giá Đơn Hàng
                                 </button>
                             ) : (
-                                <button className="btn btn-secondary " disabled>
+                                <button className="btn btn-secondary btn-view-order" disabled>
                                     Đã Đánh Giá
                                 </button>
                             )}
+                            <button
+                                onClick={() => handleBuyAgain(order.producHistorytDTOList)}
+                                className="btn btn-primary btn-view-order float-end btn-buy"
+                            >
+                                Mua Lại
+                            </button>
                         </div>
                     </div>
                 ))}
@@ -835,7 +835,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
 const VoucherContent: React.FC = () => (
     <div
         className="row tinh-height90 m-0 p-3 px-5 align-items-center tinh-overflowScroll"
-        style={{padding: "100px 40px 0 40px"}}
+        style={{ padding: "100px 40px 0 40px" }}
     >
         {/* Include your voucher components here */}
         <span>Voucher content goes here.</span>
@@ -865,16 +865,16 @@ const MenuProfile: React.FC = () => {
         phoneNumber: decoded?.phone || "",
         password: "", // Initialize as empty for security
     });
-    const [listOrder,setListOrder] = useState<OrderModel[]>([]);
+    const [listOrder, setListOrder] = useState<OrderModel[]>([]);
     useEffect(() => {
         getPreparingOrders(Number(decoded?.userId))
-            .then(Order =>{
-            console.log(Order);
-                
+            .then(Order => {
+                console.log(Order);
+
                 setListOrder(Order)
 
             })
-            .catch(error =>{
+            .catch(error => {
                 console.log(error)
             })
     }, []);
@@ -883,7 +883,7 @@ const MenuProfile: React.FC = () => {
         setActivePanel(panelType);
     };
 
-    function logout(){
+    function logout() {
         localStorage.removeItem("token")
         window.location.href = "https://wanrenbuffet.netlify.app/"
     }
@@ -892,24 +892,23 @@ const MenuProfile: React.FC = () => {
         <>
             {/* Main Content */}
             <div className="container-fluid">
-                <div className="row" style={{padding: "20px", paddingBottom: "0"}}>
+                <div className="row" style={{ padding: "20px", paddingBottom: "0" }}>
                     {/* Left Panel */}
                     <div
                         id="leftPanel"
-                        className={`position-relative ${
-                            activePanel ? "col-md-4" : "col-md-8"
-                        } col-12 tinh-rounded tinh-height transition-all`}
-                        style={{boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px" }}
+                        className={`position-relative ${activePanel ? "col-md-4" : "col-md-8"
+                            } col-12 tinh-rounded tinh-height transition-all`}
+                        style={{ boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px" }}
                     >
                         {!activePanel ? (
                             <div className="row tinh-height90 m-0 p-3 align-items-center">
-                                <AccountPanel togglePanel={togglePanel}/>
-                                <OrderPanel togglePanel={togglePanel}/>
-                                <VoucherPanel togglePanel={togglePanel}/>
+                                <AccountPanel togglePanel={togglePanel} />
+                                <OrderPanel togglePanel={togglePanel} />
+                                <VoucherPanel togglePanel={togglePanel} />
                             </div>
                         ) : (
                             <div className="row tinh-height90 m-0 p-3 align-items-center">
-                                <MenuList togglePanel={togglePanel}/>
+                                <MenuList togglePanel={togglePanel} />
                             </div>
                         )}
                     </div>
@@ -918,7 +917,7 @@ const MenuProfile: React.FC = () => {
                     <div
                         id="rightPanel"
                         className={`${activePanel ? "col-md-8" : "col-md-4"} col-12 tinh-height transition-all`}
-                        style={{paddingLeft: activePanel ? "40px" : "0"}}
+                        style={{ paddingLeft: activePanel ? "40px" : "0" }}
                     >
                         {!activePanel ? (
                             <div className="row tinh-height90 m-0 p-3 align-items-center">
@@ -939,10 +938,10 @@ const MenuProfile: React.FC = () => {
                         ) : (
                             <>
                                 {activePanel === "account" && (
-                                    <AccountContent userInfo={userInfo} setUserInfo={setUserInfo}/>
+                                    <AccountContent userInfo={userInfo} setUserInfo={setUserInfo} />
                                 )}
                                 {activePanel === "orders" && <OrdersContent setListOrder={setListOrder} listOrder={listOrder} />}
-                                {activePanel === "voucher" && <VoucherContent/>}
+                                {activePanel === "voucher" && <VoucherContent />}
                             </>
                         )}
                     </div>

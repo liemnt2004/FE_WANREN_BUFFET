@@ -943,8 +943,22 @@ span {
         padding: 0 !important;
     }
 
+
     .card-footer .btn {
         font-size: 12px;
+    }
+
+    .card-footer-custom .btn {
+        width: 95% !important;
+        margin-bottom: 10px;
+    }
+
+    .product-info {
+        margin-top: 20px;
+    }
+
+    .btn-buy {
+        float: none !important;
     }
 
     .tinh-height90 {
@@ -958,5 +972,4 @@ span {
         border-radius: 50%;
         padding: 0;
     }
-
 }
