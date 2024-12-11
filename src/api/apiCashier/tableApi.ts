@@ -49,7 +49,7 @@ export const fetchOrderbyTableId = async (tableId: number) => {
 
 export const updateTableStatus = async (tableId: number, newStatus: string) => {
   try {
-    await axios.patch(`${BASE_URL}/api-data/Table/${tableId}`, {
+    await axios.patch(`${BASE_URL}/Table/${tableId}`, {
       tableStatus: newStatus
     }, {
       method: "PATCH",

@@ -1,5 +1,4 @@
 import ProductModel from "../../models/StaffModels/ProductModel";
-import axios from "axios";
 import { request } from "./Request";
 
 // Get all products

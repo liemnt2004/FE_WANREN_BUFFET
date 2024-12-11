@@ -15,7 +15,7 @@ const getHeaders = () => {
 
 export const fetchReservations = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}Reservation/all`, {
+    const response = await axios.get(`${BASE_URL}/Reservation/all`, {
       method: "GET",
       headers: getHeaders(),
     });
