@@ -4,6 +4,7 @@ import OrderDetailModel from "../../models/StaffModels/OrderDetaitModel";
 import { request } from "./Request";
 
 const BASE_URL = "https://wanrenbuffet.online/api";
+// const BASE_URL = "http://localhost:8080/api";
 
 const getHeaders = () => {
   const employeeToken = localStorage.getItem("employeeToken");

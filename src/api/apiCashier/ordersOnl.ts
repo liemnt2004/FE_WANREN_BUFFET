@@ -209,7 +209,7 @@ export const fetchTableId = async (tableLink: string): Promise<number | null> =>
 // Hàm cập nhật trạng thái sản phẩm
 export const updateOrderStatus = async (orderId: number, newStatus: string) => {
   try {
-    await axios.patch(`${BASE_URL}/api-data/Orders/${orderId}`, {
+    await axios.patch(`${BASE_URL}/Orders/${orderId}`, {
       orderStatus: newStatus
     }, {
       method: "PATCH",
@@ -225,7 +225,7 @@ export const updateOrderStatus = async (orderId: number, newStatus: string) => {
 // Hàm cập nhật trạng thái sản phẩm
 export const updateOrderDetails = async (orderId: number, details: any[]) => {
   try {
-    await axios.put(`${BASE_URL}/api-data/Orders/${orderId}/updateOrder`, details, {
+    await axios.put(`${BASE_URL}/Orders/${orderId}/updateOrder`, details, {
       method: "PUT",
       headers: getHeaders(),
     }); // Gửi danh sách đơn giản
