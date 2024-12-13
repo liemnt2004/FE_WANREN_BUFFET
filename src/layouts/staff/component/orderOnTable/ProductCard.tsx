@@ -63,7 +63,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     <h5 className="card-title fs-6 m-0 p-0 fw-bold">{product.productName}</h5>
                 </div>
                 <div className="mt-4 mb-2 d-flex justify-content-between align-items-center">
-                    <h6 className="card__price fw-bold">{product.price.toLocaleString('vi-VN')} VNĐ</h6>
+                    <h6 className="card__price fw-bold">{product.price !== 0 ? product.price.toLocaleString('vi-VN') + ' VNĐ' : ""}</h6>
                     <div className="input__septer d-flex justify-content-end align-items-center add-to-cart">
                         {cartQuantity > 0 ? (
                             <div>

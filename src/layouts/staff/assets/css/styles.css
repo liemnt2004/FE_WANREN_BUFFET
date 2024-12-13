@@ -359,15 +359,6 @@
     color: var(--first-color);
   }
 
-  .no-border:focus {
-    border: 1px solid gray;
-    /* Đảm bảo không có viền khi focus */
-    box-shadow: none;
-    /* Loại bỏ hiệu ứng shadow khi focus */
-    outline: none;
-    /* Loại bỏ outline mặc định khi click vào */
-  }
-
   #decrement {
     width: 30px;
     height: 30px;

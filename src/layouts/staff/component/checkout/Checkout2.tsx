@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import '../../assets/css/checkout_for_staff.css'
 import { useLocation, useNavigate } from "react-router-dom";
-import { checkCustomer, getOrderAmount, updateCustomerInOrder, updateLoyaltyPoint } from "../../../../api/apiStaff/orderForStaffApi";
+import { checkCustomer, fetchOrderIdByTableId, fetchOrderStatusAPI, getOrderAmount, updateCustomerInOrder, updateLoyaltyPoint, updateTableStatus } from "../../../../api/apiStaff/orderForStaffApi";
 import { notification } from 'antd';
 import { CheckCircleOutlined, InfoCircleOutlined } from "@ant-design/icons";
 
 const Checkout2: React.FC = () => {
     const location = useLocation();
-    const { tableId, orderId } = location.state || {};
+    const { tableId, orderId, orderTableNum } = location.state || {};
     const [amount, setAmount] = useState<number>(0);
     const [disable, setDisable] = useState<boolean>(false);
     const navigate = useNavigate();
@@ -104,6 +104,26 @@ const Checkout2: React.FC = () => {
         });
     };
 
+    const handleGoHome = async () => {
+        try {
+            let newStatus = "EMPTY_TABLE";
+
+            const orderId = await fetchOrderIdByTableId(Number(tableId));
+            if (orderId) {
+                const orderData = await fetchOrderStatusAPI(orderId);
+                if (orderData.orderStatus === "IN_TRANSIT") {
+                    newStatus = "OCCUPIED_TABLE";
+                }
+            }
+
+            await updateTableStatus(Number(tableId), newStatus);
+            navigate('/staff');
+        } catch (error) {
+            console.error('Error checking order status:', error);
+        }
+    };
+
+
     return (
         <>
             {contextHolder}
@@ -118,7 +138,7 @@ const Checkout2: React.FC = () => {
                             Gọi nhân viên
                         </div>
                         <div className="turn-dashboard">
-                            <button onClick={() => navigate("/staff")}>
+                            <button onClick={() => handleGoHome()}>
                                 <i className="bi bi-arrow-counterclockwise"></i> Về trang chủ
                             </button>
                         </div>
@@ -138,7 +158,7 @@ const Checkout2: React.FC = () => {
                     </div>
                     <div className="container-button">
                         <button style={styleOfA} onClick={handleClick} disabled={disable} >Áp dụng</button>
-                        <button onClick={() => navigate(`/staff/checkout/step3`, { state: { tableId: tableId, orderId: orderId, phoneNumber: inputValue } })}>Tiếp tục</button>
+                        <button onClick={() => navigate(`/staff/checkout/step3`, { state: { tableId: tableId, orderId: orderId, phoneNumber: inputValue, orderTableNum: orderTableNum } })}>Tiếp tục</button>
                     </div>
                 </div>
                 <div className="step-checkout">

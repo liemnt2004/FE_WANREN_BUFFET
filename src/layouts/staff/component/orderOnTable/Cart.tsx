@@ -3,10 +3,12 @@ import { Offcanvas } from 'react-bootstrap';
 import '../../assets/css/styles.css'
 import { useLocation, useNavigate } from 'react-router-dom';
 import ProductModel from '../../../../models/StaffModels/ProductModel';
-import { CreateNewOrder, fetchOrderDetailsAPI, fetchOrderIdByTableId, fetchOrderStatusAPI, fetchProductDetailsAPI, updateOrderAmount, updateOrderDetails, updateTableStatus } from '../../../../api/apiStaff/orderForStaffApi';
+import { CreateNewOrder, fetchCreatedDate, fetchOrderDetailsAPI, fetchOrderIdByTableId, fetchOrderStatusAPI, fetchProductDetailsAPI, updateOrderAmount, updateOrderDetails, updateTableStatus } from '../../../../api/apiStaff/orderForStaffApi';
 import { notification } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { AuthContext } from '../../../customer/component/AuthContext';
+import jsPDF from "jspdf";
+import autoTable from 'jspdf-autotable';
 interface OffcanvasCartProps {
   show: boolean;
   onHide: () => void;
@@ -52,8 +54,9 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   const selectedItemsTotal = selectedItemsSubtotal + selectedItemsTax;
   const [activeTab, setActiveTab] = useState("selecting");
   const [orderId, setOrderId] = useState<any>(0);
-  const { employeeUserId } = useContext(AuthContext);
+  const { employeeUserId, employeeFullName } = useContext(AuthContext);
   const [api, contextHolder] = notification.useNotification();
+  const [createdDate, setCreatedDate] = useState<string | null>(null);
   const openNotification = (pauseOnHover: boolean) => () => {
     api.open({
       message: 'Xác nhận gọi món',
@@ -111,7 +114,6 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
         console.error(error);
       }
     };
-
     fetchOrderId();
   }, [fetchOrderDetails, tableId]);
 
@@ -143,6 +145,20 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
   useEffect(() => {
     onUpdateSubtotal(selectedItemsSubtotal);
   }, [selectedItemsSubtotal, onUpdateSubtotal]);
+
+  useEffect(() => {
+    const fetchCreatedD = async () => {
+      try {
+        const data = await fetchCreatedDate(orderId);
+        if (data) {
+          setCreatedDate(data);
+        }
+      } catch (error) {
+      }
+    };
+
+    fetchCreatedD();
+  }, []);
 
   const handleConfirmOrder = async () => {
     try {
@@ -181,6 +197,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
 
       onConfirmOrder(cartItems);
       openNotification(false)();
+      generateBill(orderIdToUse, cartItems);
     } catch (error) {
       console.error("Error confirming order:", error);
       api.error({
@@ -189,6 +206,88 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
       });
     }
   };
+
+  const removeAccents = (str: string): string => {
+    const accents = [
+      { base: 'a', letters: /[áàảãạâấầẩẫậăắằẳẵặ]/g },
+      { base: 'e', letters: /[éèẻẽẹêếềểễệ]/g },
+      { base: 'i', letters: /[íìỉĩị]/g },
+      { base: 'o', letters: /[óòỏõọôốồổỗộơớờởỡợ]/g },
+      { base: 'u', letters: /[úùủũụưứừửữự]/g },
+      { base: 'y', letters: /[ýỳỷỹỵ]/g },
+      { base: 'd', letters: /[đ]/g }
+    ];
+  
+    accents.forEach(accent => {
+      str = str.replace(accent.letters, accent.base);
+    });
+  
+    return str;
+  };
+
+  const generateBill = (orderId: number, cartItems: any[]) => {
+    const doc = new jsPDF();
+
+    doc.setFont('Roboto', 'normal');
+
+
+    doc.setFontSize(20);
+    doc.text(`BAN SO ${tableId}`, 105, 20, { align: "center" });
+    doc.setFontSize(12);
+    doc.text("1108 Wanren Buffet, FPT Polytechic, HCM", 105, 30, { align: "center" });
+
+    doc.setFontSize(12);
+    doc.text("NHA HANG: WANREN BUFFET", 20, 40);
+    doc.text(`So khach: ${adults}`, 20, 45);
+    doc.text(`So hoa don: ${orderId}`, 20, 50);
+
+
+    const cashierName = employeeFullName ? removeAccents(employeeFullName) : ""; // Use an empty string if null
+
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-based, so add 1
+    const year = now.getFullYear();
+
+    const currentDate = `${hours}:${minutes} ${day}:${month}:${year}`;
+    doc.text(`Nhan vien: ${cashierName}`, 190, 40, { align: 'right' });
+    doc.text(`Gio mo ban: ${createdDate}`, 190, 45, { align: 'right' });
+    doc.text(`Gio goi mon: ${currentDate}`, 190, 50, { align: 'right' });
+
+
+
+    const columns = ["San Pham", "So Luong", "Ghi Chu"];
+    const tableData = cartItems.map((item) => [
+      removeAccents(item.product.productName),
+      item.quantity,
+      removeAccents(item.note || ""),
+    ]);
+
+    const tableWidth = 70 + 30 + 30 + 40;
+    const marginLeft = (doc.internal.pageSize.width - tableWidth) / 2;
+
+    autoTable(doc, {
+      startY: 60,
+      head: [columns],
+      body: tableData,
+      columnStyles: {
+        0: { cellWidth: 70 },
+        1: { cellWidth: 30, halign: 'right' },
+        2: { cellWidth: 70, halign: 'left' },
+      },
+      headStyles: {
+        fillColor: [32, 32, 32],
+        textColor: [255, 255, 255],
+      },
+      theme: "grid",
+      margin: { left: marginLeft },
+    });
+
+    doc.save(`bill_order_${orderId}.pdf`);
+  };
+
 
   return (
     <>
