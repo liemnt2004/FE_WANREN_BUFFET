@@ -79,6 +79,17 @@ const ReservationForm: React.FC = () => {
                         description: message,
                         placement: 'topRight',
                     });
+                    setFormData({
+                        customerId: Number(decoded?.userId || null),
+                        numberPeople: '',
+                        timeToCome: '',
+                        dateToCome: '',
+                        phoneNumber: '',
+                        email: '',
+                        fullName: '',
+                        note: '',
+                        agree: false
+                    })
                 }
             } else {
                 notification.warning({

@@ -17,7 +17,7 @@
     "faq4Header": "4. Làm thế nào để kiểm tra tình trạng đơn hàng?",
     "faq4Body": "Sau khi đơn hàng được xử lý, bạn sẽ nhận được mã số đơn hàng và có thể theo dõi tình trạng đơn hàng qua website của chúng tôi.",
     "faq5Header": "5. Tôi có thể đổi hoặc trả lại sản phẩm không?",
-    "faq5Body": "Có, bạn có thể đổi hoặc trả lại sản phẩm trong vòng 7 ngày nếu sản phẩm còn nguyên vẹn và không có dấu hiệu sử dụng.",
+    "faq5Body": "Có, bạn có thể đổi hoặc trả lại sản phẩm trong vòng 1 giờ nếu sản phẩm còn nguyên vẹn và không có dấu hiệu sử dụng.",
     "customerFeedback": "KHÁCH HÀNG NÓI GÌ?",
     "slide1": "Slide 1",
     "slide2": "Slide 2",
@@ -55,7 +55,7 @@
     "mains": "Món Chính",
     "desserts": "Tráng Miệng",
     "soft_drinks": "Nước",
-   
+    "buy_try":"Mua Lại",
     "failed_to_load_products": "Không thể tải sản phẩm.",
    
     "main_dish_image_alt": "Hình ảnh Món Chính",

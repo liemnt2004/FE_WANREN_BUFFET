@@ -659,7 +659,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                 onClick={() => handleBuyAgain(order.producHistorytDTOList)}
                                 className="btn btn-primary btn-view-order float-end btn-buy"
                             >
-                                Mua Lại
+                                {t('buy_try')}
                             </button>
                         </div>
                     </div>
