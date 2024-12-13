@@ -3,6 +3,7 @@ import { CartContext } from "./CartContext";
 import formatMoney from "./FormatMoney";
 import { Link } from "react-router-dom";
 import { Offcanvas } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 
 interface CartOffcanvasProps {
   show: boolean;
@@ -11,9 +12,10 @@ interface CartOffcanvasProps {
 
 const CartOffcanvas: React.FC<CartOffcanvasProps> = ({ show, onHide }) => {
     const cartContext = useContext(CartContext);
+    const { t } = useTranslation();
 
     if (!cartContext) {
-        return null; // Hoặc hiển thị một thông báo lỗi
+        return null;
     }
 
     const { cartItems, updateQuantity, removeFromCart, subtotal } = cartContext;
@@ -21,17 +23,17 @@ const CartOffcanvas: React.FC<CartOffcanvasProps> = ({ show, onHide }) => {
     return (
         <Offcanvas show={show} onHide={onHide} placement="end">
             <Offcanvas.Header closeButton>
-                <Offcanvas.Title>Giỏ Hàng</Offcanvas.Title>
+                <Offcanvas.Title>{t('cart.title')}</Offcanvas.Title>
             </Offcanvas.Header>
             <Offcanvas.Body>
                 <div className="cart-page tinh-overflowScroll" style={{ height: 400, overflowY: 'auto' }}>
                     <table className="table">
                         <thead>
                             <tr>
-                                <th scope="col">Sản phẩm</th>
-                                <th scope="col">Số lượng</th>
-                                <th scope="col" className="text-end">Thành tiền</th>
-                                <th scope="col" className="text-end">Hành động</th>
+                                <th scope="col">{t('cart.product')}</th>
+                                <th scope="col">{t('cart.quantity')}</th>
+                                <th scope="col" className="text-end">{t('cart.subtotal')}</th>
+                                <th scope="col" className="text-end">{t('cart.action')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -68,14 +70,14 @@ const CartOffcanvas: React.FC<CartOffcanvasProps> = ({ show, onHide }) => {
                                                 className="btn btn-danger btn-sm"
                                                 onClick={() => removeFromCart(item.productId)}
                                             >
-                                                Xóa
+                                                {t('cart.delete')}
                                             </button>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={4} className="text-center">Giỏ hàng của bạn đang trống.</td>
+                                    <td colSpan={4} className="text-center">{t('cart.emptyCart')}</td>
                                 </tr>
                             )}
                         </tbody>
@@ -85,13 +87,15 @@ const CartOffcanvas: React.FC<CartOffcanvasProps> = ({ show, onHide }) => {
                     <table className="table">
                         <tbody>
                             <tr>
-                                <td>Tổng tiền</td>
-                                <td className="text-end fw-bold">{formatMoney(subtotal)} VND</td>
+                                <td>{t('cart.total')}</td>
+                                <td className="text-end fw-bold">{formatMoney(subtotal)} {t('cart.currency')}</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <Link to="/checkout" onClick={onHide} className="btn btn-danger w-100 mt-3">Tiến hành thanh toán</Link>
+                <Link to="/checkout" onClick={onHide} className="btn btn-danger w-100 mt-3">
+                    {t('cart.checkout')}
+                </Link>
             </Offcanvas.Body>
         </Offcanvas>
     );

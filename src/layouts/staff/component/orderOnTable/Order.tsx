@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+// OrderOnTable.tsx
+import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ProductModel from '../../../../models/StaffModels/ProductModel';
 import Header from './Header';
@@ -32,11 +33,14 @@ const OrderOnTable: React.FC = () => {
     const [selectedContent, setSelectedContent] = useState<ContentType>('hotpot');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSwitchTableModalOpen, setIsSwitchTableModalOpen] = useState(false);
+    const [actionAfterPin, setActionAfterPin] = useState<'checkout' | 'switchTable' | null>(null); // Thêm trạng thái này
     const navigate = useNavigate();
 
     const [showCart, setShowCart] = useState(false);
     const [selectedItemsSubtotal, setSelectedItemsSubtotal] = useState(0);
     const [cartItems, setCartItems] = useState<{ product: ProductModel; quantity: number; note: string; totalPrice: number }[]>([]);
+
+    const [isNavigating, setIsNavigating] = useState(false); // Thêm trạng thái này
 
     useEffect(() => {
         if (tableId) {
@@ -63,10 +67,13 @@ const OrderOnTable: React.FC = () => {
     const handleCheckout = () => {
         console.log("Checkout");
         setIsModalOpen(false);
+        setActionAfterPin('checkout'); // Thiết lập hành động
+        setIsSwitchTableModalOpen(true); // Mở modal nhập PIN
     };
 
     const handleSwitchTable = () => {
         setIsSwitchTableModalOpen(true);
+        setActionAfterPin('switchTable'); // Thiết lập hành động
         setIsModalOpen(false);
     };
 
@@ -83,14 +90,21 @@ const OrderOnTable: React.FC = () => {
             }
 
             await updateTableStatus(Number(tableId), newStatus);
-            navigate('/staff');
+
+            if (actionAfterPin === 'checkout') {
+                handleConfirmOrder(); // Xóa giỏ hàng và đóng cart
+            } else if (actionAfterPin === 'switchTable') {
+                navigate('/staff'); // Điều hướng tới trang staff
+            }
+
         } catch (error) {
             console.error("Error handling table switch:", error);
         } finally {
             setIsSwitchTableModalOpen(false);
+            setActionAfterPin(null);
+            setIsNavigating(false); // Đặt lại trạng thái
         }
     };
-
 
     const handleOpenExitModal = () => {
         setIsModalOpen(true);
@@ -109,22 +123,66 @@ const OrderOnTable: React.FC = () => {
         setSelectedItemsSubtotal(subtotal);
     };
 
+    // Back Button Handling
+    useEffect(() => {
+        // Push a dummy state to handle back button
+        window.history.pushState({ preventBack: true }, '');
+
+        const onPopState = (event: PopStateEvent) => {
+            if (isNavigating) {
+                
+                return;
+            }
+
+            // Ngăn chặn điều hướng bằng cách đẩy lại trạng thái
+            window.history.pushState({ preventBack: true }, '');
+
+            // Mở ExitModal để yêu cầu xác nhận
+            setIsModalOpen(true);
+        };
+
+        window.addEventListener('popstate', onPopState);
+
+        return () => {
+            window.removeEventListener('popstate', onPopState);
+        };
+    }, [isNavigating]);
+
+    // Handle navigation after user confirms exit
+    const handleProceedNavigation = useCallback(() => {
+        setIsNavigating(true);
+        navigate(-1); // Điều hướng quay lại trang trước
+    }, [navigate]);
+
+    // Cập nhật ExitModal để bao gồm tùy chọn hủy để ở lại trang
+    const handleCancelExit = () => {
+        setIsModalOpen(false);
+    };
+
     return (
         <div>
             <Header onCartClick={handleCartClick} selectedItemsSubtotal={selectedItemsSubtotal} totalCartQuantity={getTotalQuantity()} />
-            <OffcanvasCart tableId={tableId} onUpdateSubtotal={handleUpdateSubtotal} show={showCart} onHide={handleCloseCart} cartItems={cartItems} onConfirmOrder={handleConfirmOrder} onUpdateQuantity={(productId, newQuantity) => {
-                setCartItems((prevItems) =>
-                    prevItems.map((item) =>
-                        item.product.productId === productId ? { ...item, quantity: newQuantity } : item
-                    )
-                );
-            }}
+            <OffcanvasCart
+                tableId={tableId}
+                onUpdateSubtotal={handleUpdateSubtotal}
+                show={showCart}
+                onHide={handleCloseCart}
+                cartItems={cartItems}
+                onConfirmOrder={handleConfirmOrder}
+                onUpdateQuantity={(productId, newQuantity) => {
+                    setCartItems((prevItems) =>
+                        prevItems.map((item) =>
+                            item.product.productId === productId ? { ...item, quantity: newQuantity } : item
+                        )
+                    );
+                }}
                 onRemoveItem={(itemToRemove: { product: ProductModel; quantity: number; note: string }) => {
                     const updatedCartItems = cartItems.filter(item =>
                         item.product.productId !== itemToRemove.product.productId || item.note !== itemToRemove.note
                     );
                     setCartItems(updatedCartItems);
-                }} />
+                }}
+            />
             <Sidebar
                 tableNumber={tableNumber}
                 tableId={tableId}
@@ -136,14 +194,23 @@ const OrderOnTable: React.FC = () => {
             <MainContent tableId={tableId} content={selectedContent} cartItems={cartItems} setCartItems={setCartItems} area={tableLocation} />
             {isModalOpen && (
                 <ExitModal
-                    onClose={handleCloseModal}
-                    onCheckout={handleCheckout}
-                    onSwitchTable={handleSwitchTable}
+                    onClose={handleCancelExit}
+                    onCheckout={() => {
+                        handleCheckout();
+                        handleProceedNavigation();
+                    }}
+                    onSwitchTable={() => {
+                        handleSwitchTable();
+                        handleProceedNavigation();
+                    }}
                 />
             )}
             {isSwitchTableModalOpen && (
                 <SwitchTableModal
-                    onClose={() => setIsSwitchTableModalOpen(false)}
+                    onClose={() => {
+                        setIsSwitchTableModalOpen(false);
+                        setActionAfterPin(null);
+                    }}
                     onConfirm={handleConfirmSwitchTable}
                 />
             )}

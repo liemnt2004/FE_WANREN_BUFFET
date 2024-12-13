@@ -38,7 +38,7 @@ const Forgotpassword: React.FC = () => {
     };
 
     return (
-        <div className="ps36231-enter-phone-number d-flex justify-content-center align-items-center vh-100">
+        <div className="ps36231-enter-phone-number container-flush">
             <form onSubmit={handleSubmit} className="box-enter-phone p-4 border rounded">
                 <div className="title d-flex align-items-center mb-4">
                     <Link className="back-to-login me-3" to="/login">

@@ -14,7 +14,7 @@ import formatMoney from "./component/FormatMoney";
 import axios from "axios";
 import { OrderModel } from "../../models/OrderModel";
 import { CartContext, CartItem } from "./component/CartContext";
-
+import { useTranslation } from 'react-i18next';
 interface UserInfo {
     fullName: string;
     phoneNumber: string;
@@ -72,6 +72,7 @@ const AccountPanel: React.FC<TogglePanelProps> = ({ togglePanel }) => (
 );
 
 const OrderPanel: React.FC<TogglePanelProps> = ({ togglePanel }) => (
+    
     <div className="col-12 col-sm-4 tinh-height25 mb-3 mb-sm-0 px-2 px-md-3">
         <div
             className="border tinh-height100 tinh-border-shadow tinh-border-right p-3 px-5 tinh-bgcWhite"
@@ -137,7 +138,7 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
     const [tempInfo, setTempInfo] = useState<UserInfo>(userInfo);
     const token = localStorage.getItem("token");
     const decoded = jwtDecode<DecodedToken>(token || "");
-
+    const { t } = useTranslation(); 
     const handleSave = async () => {
         try {
             const response = await fetch(`https://wanrenbuffet.online/api/customer/updateCustomer/${decoded.sub}`, {
@@ -171,7 +172,7 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
 
     return (
         <div className="col-12 col-sm-4 ">
-            <h4 className="py-3 fw-bold text-dark">Thông tin cá nhân</h4>
+            <h4 className="py-3 fw-bold text-dark">{t('personal_info')}</h4>
             {!editing ? (
                 <div id="personalInfo">
                     <span id="nameDisplay">
@@ -195,7 +196,7 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                             setEditing(true);
                         }}
                     >
-                        Sửa
+                        {t('edit')}
                     </a>
                 </div>
             ) : (
@@ -230,7 +231,7 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                             handleSave();
                         }}
                     >
-                        Lưu
+                        {t('save')}
                     </a>
                     <a
                         href="#"
@@ -240,7 +241,7 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                             handleCancel();
                         }}
                     >
-                        Hủy
+                        {t('cancel')}
                     </a>
                 </div>
             )}
@@ -260,7 +261,7 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
     const [token, setToken] = useState<string | null>(localStorage.getItem('token')); // Token state
 
     const authContext = useContext(AuthContext);
-
+    const { t } = useTranslation(); 
     // Update token if it changes in localStorage
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
@@ -313,19 +314,19 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
             {authContext.username && authContext.username.includes("@") ? (
                 // Don't allow editing if username contains "@"
                 <div id="passwordInfo">
-                    <h4 className="py-3">Mật Khẩu</h4>
+                    <h4 className="py-3">{t('password')}</h4>
                     <span className="tinh-fs12" id="passwordDisplay">
                         *********
                     </span>
                     <br />
                     <hr />
-                    <p className="text-muted">Bạn không thể thay đổi mật khẩu nếu tài khoản này có chứa '@'.</p>
+                    <p className="text-muted">Bạn không thể thay đổi mật khẩu nếu tài khoản này Google.</p>
                 </div>
             ) : (
                 // Allow editing only if username doesn't contain "@"
                 !editing && (
                     <div id="passwordInfo">
-                        <h4 className="py-3">Mật Khẩu</h4>
+                        <h4 className="py-3">{t('password')}</h4>
                         <span className="tinh-fs12" id="passwordDisplay">
                             *********
                         </span>
@@ -339,7 +340,7 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                                 setEditing(true);
                             }}
                         >
-                            Sửa
+                            {t('edit')}
                         </a>
                     </div>
                 )
@@ -373,7 +374,7 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                             handleSave();
                         }}
                     >
-                        Lưu
+                        {t('save')}
                     </a>
                     <a
                         href="#"
@@ -383,7 +384,7 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                             handleCancel();
                         }}
                     >
-                        Hủy
+                        {t('cancel')}
                     </a>
                 </div>
             )}
@@ -418,7 +419,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
     const [totalmodal, setTotalmodal] = useState<number | null>(null);
     const [promotion, setPromotion] = useState<string | "">("");
     const cartContext = useContext(CartContext);
-
+    const { t } = useTranslation(); 
     // State variables for order review
     const [selectedOrderForReview, setSelectedOrderForReview] =
         useState<OrderModel | null>(null);
@@ -426,7 +427,6 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
     const [reviewSubmitting, setReviewSubmitting] = useState<boolean>(false);
     const [reviewError, setReviewError] = useState<string | null>(null);
 
-    console.log(listOrder);
 
 
     useEffect(() => {
@@ -570,13 +570,13 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                 {listOrder.map((order) => (
                     <div className="card mb-3" key={order.orderId}>
                         <div className="card-header order-header">
-                            <span className="fs-6">Mã Đơn Hàng: {order.orderId}</span>
+                            <span className="fs-6">{t('order_id')} {order.orderId}</span>
                             <span className="float-end fs-6">
                                 {formatMoney(order.totalAmount)}
                             </span>
                         </div>
                         <div className="card-body">
-                            <p className="order-info">Địa Chỉ Giao Hàng: {order.address}</p>
+                            <p className="order-info">{t('address')} {order.address}</p>
                             <div className="row g-0">
                                 <div className="col-md-2">
                                     <img
@@ -598,31 +598,31 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                                     case "PREPARING_ORDER":
                                                         return (
                                                             <span>
-                                                                <i className="fas fa-cogs"></i> Đang chuẩn bị hàng
+                                                                <i className="fas fa-cogs"></i> {t('order_status1')}
                                                             </span>
                                                         );
                                                     case "WAITING":
                                                         return (
                                                             <span>
-                                                                <i className="fas fa-clock"></i> Đang chờ xử lý
+                                                                <i className="fas fa-clock"></i> {t('order_status2')}
                                                             </span>
                                                         );
                                                     case "IN_TRANSIT":
                                                         return (
                                                             <span>
-                                                                <i className="fas fa-truck"></i> Đang giao hàng
+                                                                <i className="fas fa-truck"></i> {t('order_status3')}
                                                             </span>
                                                         );
                                                     case "DELIVERED":
                                                         return (
                                                             <span>
-                                                                <i className="fas fa-check-circle"></i> Đã giao hàng
+                                                                <i className="fas fa-check-circle"></i> {t('order_status4')}
                                                             </span>
                                                         );
                                                     default:
                                                         return (
                                                             <span>
-                                                                <i className="fas fa-question-circle"></i> Trạng thái không xác định
+                                                                <i className="fas fa-question-circle"></i> {t('order_status5')}
                                                             </span>
                                                         );
                                                 }
@@ -639,7 +639,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                 className="btn btn-primary btn-view-order"
                                 onClick={() => handleViewMore(order.orderId)}
                             >
-                                <i className="fas fa-info-circle"></i> Chi Tiết Sản Phẩm Đã Mua
+                                <i className="fas fa-info-circle"></i> {t('product_detail')}
                             </button>
 
                             {/* Conditionally render the review button */}
@@ -648,11 +648,11 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                     className="btn btn-secondary btn-view-order"
                                     onClick={() => openOrderReviewModal(order)}
                                 >
-                                    Đánh Giá Đơn Hàng
+                                    {t('fellback')}
                                 </button>
                             ) : (
                                 <button className="btn btn-secondary btn-view-order" disabled>
-                                    Đã Đánh Giá
+                                    {t('fellback_succes')}
                                 </button>
                             )}
                             <button
@@ -692,7 +692,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                 <>
                                     <div className="modal-header">
                                         <h5 className="modal-title" id="orderModalLabel">
-                                            Mã Đơn Hàng #{selectedOrderId} - Chi Tiết sản phẩm
+                                            {t('order_id')} #{selectedOrderId} - {t('product_detail')}
                                         </h5>
                                         <button
                                             type="button"
@@ -718,7 +718,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                                         <h5>{product._productName}</h5>
                                                         <p>{formatMoney(product._price)}</p>
                                                         <p>{product._description}</p>
-                                                        <p>Số lượng: x{product._quantity}</p>
+                                                        <p>{t('quality')} x{product._quantity}</p>
                                                     </div>
                                                 </div>
                                             ))
@@ -728,13 +728,13 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                         <div className="row">
                                             <div className="col-md-12">
                                                 <h6>
-                                                    <strong>Phí Giao Hàng:</strong> {formatMoney(15000)}
+                                                    <strong>{t('ship')}</strong> {formatMoney(15000)}
                                                 </h6>
                                                 <h6>
-                                                    <strong>Voucher:</strong> {promotion}
+                                                    <strong>{t('voucher')}</strong> {promotion}
                                                 </h6>
                                                 <h6>
-                                                    <strong>Tổng Tiền:</strong>{" "}
+                                                    <strong>{t('total')}</strong>{" "}
                                                     {formatMoney(totalmodal || 0)}
                                                 </h6>
                                             </div>
@@ -746,7 +746,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                             className="btn btn-secondary"
                                             onClick={() => setSelectedOrderId(null)}
                                         >
-                                            Đóng
+                                            {t('cancel')}
                                         </button>
                                     </div>
                                 </>
@@ -769,7 +769,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                             <form onSubmit={handleOrderReviewSubmit}>
                                 <div className="modal-header">
                                     <h5 className="modal-title" id="orderReviewModalLabel">
-                                        Đánh Giá Đơn Hàng
+                                        {t('fellback')}
                                     </h5>
                                     <button
                                         type="button"
@@ -783,7 +783,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                         <div className="alert alert-danger">{reviewError}</div>
                                     )}
                                     <div className="mb-3">
-                                        <label className="form-label">Mã Đơn Hàng</label>
+                                        <label className="form-label">{t('order_id')}</label>
                                         <input
                                             type="text"
                                             className="form-control"
@@ -793,7 +793,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                     </div>
                                     <div className="mb-3">
                                         <label htmlFor="reviewContent" className="form-label">
-                                            Nhận Xét Của Bạn
+                                            {t('Your_Reviews')}
                                         </label>
                                         <textarea
                                             id="reviewContent"
@@ -811,14 +811,14 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                         className="btn btn-secondary"
                                         onClick={closeOrderReviewModal}
                                     >
-                                        Hủy
+                                        {t('cancel')}
                                     </button>
                                     <button
                                         type="submit"
                                         className="btn btn-primary"
                                         disabled={reviewSubmitting}
                                     >
-                                        {reviewSubmitting ? "Đang Gửi..." : "Gửi Nhận Xét"}
+                                        {reviewSubmitting ? `${t('loading_seen')}` : `${t('Enter_seen')}`}
                                     </button>
                                 </div>
                             </form>
@@ -843,6 +843,7 @@ const VoucherContent: React.FC = () => (
 );
 
 const MenuProfile: React.FC = () => {
+    const { t } = useTranslation(); 
     const [activePanel, setActivePanel] = useState<string | null>(null);
     const token = localStorage.getItem('token');
     const navigate = useNavigate();
@@ -932,7 +933,7 @@ const MenuProfile: React.FC = () => {
                                     <h2>{userInfo.fullName}</h2>
                                     <p>{userInfo.phoneNumber}</p>
                                     <p>Email: {userInfo.email}</p>
-                                    <button className="btn" onClick={logout}>Đăng Xuất</button>
+                                    <button className="btn" onClick={logout}>{t('logout')}</button>
                                 </div>
                             </div>
                         ) : (
