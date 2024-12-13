@@ -30,15 +30,10 @@ const StaffIndex: React.FC = () => {
         setIcon(newIcon);
       
         localStorage.setItem('selected-theme', newTheme);
-        localStorage.setItem('selected-icon', newIcon);
       };
 
     useEffect(() => {
         document.body.className = theme === 'dark' ? 'dark-theme' : '';
-        const mainElements = document.getElementsByClassName('main');
-        Array.from(mainElements).forEach((element) => {
-            element.className = theme === 'dark' ? 'main theme-dark' : 'main';
-        });
     }, [theme]);
 
     return (
