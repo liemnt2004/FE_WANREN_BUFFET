@@ -45,7 +45,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
     return (
         <div className="ps36231 modal fade show d-block" tabIndex={-1} role="dialog">
             <div className="modal-dialog modal-dialog-centered">
-                <div className="modal-content">
+                <div className="modal-content p-0">
                     <div className="container-modal">
                         <div className="container-modal-header">
                             <div className="control-img">
@@ -59,7 +59,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                             <div className="name-item fw-bold">{product.productName}</div>
                             <div className="note pt-2">
                                 <textarea
-                                    className="form-control no-border"
+                                    className="no-border form-control p-0"
                                     aria-label="With textarea"
                                     placeholder="Ghi chú"
                                     value={note}
@@ -69,7 +69,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
                             <div className="container-price-quantity mt-3">
                                 <div className="price-quantity">
                                     <div className="price fw-bold">
-                                        <span>Giá: {product.price.toLocaleString()} ₫</span>
+                                        {product.price !== 0 && (
+                                            <span>Giá: {product.price.toLocaleString()} VNĐ</span>
+                                        )}
                                     </div>
                                     <div className="quantity-control d-flex align-items-center pt-2">
                                         <button

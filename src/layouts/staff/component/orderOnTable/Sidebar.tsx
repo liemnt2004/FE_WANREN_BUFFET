@@ -58,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
     { label: 'Nấm', value: 'mushroom' },
     { label: 'Mỳ - Bún', value: 'noodles' },
     { label: 'Vé Buffet', value: 'buffet_tickets' },
-    { label: 'Khăn lạnh', value: 'cold_towel' },
+    { label: 'Khác', value: 'cold_towel' },
     { label: 'Nước pha chế', value: 'mixers' },
     { label: 'Nước giải khát', value: 'soft_drinks' },
     { label: 'Bia', value: 'beer' },
@@ -110,7 +110,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
               <h3 className="sidebar__title">ALACARTE</h3>
               <div className="sidebar__list">
                 {sidebarLinks.map(link => (
-                  ((link.value === 'buffet_tickets' && tableLocation !== 'GDeli') || link.value === 'dessert') && (
+                  ((link.value === 'buffet_tickets' && tableLocation !== 'GDeli') || link.value === 'dessert' || link.value === 'cold_towel')  && (
                     <p
                       key={link.value}
                       className={`sidebar__link mb-0 ${activeLink === link.value ? 'active-link' : ''}`} 
