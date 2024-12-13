@@ -24,7 +24,7 @@
     "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
-    "contentful": "^11.3.1",
+    "contentful": "^11.3.2",
     "file-saver": "^2.0.5",
     "json2csv": "^6.0.0-alpha.2",
     "jspdf": "^2.5.2",

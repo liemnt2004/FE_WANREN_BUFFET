@@ -2,7 +2,7 @@ import React from 'react';
 import TableList from './TableList'; // Make sure this import points to the correct path
 
 interface MainContentProps {
-  content: 'home' | '2nd_floor' | 'gdeli' | 'setting';
+  content: 'home' | '2nd_floor' | 'gdeli' | 'setting' | 'theme';
 }
 
 const MainContent: React.FC<MainContentProps> = ({ content }) => {

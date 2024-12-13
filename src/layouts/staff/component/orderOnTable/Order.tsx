@@ -109,9 +109,14 @@ const OrderOnTable: React.FC = () => {
         setSelectedItemsSubtotal(subtotal);
     };
 
+    const [isSidebarVisible, setSidebarVisible] = useState(false);
+    const toggleSidebar = () => {
+        setSidebarVisible(!isSidebarVisible);
+    };
+
     return (
         <div>
-            <Header onCartClick={handleCartClick} selectedItemsSubtotal={selectedItemsSubtotal} totalCartQuantity={getTotalQuantity()} />
+            <Header onCartClick={handleCartClick} selectedItemsSubtotal={selectedItemsSubtotal} totalCartQuantity={getTotalQuantity()} toggleSidebar={toggleSidebar} />
             <OffcanvasCart tableId={tableId} onUpdateSubtotal={handleUpdateSubtotal} show={showCart} onHide={handleCloseCart} cartItems={cartItems} onConfirmOrder={handleConfirmOrder} onUpdateQuantity={(productId, newQuantity) => {
                 setCartItems((prevItems) =>
                     prevItems.map((item) =>
@@ -132,6 +137,7 @@ const OrderOnTable: React.FC = () => {
                 onClickContent={handleSidebarClick}
                 onOpenExitModal={handleOpenExitModal}
                 onOpenSwitchTableModal={handleOpenSwitchTableModal}
+                isVisible={isSidebarVisible}
             />
             <MainContent tableId={tableId} content={selectedContent} cartItems={cartItems} setCartItems={setCartItems} area={tableLocation} />
             {isModalOpen && (

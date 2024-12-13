@@ -317,7 +317,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
       <div className="row" style={{ paddingLeft: '20px', width: '100%' }}>
         {filteredTables.length > 0 ? (
           filteredTables.map((table) => (
-            <div className="col-md-3" key={table.tableId} onClick={() => handleTableClick(table)}>
+            <div className="col-6 col-md-3" key={table.tableId} onClick={() => handleTableClick(table)}>
               <div className={`card table-card position-relative ${table.tableStatus === 'EMPTY_TABLE' ? '' : 'table-card-active'}`}>
                 {table.tableStatus === 'LOCKED_TABLE' && (
                   <>
@@ -334,7 +334,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
                   </>)
                 }
                 <div className="card-body">
-                  <h5 className="card-title text-center">Bàn {table.tableNumber} <span style={{ fontWeight: 'bold' }}>{table.location === 'GDeli' ? '(Deli)' : ''}</span> </h5>
+                  <h5 className="card-title text-center">Bàn {table.tableNumber} <span style={{ fontWeight: 'bold', color: 'var(--text-color)' }}>{table.location === 'GDeli' ? '(Deli)' : ''}</span> </h5>
                   {table.tableStatus !== 'EMPTY_TABLE' && table.tableStatus !== 'LOCKED_TABLE' && table.tableStatus !== 'PAYING_TABLE' && (
                     <>
                       <p className="table-status">{table.tableStatus === 'OCCUPIED_TABLE' && ('2h05')}</p>

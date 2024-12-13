@@ -12,9 +12,10 @@ interface SidebarProps {
   tableNumber: string;
   tableId: number;
   tableLocation: string;
+  isVisible: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tableNumber, tableId, tableLocation }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tableNumber, tableId, tableLocation, isVisible }) => {
   const [showTransferModal, setShowTransferModal] = useState<boolean>(false);
   const navigate = useNavigate();
   const [api, contextHolder] = notification.useNotification();
@@ -69,7 +70,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
   return (
     <>
       {contextHolder}
-      <nav className="sidebar" id="sidebar">
+      <nav className={`sidebar ${isVisible ? 'show-sidebar' : ''}`} id="sidebar">
         <div className="sidebar__container">
           <div className="sidebar__user">
             <div className="sidebar__img">
@@ -77,7 +78,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
             </div>
             <div className="sidebar__info">
               <h3 className="fw-bold fs-4" style={{ color: 'var(--first-color)' }}>Bàn {tableId}</h3>
-              <span>WANRENT BUFFET</span>
+              <span style={{ color: 'var(--text-color)' }}>WANRENT BUFFET</span>
             </div>
           </div>
           <div className="sidebar__content">
@@ -147,7 +148,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
             <>
               {tableLocation === 'Table' && (
                 <button onClick={() => setShowTransferModal(true)}>
-                  <i className="ri-moon-clear-fill sidebar__link sidebar__theme" id="theme-button">
+                  <i className="ri-refresh-line sidebar__link sidebar__theme" id="theme-button">
                     <span style={{ color: 'var(--firstColor)' }}>Chuyển bàn</span>
                   </i>
                 </button>
