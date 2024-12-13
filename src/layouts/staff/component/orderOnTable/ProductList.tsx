@@ -26,7 +26,7 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
                 const fetchedProducts = await getAllProduct();
 
                 const adjustProductPrice = (product: ProductModel, area: string): ProductModel => {
-                    if (area === 'Table' && product.typeFood !== 'buffet_tickets' && product.typeFood !== 'mixers' && product.typeFood !== 'soft_drinks' && product.typeFood !== 'beer' && product.typeFood !== 'wine') {
+                    if (area === 'Table' && product.typeFood !== 'buffet_tickets' && product.typeFood !== 'mixers' && product.typeFood !== 'soft_drinks' && product.typeFood !== 'beer' && product.typeFood !== 'wine' && product.typeFood !== 'dessert' && product.typeFood !== 'cold_towel') {
                         const adjustedProduct = new ProductModel(
                             product.productId,
                             product.productName,
@@ -187,7 +187,7 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
         buffet_tickets: 'Vé buffet',
         dessert: 'Tráng miệng',
         mixers: 'Nước pha chế',
-        cold_towel: 'Khăn lạnh',
+        cold_towel: 'Khác',
         soft_drinks: 'Nước giải khát',
         beer: 'Bia',
         mushroom: 'Nấm',
