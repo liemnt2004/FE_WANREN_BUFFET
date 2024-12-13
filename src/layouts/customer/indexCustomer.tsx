@@ -22,9 +22,9 @@ import { Accordion } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { AccordionEventKey } from "react-bootstrap/esm/AccordionContext";
 import Banner from "./component/Banner";
-
-
-
+import { useTranslation } from 'react-i18next';
+import i18n from "../../i18n";
+import { Link } from "react-router-dom";
 
   
 const IndexCustomer: React.FC = () => {
@@ -40,11 +40,11 @@ const IndexCustomer: React.FC = () => {
 
     // Hàm xử lý sự kiện khi Accordion thay đổi
     const handleAccordionSelect = (eventKey: AccordionEventKey, e: React.SyntheticEvent<unknown>) => {
-        // Cập nhật activeKey nếu sự kiện này có eventKey hợp lệ
         console.log(eventKey);
-
         setActiveKey(eventKey);
     };
+   
+    const { t } = useTranslation(); 
 
     // State để quản lý số lượng của sản phẩm trong modal
     const [modalQuantities, setModalQuantities] = useState<{ [key: number]: number }>({});
@@ -200,9 +200,8 @@ const IndexCustomer: React.FC = () => {
                         <section className="bg-white row pb-5 about-section">
                             <div className="col-md-6">
                                 <div className="about">
-                                    <h4 className="fw-bold">Lẩu Băng chuyền</h4>
-                                    <p className="py-4">Kichi-Kichi là chuỗi nhà hàng chuyên về Buffet lẩu hàng đầu Việt
-                                        Nam...</p>
+                                    <h4 className="fw-bold">{t('laubangchuyen')}</h4>
+                                    <p className="py-4">{t('aboutDescription')}</p>
                                 </div>
                             </div>
                             <div className="col-md-6">
@@ -212,7 +211,7 @@ const IndexCustomer: React.FC = () => {
 
                         {/* Hot Deal Section */}
                         <section className="hot-deal" style={{ backgroundColor: 'white' }}>
-                            <h4 className="fw-bold">HOT DEAL</h4>
+                            <h4 className="fw-bold">{t('hotDeal')}</h4>
                             {loading ? (
                                 <div>Đang tải sản phẩm...</div>
                             ) : error ? (
@@ -363,63 +362,63 @@ const IndexCustomer: React.FC = () => {
                             <div className="container">
                                 <div className="row">
                                     <div className="col-md-6 help" style={{ paddingLeft: 0, paddingRight: '50px' }}>
-                                        <h4 className="fw-bold pb-4">CHÚNG TÔI CÓ THỂ GIÚP GÌ CHO BẠN ?</h4>
+                                        <h4 className="fw-bold pb-4">{t("whatCanWeDo")}</h4>
                                         <div className="container mt-5">
                                             <Accordion activeKey={activeKey} onSelect={handleAccordionSelect} flush>
                                                 <Accordion.Item eventKey="0">
-                                                    <Accordion.Header>1. Cách thức đặt hàng như thế nào?</Accordion.Header>
+                                                    <Accordion.Header>{t('faq1Header')}</Accordion.Header>
                                                     <div
                                                         className="accordion-body"
                                                         style={{ display: activeKey === '0' ? 'block' : 'none' }}
                                                     >
-                                                        Để đặt hàng, bạn chỉ cần chọn sản phẩm, thêm vào giỏ hàng, sau đó điền thông tin giao hàng và tiến hành thanh toán.
+                                                        {t('faq1Body')}
                                                     </div>
                                                 </Accordion.Item>
 
                                                 <Accordion.Item eventKey="1">
-                                                    <Accordion.Header>2. Tôi có thể thanh toán bằng phương thức nào?</Accordion.Header>
+                                                    <Accordion.Header>{t('faq2Header')}</Accordion.Header>
                                                     <div
                                                         className="accordion-body"
                                                         style={{ display: activeKey === '1' ? 'block' : 'none' }}
                                                     >
-                                                        Chúng tôi hỗ trợ nhiều phương thức thanh toán như thẻ tín dụng, chuyển khoản ngân hàng, và thanh toán khi nhận hàng (COD).
+                                                       {t('faq2Body')}
                                                     </div>
                                                 </Accordion.Item>
 
                                                 <Accordion.Item eventKey="2">
-                                                    <Accordion.Header>3. Thời gian giao hàng mất bao lâu?</Accordion.Header>
+                                                    <Accordion.Header>{t('faq3Header')}</Accordion.Header>
                                                     <div
                                                         className="accordion-body"
                                                         style={{ display: activeKey === '2' ? 'block' : 'none' }}
                                                     >
-                                                        Thời gian giao hàng phụ thuộc vào khu vực của bạn. Thường sẽ giao trong vòng 1h giờ làm việc.
+                                                        {t('faq3Body')}
                                                     </div>
                                                 </Accordion.Item>
 
                                                 <Accordion.Item eventKey="3">
-                                                    <Accordion.Header>4. Làm thế nào để kiểm tra tình trạng đơn hàng?</Accordion.Header>
+                                                    <Accordion.Header>{t('faq4Header')}</Accordion.Header>
                                                     <div
                                                         className="accordion-body"
                                                         style={{ display: activeKey === '3' ? 'block' : 'none' }}
                                                     >
-                                                        Sau khi đơn hàng được xử lý, bạn sẽ nhận được mã số đơn hàng và có thể theo dõi tình trạng đơn hàng qua website của chúng tôi.
+                                                        {t('faq4Body')}
                                                     </div>
                                                 </Accordion.Item>
 
                                                 <Accordion.Item eventKey="4">
-                                                    <Accordion.Header>5. Tôi có thể đổi hoặc trả lại sản phẩm không?</Accordion.Header>
+                                                    <Accordion.Header>{t('faq5Header')}</Accordion.Header>
                                                     <div
                                                         className="accordion-body"
                                                         style={{ display: activeKey === '4' ? 'block' : 'none' }}
                                                     >
-                                                        Có, bạn có thể đổi hoặc trả lại sản phẩm trong vòng 7 ngày nếu sản phẩm còn nguyên vẹn và không có dấu hiệu sử dụng.
+                                                        {t('faq5Body')}
                                                     </div>
                                                 </Accordion.Item>
                                             </Accordion>
                                         </div>
                                     </div>
                                     <div className="col-md-6" style={{ paddingRight: 0 }}>
-                                        <h4 className="fw-bold pb-4">KHÁCH HÀNG NÓI GÌ?</h4>
+                                        <h4 className="fw-bold pb-4">{t('customerFeedback')}</h4>
                                         <div id="carouselExampleCaptions" className="carousel slide"
                                             data-bs-ride="carousel">
                                             {/* Carousel Indicators */}
@@ -556,9 +555,8 @@ const IndexCustomer: React.FC = () => {
                                     <div className="row mt-3">
                                         <div className="col-md-5">
                                             <img src={loginfooter} width="100" alt="Logo Footer" className="img-feeback" />
-                                            <p className="mt-3 mb-4">WANREN BUFFET là nhà hàng chuyên về Buffet lẩu hàng
-                                                đầu Việt Nam</p>
-                                            <h6 className="fw-bold">Theo dõi chúng tôi trên mạng xã hội:</h6>
+                                            <p className="mt-3 mb-4">{t('footerDescription')}</p>
+                                            <h6 className="fw-bold">{t('followUs')}</h6>
                                             <div className="footer-contact mt-3 text-secondary">
                                                 <i className="bi bi-facebook pe-3"></i>
                                                 <i className="bi bi-twitter pe-3"></i>
@@ -568,12 +566,12 @@ const IndexCustomer: React.FC = () => {
                                             </div>
                                         </div>
                                         <div className="col-md-3">
-                                            <h5 className="text-uppercase fw-bold mb-4">Thời gian mở cửa</h5>
-                                            <p>Thứ 2 - Chủ Nhật: 10h - 22h</p>
-                                            <p>Chúng tôi làm việc tất cả các ngày lễ</p>
+                                            <h5 className="text-uppercase fw-bold mb-4">{t('openingHours')}</h5>
+                                            <p>{t('openDays')}</p>
+                                            <p>{t('holidayPolicy')}</p>
                                         </div>
                                         <div className="col-md-4">
-                                            <h5 className="text-uppercase fw-bold mb-4">Về Chúng Tôi</h5>
+                                            <h5 className="text-uppercase fw-bold mb-4">{t('aboutUs')}</h5>
                                             <section className="ratio ratio-16x9">
                                                 <iframe
                                                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.177875756147!2d106.68670197570356!3d10.79768475879993!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135adedecb7bc5f%3A0xa3f78f8a3e35f1b0!2zTOG6qXUgQsSDbmcgQ2h1eeG7gW4gS2ljaGkgS2ljaGk!5e0!3m2!1svi!2s!4v1727163707823!5m2!1svi!2s"
@@ -584,7 +582,7 @@ const IndexCustomer: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="container d-flex align-items-center py-4 justify-content-between">
-                                    <p className="m-0">Dự Án Tốt Nghiệp</p>
+                                    <p className="m-0">{t('projectName')}</p>
                                 </div>
                             </section>
                         </footer>
@@ -594,20 +592,20 @@ const IndexCustomer: React.FC = () => {
                 <div className="col-md-3 right-section">
                     <div className="row d-flex align-items-center justify-content-center">
                         <div className="col-12 image-card text-center">
-                            <a href="/menu"><img src={cothaygia} alt="Menu" className="img-fluid" /></a>
-                            <a href="/menu" className="btn btn-outline-light mt-2">Thực Đơn →</a>
+                            <Link to="/menu"><img src={cothaygia} alt="Menu" className="img-fluid" /></Link>
+                            <Link to="/menu" className="btn btn-outline-light mt-2">{t('menuButton')}</Link>
                         </div>
                     </div>
                     <div className="row d-flex align-items-center justify-content-center">
                         <div className="col-12 image-card text-center">
-                            <a href="/reservation"><img src={bannerHome} alt="Reservation" className="img-fluid" /></a>
-                            <a href="/reservation" className="btn btn-outline-light mt-2">Đặt Bàn →</a>
+                            <Link to="/reservation"><img src={bannerHome} alt="Reservation" className="img-fluid" /></Link>
+                            <Link to="/reservation" className="btn btn-outline-light mt-2">{t('reservationButton')}</Link>
                         </div>
                     </div>
                     <div className="row d-flex align-items-center justify-content-center">
                         <div className="col-12 image-card text-center">
-                            <a href="/promotion"><img src={publicAvif} alt="Promotion" className="img-fluid" /></a>
-                            <a href="/promotion" className="btn btn-outline-light mt-2">Ưu Đãi →</a>
+                            <Link to="/promotion"><img src={publicAvif} alt="Promotion" className="img-fluid" /></Link>
+                            <Link to="/promotion" className="btn btn-outline-light mt-2">{t('promotionButton')}</Link>
                         </div>
                     </div>
                 </div>

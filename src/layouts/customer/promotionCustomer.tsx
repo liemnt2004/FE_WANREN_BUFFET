@@ -1,7 +1,5 @@
 // src/components/PromotionCustomer.tsx
 import React, { useEffect, useState } from "react";
-
-// Import hình ảnh và CSS
 import bannerHome from './assets/img/Banner-Hompage-_1500W-x-700H_px.jpg';
 import bannerBuffet from './assets/img/1500x700-01_1_1.png';
 import priceBuffet from './assets/img/banner-gia-buffet-kich-kichi-160824.jpg';
@@ -10,35 +8,35 @@ import './assets/css/styles.css';
 import './assets/css/reservation.css';
 import './assets/css/promotion.css';
 
-// Import API và mô hình
 import { getAllPromotion } from "../../api/apiCustommer/promotionApi";
 import PromotionModel from "../../models/PromotionModel";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import Banner from "./component/Banner";
+import { useTranslation } from 'react-i18next';
 
 const PromotionCustomer: React.FC = () => {
     const [listpromotion, setListPromotion] = useState<PromotionModel[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
+    const { t } = useTranslation();
+
     useEffect(() => {
         const fetchPromotions = async () => {
             try {
                 const promotions = await getAllPromotion();
-
                 setListPromotion(promotions);
             } catch (err) {
                 console.error(err);
-                setError('Đã xảy ra lỗi khi tải dữ liệu khuyến mãi.');
+                setError(t('promotions.errorLoading'));
             } finally {
                 setLoading(false);
             }
         };
 
         fetchPromotions();
-    }, []);
+    }, [t]);
 
-    // Hàm tính ngày còn lại
     const calculateDaysRemaining = (endDate: string | Date): number => {
         const end = new Date(endDate).getTime();
         const now = new Date().getTime();
@@ -48,7 +46,7 @@ const PromotionCustomer: React.FC = () => {
     };
 
     if (loading) {
-        return <div className="container">Đang tải dữ liệu khuyến mãi...</div>;
+        return <div className="container">{t('promotions.loading')}</div>;
     }
 
     if (error) {
@@ -58,16 +56,15 @@ const PromotionCustomer: React.FC = () => {
     return (
         <div className="container-fluid">
             <div className="row mobile-layout">
-                {/* Left Section: Main Image */}
+                {/* Left Section */}
                 <div className="col-md-8 position-relative left-section" style={{ paddingBottom: 0 }}>
                     <div>
-                    <Banner></Banner>
-
+                        <Banner />
                         <img src={priceBuffet} alt="Main Dish Image" className="img-fluid" />
                     </div>
                 </div>
 
-                {/* Right Section: Smaller Images */}
+                {/* Right Section */}
                 <div
                     className="col-md-4"
                     style={{
@@ -79,32 +76,29 @@ const PromotionCustomer: React.FC = () => {
                     }}
                 >
                     {listpromotion.length === 0 ? (
-                        <div className="text-center">Không có khuyến mãi nào.</div>
+                        <div className="text-center">{t('promotions.noPromotions')}</div>
                     ) : (
                         listpromotion.map((promotion) => (
-                            <div className="container promotion" key={promotion.PromotionId}>
+                            <div className="container promotion" key={promotion.promotion}>
                                 <div className="row mb-4">
-                                    {/* Hình ảnh khuyến mãi */}
                                     <div className="col-md-7">
-                                        {/* Sử dụng hình ảnh từ promotion nếu có */}
-                                        <img src={ thumnailPromation} alt={promotion.promotionName} className="img-fluid" />
+                                        <img src={promotion.image} alt={promotion.promotionName} className="img-fluid" />
                                     </div>
-                                    {/* Thông tin khuyến mãi */}
                                     <div className="col-md-5 d-flex flex-column justify-content-between">
                                         <div>
                                             <h5>{promotion.promotionName}</h5>
-                                            <p>{promotion.description}</p>
+                                            <p dangerouslySetInnerHTML={{ __html: promotion.description }}></p>
                                             <p>
-                                                Thời gian áp dụng: <br />
+                                                {t('promotions.applyTime')}<br />
                                                 {new Date(promotion.startDate).toLocaleDateString()} - {new Date(promotion.endDate).toLocaleDateString()}
                                             </p>
                                             <p>
-                                                Hết hạn sau: <br />
-                                                {calculateDaysRemaining(promotion.endDate)} ngày
+                                                {t('promotions.expireIn')}<br />
+                                                {calculateDaysRemaining(promotion.endDate)} {t('promotions.days')}
                                             </p>
                                         </div>
-                                        <Link  to={'/promotion_detail/' + promotion.PromotionId} className="btn btn-danger mt-2">
-                                            Xem chi tiết
+                                        <Link to={'/promotion_detail/' + promotion.promotion} className="btn btn-danger mt-2">
+                                            {t('promotions.viewDetails')}
                                         </Link>
                                     </div>
                                 </div>

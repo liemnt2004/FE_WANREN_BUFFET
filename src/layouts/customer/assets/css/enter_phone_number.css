@@ -63,8 +63,8 @@
 
 @media screen and (max-width: 991px) {
     .ps36231-enter-phone-number{
-        height: 800px;
-        width: 991px;
+       display: block;
+       width: 450px;
     }
 
     .ps36231-enter-phone-number > form > .box-enter-phone{

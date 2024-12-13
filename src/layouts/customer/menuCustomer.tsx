@@ -6,14 +6,15 @@ import './assets/css/menu.css';
 import { CartContext } from './component/CartContext';
 import { Offcanvas } from 'react-bootstrap';
 import CartOffcanvas from "./component/offcanvas";
-
+import LanguageSwitcher from "./component/LanguageSwitcher";
+import { useTranslation } from 'react-i18next';
 function MenuCustomer() {
     const { fullName } = useContext(AuthContext);
     const cartContext = useContext(CartContext);
 
     const [showOffcanvas, setShowOffcanvas] = useState(false);      // State cho menu
     const [showCartOffcanvas, setShowCartOffcanvas] = useState(false); // State cho giỏ hàng
-
+    const { t } = useTranslation(); 
     if (!cartContext) {
         return null;
     }
@@ -42,9 +43,9 @@ function MenuCustomer() {
             </Link>
 
             {/* Navigation Links */}
-            <Link to="/menu" className="nav-link" onClick={handleCloseMenu}>Thực Đơn</Link>
-            <Link to="/promotion" className="nav-link" onClick={handleCloseMenu}>Ưu Đãi</Link>
-            <Link to="/reservation" className="btn-book" onClick={handleCloseMenu}>Đặt Bàn</Link>
+            <Link to="/menu" className="nav-link" onClick={handleCloseMenu}>{t('menu')}</Link>
+            <Link to="/promotion" className="nav-link" onClick={handleCloseMenu}>{t('promotion')}</Link>
+            <Link to="/reservation" className="btn-book" onClick={handleCloseMenu}>{t('reservation')}</Link>
 
             {/* Cart Icon */}
             <button
@@ -68,14 +69,14 @@ function MenuCustomer() {
                         <Link to="/profile" className="btn-user cursor-pointer">
                             <i className="bi bi-person-fill"></i>
                         </Link>
-                        <p style={{ margin: 0 }}>Xin chào, {fullName}</p>
+                        <p style={{ margin: 0 }}>{t('wellcome')}, {fullName}</p>
                     </>
                 ) : (
                     <>
                         <button onClick={login} className="btn-user cursor-pointer">
                             <i className="bi bi-box-arrow-in-right"></i>
                         </button>
-                        <p style={{ margin: 0 }}>Wanren Xin Chào!</p>
+                        <p style={{ margin: 0 }}>Wanren {t('wellcome')}!</p>
                     </>
                 )}
             </div>
@@ -91,22 +92,23 @@ function MenuCustomer() {
                         className="nav-link nav-link-menu"
                         onClick={handleCloseMenu}
                     >
-                        Thực Đơn
+                        {t('menu')}
                     </Link>
                     <Link
                         to="/promotion"
                         className="nav-link nav-link-menu"
                         onClick={handleCloseMenu}
                     >
-                        Ưu Đãi
+                        {t('promotion')}
                     </Link>
                     <Link
                         to="/reservation"
                         className="nav-link nav-link-menu"
                         onClick={handleCloseMenu}
                     >
-                        Đặt Bàn
+                        {t('reservation')}
                     </Link>
+                    <LanguageSwitcher></LanguageSwitcher>
                 </Offcanvas.Body>
             </Offcanvas>
 

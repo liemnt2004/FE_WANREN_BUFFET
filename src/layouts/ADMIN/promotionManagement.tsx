@@ -1,640 +1,1158 @@
-import React, { useEffect, useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "@fortawesome/fontawesome-free/css/all.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
-import {
-  Switch,
-  Input,
-  Button,
-  Form,
-  Row,
-  Col,
-  InputNumber,
-  DatePicker,
-  message,
-  Modal,
-} from "antd";
-import { ExclamationCircleOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
-import PromotionAdmin from "../../models/AdminModels/Promotion";
-import {
-  getAllPromotions,
-  createPromotion,
-  updatePromotion,
-  deletePromotion,
-} from "../../api/apiAdmin/promotionApi";
-// Importing libraries for exporting data
-import * as XLSX from "xlsx";
-import { PDFDocument, rgb } from "pdf-lib";
-import fontkit from "@pdf-lib/fontkit";
+// src/components/PromotionManagement.tsx
 
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import {
+    Form,
+    Input,
+    Modal,
+    Select,
+    Switch,
+    Button,
+    Row,
+    Col,
+    notification,
+    Table,
+    Space,
+    Image,
+    InputNumber,
+    Spin,
+    Upload,
+} from "antd";
+import {
+    ExclamationCircleOutlined,
+    UploadOutlined,
+    EditOutlined,
+    DeleteOutlined,
+} from "@ant-design/icons";
+import { ColumnsType } from "antd/es/table";
+import useDebounce from "../customer/component/useDebounce";
+import {
+    fetchPromotionList,
+    createPromotion,
+    updatePromotion,
+    deletePromotion,
+} from "../../api/apiAdmin/promotionApi";
+import axios from "axios";
+import * as XLSX from 'xlsx';
+import fontkit from '@pdf-lib/fontkit';
+import { PDFDocument, rgb } from 'pdf-lib';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { PromotionInput } from "../../models/AdminModels/PromotionInput";
+import PromotionAdmin from "../../models/AdminModels/Promotion"; // Đảm bảo đường dẫn chính xác
+import dayjs from "dayjs";
+
+const { Option } = Select;
 const { confirm } = Modal;
 
+// Cấu hình Cloudinary
+const CLOUDINARY_CLOUD_NAME = 'dn2ot5mo6'; // Thay thế bằng Cloud name của bạn
+const CLOUDINARY_UPLOAD_PRESET = 'urvibegs'; // Thay thế bằng Upload preset của bạn
+
 const PromotionManagement: React.FC = () => {
-  const [promotions, setPromotions] = useState<PromotionAdmin[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [form] = Form.useForm();
-  const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
-  const [editingPromotion, setEditingPromotion] =
-    useState<PromotionAdmin | null>(null);
+    // Trạng thái cho các modal
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
+    const [editPromotion, setEditPromotion] = useState<PromotionAdmin | null>(null);
+    const [confirmDeletePromotionId, setConfirmDeletePromotionId] = useState<number | null>(null);
 
-  const showModal = () => setIsModalVisible(true);
+    // Trạng thái dữ liệu
+    const [promotions, setPromotions] = useState<PromotionAdmin[]>([]);
+    const [loading, setLoading] = useState<boolean>(false); // Trạng thái tải dữ liệu
+    const [savingPromotion, setSavingPromotion] = useState<boolean>(false);
+    const [deletingPromotion, setDeletingPromotion] = useState<boolean>(false);
+    const [currentPage, setCurrentPage] = useState<number>(0); // Chỉ số trang hiện tại (bắt đầu từ 0)
+    const [totalPromotions, setTotalPromotions] = useState<number>(0); // Tổng số khuyến mãi
+    const [searchText, setSearchText] = useState<string>("");
 
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    form.resetFields();
-  };
+    // Giá trị tìm kiếm sau khi debounce
+    const debouncedSearchText = useDebounce<string>(searchText, 500);
 
-  useEffect(() => {
-    fetchPromotions();
-  });
+    // Form
+    const [addForm] = Form.useForm();
+    const [editForm] = Form.useForm();
 
-  const fetchPromotions = async () => {
-    setLoading(true);
-  
-    try {
-      const promotionsData = await getAllPromotions();
-      console.log("Total promotions fetched:", promotionsData.length);
-      setPromotions(promotionsData);
-    } catch (error) {
-      console.error("Failed to fetch promotions:", error);
-      message.error("Đã xảy ra lỗi khi tải dữ liệu khuyến mãi.");
-    } finally {
-      setLoading(false);
-    }
-  };
-  
+    // Trạng thái upload ảnh
+    const [addImageUrl, setAddImageUrl] = useState<string | null>(null);
+    const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
+    const [uploadingAddImage, setUploadingAddImage] = useState<boolean>(false);
+    const [uploadingEditImage, setUploadingEditImage] = useState<boolean>(false);
 
-  const handleAddPromotion = async (values: Partial<PromotionAdmin>) => {
-    try {
-      await createPromotion(values);
-      setPromotions((prevPromotions) => [
-        ...prevPromotions,
-        values as PromotionAdmin,
-      ]);
-      message.success("Promotion created successfully!");
-      handleCancel();
-    } catch (error) {
-      console.error("Failed to create promotion:", error);
-      message.error("Failed to create promotion.");
-    }
-  };
+    // Hàm xử lý lỗi API
+    const handleApiError = useCallback((error: any, defaultMessage: string) => {
+        if (axios.isAxiosError(error)) {
+            const message =
+                error.response?.data?.message || error.response?.statusText || defaultMessage;
+            notification.error({
+                message: "Lỗi",
+                description: message,
+            });
+        } else {
+            notification.error({
+                message: "Lỗi",
+                description: defaultMessage,
+            });
+        }
+    }, []);
 
-  const handleUpdateCancel = () => {
-    setIsUpdateModalVisible(false);
-    setEditingPromotion(null);
-    form.resetFields();
-  };
+    // Hàm lấy danh sách khuyến mãi từ backend
+    const fetchPromotions = useCallback(async () => {
+        setLoading(true);
+        try {
+            const { data, totalPages, totalElements } = await fetchPromotionList(
+                currentPage,
+                debouncedSearchText,
+            );
 
-  const showUpdateModal = (promotion: PromotionAdmin) => {
-    setEditingPromotion(promotion);
-    setIsUpdateModalVisible(true);
-    form.setFieldsValue({
-      ...promotion,
-      startDate: dayjs(promotion.startDate),
-      endDate: dayjs(promotion.endDate),
-    });
-  };
+            setPromotions(data);
+            setTotalPromotions(totalElements);
+        } catch (error) {
+            handleApiError(error, "Không thể lấy danh sách khuyến mãi.");
+        } finally {
+            setLoading(false);
+        }
+    }, [currentPage, debouncedSearchText, handleApiError]);
 
-  const handleUpdatePromotion = async (values: Partial<PromotionAdmin>) => {
-    if (!editingPromotion) return;
+    // Reset trang hiện tại khi tìm kiếm hoặc lọc thay đổi
+    useEffect(() => {
+        setCurrentPage(0);
+    }, [debouncedSearchText]);
 
-    try {
-      const updatedPromotion = await updatePromotion(
-        editingPromotion.promotion,
-        values
-      );
-      setPromotions((prevPromotions) =>
-        prevPromotions.map((promo) =>
-          promo.promotion === editingPromotion.promotion
-            ? updatedPromotion
-            : promo
-        )
-      );
-      message.success("Promotion updated successfully!");
-      handleUpdateCancel();
-    } catch (error) {
-      console.error("Failed to update promotion:", error);
-      message.error("Failed to update promotion.");
-    }
-  };
+    // Lấy danh sách khuyến mãi khi trang hiện tại, tìm kiếm hoặc lọc thay đổi
+    useEffect(() => {
+        fetchPromotions();
+    }, [fetchPromotions]);
 
-  const handleDeletePromotion = async (id: number) => {
-    try {
-      await deletePromotion(id); // Call API to delete promotion
-      setPromotions((prevPromotions) =>
-        prevPromotions.filter((promo) => promo.promotion !== id)
-      ); // Update promotions list
-      message.success("Promotion deleted successfully!");
-    } catch (error) {
-      console.error("Failed to delete promotion:", error);
-      message.error("Failed to delete promotion.");
-    }
-  };
-
-  const confirmDelete = (id: number) => {
-    confirm({
-      icon: null,
-      title: (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <ExclamationCircleOutlined
-            style={{ fontSize: "48px", color: "red", marginBottom: "16px" }}
-          />
-          <span>Are you sure you want to delete this promotion?</span>
-        </div>
-      ),
-      content: (
-        <div>Once deleted, you will not be able to recover this promotion.</div>
-      ),
-      okText: "Delete",
-      okType: "danger",
-      cancelText: "Cancel",
-      onOk: () => handleDeletePromotion(id),
-    });
-  };
-
-  // Export functions
-
-  // Export promotions to Excel
-  const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(
-      promotions.map((promo) => ({
-        PromotionID: promo.promotion,
-        PromotionName: promo.promotionName,
-        Description: promo.description,
-        PromotionType: promo.promotionType,
-        PromotionValue: promo.promotionValue,
-        StartDate: dayjs(promo.startDate).format("YYYY-MM-DD HH:mm"),
-        EndDate: dayjs(promo.endDate).format("YYYY-MM-DD HH:mm"),
-        Status: promo.promotionStatus ? "Active" : "Inactive",
-      }))
+    // Hàm mở modal chỉnh sửa khuyến mãi
+    const openEditModal = useCallback(
+        (promotion: PromotionAdmin) => {
+            setEditPromotion(promotion);
+            setIsEditModalOpen(true);
+            setEditImageUrl(promotion.image || null); // Khởi tạo với URL ảnh hiện tại
+            editForm.setFieldsValue({
+                ...promotion,
+                startDate: dayjs(promotion.startDate).format("YYYY-MM-DDTHH:mm"),
+                endDate: dayjs(promotion.endDate).format("YYYY-MM-DDTHH:mm"),
+            });
+        },
+        [editForm]
     );
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Promotions");
 
-    // Create buffer
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
-    });
+    // Hàm mở modal thêm mới khuyến mãi
+    const openAddModal = useCallback(() => {
+        setEditPromotion(null);
+        addForm.resetFields();
+        setAddImageUrl(null);
+        setIsAddModalOpen(true);
+    }, [addForm]);
 
-    // Save file
-    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    const url = window.URL.createObjectURL(data);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "promotions.xlsx");
-    document.body.appendChild(link);
-    link.click();
-  };
+    // Hàm xử lý upload ảnh lên Cloudinary
+    const handleImageUpload = async (
+        file: File,
+        setImageUrl: (url: string) => void,
+        setUploading: (uploading: boolean) => void
+    ) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
-  // Export promotions to CSV
-  const exportToCSV = () => {
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [
-        [
-          "Promotion ID",
-          "Promotion Name",
-          "Description",
-          "Promotion Type",
-          "Promotion Value",
-          "Start Date",
-          "End Date",
-          "Status",
+        try {
+            setUploading(true);
+            const res = await axios.post(
+                `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+                formData
+            );
+            setImageUrl(res.data.secure_url);
+            notification.success({
+                message: "Upload ảnh thành công",
+                description: "Ảnh đã được upload thành công!",
+            });
+        } catch (error) {
+            console.error("Lỗi khi upload ảnh lên Cloudinary:", error);
+            notification.error({
+                message: "Lỗi upload ảnh",
+                description: "Có lỗi xảy ra khi upload ảnh.",
+            });
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    // Hàm xử lý thêm mới khuyến mãi
+    const handleSaveNewPromotion = useCallback(async () => {
+        try {
+            // Xác thực form và lấy dữ liệu mới
+            const newPromotionData = await addForm.validateFields();
+
+            // Kiểm tra xem ảnh có được upload chưa
+            if (!addImageUrl) {
+                notification.error({
+                    message: "Yêu cầu ảnh",
+                    description: "Vui lòng upload ảnh khuyến mãi trước khi lưu.",
+                });
+                return;
+            }
+
+            setSavingPromotion(true);
+
+            // Tạo đối tượng khuyến mãi mới
+            const newPromotion: PromotionInput = {
+                promotionName: newPromotionData.promotionName,
+                description: newPromotionData.description,
+                promotionType: newPromotionData.promotionType,
+                promotionValue: newPromotionData.promotionValue,
+                type_food: newPromotionData.type_food,
+                startDate: newPromotionData.startDate,
+                endDate: newPromotionData.endDate,
+                promotionStatus: newPromotionData.promotionStatus,
+                image: addImageUrl,
+            };
+
+            // Gọi API để tạo khuyến mãi mới
+            const createdPromotion = await createPromotion(newPromotion);
+
+            // Cập nhật lại danh sách khuyến mãi sau khi tạo mới thành công
+            setPromotions((prev) => [createdPromotion, ...prev]);
+
+            // Cập nhật tổng số khuyến mãi
+            setTotalPromotions((prev) => prev + 1);
+
+            // Hiển thị thông báo thành công
+            notification.success({
+                message: "Thêm khuyến mãi",
+                description: "Khuyến mãi mới đã được thêm thành công!",
+            });
+
+            // Đóng modal và reset form
+            setIsAddModalOpen(false);
+            addForm.resetFields();
+            setAddImageUrl(null);
+        } catch (error) {
+            handleApiError(error, "Có lỗi xảy ra khi thêm khuyến mãi.");
+        } finally {
+            setSavingPromotion(false);
+        }
+    }, [addForm, addImageUrl, handleApiError]);
+
+    // Hàm xử lý cập nhật khuyến mãi
+    const handleSaveEditPromotion = useCallback(async () => {
+        try {
+            const updatedPromotionData = await editForm.validateFields();
+
+            if (!editImageUrl) {
+                notification.error({
+                    message: "Yêu cầu ảnh",
+                    description: "Vui lòng upload ảnh khuyến mãi trước khi lưu.",
+                });
+                return;
+            }
+
+            if (editPromotion) {
+                setSavingPromotion(true);
+
+                // Tạo đối tượng updatedPromotion
+                const updatedPromotion: Partial<PromotionInput> = {
+                    promotionName: updatedPromotionData.promotionName,
+                    description: updatedPromotionData.description,
+                    promotionType: updatedPromotionData.promotionType,
+                    type_food: updatedPromotionData.type_food,
+                    promotionValue: updatedPromotionData.promotionValue,
+                    startDate: updatedPromotionData.startDate,
+                    endDate: updatedPromotionData.endDate,
+                    promotionStatus: updatedPromotionData.promotionStatus,
+                    image: editImageUrl,
+                };
+
+                // Cập nhật thông tin khuyến mãi
+                const result = await updatePromotion(editPromotion.promotion, updatedPromotion);
+
+                // Cập nhật lại danh sách khuyến mãi sau khi sửa thành công
+                setPromotions((prev) =>
+                    prev.map((promo) =>
+                        promo.promotion === editPromotion.promotion ? { ...promo, ...result } : promo
+                    )
+                );
+
+                notification.success({
+                    message: "Cập nhật khuyến mãi",
+                    description: "Khuyến mãi đã được cập nhật thành công!",
+                });
+
+                setIsEditModalOpen(false);
+                setEditImageUrl(null);
+            }
+        } catch (error) {
+            handleApiError(error, "Có lỗi xảy ra khi cập nhật khuyến mãi.");
+        } finally {
+            setSavingPromotion(false);
+        }
+    }, [editForm, editPromotion, editImageUrl, handleApiError]);
+
+    // Hàm xử lý xóa khuyến mãi
+    const handleDeletePromotion = useCallback((promotionId: number) => {
+        setConfirmDeletePromotionId(promotionId);
+        setConfirmDeleteModalVisible(true);
+    }, []);
+
+    // Hàm xác nhận xóa khuyến mãi
+    const handleConfirmDeletePromotion = useCallback(async () => {
+        if (confirmDeletePromotionId !== null) {
+            try {
+                setDeletingPromotion(true);
+                await deletePromotion(confirmDeletePromotionId);
+                setPromotions((prev) => prev.filter((p) => p.promotion !== confirmDeletePromotionId));
+                setTotalPromotions((prev) => prev - 1);
+                notification.success({
+                    message: "Xóa khuyến mãi",
+                    description: "Khuyến mãi đã được xóa thành công!",
+                });
+                setConfirmDeleteModalVisible(false);
+                setConfirmDeletePromotionId(null);
+            } catch (error) {
+                console.error(error);
+                handleApiError(error, "Có lỗi xảy ra khi xóa khuyến mãi.");
+            } finally {
+                setDeletingPromotion(false);
+            }
+        }
+    }, [confirmDeletePromotionId, handleApiError, deletePromotion]);
+
+    // Hàm cập nhật trạng thái khuyến mãi
+    const handleUpdatePromotionStatus = useCallback(
+        async (promotionId: number, checked: boolean) => {
+            const newStatus = checked;
+            try {
+                const updatedPromotion = { promotionStatus: newStatus };
+                const result = await updatePromotion(promotionId, updatedPromotion);
+                setPromotions((prev) =>
+                    prev.map((promo) =>
+                        promo.promotion === promotionId ? { ...promo, ...result } : promo
+                    )
+                );
+                notification.success({
+                    message: "Cập nhật trạng thái",
+                    description: `Khuyến mãi đã được ${newStatus ? "kích hoạt" : "ẩn"} thành công!`,
+                });
+            } catch (error) {
+                console.error(error);
+                handleApiError(error, "Có lỗi xảy ra khi cập nhật trạng thái khuyến mãi.");
+            }
+        },
+        [handleApiError, updatePromotion]
+    );
+
+    // Định nghĩa các cột cho bảng
+    const columns = useMemo<ColumnsType<PromotionAdmin>>(
+        () => [
+            {
+                title: "Mã khuyến mãi",
+                dataIndex: "promotion",
+                key: "promotion",
+                sorter: (a, b) => a.promotion - b.promotion,
+            },
+            {
+                title: "Tên khuyến mãi",
+                dataIndex: "promotionName",
+                key: "promotionName",
+                sorter: (a, b) => a.promotionName.localeCompare(b.promotionName),
+                width: 150,
+            },
+            {
+                title: "Mô tả",
+                dataIndex: "description",
+                key: "description",
+                ellipsis: true,
+                width: 150,
+            },
+            {
+                title: "Giá trị khuyến mãi",
+                dataIndex: "promotionValue",
+                key: "promotionValue",
+                sorter: (a, b) => a.promotionValue - b.promotionValue,
+                render: (value: number) => `${value}%`,
+            },
+            {
+                title: "Loại món ăn",
+                dataIndex: "type_food",
+                key: "type_food",
+                
+            },
+            {
+                title: "Loại khuyến mãi",
+                dataIndex: "promotionType",
+                key: "promotionType",
+                width: 100,
+                
+            },
+            {
+                title: "Ảnh",
+                dataIndex: "image",
+                key: "image",
+                render: (image: string, record) => (
+                    <Image
+                        src={image}
+                        alt={`${record.promotionName} image`}
+                        width={50}
+                        height={50}
+                        style={{ objectFit: "cover" }}
+                        fallback="https://via.placeholder.com/50"
+                    />
+                ),
+                width: 80,
+            },
+            {
+                title: "Ngày bắt đầu",
+                dataIndex: "startDate",
+                key: "startDate",
+                render: (date: string) => dayjs(date).format("YYYY-MM-DD HH:mm"),
+                sorter: (a, b) => dayjs(a.startDate).unix() - dayjs(b.startDate).unix(),
+                width: 100,
+            },
+            {
+                title: "Ngày kết thúc",
+                dataIndex: "endDate",
+                key: "endDate",
+                render: (date: string) => dayjs(date).format("YYYY-MM-DD HH:mm"),
+                sorter: (a, b) => dayjs(a.endDate).unix() - dayjs(b.endDate).unix(),
+                width: 100,
+            },
+            {
+                title: "Trạng thái",
+                dataIndex: "promotionStatus",
+                key: "promotionStatus",
+                render: (status: boolean, record: PromotionAdmin) => (
+                    <Switch
+                        checked={status}
+                        onChange={(checked) => handleUpdatePromotionStatus(record.promotion, checked)}
+                        checkedChildren="Hiển thị"
+                        unCheckedChildren="Ẩn"
+                    />
+                ),
+                filters: [
+                    { text: "Hiển thị", value: true },
+                    { text: "Ẩn", value: false },
+                ],
+               
+            },
+            {
+                title: "Hành động",
+                key: "actions",
+                render: (_, record) => (
+                    <Space size="middle">
+                        <Button
+                            type="link"
+                            icon={<EditOutlined />}
+                            onClick={() => openEditModal(record)}
+                            aria-label={`Chỉnh sửa ${record.promotionName}`}
+                        />
+                        <Button
+                            type="link"
+                            icon={<DeleteOutlined />}
+                            onClick={() => handleDeletePromotion(record.promotion)}
+                            aria-label={`Xóa ${record.promotionName}`}
+                        />
+                    </Space>
+                ),
+                width: 120,
+            },
         ],
-        ...promotions.map((item) => [
-          item.promotion,
-          item.promotionName,
-          item.description,
-          item.promotionType,
-          item.promotionValue,
-          dayjs(item.startDate).format("YYYY-MM-DD HH:mm"),
-          dayjs(item.endDate).format("YYYY-MM-DD HH:mm"),
-          item.promotionStatus ? "Active" : "Inactive",
-        ]),
-      ]
-        .map((e) => e.join(","))
-        .join("\n");
+        [handleUpdatePromotionStatus, openEditModal, handleDeletePromotion]
+    );
 
-    const link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csvContent));
-    link.setAttribute("download", "promotions.csv");
-    document.body.appendChild(link);
-    link.click();
-  };
+    // Xử lý thay đổi của bảng (phân trang, lọc)
+    const handleTableChange = useCallback(
+        (pagination: any, filters: any, sorter: any) => {
+            const newPage = pagination.current - 1;
 
-  // Export promotions to PDF
-  const exportToPDF = async () => {
-    const fontUrl = "/fonts/Roboto-Black.ttf"; // Adjust the font path if necessary
-    try {
-      const pdfDoc = await PDFDocument.create();
-      pdfDoc.registerFontkit(fontkit);
-      // You can use StandardFonts.Helvetica if you don't have a custom font
-      const fontBytes = await fetch(fontUrl).then((res) => res.arrayBuffer());
-      const customFont = await pdfDoc.embedFont(fontBytes);
+            if (newPage !== currentPage) {
+                setCurrentPage(newPage);
+            }
+        },
+        [currentPage]
+    );
 
-      let page = pdfDoc.addPage([595.28, 841.89]); // A4 size
-      const { height } = page.getSize();
-      const margin = 50;
+    // Các hàm xuất dữ liệu
+    const exportToExcel = () => {
+        const dataToExport = promotions.map((promo) => ({
+            "Mã khuyến mãi": promo.promotion,
+            "Tên khuyến mãi": promo.promotionName,
+            "Mô tả": promo.description,
+            "Giá trị khuyến mãi": promo.promotionValue,
+            "Loại món ăn": promo.type_food,
+            "Loại khuyến mãi": promo.promotionType,
+            "Ngày bắt đầu": dayjs(promo.startDate).format("YYYY-MM-DD HH:mm"),
+            "Ngày kết thúc": dayjs(promo.endDate).format("YYYY-MM-DD HH:mm"),
+            "Trạng thái": promo.promotionStatus ? "Hiển thị" : "Ẩn",
+        }));
 
-      // Title
-      page.drawText("Promotion List", {
-        x: margin,
-        y: height - margin,
-        size: 18,
-        font: customFont,
-        color: rgb(0, 0.53, 0.71),
-      });
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Promotions');
 
-      // Table headers
-      const tableHeader = [
-        "Promotion ID",
-        "Name",
-        "Type",
-        "Value",
-        "Start Date",
-        "End Date",
-        "Status",
-      ];
-      let yPosition = height - margin - 40;
-      const cellWidths = [80, 100, 80, 60, 80, 80, 50];
+        // Tạo buffer
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
 
-      // Draw headers
-      tableHeader.forEach((header, i) => {
-        page.drawText(header, {
-          x: margin + cellWidths.slice(0, i).reduce((a, b) => a + b, 0),
-          y: yPosition,
-          size: 10,
-          font: customFont,
-          color: rgb(0, 0, 0),
+        // Lưu file
+        const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+        const url = window.URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'promotions.xlsx');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        notification.success({
+            message: 'Xuất Excel thành công',
+            description: 'File Excel đã được tải xuống.',
         });
-      });
+    };
 
-      yPosition -= 20;
+    const exportToCSV = () => {
+        const csvContent =
+            'data:text/csv;charset=utf-8,' +
+            [
+                ['Mã khuyến mãi', 'Tên khuyến mãi', 'Mô tả', 'Giá trị khuyến mãi (%)', 'Loại món ăn', 'Loại khuyến mãi', 'Ngày bắt đầu', 'Ngày kết thúc', 'Trạng thái'],
+                ...promotions.map((item) => [
+                    item.promotion,
+                    item.promotionName,
+                    item.description,
+                    item.promotionValue,
+                    item.type_food,
+                    item.promotionType,
+                    dayjs(item.startDate).format("YYYY-MM-DD HH:mm"),
+                    dayjs(item.endDate).format("YYYY-MM-DD HH:mm"),
+                    item.promotionStatus ? "Hiển thị" : "Ẩn",
+                ]),
+            ]
+                .map((e) => e.join(','))
+                .join('\n');
 
-      // Draw data rows
-      // for (const promo of promotions) {
-      //   const rowData = [
-      //     promo.promotion.toString(),
-      //     promo.promotionName || "",
-      //     promo.promotionType || "",
-      //     promo.promotionValue?.toString() || "",
-      //     dayjs(promo.startDate).format("YYYY-MM-DD HH:mm"),
-      //     dayjs(promo.endDate).format("YYYY-MM-DD HH:mm"),
-      //     promo.promotionStatus ? "Active" : "Inactive",
-      //   ];
+        const link = document.createElement('a');
+        link.setAttribute('href', encodeURI(csvContent));
+        link.setAttribute('download', 'promotions.csv');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        notification.success({
+            message: 'Xuất CSV thành công',
+            description: 'File CSV đã được tải xuống.',
+        });
+    };
 
-      //   rowData.forEach((data, i) => {
-      //     page.drawText(data, {
-      //       x: margin + cellWidths.slice(0, i).reduce((a, b) => a + b, 0),
-      //       y: yPosition,
-      //       size: 10,
-      //       font: customFont,
-      //       color: rgb(0, 0, 0),
-      //     });
-      //   });
+    const exportToPDF = async () => {
+        const fontUrl = '/fonts/Roboto-Black.ttf'; // Đảm bảo đường dẫn font đúng
+        try {
+            const pdfDoc = await PDFDocument.create();
+            pdfDoc.registerFontkit(fontkit); // Đăng ký fontkit
+            const fontBytes = await fetch(fontUrl).then((res) => res.arrayBuffer());
+            const customFont = await pdfDoc.embedFont(fontBytes);
 
-      //   yPosition -= 20;
-      //   if (yPosition < 50) {
-      //     yPosition = height - margin - 40;
-      //     page = pdfDoc.addPage([595.28, 841.89]);
-      //   }
-      // }
+            let page = pdfDoc.addPage([595.28, 841.89]); // Kích thước A4
+            const { width, height } = page.getSize();
+            const margin = 50;
 
-      const pdfBytes = await pdfDoc.save();
+            // Tiêu đề
+            page.drawText('Danh Sách Khuyến Mãi', {
+                x: margin,
+                y: height - margin,
+                size: 18,
+                font: customFont,
+                color: rgb(0, 0.53, 0.71),
+            });
 
-      const blob = new Blob([pdfBytes], { type: "application/pdf" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "promotions.pdf";
-      link.click();
+            // Bảng dữ liệu
+            const tableHeader = ['Mã KM', 'Tên KM', 'Giá trị (%)', 'Loại món ăn', 'Loại KM', 'Ngày bắt đầu', 'Ngày kết thúc', 'Trạng thái'];
+            let yPosition = height - margin - 40;
+            const cellWidth = [60, 100, 80, 100, 100, 100, 100, 80];
 
-      message.success("PDF exported successfully!");
-    } catch (error) {
-      console.error("Error exporting to PDF:", error);
-      message.error("Failed to export to PDF.");
-    }
-  };
+            // Header row
+            tableHeader.forEach((header, i) => {
+                page.drawText(header, {
+                    x: margin + cellWidth.slice(0, i).reduce((a, b) => a + b, 0),
+                    y: yPosition,
+                    size: 10,
+                    font: customFont,
+                    color: rgb(0, 0, 0),
+                });
+            });
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value || "");
-  };
+            yPosition -= 20;
 
-  return (
-    <React.Fragment>
-      <div className="container-fluid">
-        <div className="main-content">
-          <div className="promotion-management">
-            <h2>Promotion Management</h2>
-            <div
-              className="search-filter"
-              style={{
-                marginBottom: 16,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <div className="search-wrapper">
-                  <Input
-                    className="search-input"
-                    placeholder="Search for promotions..."
-                    onChange={handleSearchChange}
-                    style={{ width: 300 }}
-                  />
-                  <i className="fas fa-search search-icon"></i>
+            // Data rows
+            for (const promo of promotions) {
+                const rowData = [
+                    promo.promotion.toString(),
+                    promo.promotionName || '',
+                    promo.promotionValue.toString(),
+                    promo.type_food || '',
+                    promo.promotionType || '',
+                    dayjs(promo.startDate).format("YYYY-MM-DD HH:mm"),
+                    dayjs(promo.endDate).format("YYYY-MM-DD HH:mm"),
+                    promo.promotionStatus ? 'Hiển thị' : 'Ẩn',
+                ];
+
+                rowData.forEach((data, i) => {
+                    page.drawText(data, {
+                        x: margin + cellWidth.slice(0, i).reduce((a, b) => a + b, 0),
+                        y: yPosition,
+                        size: 10,
+                        font: customFont,
+                        color: rgb(0, 0, 0),
+                    });
+                });
+
+                yPosition -= 20;
+                if (yPosition < margin + 20) {
+                    page = pdfDoc.addPage([595.28, 841.89]);
+                    yPosition = height - margin - 40;
+
+                    // Redraw headers on new page
+                    tableHeader.forEach((header, i) => {
+                        page.drawText(header, {
+                            x: margin + cellWidth.slice(0, i).reduce((a, b) => a + b, 0),
+                            y: yPosition,
+                            size: 10,
+                            font: customFont,
+                            color: rgb(0, 0, 0),
+                        });
+                    });
+
+                    yPosition -= 20;
+                }
+            }
+
+            const pdfBytes = await pdfDoc.save();
+
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "DanhSachKhuyenMai.pdf";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            notification.success({
+                message: 'Xuất PDF thành công',
+                description: 'File PDF đã được tải xuống.',
+            });
+        } catch (error) {
+            console.error('Error during PDF generation:', error);
+            notification.error({
+                message: 'Lỗi xuất PDF',
+                description: 'Đã xảy ra lỗi khi tạo file PDF.',
+            });
+        }
+    };
+
+    return (
+        <div className="container-fluid">
+            <div className="main-content">
+                <div className="promotion-management">
+                    <h2>Quản lý khuyến mãi</h2>
+                    <div
+                        className="search-filter"
+                        style={{
+                            marginBottom: 16,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                        }}
+                    >
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                            <Input
+                                type="text"
+                                placeholder="Tìm kiếm khuyến mãi..."
+                                value={searchText}
+                                onChange={(e) => setSearchText(e.target.value)}
+                                allowClear
+                                style={{ width: 300, marginRight: 16 }}
+                            />
+                        </div>
+                        <div className="btn-export-excel" style={{ display: 'flex', alignItems: "center" }}>
+                            <Button onClick={exportToExcel} style={{ marginRight: 8 }}>
+                                Xuất Excel
+                            </Button>
+                            <Button onClick={exportToCSV} style={{ marginRight: 8 }}>
+                                Xuất CSV
+                            </Button>
+                            <Button onClick={exportToPDF}>
+                                Xuất PDF
+                            </Button>
+                        </div>
+                        <Button
+                            onClick={openAddModal}
+                            type="primary"
+                            style={{
+                                backgroundColor: "rgb(252, 71, 10)",
+                                borderColor: "rgb(252, 71, 10)",
+                            }}
+                        >
+                            Thêm khuyến mãi
+                        </Button>
+                    </div>
+
+                    {/* Modal thêm khuyến mãi */}
+                    <Modal
+                        title="Thêm khuyến mãi mới"
+                        visible={isAddModalOpen}
+                        onCancel={() => {
+                            setIsAddModalOpen(false);
+                            addForm.resetFields();
+                            setAddImageUrl(null);
+                        }}
+                        footer={[
+                            <Button key="cancel" onClick={() => setIsAddModalOpen(false)}>
+                                Đóng
+                            </Button>,
+                            <Button
+                                key="save"
+                                type="primary"
+                                onClick={handleSaveNewPromotion}
+                                loading={savingPromotion}
+                                disabled={savingPromotion}
+                            >
+                                Lưu
+                            </Button>,
+                        ]}
+                    >
+                        <Form form={addForm} layout="vertical" initialValues={{ promotionStatus: true }}>
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Tên khuyến mãi"
+                                        name="promotionName"
+                                        rules={[{ required: true, message: "Vui lòng nhập tên khuyến mãi!" }]}
+                                    >
+                                        <Input placeholder="Nhập tên khuyến mãi" />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Loại khuyến mãi"
+                                        name="promotionType"
+                                        rules={[{ required: true, message: "Vui lòng chọn loại khuyến mãi!" }]}
+                                    >
+                                        <Select placeholder="Chọn loại khuyến mãi">
+                                            <Option value="DISCOUNT%">Giảm Giá theo phần trăm</Option>
+                                            <Option value="DISCOUNT-">Trừ tiền trực tiếp</Option>
+                                            {/* Thêm các loại khác nếu cần */}
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Loại món ăn"
+                                        name="type_food"
+                                        rules={[{ required: true, message: "Vui lòng chọn loại món ăn!" }]}
+                                    >
+                                        <Select placeholder="Chọn loại món ăn">
+                                            <Option value="hotpot">Hotpot</Option>
+                                            <Option value="meat">Meat</Option>
+                                            <Option value="seafood">Seafood</Option>
+                                            <Option value="noodles">Noodles</Option>
+                                            <Option value="mushroom">Mushroom</Option>
+                                            <Option value="vegetables">Vegetables</Option>
+                                            <Option value="meatballs">Meatballs</Option>
+                                            <Option value="buffet_tickets">Buffet Tickets</Option>
+                                            <Option value="soft_drinks">Soft Drinks</Option>
+                                            <Option value="mixers">Mixers</Option>
+                                            {/* Thêm các loại khác nếu cần */}
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Giá trị khuyến mãi (%)"
+                                        name="promotionValue"
+                                        rules={[
+                                            { required: true, message: "Vui lòng nhập giá trị khuyến mãi!" },
+                                            {
+                                                type: "number",
+                                                min: 1,
+                                                
+                                            },
+                                        ]}
+                                    >
+                                        <InputNumber
+                                            placeholder="Nhập giá trị khuyến mãi (%)"
+                                            style={{ width: "100%" }}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Ngày bắt đầu"
+                                        name="startDate"
+                                        rules={[{ required: true, message: "Vui lòng chọn ngày bắt đầu!" }]}
+                                    >
+                                        <Input type="datetime-local" style={{ width: "100%" }} />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Ngày kết thúc"
+                                        name="endDate"
+                                        rules={[{ required: true, message: "Vui lòng chọn ngày kết thúc!" }]}
+                                    >
+                                        <Input type="datetime-local" style={{ width: "100%" }} />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Trạng thái"
+                                        name="promotionStatus"
+                                        valuePropName="checked"
+                                        rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}
+                                    >
+                                        <Switch checkedChildren="Hiển thị" unCheckedChildren="Ẩn" />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Ảnh khuyến mãi"
+                                        name="image"
+                                        rules={[{ required: true, message: "Vui lòng upload ảnh khuyến mãi!" }]}
+                                    >
+                                        <Upload
+                                            name="image"
+                                            listType="picture"
+                                            showUploadList={false}
+                                            beforeUpload={(file) => {
+                                                handleImageUpload(file, setAddImageUrl, setUploadingAddImage);
+                                                return false; // Ngăn chặn upload tự động
+                                            }}
+                                        >
+                                            <Button icon={<UploadOutlined />} loading={uploadingAddImage}>
+                                                {uploadingAddImage ? "Đang tải lên..." : "Chọn ảnh"}
+                                            </Button>
+                                        </Upload>
+                                        {addImageUrl && (
+                                            <Image
+                                                src={addImageUrl}
+                                                alt="Ảnh khuyến mãi"
+                                                style={{ width: "100px", marginTop: "10px" }}
+                                            />
+                                        )}
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                            <Row gutter={16}>
+                                <Col span={24}>
+                                    <Form.Item
+                                        label="Mô tả"
+                                        name="description"
+                                        rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
+                                    >
+                                        <CKEditor
+                                            editor={ClassicEditor}
+                                            data={addForm.getFieldValue('description') || ''}
+                                            onChange={(event, editor) => {
+                                                const data = editor.getData();
+                                                addForm.setFieldsValue({ description: data });
+                                            }}
+                                            config={{
+                                                toolbar: [
+                                                    'heading',
+                                                    '|',
+                                                    'bold',
+                                                    'italic',
+                                                    'link',
+                                                    'bulletedList',
+                                                    'numberedList',
+                                                    'blockQuote',
+                                                    'undo',
+                                                    'redo'
+                                                ]
+                                            }}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        </Form>
+                    </Modal>
+
+                    {/* Modal chỉnh sửa khuyến mãi */}
+                    <Modal
+                        title="Chỉnh sửa khuyến mãi"
+                        visible={isEditModalOpen}
+                        onCancel={() => {
+                            setIsEditModalOpen(false);
+                            editForm.resetFields();
+                            setEditImageUrl(null);
+                        }}
+                        footer={[
+                            <Button key="cancel" onClick={() => setIsEditModalOpen(false)}>
+                                Đóng
+                            </Button>,
+                            <Button
+                                key="save"
+                                type="primary"
+                                onClick={handleSaveEditPromotion}
+                                loading={savingPromotion}
+                                disabled={savingPromotion}
+                            >
+                                Lưu thay đổi
+                            </Button>,
+                        ]}
+                    >
+                        <Form
+                            form={editForm}
+                            layout="vertical"
+                            initialValues={
+                                editPromotion
+                                    ? {
+                                        ...editPromotion,
+                                        startDate: dayjs(editPromotion.startDate).format("YYYY-MM-DDTHH:mm"),
+                                        endDate: dayjs(editPromotion.endDate).format("YYYY-MM-DDTHH:mm"),
+                                    }
+                                    : {}
+                            }
+                        >
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Tên khuyến mãi"
+                                        name="promotionName"
+                                        rules={[{ required: true, message: "Vui lòng nhập tên khuyến mãi!" }]}
+                                    >
+                                        <Input placeholder="Nhập tên khuyến mãi" />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Loại khuyến mãi"
+                                        name="promotionType"
+                                        rules={[{ required: true, message: "Vui lòng chọn loại khuyến mãi!" }]}
+                                    >
+                                        <Select placeholder="Chọn loại khuyến mãi">
+                                            <Option value="Discount">Discount</Option>
+                                            <Option value="Buy One Get One">Buy One Get One</Option>
+                                            {/* Thêm các loại khác nếu cần */}
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Loại món ăn"
+                                        name="type_food"
+                                        rules={[{ required: true, message: "Vui lòng chọn loại món ăn!" }]}
+                                    >
+                                        <Select placeholder="Chọn loại món ăn">
+                                            <Option value="hotpot">Hotpot</Option>
+                                            <Option value="meat">Meat</Option>
+                                            <Option value="seafood">Seafood</Option>
+                                            <Option value="noodles">Noodles</Option>
+                                            <Option value="mushroom">Mushroom</Option>
+                                            <Option value="vegetables">Vegetables</Option>
+                                            <Option value="meatballs">Meatballs</Option>
+                                            <Option value="buffet_tickets">Buffet Tickets</Option>
+                                            <Option value="soft_drinks">Soft Drinks</Option>
+                                            <Option value="mixers">Mixers</Option>
+                                            {/* Thêm các loại khác nếu cần */}
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Giá trị khuyến mãi (%)"
+                                        name="promotionValue"
+                                        rules={[
+                                            { required: true, message: "Vui lòng nhập giá trị khuyến mãi!" },
+                                            {
+                                                type: "number",
+                                                min: 1,
+                                                
+                                            },
+                                        ]}
+                                    >
+                                        <InputNumber
+                                            placeholder="Nhập giá trị khuyến mãi (%)"
+                                            style={{ width: "100%" }}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Ngày bắt đầu"
+                                        name="startDate"
+                                        rules={[{ required: true, message: "Vui lòng chọn ngày bắt đầu!" }]}
+                                    >
+                                        <Input type="datetime-local" style={{ width: "100%" }} />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Ngày kết thúc"
+                                        name="endDate"
+                                        rules={[{ required: true, message: "Vui lòng chọn ngày kết thúc!" }]}
+                                    >
+                                        <Input type="datetime-local" style={{ width: "100%" }} />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Trạng thái"
+                                        name="promotionStatus"
+                                        valuePropName="checked"
+                                        rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}
+                                    >
+                                        <Switch checkedChildren="Hiển thị" unCheckedChildren="Ẩn" />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Ảnh khuyến mãi"
+                                        name="image"
+                                        rules={[{ required: true, message: "Vui lòng upload ảnh khuyến mãi!" }]}
+                                    >
+                                        <Upload
+                                            name="image"
+                                            listType="picture"
+                                            showUploadList={false}
+                                            beforeUpload={(file) => {
+                                                handleImageUpload(file, setEditImageUrl, setUploadingEditImage);
+                                                return false; // Ngăn chặn upload tự động
+                                            }}
+                                        >
+                                            <Button icon={<UploadOutlined />} loading={uploadingEditImage}>
+                                                {uploadingEditImage ? "Đang tải lên..." : "Chọn ảnh"}
+                                            </Button>
+                                        </Upload>
+                                        {editImageUrl && (
+                                            <Image
+                                                src={editImageUrl}
+                                                alt="Ảnh khuyến mãi"
+                                                style={{ width: "100px", marginTop: "10px" }}
+                                            />
+                                        )}
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                            <Row gutter={16}>
+                                <Col span={24}>
+                                    <Form.Item
+                                        label="Mô tả"
+                                        name="description"
+                                        rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
+                                    >
+                                        <CKEditor
+                                            editor={ClassicEditor}
+                                            data={editForm.getFieldValue('description') || ''}
+                                            onChange={(event, editor) => {
+                                                const data = editor.getData();
+                                                editForm.setFieldsValue({ description: data });
+                                            }}
+                                            config={{
+                                                toolbar: [
+                                                    'heading',
+                                                    '|',
+                                                    'bold',
+                                                    'italic',
+                                                    'link',
+                                                    'bulletedList',
+                                                    'numberedList',
+                                                    'blockQuote',
+                                                    'undo',
+                                                    'redo'
+                                                ]
+                                            }}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        </Form>
+                    </Modal>
+
+                    {/* Modal xác nhận xóa */}
+                    <Modal
+                        visible={confirmDeleteModalVisible}
+                        onCancel={() => setConfirmDeleteModalVisible(false)}
+                        footer={null}
+                        centered
+                        width={400}
+                    >
+                        <div style={{ textAlign: "center" }}>
+                            <ExclamationCircleOutlined style={{ fontSize: "48px", color: "#ff4d4f" }} />
+                            <h3 style={{ fontWeight: "bold", marginTop: "16px" }}>Xác nhận xóa</h3>
+                            <p style={{ fontSize: "16px" }}>
+                                Bạn có chắc chắn muốn xóa khuyến mãi này không?
+                            </p>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    marginTop: "24px",
+                                }}
+                            >
+                                <Button
+                                    onClick={() => setConfirmDeleteModalVisible(false)}
+                                    style={{ backgroundColor: "#f0f0f0", color: "#000" }}
+                                >
+                                    Hủy
+                                </Button>
+                                <Button
+                                    type="primary"
+                                    onClick={handleConfirmDeletePromotion}
+                                    loading={deletingPromotion}
+                                    disabled={deletingPromotion}
+                                    style={{
+                                        backgroundColor: "rgb(252, 71, 10)",
+                                        borderColor: "rgb(252, 71, 10)",
+                                    }}
+                                >
+                                    Xóa
+                                </Button>
+                            </div>
+                        </div>
+                    </Modal>
+
+                    {/* Bảng khuyến mãi */}
+                    <div className="table-container" style={{ overflow: "auto" }}>
+                        {loading ? (
+                            <div style={{ textAlign: "center", padding: "20px" }}>
+                                <Spin tip="Đang tải khuyến mãi..." />
+                            </div>
+                        ) : (
+                            <Table
+                                columns={columns}
+                                dataSource={promotions}
+                                rowKey="promotionId"
+                                pagination={{
+                                    current: currentPage + 1, // Ant Design pagination bắt đầu từ 1
+                                    pageSize: 20, // Phù hợp với backend
+                                    total: totalPromotions,
+                                    showSizeChanger: false,
+                                }}
+                                bordered
+                                onChange={handleTableChange}
+                            />
+                        )}
+                    </div>
                 </div>
-              </div>
-              <div
-                className="btn-export-excel"
-                style={{ display: "flex", alignItems: "center" }}
-              >
-                <Button onClick={exportToExcel} style={{ marginRight: 8 }}>
-                  Export Excel
-                </Button>
-                <Button onClick={exportToPDF} style={{ marginRight: 8 }}>
-                  Export PDF
-                </Button>
-                <Button onClick={exportToCSV} style={{ marginRight: 8 }}>
-                  Export CSV
-                </Button>
-                <Button className="btn add-employee-btn" onClick={showModal}>
-                  Add Promotion
-                </Button>
-              </div>
             </div>
-
-            {/* Table */}
-            <div className="table-container">
-              <table className="table table-striped">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th style={{ width: 200 }}>Promotion Name</th>
-                    <th>Description</th>
-                    <th>Promotion Type</th>
-                    <th style={{ width: 170 }}>Promotion Value</th>
-                    <th style={{ width: 150 }}>Start Date</th>
-                    <th style={{ width: 150 }}>End Date</th>
-                    <th>Status</th>
-                    <th style={{ width: 110 }}>Actions</th>
-                  </tr>
-                </thead>
-              <tbody>
-                    {promotions.length > 0 ? (
-                      promotions.map((promotion) => (
-                        <tr key={promotion.promotion}>
-                          <td>{promotion.promotion}</td>
-                          <td>{promotion.promotionName}</td>
-                          <td>{promotion.description}</td>
-                          <td>{promotion.promotionType}</td>
-                          <td>{promotion.promotionValue}</td>
-                          <td>
-                            {dayjs(promotion.startDate).format("YYYY-MM-DD HH:mm")}
-                          </td>
-                          <td>
-                            {dayjs(promotion.endDate).format("YYYY-MM-DD HH:mm")}
-                          </td>
-                          <td>
-                            <Switch checked={promotion.promotionStatus} />
-                          </td>
-                          <td>
-                            <Button
-                              className="icon-button-edit"
-                              icon={<i className="fas fa-edit"></i>}
-                              onClick={() => showUpdateModal(promotion)}
-                            />
-                            <Button
-                              className="icon-button-remove"
-                              icon={<i className="fas fa-trash"></i>}
-                              onClick={() => confirmDelete(promotion.promotion)}
-                            />
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={9} className="text-center">
-                          No promotions found
-                        </td>
-                      </tr>
-                    )}
-              </tbody>
-
-              </table>
-            </div>
-          </div>
         </div>
-      </div>
-
-      {/* Add Promotion Modal */}
-      <Modal
-        title="Add New Promotion"
-        visible={isModalVisible}
-        onCancel={handleCancel}
-        okText="Add"
-        cancelText="Cancel"
-        onOk={() => form.submit()}
-      >
-        <Form form={form} layout="vertical" onFinish={handleAddPromotion}>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="promotionName"
-                label="Promotion Name"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter the promotion name",
-                  },
-                ]}
-              >
-                <Input placeholder="Enter promotion name" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="promotionType"
-                label="Promotion Type"
-                rules={[
-                  { required: true, message: "Please select promotion type" },
-                ]}
-              >
-                <Input placeholder="Enter promotion type" />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item name="description" label="Description">
-                <Input.TextArea placeholder="Enter description" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="promotionValue"
-                label="Promotion Value"
-                rules={[
-                  { required: true, message: "Please enter promotion value" },
-                ]}
-              >
-                <InputNumber
-                  min={0}
-                  placeholder="Enter promotion value"
-                  style={{ width: "100%" }}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="startDate"
-                label="Start Date"
-                rules={[
-                  { required: true, message: "Please select start date" },
-                ]}
-              >
-                <DatePicker showTime style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="endDate"
-                label="End Date"
-                rules={[{ required: true, message: "Please select end date" }]}
-              >
-                <DatePicker showTime style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col span={12}>
-              <Form.Item
-                name="promotionStatus"
-                label="Status"
-                valuePropName="checked"
-              >
-                <Switch />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      </Modal>
-
-      {/* Update Promotion Modal */}
-      <Modal
-        title="Update Promotion"
-        visible={isUpdateModalVisible}
-        onCancel={handleUpdateCancel}
-        okText="Update"
-        cancelText="Cancel"
-        onOk={() => form.submit()}
-      >
-        <Form form={form} layout="vertical" onFinish={handleUpdatePromotion}>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="promotionName"
-                label="Promotion Name"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter the promotion name",
-                  },
-                ]}
-              >
-                <Input placeholder="Enter promotion name" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="promotionType"
-                label="Promotion Type"
-                rules={[
-                  { required: true, message: "Please select promotion type" },
-                ]}
-              >
-                <Input placeholder="Enter promotion type" />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item name="description" label="Description">
-                <Input.TextArea placeholder="Enter description" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="promotionValue"
-                label="Promotion Value"
-                rules={[
-                  { required: true, message: "Please enter promotion value" },
-                ]}
-              >
-                <InputNumber
-                  min={0}
-                  placeholder="Enter promotion value"
-                  style={{ width: "100%" }}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="startDate"
-                label="Start Date"
-                rules={[
-                  { required: true, message: "Please select start date" },
-                ]}
-              >
-                <DatePicker showTime style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="endDate"
-                label="End Date"
-                rules={[{ required: true, message: "Please select end date" }]}
-              >
-                <DatePicker showTime style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col span={12}>
-              <Form.Item
-                name="promotionStatus"
-                label="Status"
-                valuePropName="checked"
-              >
-                <Switch />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      </Modal>
-    </React.Fragment>
-  );
+    );
 };
 
 export default PromotionManagement;

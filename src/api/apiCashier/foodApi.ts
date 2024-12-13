@@ -66,7 +66,7 @@ export const fetchProductsInStock = async () => {
 // Hàm cập nhật trạng thái sản phẩm
 export const updateProductStatus = async (productId: number, newStatus: string) => {
   try {
-    await axios.patch(`${BASE_URL}/api-data/Product/${productId}`, {
+    await axios.patch(`${BASE_URL}/Product/${productId}`, {
       productStatus: newStatus
     }, {
       method: "PATCH",
@@ -81,7 +81,7 @@ export const updateProductStatus = async (productId: number, newStatus: string) 
 export const findProductById = async (productId: number) => {
   try {
     // Gọi API để lấy thông tin sản phẩm
-    const response = await axios.get(`${BASE_URL}/api-data/Product/${productId}`, {
+    const response = await axios.get(`${BASE_URL}/Product/${productId}`, {
       method: "GET",
       headers: getHeaders(),
     });

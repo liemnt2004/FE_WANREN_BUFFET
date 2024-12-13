@@ -17,8 +17,7 @@ import { request } from "../../api/Request";
 import { DecodedToken } from "./component/AuthContext";
 import { getAllPromotion } from "../../api/apiCustommer/promotionApi";
 import PromotionModel from "../../models/PromotionModel";
-
-
+import { useTranslation } from 'react-i18next';
 
 interface OrderDetailData {
     productId: number;
@@ -56,36 +55,30 @@ const CheckoutCustomer: React.FC = () => {
     const location = useLocation();
     const token = localStorage.getItem('token');
     const cartContext = useContext(CartContext);
+    const { t } = useTranslation(); 
+
     const [listCart, setListCart] = useState<CartItem[]>(cartContext?.cartItems || []);
     const [isSucess, setIsSucess] = useState<boolean>(false);
     const [isUpdating, setIsUpdating] = useState(false);
-    // Modal State
     const [showModal, setShowModal] = useState<boolean>(false);
     const [modalMessage, setModalMessage] = useState<string>('');
     const [modalType, setModalType] = useState<'success' | 'error'>('success');
     const [description, setDescription] = useState<string>();
-    // State để hiển thị modal QR Code
     const [showQRCodeModal, setShowQRCodeModal] = useState(false);
-
-    // URL của ảnh QR code
     const [qrCodeUrl, setQrCodeUrl] = useState("");
 
-    // Hàm mở modal và cập nhật URL QR Code
     const handleShowQRCodeModal = (qrCodeUrl: string) => {
-        setQrCodeUrl(qrCodeUrl);  // Lưu URL ảnh QR
-        setShowQRCodeModal(true);  // Mở modal
+        setQrCodeUrl(qrCodeUrl);
+        setShowQRCodeModal(true);
         setIsUpdating(true)
     };
 
-    // Hàm đóng modal và đặt lại giá trị success
     const handleCloseQRCodeModal = () => {
-        console.log("Đã Tăt")
         setIsUpdating(false)
         setShowQRCodeModal(false);
-        setIsSucess(false);  // Đặt lại trạng thái thành false khi đóng modal
+        setIsSucess(false);
     };
 
-    // Decode Token
     let decoded: DecodedToken | null = null;
     try {
         if (token) {
@@ -93,22 +86,19 @@ const CheckoutCustomer: React.FC = () => {
         }
     } catch (error) {
         console.error('Invalid token:', error);
-        navigate('/login');
+        window.location.href = "https://wanrenbuffet.netlify.app/login"
     }
 
-    // Redirect if no token or failed to decode
     useEffect(() => {
         if (!decoded) {
-            navigate('/login');
+            window.location.href = "https://wanrenbuffet.netlify.app/login";
         }
     }, [decoded, navigate]);
 
-    // Parse Query Parameters
     const queryParams = new URLSearchParams(location.search);
     const success = queryParams.get('success');
     const error = queryParams.get('error');
 
-    // Show Modal based on Query Params
     useEffect(() => {
         if (success) {
             setModalMessage(decodeURIComponent(success));
@@ -125,7 +115,6 @@ const CheckoutCustomer: React.FC = () => {
         }
     }, [success, error, navigate]);
 
-    // Form Data State
     const [formData, setFormData] = useState<CheckoutFormData>({
         username: decoded?.sub || "",
         tinh: "Thành Phố Hồ Chí Minh",
@@ -138,14 +127,10 @@ const CheckoutCustomer: React.FC = () => {
         note: '',
     });
 
-    // New States for Address Selection
     const [showNewAddressForm, setShowNewAddressForm] = useState<boolean>(false);
-
-    // Locations State
     const [districts, setDistricts] = useState<LocationData[]>([]);
     const [wards, setWards] = useState<LocationData[]>([]);
 
-    // Loading and Error States
     const [loadingDistricts, setLoadingDistricts] = useState<boolean>(false);
     const [loadingWards, setLoadingWards] = useState<boolean>(false);
     const [errorDistricts, setErrorDistricts] = useState<string>('');
@@ -153,14 +138,12 @@ const CheckoutCustomer: React.FC = () => {
     const [lastAmount, setLastAmount] = useState<number>(0);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-    // State Variables for Promotion Code Modal
     const [promotions, setPromotions] = useState<PromotionModel[]>([]);
     const [selectedPromotion, setSelectedPromotion] = useState<PromotionModel | null>(null);
     const [showPromotionModal, setShowPromotionModal] = useState<boolean>(false);
     const [loadingPromotions, setLoadingPromotions] = useState<boolean>(false);
     const [errorPromotions, setErrorPromotions] = useState<string>('');
 
-    // Fetch Districts
     useEffect(() => {
         let isMounted = true;
 
@@ -176,12 +159,12 @@ const CheckoutCustomer: React.FC = () => {
                     if (data.error === 0) {
                         setDistricts(data.data);
                     } else {
-                        setErrorDistricts('Không tải được danh sách quận/huyện.');
+                        setErrorDistricts(t('checkout.error_load_districts') || 'Không tải được danh sách quận/huyện.');
                     }
                 }
             } catch (error) {
                 if (isMounted) {
-                    setErrorDistricts('Đã xảy ra lỗi khi tải danh sách quận/huyện.');
+                    setErrorDistricts(t('checkout.error_occurred_districts') || 'Đã xảy ra lỗi khi tải danh sách quận/huyện.');
                 }
             } finally {
                 if (isMounted) {
@@ -195,9 +178,8 @@ const CheckoutCustomer: React.FC = () => {
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [t]);
 
-    // Fetch Wards when District Changes
     useEffect(() => {
         if (!formData.quan) {
             setWards([]);
@@ -219,12 +201,12 @@ const CheckoutCustomer: React.FC = () => {
                     if (data.error === 0) {
                         setWards(data.data);
                     } else {
-                        setErrorWards('Hãy chọn phường của bạn');
+                        setErrorWards(t('checkout.select_ward') || 'Hãy chọn phường của bạn');
                     }
                 }
             } catch (error) {
                 if (isMounted) {
-                    setErrorWards('Đã xảy ra lỗi khi tải danh sách phường/xã.');
+                    setErrorWards(t('checkout.error_load_wards') || 'Đã xảy ra lỗi khi tải danh sách phường/xã.');
                 }
             } finally {
                 if (isMounted) {
@@ -238,9 +220,8 @@ const CheckoutCustomer: React.FC = () => {
         return () => {
             isMounted = false;
         };
-    }, [formData.quan]);
+    }, [formData.quan, t]);
 
-    // Fetch Promotions when Modal Opens
     const fetchPromotions = async () => {
         setLoadingPromotions(true);
         setErrorPromotions('');
@@ -249,13 +230,12 @@ const CheckoutCustomer: React.FC = () => {
             setPromotions(promotionsData);
         } catch (error: any) {
             console.error('Error fetching promotions:', error);
-            setErrorPromotions(error.message || 'Có lỗi xảy ra khi tải mã giảm giá.');
+            setErrorPromotions(error.message || t('checkout.error_loading_promotions') || 'Có lỗi xảy ra khi tải mã giảm giá.');
         } finally {
             setLoadingPromotions(false);
         }
     };
 
-    // Handle Input Changes
     const handleChange = (
         e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
     ) => {
@@ -266,52 +246,42 @@ const CheckoutCustomer: React.FC = () => {
         }));
     };
 
-    // Calculate Totals
     const subtotal = listCart.reduce((total, item) => total + item.price * item.quantity, 0);
-    const shippingFee = 15000; // Example shipping fee
+    const shippingFee = 15000;
 
-    // Calculate Discounted Total
     let total = subtotal + shippingFee;
     let discountDisplay = null;
     if (selectedPromotion) {
         if (selectedPromotion.promotionType === 'DISCOUNT%') {
             const discountValue = (subtotal * selectedPromotion.promotionValue) / 100;
             total = subtotal - discountValue + shippingFee;
-            discountDisplay = `Giảm ${selectedPromotion.promotionValue}% (-${FormatMoney(discountValue)})`;
+            discountDisplay = t('checkout.discount_percentage', { value: selectedPromotion.promotionValue, discount: FormatMoney(discountValue) });
         } else if (selectedPromotion.promotionType === 'DISCOUNT-') {
             total = subtotal - selectedPromotion.promotionValue + shippingFee;
-            discountDisplay = `Giảm trực tiếp (-${FormatMoney(selectedPromotion.promotionValue)})`;
+            discountDisplay = t('checkout.discount_direct', { discount: FormatMoney(selectedPromotion.promotionValue) });
         }
-        // Ensure total is not negative
         total = Math.max(total, 0);
     }
 
-    // Handle Form Submission
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
 
         if (!formData.payment) {
-            setModalMessage('Vui lòng chọn phương thức thanh toán.');
+            setModalMessage(t('checkout.select_payment_method') || 'Vui lòng chọn phương thức thanh toán.');
             setModalType('error');
             setShowModal(true);
             setIsSubmitting(false);
             return;
         }
 
-
-
         let address22 = '';
 
         if (!showNewAddressForm && decoded && decoded.address != '') {
-            // Use saved address from token
             address22 = decoded.address || ""
-        }
-
-        else {
-            // Use new address entered
+        } else {
             if (!formData.quan || !formData.phuong || !formData.detail_address) {
-                setModalMessage('Vui lòng điền đầy đủ thông tin địa chỉ.');
+                setModalMessage(t('checkout.fill_address_info') || 'Vui lòng điền đầy đủ thông tin địa chỉ.');
                 setModalType('error');
                 setShowModal(true);
                 setIsSubmitting(false);
@@ -331,7 +301,7 @@ const CheckoutCustomer: React.FC = () => {
             payment: formData.payment,
             notes: formData.note,
             totalAmount: total,
-            promotion: selectedPromotion?.PromotionId || null,
+            promotion: selectedPromotion?.promotion || null,
             promotionCode: selectedPromotion ? selectedPromotion.promotionName : null,
             orderDetails: listCart.map(item => ({
                 productId: item.productId,
@@ -342,7 +312,6 @@ const CheckoutCustomer: React.FC = () => {
         };
 
         try {
-            // If VN PAY is selected
             if (formData.payment === "VNPAY") {
                 const createOrderResponse = await fetch('https://wanrenbuffet.online/api/orders', {
                     method: 'POST',
@@ -353,43 +322,35 @@ const CheckoutCustomer: React.FC = () => {
                     body: JSON.stringify(orderData),
                 });
 
-
-
                 if (!createOrderResponse.ok) {
                     const errorData = await createOrderResponse.json();
-                    throw new Error(errorData.message || "Đặt hàng thất bại.");
+                    throw new Error(errorData.message || t('checkout.order_failed') || "Đặt hàng thất bại.");
                 }
 
                 const createOrderResult = await createOrderResponse.json();
                 const orderId = createOrderResult.orderId;
 
-                // Kiểm tra và lưu token mới nếu có
                 if (createOrderResult.jwtToken) {
                     localStorage.setItem("token", createOrderResult.jwtToken);
                     const newDecoded = jwtDecode<DecodedToken>(createOrderResult.jwtToken);
 
-                    // Cập nhật formData với thông tin mới từ token
                     setFormData(prev => ({
                         ...prev,
                         username: newDecoded.sub || "",
                         emailCheckout: newDecoded.email || "",
                         phoneCheckout: newDecoded.phone || "",
-                        // Bạn có thể cập nhật thêm các trường khác nếu cần
                     }));
                 }
 
-                // Create payment URL
                 const paymentResponse = await request(`https://wanrenbuffet.online/api/payment/create_payment?price=${total}`);
                 if (!paymentResponse || !paymentResponse.url) {
-                    throw new Error("Tạo thanh toán VN PAY thất bại.");
+                    throw new Error(t('checkout.vnpay_failed') || "Tạo thanh toán VN PAY thất bại.");
                 }
                 cartContext?.clearCart();
 
-                // Redirect user to VN PAY payment URL
                 window.location.href = paymentResponse.url;
 
             } else if (formData.payment === "CASH") {
-                // Handle other payment methods, e.g., Cash on Delivery
                 const createOrderResponse = await fetch('https://wanrenbuffet.online/api/orders', {
                     method: 'POST',
                     headers: {
@@ -399,32 +360,26 @@ const CheckoutCustomer: React.FC = () => {
                     body: JSON.stringify(orderData),
                 });
 
-
-
                 if (!createOrderResponse.ok) {
                     const errorData = await createOrderResponse.json();
-                    throw new Error(errorData.message || "Đặt hàng thất bại.");
+                    throw new Error(errorData.message || t('checkout.order_failed') || "Đặt hàng thất bại.");
                 }
 
                 const createOrderResult = await createOrderResponse.json();
 
-                // Kiểm tra và lưu token mới nếu có
                 if (createOrderResult.jwtToken) {
                     localStorage.setItem("token", createOrderResult.jwtToken);
-
                     const newDecoded = jwtDecode<DecodedToken>(createOrderResult.jwtToken);
-                    // Cập nhật formData với thông tin mới từ token
                     setFormData(prev => ({
                         ...prev,
                         username: newDecoded.sub || "",
                         emailCheckout: newDecoded.email || "",
                         phoneCheckout: newDecoded.phone || "",
-                        // Bạn có thể cập nhật thêm các trường khác nếu cần
                     }));
                 }
                 cartContext?.clearCart();
 
-                setModalMessage("Đặt hàng thành công. Chúng tôi sẽ liên hệ với bạn sớm.");
+                setModalMessage(t('checkout.order_success') || "Đặt hàng thành công. Chúng tôi sẽ liên hệ với bạn sớm.");
                 setModalType('success');
                 setShowModal(true);
             } else if (formData.payment === "QR_CODE") {
@@ -437,31 +392,22 @@ const CheckoutCustomer: React.FC = () => {
                     body: JSON.stringify(orderData),
                 });
 
-
-
                 if (!createOrderResponse.ok) {
                     const errorData = await createOrderResponse.json();
-                    throw new Error(errorData.message || "Đặt hàng thất bại.");
+                    throw new Error(errorData.message || t('checkout.order_failed') || "Đặt hàng thất bại.");
                 }
 
                 const createOrderResult = await createOrderResponse.json();
-                console.log(createOrderResult)
                 const orderId: number = createOrderResult.orderId;
-
-                console.log(orderId)
-
 
                 if (createOrderResult.jwtToken) {
                     localStorage.setItem("token", createOrderResult.jwtToken);
                     const newDecoded = jwtDecode<DecodedToken>(createOrderResult.jwtToken);
-
-                    // Cập nhật formData với thông tin mới từ token
                     setFormData(prev => ({
                         ...prev,
                         username: newDecoded.sub || "",
                         emailCheckout: newDecoded.email || "",
                         phoneCheckout: newDecoded.phone || "",
-                        // Bạn có thể cập nhật thêm các trường khác nếu cần
                     }));
                 }
 
@@ -470,28 +416,19 @@ const CheckoutCustomer: React.FC = () => {
                     account_NO: '280520049999'
                 };
 
-
-
-
-
-
                 setDescription(orderId + " Thanh toan tai Wanren Buffet");
                 setLastAmount(Number(2000))
 
-
                 const generateQrCode = (bank: { bank_ID: string; account_NO: string; }, amount: number): string => {
-                    console.log(description)
                     return `https://img.vietqr.io/image/${bank.bank_ID}-${bank.account_NO}-compact.png?amount=${amount}&addInfo=${orderId + " Thanh toan tai Wanren Buffet"}`;
                 };
                 const QR = generateQrCode(myBank, Number(2000));
-                handleShowQRCodeModal(QR);  // Mở modal và hiển thị QR code
-
-
+                handleShowQRCodeModal(QR);
             }
 
         } catch (error: any) {
             console.error("Đặt hàng thất bại:", error);
-            setModalMessage(error.message || "Có lỗi xảy ra trong quá trình đặt hàng hoặc tạo thanh toán.");
+            setModalMessage(error.message || t('checkout.order_or_payment_error') || "Có lỗi xảy ra trong quá trình đặt hàng hoặc tạo thanh toán.");
             setModalType('error');
             setShowModal(true);
         } finally {
@@ -499,15 +436,9 @@ const CheckoutCustomer: React.FC = () => {
         }
     };
 
-
-
-
-
     useEffect(() => {
         const interval = setInterval(async () => {
-
             if (isUpdating) {
-
                 await checkPaid(lastAmount, description || "");
             }
         }, 3000);
@@ -516,7 +447,6 @@ const CheckoutCustomer: React.FC = () => {
     }, [isUpdating, lastAmount, description]);
 
     async function checkPaid(price: number, description: string) {
-        console.log(description)
         if (isSucess) {
             return;
         } else {
@@ -532,16 +462,15 @@ const CheckoutCustomer: React.FC = () => {
                     const lastPrice = lastPaid["Giá trị"];
                     const lastDescription = lastPaid["Mô tả"];
                     if (lastPrice >= lastAmount && lastDescription.includes(description)) {
-                        console.log("thành công")
                         handleCloseQRCodeModal()
                         cartContext?.clearCart();
                         window.location.href = `https://wanrenbuffet.online/api/payment/callbck_qrcode/${description.trim().slice(0, 2)}`;
 
                     } else {
-                        console.log("Thanh toán đang cập nhật!")
+                        console.log(t('checkout.payment_updating') || "Thanh toán đang cập nhật!")
                     }
                 } else {
-                    console.log("No data or data is not an array.");
+                    console.log(t('checkout.no_data') || "No data or data is not an array.");
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -549,26 +478,20 @@ const CheckoutCustomer: React.FC = () => {
         }
     }
 
-
-
-    // Open Promotion Modal
     const handleOpenPromotionModal = () => {
         setShowPromotionModal(true);
         fetchPromotions();
     };
 
-    // Close Promotion Modal
     const handleClosePromotionModal = () => {
         setShowPromotionModal(false);
     };
 
-    // Handle Promotion Selection
     const handleSelectPromotion = (promotion: PromotionModel) => {
         setSelectedPromotion(promotion);
         setShowPromotionModal(false);
     };
 
-    // Remove Selected Promotion
     const handleRemovePromotion = () => {
         setSelectedPromotion(null);
     };
@@ -577,12 +500,10 @@ const CheckoutCustomer: React.FC = () => {
         <section className="checkout spad container-fluid">
             <div className="container">
                 <div className="checkout__form mt-3">
-                    <h4>Thông Tin Thanh Toán</h4>
+                    <h4>{t('checkout.payment_info')}</h4>
                     <form onSubmit={handleSubmit}>
                         <div className="row w-100">
-                            {/* Payment Information Form */}
                             <div className="col-lg-8 col-md-6">
-                                {/* Button Toggle Address */}
                                 <div className="checkout__input mb-3">
                                     <button
                                         type="button"
@@ -591,28 +512,25 @@ const CheckoutCustomer: React.FC = () => {
                                             setShowNewAddressForm(!showNewAddressForm);
                                         }}
                                     >
-                                        {showNewAddressForm ? 'Sử Dụng Địa Chỉ Đã Lưu' : 'Thêm Địa Chỉ Mới'}
+                                        {showNewAddressForm ? t('checkout.use_saved_address') : t('checkout.add_new_address')}
                                     </button>
                                 </div>
 
-                                {/* If using saved address */}
                                 {!showNewAddressForm && decoded && (
                                     <div className="checkout__input mb-3">
-                                        <label>Địa Chỉ Đã Lưu</label>
+                                        <label>{t('checkout.save_address')}</label>
                                         <div className="saved-address">
-                                            <p><strong>Họ và Tên:</strong> {decoded.fullName}</p>
-                                            <p><strong>Địa chỉ:</strong> {`${decoded.address}`}</p>
+                                            <p><strong>{t('checkout.full_name')}:</strong> {decoded.fullName}</p>
+                                            <p><strong>{t('checkout.address')}</strong> {`${decoded.address}`}</p>
                                         </div>
                                     </div>
                                 )}
 
-                                {/* If adding a new address */}
                                 {showNewAddressForm && (
                                     <>
-                                        {/* Province Selection (Hidden/Disabled) */}
                                         <div className="css_select_div mb-3 d-none">
                                             <label htmlFor="tinh" className="form-label">
-                                                Tỉnh/Thành phố<span className="text-danger">*</span>
+                                                {t('checkout.city')}<span className="text-danger">*</span>
                                             </label>
                                             <select
                                                 id="tinh"
@@ -627,25 +545,24 @@ const CheckoutCustomer: React.FC = () => {
                                             </select>
                                         </div>
 
-                                        {/* District Selection */}
                                         <div className="checkout__input mb-3">
                                             <label htmlFor="quan" className="form-label">
-                                                Quận/Huyện<span className="text-danger">*</span>
+                                                {t('checkout.district')}<span className="text-danger">*</span>
                                             </label>
                                             <br />
                                             <select
                                                 className={`css_select ${errorDistricts ? 'is-invalid' : ''}`}
                                                 id="quan"
                                                 name="quan"
-                                                title="Chọn Quận Huyện"
+                                                title={t('checkout.select_district')}
                                                 value={formData.quan}
                                                 onChange={handleChange}
                                                 disabled={loadingDistricts}
                                                 required
                                             >
-                                                <option value="">Quận Huyện</option>
+                                                <option value="">{t('checkout.district')}</option>
                                                 {loadingDistricts && (
-                                                    <option value="">Đang tải...</option>
+                                                    <option value="">{t('checkout.loading')}...</option>
                                                 )}
                                                 {!loadingDistricts &&
                                                     districts.map((district) => (
@@ -661,24 +578,23 @@ const CheckoutCustomer: React.FC = () => {
                                             )}
                                         </div>
 
-                                        {/* Ward Selection */}
                                         <div className="checkout__input mb-3">
                                             <label htmlFor="phuong" className="form-label">
-                                                Phường/Xã<span className="text-danger">*</span>
+                                                {t('checkout.ward')}<span className="text-danger">*</span>
                                             </label>
                                             <br />
                                             <select
                                                 className={`css_select ${errorWards ? 'is-invalid' : ''}`}
                                                 id="phuong"
                                                 name="phuong"
-                                                title="Chọn Phường Xã"
+                                                title={t('checkout.select_ward')}
                                                 value={formData.phuong}
                                                 onChange={handleChange}
                                                 disabled={!formData.quan || loadingWards}
                                                 required
                                             >
-                                                <option value="">Phường Xã</option>
-                                                {loadingWards && <option value="">Đang tải...</option>}
+                                                <option value="">{t('checkout.ward')}</option>
+                                                {loadingWards && <option value="">{t('checkout.loading')}</option>}
                                                 {!loadingWards &&
                                                     wards.map((ward) => (
                                                         <option key={ward.id} value={ward.full_name}>
@@ -693,10 +609,9 @@ const CheckoutCustomer: React.FC = () => {
                                             )}
                                         </div>
 
-                                        {/* Detailed Address */}
                                         <div className="checkout__input mb-3">
                                             <label htmlFor="detail_address">
-                                                Tên Đường / Tòa Nhà<span className="text-danger">*</span>
+                                                {t('checkout.street_building')}<span className="text-danger">*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -711,12 +626,11 @@ const CheckoutCustomer: React.FC = () => {
                                     </>
                                 )}
 
-                                {/* Phone and Email */}
                                 <div className="row">
                                     <div className="col-lg-6">
                                         <div className="checkout__input mb-3">
                                             <label htmlFor="phoneCheckout">
-                                                Số Điện Thoại<span className="text-danger">*</span>
+                                                {t('checkout.phone_number')}<span className="text-danger">*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -747,13 +661,12 @@ const CheckoutCustomer: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Order Notes */}
                                 <div className="checkout__input mb-3">
-                                    <label htmlFor="note">Ghi Chú Đơn Hàng</label>
+                                    <label htmlFor="note">{t('checkout.note')}</label>
                                     <textarea
                                         id="note"
                                         name="note"
-                                        placeholder="Ghi chú về đơn hàng của bạn, ví dụ: lưu ý khi giao hàng."
+                                        placeholder={t('checkout.note_placeholder') || ''}
                                         value={formData.note}
                                         onChange={handleChange}
                                         className="form-control"
@@ -761,13 +674,12 @@ const CheckoutCustomer: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Order Summary */}
                             <div className="col-lg-4 col-md-6 p-0">
                                 <div className="checkout__order w-100 mb-5">
-                                    <h4>Đơn Hàng</h4>
+                                    <h4>{t('checkout.order')}</h4>
                                     <div className="checkout__order__products d-flex justify-content-between">
-                                        <span>Sản Phẩm</span>
-                                        <span className='pe-2'>Tổng Tiền</span>
+                                        <span>{t('checkout.product')}</span>
+                                        <span className='pe-2'>{t('checkout.total')}</span>
                                     </div>
                                     <ul className="list-group mb-3 ">
                                         {listCart.length > 0 ? (
@@ -781,19 +693,18 @@ const CheckoutCustomer: React.FC = () => {
                                                 </li>
                                             ))
                                         ) : (
-                                            <li className="list-group-item">Giỏ hàng của bạn trống</li>
+                                            <li className="list-group-item">{t('checkout.cart_empty')}</li>
                                         )}
                                     </ul>
                                     <div className="checkout__order__subtotal d-flex justify-content-between mb-2">
-                                        <span>Tạm Tính</span>
+                                        <span>{t('checkout.subtotal')}</span>
                                         <span>{FormatMoney(subtotal)}</span>
                                     </div>
 
-                                    {/* Promotion Code Selection */}
                                     {listCart.length > 0 && (
                                         <div className="checkout__input mb-2">
                                             <div className="d-flex align-items-center justify-content-between">
-                                                <label>Mã Giảm Giá</label>
+                                                <label>{t('checkout.voucher')}</label>
                                                 {selectedPromotion ? (
                                                     <>
                                                         <span>{selectedPromotion.promotionName}</span>
@@ -802,7 +713,7 @@ const CheckoutCustomer: React.FC = () => {
                                                             className="btn btn-danger"
                                                             onClick={handleRemovePromotion}
                                                         >
-                                                            Xóa
+                                                            {t('checkout.remove')}
                                                         </button>
                                                     </>
                                                 ) : (
@@ -811,14 +722,13 @@ const CheckoutCustomer: React.FC = () => {
                                                         className="btn btn-danger"
                                                         onClick={handleOpenPromotionModal}
                                                     >
-                                                        Chọn Mã Giảm Giá
+                                                        {t('checkout.select_promotion')}
                                                     </button>
                                                 )}
                                             </div>
                                         </div>
                                     )}
 
-                                    {/* Display Discount if Applied */}
                                     {discountDisplay && (
                                         <div className="checkout__order__discount d-flex justify-content-between mt-2">
                                             <span>{discountDisplay}</span>
@@ -826,20 +736,19 @@ const CheckoutCustomer: React.FC = () => {
                                     )}
 
                                     <div className="checkout__order__subtotal d-flex justify-content-between mt-2">
-                                        <span>Phí Giao Hàng</span>
+                                        <span>{t('checkout.ship')}</span>
                                         <span>{FormatMoney(shippingFee)}</span>
                                     </div>
                                     <div className="checkout__order__total d-flex justify-content-between mb-3">
-                                        <span>Tổng Tiền</span>
+                                        <span>{t('checkout.total')}</span>
                                         <span>{FormatMoney(total)}</span>
                                     </div>
 
-                                    {/* Payment Methods */}
                                     <div className='d-flex'>
                                         <div>
                                             <div className="checkout__input__checkbox me-3">
                                                 <label className='text-dark'>
-                                                    Thanh Toán Khi Nhận Hàng
+                                                    {t('checkout.cod')}
                                                     <input
                                                         type="radio"
                                                         name="payment"
@@ -890,7 +799,7 @@ const CheckoutCustomer: React.FC = () => {
                                             className="btn btn-danger"
                                             disabled={listCart.length === 0 || isSubmitting}
                                         >
-                                            {isSubmitting ? 'Đang xử lý...' : 'ĐẶT HÀNG'}
+                                            {isSubmitting ? t('checkout.processing') : t('checkout.place_order')}
                                         </button>
                                     </div>
                                 </div>
@@ -900,20 +809,19 @@ const CheckoutCustomer: React.FC = () => {
                 </div>
             </div>
 
-            {/* Promotion Code Modal */}
             {showPromotionModal && (
                 <div className="modal-overlay" onClick={handleClosePromotionModal}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h5 className="modal-title">Chọn Mã Giảm Giá</h5>
+                        <h5 className="modal-title">{t('checkout.choose_discount_code')}</h5>
                         {loadingPromotions ? (
-                            <p>Đang tải mã giảm giá...</p>
+                            <p>{t('checkout.loading_promotions')}</p>
                         ) : errorPromotions ? (
                             <p className="text-danger">{errorPromotions}</p>
                         ) : promotions.length > 0 ? (
                             <ul className="list-group">
                                 {promotions.map((promo) => (
                                     <li
-                                        key={promo.PromotionId}
+                                        key={promo.promotion}
                                         className="list-group-item d-flex justify-content-between align-items-center"
                                     >
                                         <div>
@@ -924,16 +832,16 @@ const CheckoutCustomer: React.FC = () => {
                                             className="btn btn-primary"
                                             onClick={() => handleSelectPromotion(promo)}
                                         >
-                                            Chọn
+                                            {t("checkout.select")}
                                         </button>
                                     </li>
                                 ))}
                             </ul>
                         ) : (
-                            <p>Không có mã giảm giá khả dụng.</p>
+                            <p>{t('checkout.no_available_promotions')}</p>
                         )}
                         <button className="btn btn-secondary mt-3" onClick={handleClosePromotionModal}>
-                            Đóng
+                            {t('checkout.close')}
                         </button>
                     </div>
                 </div>
@@ -942,37 +850,32 @@ const CheckoutCustomer: React.FC = () => {
             {showQRCodeModal && (
                 <div className="modal-overlay" onClick={() => handleCloseQRCodeModal()}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h5 className="modal-title">Thanh Toán Qua QR Code</h5>
+                        <h5 className="modal-title">{t('checkout.pay_by_qr')}</h5>
                         <div className="qr-code-container">
-                            {/* Hiển thị ảnh QR Code */}
-                            <img src={qrCodeUrl} alt="QR Code thanh toán" className="qr-code-image" />
+                            <img src={qrCodeUrl} alt={t('checkout.qr_alt')} className="qr-code-image" />
                         </div>
                         <button className="btn btn-secondary mt-3" onClick={() => handleCloseQRCodeModal()}>
-                            Đóng
+                            {t('checkout.close')}
                         </button>
                     </div>
                 </div>
             )}
 
-
-            {/* Modal */}
             {showModal && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <h5 className={`modal-title ${modalType === 'success' ? 'text-success' : 'text-danger'}`}>
-                            {modalType === 'success' ? 'Thành Công' : 'Lỗi'}
+                            {modalType === 'success' ? t('checkout.success') : t('checkout.error')}
                         </h5>
                         <p>{modalMessage}</p>
                         <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
-                            Đóng
+                            {t('checkout.close')}
                         </button>
                     </div>
                 </div>
             )}
         </section>
-
     );
-
 };
 
 export default CheckoutCustomer;

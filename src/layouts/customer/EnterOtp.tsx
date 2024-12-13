@@ -56,7 +56,7 @@ const EnterOtp: React.FC = () => {
     };
 
     return (
-        <div className="ps36231-enter-otp d-flex justify-content-center align-items-center vh-100">
+        <div className="ps36231-enter-otp  container-flush">
             <form onSubmit={handleSubmit} className="box-enter-otp p-4 border rounded">
                 <div className="title d-flex align-items-center mb-4">
                     <Link className="back-to-enter-phone me-3" to="/forgot-password" state={{ email }}>
