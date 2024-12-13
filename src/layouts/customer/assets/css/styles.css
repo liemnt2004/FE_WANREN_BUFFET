@@ -972,4 +972,20 @@ span {
         border-radius: 50%;
         padding: 0;
     }
+
+   .text-login{
+        display: none;
+   }
+
+   .head-login{
+    font-size: 20px !important;
+   }
+
+   
+   .ps28277 .container span{
+        font-size: 10px;
+   }
+
+   
+   
 }

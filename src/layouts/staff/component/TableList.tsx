@@ -36,13 +36,20 @@ const TableModal: React.FC<{
       try {
         const data = await fetchReservations();
 
-        const approvedReservations = data.filter((reservation: { status: string }) => reservation.status === "APPROVED");
+        // Lọc các đặt chỗ có trạng thái "APPROVED"
+        const approvedReservations = data.filter(
+          (reservation: { status: string }) => reservation.status === "APPROVED"
+        );
 
-        const sortedReservations = approvedReservations.sort((a: { timeToCome: string }, b: { timeToCome: string }) => {
-          const timeA = new Date(a.timeToCome).getTime();
-          const timeB = new Date(b.timeToCome).getTime();
-          return timeA - timeB;
-        });
+        // Sắp xếp theo thời gian đến
+        const sortedReservations = approvedReservations.sort(
+          (a: { timeToCome: string }, b: { timeToCome: string }) => {
+            // Chuyển đổi "HH:mm:ss" thành số mili giây kể từ đầu ngày
+            const timeA = convertTimeToMilliseconds(a.timeToCome);
+            const timeB = convertTimeToMilliseconds(b.timeToCome);
+            return timeA - timeB;
+          }
+        );
 
         setReservations(sortedReservations);
       } catch (err: any) {
@@ -54,6 +61,13 @@ const TableModal: React.FC<{
 
     fetchReservation();
   }, []);
+
+  // Hàm chuyển đổi "HH:mm:ss" thành mili giây
+  const convertTimeToMilliseconds = (time: string) => {
+    const [hours, minutes, seconds] = time.split(":").map(Number);
+    return hours * 3600000 + minutes * 60000 + seconds * 1000; // Tổng số mili giây
+  };
+
 
 
   if (loading) return <p>Loading...</p>;
@@ -134,9 +148,9 @@ const TableModal: React.FC<{
                 }).format(new Date())}
               </span>
             </h6>
-            <div style={{ maxHeight: '250px', overflowY: 'auto', border: '1px solid #ddd', padding: '10px' }}>
+            <div style={{ overflowY: 'auto', maxHeight: '250px' }}>
               <table className="table">
-                <thead>
+                <thead style={{ position: 'sticky', top: 0, backgroundColor: '#fff', zIndex: 1 }}>
                   <tr>
                     <th>Họ Tên</th>
                     <th>SĐT</th>
@@ -148,8 +162,13 @@ const TableModal: React.FC<{
                 <tbody>
                   {reservations.length > 0 ? (
                     reservations.map((reservation, index) => (
-                      <tr key={index} onClick={() => handleRowClick(reservation, index)} className={index === selectedRowIndex ? "table-danger" : ""} style={{ cursor: 'pointer' }}>
-                        <td>{reservation.fullName}</td>
+                      <tr
+                        key={index}
+                        onClick={() => handleRowClick(reservation, index)}
+                        className={index === selectedRowIndex ? "table-danger" : ""}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <td style={{ width: "30%" }}>{reservation.fullName}</td>
                         <td>{reservation.phoneNumber}</td>
                         <td>{reservation.timeToCome}</td>
                         <td>{reservation.numberPeople}</td>
@@ -166,6 +185,7 @@ const TableModal: React.FC<{
                 </tbody>
               </table>
             </div>
+
           </div>
 
           {/* Modal Footer */}
@@ -239,13 +259,13 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
     return false;
   });
 
-  const handleCheckoutStep = async (tableId: number, step: number) => {
+  const handleCheckoutStep = async (tableId: number, step: number, tableNumber: number) => {
     try {
 
       const orderId = await fetchOrderIdByTableId(tableId);
 
       if (orderId !== null) {
-        navigate(`/staff/checkout/step${step}`, { state: { tableId: tableId, orderId: orderId } });
+        navigate(`/staff/checkout/step${step}`, { state: { tableId: tableId, orderId: orderId, orderTableNum: tableNumber} });
       } else {
         console.error('No orderId found for this table');
       }
@@ -259,7 +279,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
       setSelectedTable(table);
       setShowModal(true);
     } else if (table.tableStatus === 'PAYING_TABLE') {
-      handleCheckoutStep(table.tableId, 3);
+      handleCheckoutStep(table.tableId, 3, table.tableNumber);
     } else if (table.tableStatus === 'LOCKED_TABLE') {
       openNotification(
         'Bàn khóa',
@@ -293,7 +313,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
 
   return (
     <>
-    {contextHolder}
+      {contextHolder}
       <div className="row" style={{ paddingLeft: '20px', width: '100%' }}>
         {filteredTables.length > 0 ? (
           filteredTables.map((table) => (
@@ -318,7 +338,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
                   {table.tableStatus !== 'EMPTY_TABLE' && table.tableStatus !== 'LOCKED_TABLE' && table.tableStatus !== 'PAYING_TABLE' && (
                     <>
                       <p className="table-status">{table.tableStatus === 'OCCUPIED_TABLE' && ('2h05')}</p>
-                      <p key={table.tableId} onClick={() => handleCheckoutStep(table.tableId, 1)} className="btn btn-danger rounder-0 mt-4">Thanh toán</p>
+                      <p key={table.tableId} onClick={() => handleCheckoutStep(table.tableId, 1, table.tableNumber)} className="btn btn-danger rounder-0 mt-4">Thanh toán</p>
                     </>
                   )}
                 </div>

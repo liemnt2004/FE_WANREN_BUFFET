@@ -43,8 +43,24 @@ import CheckoutFailed from "./layouts/staff/component/checkout/CheckoutFailed";
 import CheckoutLayout from "./layouts/staff/component/checkout/CheckoutLayout";
 import CheckoutSucess from "./layouts/staff/component/checkout/CheckoutSucess";
 import OrderOnTable from "./layouts/staff/component/orderOnTable/Order";
-
+import './i18n'; // Import i18n configuration
+import React, {useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 function App() {
+  const { i18n: i18nHook } = useTranslation();
+
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language') || 'vi';
+    if (i18nHook.language !== savedLanguage) {
+      i18nHook.changeLanguage(savedLanguage);
+    }
+  }, [i18nHook]);
+
+  useEffect(() => {
+    const dir = i18nHook.dir();
+    document.body.dir = dir;
+  }, [i18nHook.language]);
+
   return (
     <Router>
       <AuthProvider>
@@ -87,6 +103,7 @@ export function Routing() {
     "/admin/manage-product",
     "/cashier",
     "/admin/revenue-report",
+    "/forgot-password"
   ];
 
   return (

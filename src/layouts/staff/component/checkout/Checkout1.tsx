@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import "../../assets/css/checkout_for_staff.css";
 import { useNavigate, useLocation } from "react-router-dom";
-import { fetchOrderDetailsAPI, fetchOrderStatusAPI, fetchProductDetailsAPI, getTableNumberByOrderId, updateOrderAmount, updateQuantityOrderDetails } from "../../../../api/apiStaff/orderForStaffApi";
+import { fetchOrderDetailsAPI, fetchOrderIdByTableId, fetchOrderStatusAPI, fetchProductDetailsAPI, getTableNumberByOrderId, updateOrderAmount, updateQuantityOrderDetails, updateTableStatus } from "../../../../api/apiStaff/orderForStaffApi";
 import ProductModel from "../../../../models/StaffModels/ProductModel";
 import { notification } from 'antd';
 import { InfoCircleOutlined } from "@ant-design/icons";
@@ -148,7 +148,7 @@ const Checkout1: React.FC = () => {
         if (isEditing) {
             handleOpenModal();
         } else {
-            navigate(`/staff/checkout/step2`, { state: { tableId: tableId, orderId: orderId } });
+            navigate(`/staff/checkout/step2`, { state: { tableId: tableId, orderId: orderId, orderTableNum: orderTableNum} });
         }
     }
 
@@ -161,6 +161,25 @@ const Checkout1: React.FC = () => {
             } else {
                 navigate(-1);
             }
+        } catch (error) {
+            console.error('Error checking order status:', error);
+        }
+    };
+    
+    const handleGoHome = async () => {
+        try {
+            let newStatus = "EMPTY_TABLE";
+
+            const orderId = await fetchOrderIdByTableId(Number(tableId));
+            if (orderId) {
+                const orderData = await fetchOrderStatusAPI(orderId);
+                if (orderData.orderStatus === "IN_TRANSIT") {
+                    newStatus = "OCCUPIED_TABLE";
+                }
+            }
+
+            await updateTableStatus(Number(tableId), newStatus);
+            navigate('/staff');
         } catch (error) {
             console.error('Error checking order status:', error);
         }
@@ -206,7 +225,7 @@ const Checkout1: React.FC = () => {
                             Gọi nhân viên
                         </div>
                         <div className="turn-dashboard">
-                            <button onClick={() => navigate("/staff")}>
+                            <button onClick={() => handleGoHome()}>
                                 <i className="bi bi-arrow-counterclockwise"></i> Về trang chủ
                             </button>
                         </div>

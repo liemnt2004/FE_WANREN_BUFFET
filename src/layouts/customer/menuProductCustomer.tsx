@@ -13,7 +13,7 @@ import { fetchProductsByCategory, SearchProduct } from "../../api/apiCustommer/p
 import ProductMenu from "./component/productMenu";
 import { CartContext } from "./component/CartContext";
 import Banner from "./component/Banner";
-
+import { useTranslation } from 'react-i18next';
 
 // Định nghĩa loại Category
 type Category = 'mains' | 'desserts' | 'soft_drinks';
@@ -30,8 +30,7 @@ const MenuProductCustomer: React.FC = () => {
 
     const cartContext = useContext(CartContext);
 
-
-
+    const { t } = useTranslation(); // Sử dụng hook useTranslation
 
     // Fetch products when selectedCategory or debouncedSearchTerm changes
     useEffect(() => {
@@ -49,7 +48,7 @@ const MenuProductCustomer: React.FC = () => {
 
                 setListProduct(products);
             } catch (err) {
-                setError("Failed to load products.");
+                setError(t('failed_to_load_products')); // Sử dụng khóa dịch thuật
                 console.error(err);
             } finally {
                 setLoading(false);
@@ -57,17 +56,17 @@ const MenuProductCustomer: React.FC = () => {
         };
 
         fetchData();
-    }, [selectedCategory, debouncedSearchTerm]);
+    }, [selectedCategory, debouncedSearchTerm, t]);
 
     if (!cartContext) {
-        return <div>Đang tải giỏ hàng...</div>;
+        return <div>{t('loading_cart')}</div>; // Sử dụng khóa dịch thuật
     }
 
     const { addToCart, decreaseQuantity } = cartContext;
 
     const renderProducts = () => {
         if (loading) {
-            return <div className="text-center">Đang tải sản phẩm...</div>;
+            return <div className="text-center">{t('loading_products')}</div>; // Sử dụng khóa dịch thuật
         }
 
         if (error) {
@@ -75,7 +74,7 @@ const MenuProductCustomer: React.FC = () => {
         }
 
         if (listProduct.length === 0) {
-            return <div className="text-center">Không có sản phẩm nào trong danh mục này.</div>;
+            return <div className="text-center">{t('no_products_in_category')}</div>; // Sử dụng khóa dịch thuật
         }
 
         return listProduct.map((product) => (
@@ -89,7 +88,6 @@ const MenuProductCustomer: React.FC = () => {
                 decreaseQuantity={(productId: number) => decreaseQuantity(productId)}
             />
         ));
-
     };
 
     return (
@@ -98,7 +96,7 @@ const MenuProductCustomer: React.FC = () => {
                 {/* Left Section */}
                 <div className="col-md-8 position-relative left-section" style={{ paddingBottom: 0 }}>
                     <Banner></Banner>
-                    <img src={bannerBuffet} alt="Main Dish Image" className="img-fluid" />
+                    <img src={bannerBuffet} alt={t('main_dish_image_alt')} className="img-fluid" />
                 </div>
 
                 {/* Right Section */}
@@ -108,26 +106,25 @@ const MenuProductCustomer: React.FC = () => {
                         <div className="row d-flex justify-content-center mb-3">
                             <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall"
                                 style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}
-                                onClick={() => setSelectedCategory('mains')}>Món Chính</a>
+                                onClick={() => setSelectedCategory('mains')}>{t('mains')}</a>
                             <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall"
                                 style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}
-                                onClick={() => setSelectedCategory('desserts')}>Tráng Miệng</a>
+                                onClick={() => setSelectedCategory('desserts')}>{t('desserts')}</a>
                             <a href="#" className="tinh-scaleText tinh-textColor tinh-navWall"
                                 style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}
-                                onClick={() => setSelectedCategory('soft_drinks')}>Nước</a>
+                                onClick={() => setSelectedCategory('soft_drinks')}>{t('soft_drinks')}</a>
                         </div>
                         <div>
                             {/* Category Header */}
                             <div className="row" style={{ height: '12.5%', marginLeft: '0px', paddingBottom: '20px' }}>
                                 <span className="text-center fs-4" style={{ color: 'var(--colorPrimary)', fontWeight: 'bold' }}>
-                                    {searchTerm ? "Tìm Kiếm" :
-                                        (selectedCategory === 'mains' ? 'Món Chính'
-                                            : selectedCategory === 'desserts' ? 'Tráng Miệng'
-                                                : selectedCategory === 'soft_drinks' ? 'Đồ Uống'
+                                    {searchTerm ? t('search_results') :
+                                        (selectedCategory === 'mains' ? t('mains')
+                                            : selectedCategory === 'desserts' ? t('desserts')
+                                                : selectedCategory === 'soft_drinks' ? t('soft_drinks') 
                                                     : selectedCategory)}
                                 </span>
                             </div>
-
 
                             {/* Dropdown and Search Input */}
                             <div className="row" style={{ height: '3rem', marginLeft: '0px' }}>
@@ -135,7 +132,7 @@ const MenuProductCustomer: React.FC = () => {
                                     <input
                                         type="text"
                                         className="search-input"
-                                        placeholder="Tìm Kiếm"
+                                        placeholder={t('search_placeholder')} // Sử dụng khóa dịch thuật
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />

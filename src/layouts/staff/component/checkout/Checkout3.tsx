@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import '../../assets/css/checkout_for_staff.css'
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus, payWithVNPay, getPromotionByOrderId, getLoyaltyPoints, updateLoyaltyPoints, updateDiscountPoints, getDiscountPoints, updateOStatus, createPayment } from "../../../../api/apiStaff/orderForStaffApi";
+import { getOrderDetailWithNameProduct, getOrderAmount, updateTotalAmount, updateTableStatus, payWithVNPay, getPromotionByOrderId, getLoyaltyPoints, updateLoyaltyPoints, updateDiscountPoints, getDiscountPoints, updateOStatus, createPayment, fetchCreatedDate } from "../../../../api/apiStaff/orderForStaffApi";
 import OrderDetailsWithNameProduct from "../../../../models/StaffModels/OrderDetailsWithNameProduct";
 import { notification } from 'antd';
 import { InfoCircleOutlined } from "@ant-design/icons";
@@ -16,7 +16,7 @@ interface PromotionInfo {
 
 const Checkout3: React.FC = () => {
     const location = useLocation();
-    const { tableId, orderId, phoneNumber } = location.state || {};
+    const { tableId, orderId, phoneNumber, orderTableNum } = location.state || {};
     const [error, setError] = useState<string | null>(null);
     const [amount, setAmount] = useState<number>(0);
     const [vat, setVat] = useState<number>(0);
@@ -40,6 +40,7 @@ const Checkout3: React.FC = () => {
     const [inputValue, setInputValue] = useState<number>();
     const [maxPointsUsable, setMaxPointsUsable] = useState(0);
     const [pointsUsableDB, setPointsUsableDB] = useState(0);
+    const [createdDate, setCreatedDate] = useState<string | null>(null);
 
     const openNotification = (message: string, description: string, icon: React.ReactNode, pauseOnHover: boolean = true) => {
         api.open({
@@ -81,6 +82,17 @@ const Checkout3: React.FC = () => {
             }
         }
 
+        const fetchCreatedD = async () => {
+            try {
+                const data = await fetchCreatedDate(orderId);
+                if (data) {
+                    setCreatedDate(data);
+                }
+            } catch (error) {
+            }
+        };
+
+        fetchCreatedD();
         getDiscount();
         fetchPromotion();
         loadOrderDetails();
@@ -168,7 +180,6 @@ const Checkout3: React.FC = () => {
         finalAmount: number = lastAmount
     ) => {
         if (details.length > 0 && totalAmount > 0 && vatAmount > 0 && finalAmount > 0) {
-            console.log("Tiến hành in hóa đơn!");
             exportStyledInvoice();
         }
     };
@@ -177,61 +188,137 @@ const Checkout3: React.FC = () => {
         checkAndPrintInvoice(orderDetails, amount, vat, lastAmount);
     };
 
+    const removeAccents = (str: string) => {
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    };
+
     const exportStyledInvoice = () => {
         const doc = new jsPDF();
 
         doc.setFont('Roboto', 'normal');
 
-        const currentDate = new Date().toLocaleString();
-        doc.setFontSize(10);
-        doc.text(`Date: ${currentDate}`, 200, 30, { align: 'right' });
 
         doc.setFontSize(20);
-        doc.text("HÓA ĐƠN THANH TOÁN", 105, 20, { align: "center" });
-        doc.setFontSize(10);
-        doc.text("NO. 000" + `${orderId}`, 200, 20, { align: "right" });
+        doc.text("HOA DON THANH TOAN", 105, 20, { align: "center" });
+        doc.setFontSize(12);
+        doc.text("1108 Wanren Buffet, FPT Polytechic, HCM", 105, 30, { align: "center" });
+        doc.text("NO. 00" + `${orderId}`, 190, 20, { align: "right" });
 
         doc.setFontSize(12);
-        doc.text("Hóa đơn:", 20, 40);
-        doc.text(`Bàn số: ${tableId}`, 20, 45);
-        doc.text(`Số hóa đơn: ${orderId}`, 20, 50);
-        doc.text("Nhà hàng:", 140, 40);
-        doc.text("Wanren Buffet", 140, 45);
+        doc.text("NHA HANG: WANREN BUFFET", 20, 40);
+        doc.text(`BAN SO: ${orderTableNum}`, 20, 45);
+        doc.text(`SO HOA DON: ${orderId}`, 20, 50);
 
-        doc.text(`Nhân viên thanh toán: ${employeeFullName}`, 140, 50);
 
-        const columns = ["Sản phẩm", "Số lượng", "Đơn giá", "Thành tiền"];
+        const cashierName = employeeFullName ? removeAccents(employeeFullName) : ""; // Use an empty string if null
+
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-based, so add 1
+        const year = now.getFullYear();
+
+        const currentDate = `${hours}:${minutes} ${day}:${month}:${year}`;
+        doc.text(`NHAN VIEN: ${cashierName}`, 190, 40, { align: 'right' });
+        doc.text(`GIO VAO: ${createdDate}`, 190, 45, { align: 'right' });
+        doc.text(`GIO RA: ${currentDate}`, 190, 50, { align: 'right' });
+
+
+
+        const columns = ["San Pham", "So Luong", "Don Gia", "Thanh Tien"];
         const tableRows = orderDetails.map((item: any) => [
-            item.productName,
+            removeAccents(item.productName),
             item.quantity,
-            `${item.price} VND`,
-            `${item.quantity * item.price} VND`,
+            `${item.price.toLocaleString()} VND`,
+            `${(item.quantity * item.price).toLocaleString()} VND`,
         ]);
 
+        // Calculate the total table width (sum of all column widths)
+        const tableWidth = 70 + 30 + 30 + 40; // Column widths: 70 + 30 + 30 + 40
+        const marginLeft = (doc.internal.pageSize.width - tableWidth) / 2; // Center the table on the page
+
+        // Create the product details table
         autoTable(doc, {
             startY: 60,
             head: [columns],
             body: tableRows,
             columnStyles: {
                 0: { cellWidth: 70 },
-                1: { cellWidth: 30 },
-                2: { cellWidth: 30 },
-                3: { cellWidth: 30 },
+                1: { cellWidth: 30, halign: 'right' },
+                2: { cellWidth: 30, halign: 'right' },
+                3: { cellWidth: 40, halign: 'right' },
+            },
+            headStyles: {
+                fillColor: [32, 32, 32], // Black background for the header
+                textColor: [255, 255, 255], // White text color
             },
             theme: "grid",
+            margin: { left: marginLeft }, // Apply the calculated margin to center the table
         });
 
+        // Get the last Y position of the product table
         const lastY = (doc as any).lastAutoTable.finalY;
 
-        let currentY = lastY + 10;
+        // Now create the totals table
+        const totalColumns = ["", "Thanh Toan"];
+        const totalRows = [];
 
-        doc.text(`Subtotal: ${amount} VND`, 20, currentY);
-        doc.text(`VAT (8%): ${vat} VND`, 20, currentY + 10);
-        doc.text(`Total: ${lastAmount} VND`, 20, currentY + 20);
+        if (promotion) {
+            totalRows.push(["KHUYEN MAI", `-${promotion.promotionValue.toLocaleString()} VND`]);
+        }
 
-        currentY += 40;
-        doc.setFontSize(12);
-        doc.text("Note: Thank you for choosing us!", 20, currentY + 10);
+        if (pointsUsableDB) {
+            totalRows.push(["DIEM TICH LUY", `-${pointsUsableDB.toLocaleString()} VND`]);
+        }
+
+        totalRows.push(["TAM TINH", `${amount.toLocaleString()} VND`]);
+        totalRows.push(["VAT (8%)", `${vat.toLocaleString()} VND`]);
+        totalRows.push(["TONG THANH TOAN", `${lastAmount.toLocaleString()} VND`]);
+
+        const totalTableWidth = 70; // Chiều rộng tổng cộng của bảng
+        const rightMargin = 20; // Khoảng cách từ mép phải
+        const marginLeftTotal = doc.internal.pageSize.width - totalTableWidth - rightMargin; 
+
+        // Tạo bảng tổng hợp
+        autoTable(doc, {
+            startY: lastY + 10,
+            head: [totalColumns],
+            body: totalRows,
+            columnStyles: {
+                0: { cellWidth: 30, halign: 'left' },
+                1: { cellWidth: 40, halign: 'right' },
+            },
+            headStyles: {
+                fillColor: [32, 32, 32], // Màu nền đen cho tiêu đề
+                textColor: [255, 255, 255], // Chữ màu trắng cho tiêu đề
+            },
+            bodyStyles: {
+                textColor: [0, 0, 0], // Mặc định chữ màu đen
+            },
+            theme: "grid",
+            margin: { left: marginLeftTotal },
+            didParseCell: function (data) {
+                // Kiểm tra nếu là dòng "TỔNG THANH TOÁN"
+                if (Array.isArray(data.row.raw) && data.row.raw[0] === "TONG THANH TOAN") {
+                    data.cell.styles.textColor = [238, 67, 67]; // Chữ màu đỏ
+                    data.cell.styles.fontStyle = 'bold'; // Làm chữ đậm
+                }
+            },
+        });
+
+
+        // Final Y position after totals table
+        let currentY = (doc as any).lastAutoTable.finalY + 10;
+
+        // Add a note below the totals
+        const noteText = "CAM ON BAN DA CHON NHA HANG CHUNG TOI!";
+        const textWidth = doc.getStringUnitWidth(noteText) * doc.getFontSize() / doc.internal.scaleFactor; // Calculate the width of the text
+        const pageWidth = doc.internal.pageSize.width; // Get the page width
+        const marginLeftNote = (pageWidth - textWidth) / 2; // Calculate the left margin to center the text
+
+        // Center the note text
+        doc.text(noteText, marginLeftNote, currentY);
 
         doc.save(`invoice_order_${orderId}.pdf`);
     };

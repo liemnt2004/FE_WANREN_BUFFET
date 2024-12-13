@@ -1,15 +1,50 @@
-class PromotionAdmin {
+// src/models/AdminModels/Promotion.ts
+
+export default class PromotionAdmin {
+  promotion: number;
+  promotionName: string;
+  description: string;
+  promotionType: string;
+  promotionValue: number;
+  type_food: string;
+  startDate: string; // ISO string hoặc định dạng tương ứng
+  endDate: string;   // ISO string hoặc định dạng tương ứng
+  promotionStatus: boolean;
+  image?: string;    // URL ảnh
+  createdDate: string;
+  updatedDate: string | null;
+
   constructor(
-    public createdDate: string,
-    public updatedDate: string | null,
-    public promotionName: string,
-    public description: string,
-    public promotionType: string,
-    public promotionValue: number,
-    public startDate: string,
-    public endDate: string,
-    public promotionStatus: boolean,
-    public promotion: number
-  ) {}
+    promotion: number,
+      promotionName: string,
+      description: string,
+      promotionType: string,
+      promotionValue: number,
+      type_food: string,
+      startDate: string,
+      endDate: string,
+      promotionStatus: boolean,
+      image?: string,
+      createdDate?: string,
+      updatedDate?: string | null
+  ) {
+      this.promotion = promotion;
+      this.promotionName = promotionName;
+      this.description = description;
+      this.promotionType = promotionType;
+      this.promotionValue = promotionValue;
+      this.type_food = type_food;
+      this.startDate = startDate;
+      this.endDate = endDate;
+      this.promotionStatus = promotionStatus;
+      this.image = image;
+      this.createdDate = createdDate || new Date().toISOString();
+      this.updatedDate = updatedDate || null;
+  }
 }
-export default PromotionAdmin;
+
+
+// src/models/AdminModels/PromotionInput.ts
+
+
+
