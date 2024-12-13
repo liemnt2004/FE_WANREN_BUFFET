@@ -4,9 +4,10 @@ interface HeaderProps {
   onCartClick: () => void;
   selectedItemsSubtotal: number;
   totalCartQuantity: number;
+  toggleSidebar: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onCartClick, selectedItemsSubtotal, totalCartQuantity }) => {
+const Header: React.FC<HeaderProps> = ({ onCartClick, selectedItemsSubtotal, totalCartQuantity, toggleSidebar }) => {
   return (
     <header className="header" id="header">
       <div className="header__container">
@@ -31,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, selectedItemsSubtotal, tot
           </i>
           <span>{selectedItemsSubtotal.toLocaleString()} VND</span>
         </a>
-        <button className="header__toggle">
+        <button className="header__toggle" onClick={toggleSidebar}>
           <i className="ri-menu-line"></i>
         </button>
       </div>

@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import logo from '../../customer/assets/img/warenbuffet.png';
 import '../assets/css/styles.css';
 import { useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
   onClickContent: (contentType: 'home' | '2nd_floor' | 'gdeli' | 'setting') => void;
+  isVisible: boolean;
+  toggleTheme: () => void;
+  icon: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onClickContent }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onClickContent, isVisible, toggleTheme, icon }) => {
   const [activeLink, setActiveLink] = useState<'home' | '2nd_floor' | 'gdeli' | 'setting'>('home'); // Default link
   const navigate = useNavigate();
 
@@ -21,8 +24,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent }) => {
     window.location.reload()
   };
 
+
   return (
-    <nav className="sidebar" id="sidebar">
+    <nav className={`sidebar ${isVisible ? 'show-sidebar' : ''}`} id="sidebar">
       <div className="sidebar__container">
         <div className="sidebar__user">
           <div className="sidebar__img">
@@ -67,10 +71,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent }) => {
                 <span style={{ color: 'var(--firstColor)' }}>Cài Đặt</span>
               </p>
               <p
-                className={`sidebar__link mb-0`}
+                className="sidebar__link mb-0"
+                onClick={toggleTheme}
               >
-                <i className="ri-notification-2-fill"></i>
-                <span style={{ color: 'var(--firstColor)' }}>Thông Báo</span>
+                <i className={`ri ${icon}`}></i>
+                <span style={{ color: 'var(--firstColor)' }}>Giao Diện</span>
               </p>
             </div>
           </div>

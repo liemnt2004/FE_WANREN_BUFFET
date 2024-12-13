@@ -519,6 +519,11 @@ span {
 
 @media (max-width: 768px) {
 
+    .card-custom {
+        width: 188px;
+        cursor: pointer;
+    }
+
     /* Menu Bar Styles */
     .menu-bar {
         width: 100%;
