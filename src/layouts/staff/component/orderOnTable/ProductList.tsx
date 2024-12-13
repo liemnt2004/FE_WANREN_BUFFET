@@ -231,31 +231,33 @@ const ProductList: React.FC<ProductListProps> = ({ category, area, cartItems, se
         <div style={{ margin: '0 18px 18px 18px' }}>
             {Object.keys(groupedProducts).map((typeFood) => (
                 <div key={typeFood} className="content-section" style={{ paddingTop: '15px' }} ref={(el) => productRefs.current[typeFood] = el}>
-                    <h4>{typeFoodMapping[typeFood] || typeFood}</h4>
+                    <h4 className='fw-bold fs-5 pb-2' style={{color: 'var(--text-color)'}}>{typeFoodMapping[typeFood] || typeFood}</h4>
                     <div className="row g-4 mb-5">
                         {groupedProducts[typeFood].map((product) => {
                             const totalProductQuantity = getTotalProductQuantity(product.productId);
                             return (
-                                <ProductCard
-                                    key={product.productId}
-                                    tableId={tableId}
-                                    onAddToCart={handleAddToCart}
-                                    product={product}
-                                    cartQuantity={totalProductQuantity}
-                                    onImageClick={() => handleImageClick(product)}
-                                    incrementQuantity={() => {
-                                        const cartItem = cartItems.find(
-                                            (item) => item.product.productId === product.productId && item.note === ''
-                                        );
-                                        incrementQuantity(product.productId, cartItem?.note || null);
-                                    }}
-                                    decrementQuantity={() => {
-                                        const cartItem = cartItems.find(
-                                            (item) => item.product.productId === product.productId && item.note === ''
-                                        );
-                                        decrementQuantity(product.productId, cartItem?.note || null);
-                                    }}
-                                />
+                                <div className='col-6 col-sm-6 col-md-3'>
+                                    <ProductCard
+                                        key={product.productId}
+                                        tableId={tableId}
+                                        onAddToCart={handleAddToCart}
+                                        product={product}
+                                        cartQuantity={totalProductQuantity}
+                                        onImageClick={() => handleImageClick(product)}
+                                        incrementQuantity={() => {
+                                            const cartItem = cartItems.find(
+                                                (item) => item.product.productId === product.productId && item.note === ''
+                                            );
+                                            incrementQuantity(product.productId, cartItem?.note || null);
+                                        }}
+                                        decrementQuantity={() => {
+                                            const cartItem = cartItems.find(
+                                                (item) => item.product.productId === product.productId && item.note === ''
+                                            );
+                                            decrementQuantity(product.productId, cartItem?.note || null);
+                                        }}
+                                    />
+                                </div>
                             );
                         })}
                     </div>
