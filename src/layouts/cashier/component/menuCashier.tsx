@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
-import Logo from "../assets/img/logo2.png";
+import React from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import "../assets/css/cashierMenu.css";
-import { ProductsProvider } from "./ProductsContext";
-import { useProducts } from "./ProductsContext";
+import Logo from "../assets/img/logo2.png";
+import { ProductsProvider, useProducts } from "./ProductsContext";
 
 // Component dành cho thanh tìm kiếm
 const StyledWrapperSearch = styled.div`
@@ -48,70 +47,24 @@ const StyledWrapperSearch = styled.div`
   }
 `;
 
-interface Product {
-  productId: number;
-  productName: string;
-  description: string;
-  price: number;
-  createdDate: string;
-  updatedDate: string | null;
-  typeFood: string;
-  image: string;
-  productStatus: string;
-  quantity: number;
-}
-
 const productFilter: any = () => {};
 
 const MenuCashier: React.FC = () => {
-  const { setFilteredProducts } = useProducts();
-  const [searchTerm, setSearchTerm] = useState<string>(""); // State để lưu giá trị tìm kiếm
-  const [products, setProducts] = useState<Product[]>([]); // State để lưu danh sách sản phẩm
-  // const [filteredProducts, setFilteredProducts] = useState<Product[]>([]); // State để lưu sản phẩm đã lọc
-  const [loading, setLoading] = useState<boolean>(false); // State để kiểm tra trạng thái loading
-  const [error, setError] = useState<string>(""); // State để lưu thông báo lỗi nếu có
+  const {
+    products,
+    filteredProducts,
+    filterProducts,
+    searchTerm,
+    setSearchTerm,
+  } = useProducts(); // Lấy các giá trị từ context
 
-  // Hàm lấy dữ liệu sản phẩm từ API khi component mount
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true); // Bắt đầu loading
-      setError(""); // Reset error trước khi lấy dữ liệu mới
+  // search
+  // const [searchTerm, setSearchTerm] = useState("");
 
-      try {
-        // Giả sử bạn đã có dữ liệu sản phẩm từ API
-        const response = await fetch("https://wanrenbuffet.online/Product");
-        const data = await response.json();
-        if (data && data._embedded) {
-          setProducts(data._embedded.products); // Lưu sản phẩm vào state
-          setFilteredProducts(data._embedded.products); // Mặc định hiển thị tất cả sản phẩm
-        } else {
-          throw new Error("Không có dữ liệu từ API");
-        }
-      } catch (error) {
-        setError(
-          "Lỗi khi lấy dữ liệu sản phẩm: " +
-            (error instanceof Error ? error.message : "Unknown error")
-        );
-      } finally {
-        setLoading(false); // Kết thúc loading
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  // Hàm xử lý tìm kiếm khi người dùng nhập từ khóa
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const keyword = event.target.value || ""; // Đảm bảo từ khóa không phải null
-    setSearchTerm(keyword); // Cập nhật giá trị tìm kiếm
-
-    // Lọc sản phẩm theo từ khóa
-    const filtered = products.filter((product) => {
-      const productName = product.productName || ""; // Đảm bảo tên sản phẩm không phải null
-      return productName.toLowerCase().includes(keyword.toLowerCase());
-    });
-
-    setFilteredProducts(filtered); // Cập nhật danh sách sản phẩm đã lọc
+  const handleSearchChange = (event: { target: { value: string } }) => {
+    const value = event.target.value.toLowerCase();
+    setSearchTerm(value);
+    filterProducts(value); // Lọc sản phẩm khi giá trị thay đổi
   };
 
   return (
@@ -129,11 +82,10 @@ const MenuCashier: React.FC = () => {
             type="text"
             placeholder="Tìm kiếm sản phẩm..."
             value={searchTerm} // Gán giá trị của input từ state
-            onChange={handleSearch} // Xử lý tìm kiếm khi người dùng thay đổi
+            onChange={handleSearchChange} // Xử lý tìm kiếm khi người dùng thay đổi
             className="input"
           />
         </StyledWrapperSearch>
-
         <div className="flex flex-col">
           <div className="border border-gray-300 py-3 flex gap-1 shadow-xl rounded-md">
             <div className="group relative px-4 cursor-pointer">

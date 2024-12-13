@@ -1,7 +1,7 @@
 import axios from "axios";
-import { request } from "./Request";
 import OrderDetailsWithNameProduct from "../../models/StaffModels/OrderDetailsWithNameProduct";
 import OrderDetailModel from "../../models/StaffModels/OrderDetaitModel";
+import { request } from "./Request";
 
 const BASE_URL = "https://wanrenbuffet.online";
 

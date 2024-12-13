@@ -1,8 +1,7 @@
 import { Outlet } from "react-router-dom";
 import MenuCashier from "./component/menuCashier";
-import SidebarCashier from "./component/sidebarCashier";
-import ProductList from "./component/ProductList";
 import { ProductsProvider } from "./component/ProductsContext";
+import SidebarCashier from "./component/sidebarCashier";
 
 const mainLayoutCashier = () => {
   return (

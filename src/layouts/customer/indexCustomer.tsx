@@ -21,6 +21,12 @@ import { useNavigate } from "react-router-dom";
 import { Accordion } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { AccordionEventKey } from "react-bootstrap/esm/AccordionContext";
+import Banner from "./component/Banner";
+
+
+
+
+  
 const IndexCustomer: React.FC = () => {
     const [listProduct, setListProduct] = useState<ProductModel[]>([]);
     const [loading, setLoading] = useState(true);
@@ -164,6 +170,11 @@ const IndexCustomer: React.FC = () => {
         }
     };
 
+   
+    
+  
+      
+
 
 
 
@@ -179,42 +190,8 @@ const IndexCustomer: React.FC = () => {
                     style={{ overflowY: "auto", maxHeight: "100vh", scrollbarWidth: "none", msOverflowStyle: "none" }}>
                     <div style={{ height: "2000px" }} className="about-left">
                         {/* Banner Section */}
-                        <section className="banner">
-                            <div id="carouselExampleIndicators" className="carousel slide">
-                                <div className="carousel-indicators">
-                                    <button type="button" data-bs-target="#carouselExampleIndicators"
-                                        data-bs-slide-to="0"
-                                        className="active" aria-current="true" aria-label="Slide 1"></button>
-                                    <button type="button" data-bs-target="#carouselExampleIndicators"
-                                        data-bs-slide-to="1"
-                                        aria-label="Slide 2"></button>
-                                    <button type="button" data-bs-target="#carouselExampleIndicators"
-                                        data-bs-slide-to="2"
-                                        aria-label="Slide 3"></button>
-                                </div>
-                                <div className="carousel-inner">
-                                    <div className="carousel-item active">
-                                        <img src={websiteGreen} className="d-block w-100 img-fluid" alt="..." />
-                                    </div>
-                                    <div className="carousel-item">
-                                        <img src={bannerHome} className="d-block w-100 img-fluid" alt="..." />
-                                    </div>
-                                    <div className="carousel-item">
-                                        <img src={image1500x700} className="d-block w-100 img-fluid" alt="..." />
-                                    </div>
-                                </div>
-                                <button className="carousel-control-prev" type="button"
-                                    data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-                                    <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span className="visually-hidden">Previous</span>
-                                </button>
-                                <button className="carousel-control-next" type="button"
-                                    data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-                                    <span className="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span className="visually-hidden">Next</span>
-                                </button>
-                            </div>
-                        </section>
+                        <Banner></Banner>
+
 
                         {/* Main Dish Image */}
                         <img src={bannerBuffet} alt="Main Dish Image" className="img-fluid" />

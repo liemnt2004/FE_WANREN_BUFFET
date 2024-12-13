@@ -1,20 +1,42 @@
-import { useEffect, useState } from "react";
-import CardFoodCashier from "./component/cardFoodCashier";
+import { useState } from "react";
 import styled from "styled-components";
-import axios from "axios";
 import { v4 as uuidv4_1 } from "uuid";
-import {
-  fetchProducts,
-  updateProductStatus,
-  Product,
-} from "../../api/apiCashier/foodApi";
-import { ProductsProvider } from "./component/ProductsContext";
-import { useProducts } from "./component/ProductsContext";
+import { Product, updateProductStatus } from "../../api/apiCashier/foodApi";
 import AlertSuccess from "./component/alertSuccess";
+import CardFoodCashier from "./component/cardFoodCashier";
+import { useProducts } from "./component/ProductsContext";
 
 const ManagementFoodCashier = () => {
-  const { products, setProducts, filteredProducts } = useProducts();
+  // UseState v
+
+  const [products, setProducts] = useState<Product[]>([]);
+
   const [alerts, setAlerts] = useState<{ id: string; message: string }[]>([]);
+
+  const {
+    filteredProducts,
+    setFilteredProducts,
+    loadProducts,
+    filterProducts,
+    searchTerm,
+  } = useProducts();
+
+  // UseState ^
+
+  // lấy api v
+
+  // useEffect(() => {
+  //   const loadProducts = async () => {
+  //     const data = await fetchProducts();
+  //     setProducts(data); // Đảm bảo đúng đường dẫn `_embedded.tables`
+  //   };
+
+  //   loadProducts();
+  // }, []);
+
+  // lấy api ^
+
+  // các function v
 
   const toggleProductStatus = async (
     productId: number,
@@ -25,15 +47,9 @@ const ManagementFoodCashier = () => {
     try {
       // Gọi API để cập nhật trạng thái
       await updateProductStatus(productId, newStatus);
+      loadProducts();
+      // filterProducts(searchTerm);
 
-      // Cập nhật products trong Context
-      setProducts((prevProducts) =>
-        prevProducts.map((product) =>
-          product.productId === productId
-            ? { ...product, productStatus: newStatus }
-            : product
-        )
-      );
       // alert v
       const newAlert = {
         id: uuidv4_1(), // Tạo ID duy nhất cho mỗi alert
@@ -55,6 +71,26 @@ const ManagementFoodCashier = () => {
       console.error("Lỗi khi cập nhật trạng thái sản phẩm:", error);
     }
   };
+
+  // // search
+  // const [searchTerm, setSearchTerm] = useState("");
+  // const [filteredProducts, setFilteredProducts] = useState(products);
+
+  // useEffect(() => {
+  //   setFilteredProducts(products); // Cập nhật lại danh sách khi `products` thay đổi
+  // }, [products]);
+
+  // const handleSearchChange = (event: { target: { value: string } }) => {
+  //   const value = event.target.value.toLowerCase();
+  //   setSearchTerm(value);
+
+  //   const filtered = products.filter((product) =>
+  //     product.productName?.toLowerCase().includes(value)
+  //   );
+  //   setFilteredProducts(filtered);
+  // };
+
+  // các function ^
 
   return (
     <div>

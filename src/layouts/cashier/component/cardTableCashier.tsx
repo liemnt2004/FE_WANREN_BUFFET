@@ -1,7 +1,4 @@
-import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Order } from "../../../api/apiCashier/ordersOnl";
-import { fetchOrderbyTableId } from "../../../api/apiCashier/tableApi";
 
 type Props = {
   tableId?: number;
@@ -14,6 +11,7 @@ type Props = {
   combineTable?: () => void;
   deleteTable?: () => void;
   detailTable?: () => void;
+  timeOrder?: string;
 };
 
 const CardTableCashier = ({
@@ -27,35 +25,8 @@ const CardTableCashier = ({
   combineTable,
   deleteTable,
   detailTable,
+  timeOrder,
 }: Props) => {
-  const [latestOrder, setLatestOrder] = useState<Order | null>(null);
-
-  useEffect(() => {
-    const fetchLatestOrder = async () => {
-      try {
-        const orders = await fetchOrderbyTableId(tableId || 0); // Gọi API lấy orders
-        if (orders && orders.length > 0) {
-          // Lọc lấy order mới nhất theo `createdDate`
-          const mostRecentOrder = orders.reduce(
-            (latest: Order, current: Order) =>
-              new Date(latest.createdDate || 0) >
-              new Date(current.createdDate || 0)
-                ? latest
-                : current
-          );
-          setLatestOrder(mostRecentOrder); // Lưu vào state
-        } else {
-          setLatestOrder(null); // Không có order
-        }
-      } catch (error) {
-        console.error("Lỗi khi tải order:", error);
-        setLatestOrder(null);
-      }
-    };
-
-    fetchLatestOrder();
-  }, [tableId]);
-
   return (
     <StyledWrapper status={status}>
       <div className="card p-0">
@@ -75,23 +46,11 @@ const CardTableCashier = ({
           <div className="right-side">
             <div>
               <div className="hour">
-                {status === "Có Khách" || status === "Thanh Toán"
-                  ? `${new Date(
-                      latestOrder?.createdDate || ""
-                    ).toLocaleTimeString("vi-VN", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}`
-                  : ""}
+                {timeOrder ? timeOrder.substring(11, 16) : ""}
               </div>
               <div className="date">
-                {status === "Có Khách" || status === "Thanh Toán"
-                  ? `${new Date(
-                      latestOrder?.createdDate || ""
-                    ).toLocaleDateString("vi-VN", {
-                      day: "2-digit",
-                      month: "2-digit",
-                    })}`
+                {timeOrder
+                  ? `${timeOrder.substring(8, 10)}-${timeOrder.substring(5, 7)}`
                   : ""}
               </div>
             </div>
@@ -147,6 +106,8 @@ const StyledWrapper = styled.div<{ status?: string }>`
       status === "Có Khách"
         ? "black"
         : status === "Thanh Toán"
+        ? "#fff"
+        : status === "Khóa"
         ? "#fff"
         : status === "Trống"
         ? "black"
@@ -226,6 +187,8 @@ const StyledWrapper = styled.div<{ status?: string }>`
         ? "#ffedbc"
         : status === "Thanh Toán"
         ? "#ec7263"
+        : status === "Khóa"
+        ? "#ec7263"
         : status === "Trống"
         ? "#fff"
         : "#fff"};
@@ -237,6 +200,8 @@ const StyledWrapper = styled.div<{ status?: string }>`
       status === "Có Khách"
         ? "#ffb88c"
         : status === "Thanh Toán"
+        ? "#efc745"
+        : status === "Khóa"
         ? "#efc745"
         : status === "Trống"
         ? "#fff"
@@ -285,6 +250,8 @@ const StyledWrapper = styled.div<{ status?: string }>`
         ? "#ffedbc"
         : status === "Thanh Toán"
         ? "#974859"
+        : status === "Khóa"
+        ? "#974859"
         : status === "Trống"
         ? "#f5f5f5"
         : "#fff"};
@@ -294,6 +261,8 @@ const StyledWrapper = styled.div<{ status?: string }>`
         status === "Có Khách"
           ? "#ffedbc"
           : status === "Thanh Toán"
+          ? "#974859"
+          : status === "Khóa"
           ? "#974859"
           : status === "Trống"
           ? "#f5f5f5"
@@ -311,6 +280,8 @@ const StyledWrapper = styled.div<{ status?: string }>`
         ? "#f7bb97"
         : status === "Thanh Toán"
         ? "#a75265"
+        : status === "Khóa"
+        ? "#a75265"
         : status === "Trống"
         ? "#f5f5f5"
         : "#fff"};
@@ -319,6 +290,8 @@ const StyledWrapper = styled.div<{ status?: string }>`
         status === "Có Khách"
           ? "#f7bb97"
           : status === "Thanh Toán"
+          ? "#974859"
+          : status === "Khóa"
           ? "#974859"
           : status === "Trống"
           ? "#f5f5f5"
@@ -340,6 +313,8 @@ const StyledWrapper = styled.div<{ status?: string }>`
       status === "Có Khách"
         ? "black"
         : status === "Thanh Toán"
+        ? "#fff"
+        : status === "Khóa"
         ? "#fff"
         : status === "Trống"
         ? "black"
