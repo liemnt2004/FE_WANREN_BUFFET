@@ -127,7 +127,7 @@ const Checkout2: React.FC = () => {
     return (
         <>
             {contextHolder}
-            <div className="ps36231-checkout-staff-1">
+            <div className="ps36231-checkout-staff-1" style={{color: 'var(--text-color)'}}>
                 <div className="call-staff">
                     <div className="d-flex justify-content-between align-items-center">
                         <div className="turn-back">

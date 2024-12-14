@@ -8,7 +8,7 @@ const CheckoutFailed: React.FC = () => {
         <div className="congratulation-area text-center mt-5">
             <div className="container">
                 <div className="congratulation-wrapper">
-                    <div className="congratulation-contents center-text">
+                    <div className="congratulation-contents center-text" style={{color: 'var(--text-color)'}}>
                         <div className="congratulation-contents-icon bg-danger">
                             <i className="fas fa-times"></i>
                         </div>

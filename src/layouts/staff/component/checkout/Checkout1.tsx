@@ -214,7 +214,7 @@ const Checkout1: React.FC = () => {
                         <div className="modal-backdrop fade show" onClick={() => setIsModalOpen(false)}></div>
                     </div>
                 )}
-                <div className="call-staff">
+                <div className="call-staff" style={{color: 'var(--text-color)'}}>
                     <div className="d-flex justify-content-between align-items-center">
                         <div className="turn-back">
                             <button onClick={() => handleGoBack()}>Quay lại</button>
@@ -233,23 +233,23 @@ const Checkout1: React.FC = () => {
                 </div>
                 <div>
                     <div>
-                        <h2 className="title-table">Bàn số {orderTableNum} | Xác nhận kiểm đồ</h2>
+                        <h2 className="title-table" style={{color: 'var(--text-color)'}}>Bàn số {orderTableNum} | Xác nhận kiểm đồ</h2>
                         {isEditing && (
 
-                            <h5 style={{ cursor: 'pointer' }} onClick={handleOpenModal} className="title-table fs-6 text-decoration-underline"><i className="bi bi-gear pe-2"></i>Lưu thay đổi</h5>
+                            <h5 style={{ cursor: 'pointer', color: 'var(--text-color)' }} onClick={handleOpenModal} className="title-table fs-6 text-decoration-underline"><i className="bi bi-gear pe-2"></i>Lưu thay đổi</h5>
                         )}
                         {!isEditing && (
-                            <h5 style={{ cursor: 'pointer' }} onClick={() => setIsEditing(true)} className="title-table fs-6 text-decoration-underline"><i className="bi bi-gear pe-2"></i>Chỉnh sửa</h5>
+                            <h5 style={{ cursor: 'pointer' , color: 'var(--text-color)' }} onClick={() => setIsEditing(true)} className="title-table fs-6 text-decoration-underline"><i className="bi bi-gear pe-2"></i>Chỉnh sửa</h5>
                         )}
 
                     </div>
-                    <div className="container-table">
+                    <div className="container-table" style={{color: 'var(--text-color)'}}>
                         <div>
                             <table className="all-sp">
                                 <thead>
                                     <tr>
-                                        <th>Tên món</th>
-                                        <th>Số lượng</th>
+                                        <th style={{backgroundColor: "var(--body-color)"}}>Tên món</th>
+                                        <th style={{backgroundColor: "var(--body-color)"}}>Số lượng</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -262,11 +262,12 @@ const Checkout1: React.FC = () => {
                                                         id="decrement"
                                                         className="btn"
                                                         onClick={() => handleQuantityChange(index, 'decrease')}
+                                                        style={{color: 'white'}}
                                                     >
                                                         <i className="bi bi-dash-lg"></i>
                                                     </button>
 
-                                                    <span className="px-2 text-dark" style={{ width: '40px', display: 'inline-block', textAlign: 'center' }}>
+                                                    <span className="px-2" style={{ width: '40px', display: 'inline-block', textAlign: 'center', color: 'var(--text-color)'}}>
                                                         {orderDetail.quantity}
                                                     </span>
 
@@ -274,13 +275,14 @@ const Checkout1: React.FC = () => {
                                                         id="increment"
                                                         className="btn"
                                                         onClick={() => handleQuantityChange(index, 'increase')}
+                                                        style={{color: 'white'}}
                                                     >
                                                         <i className="bi bi-plus-lg"></i>
                                                     </button>
                                                 </td>
                                             ) : (
                                                 <td className="text-end">
-                                                    <span className="px-2 text-dark" style={{ width: '40px', display: 'inline-block', textAlign: 'center' }}>
+                                                   <span className="px-2" style={{ width: '40px', display: 'inline-block', textAlign: 'center', color: 'var(--text-color)'}}>
                                                         {orderDetail.quantity}
                                                     </span>
                                                 </td>

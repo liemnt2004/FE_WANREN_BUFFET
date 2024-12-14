@@ -158,7 +158,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
     };
 
     fetchCreatedD();
-  }, []);
+  }, [orderId]);
 
   const handleConfirmOrder = async () => {
     try {
@@ -253,7 +253,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
 
     const currentDate = `${hours}:${minutes} ${day}:${month}:${year}`;
     doc.text(`Nhan vien: ${cashierName}`, 190, 40, { align: 'right' });
-    doc.text(`Gio mo ban: ${createdDate}`, 190, 45, { align: 'right' });
+    doc.text(`Gio mo ban: ${createdDate !== null ? createdDate : currentDate}`, 190, 45, { align: 'right' });
     doc.text(`Gio goi mon: ${currentDate}`, 190, 50, { align: 'right' });
 
 
