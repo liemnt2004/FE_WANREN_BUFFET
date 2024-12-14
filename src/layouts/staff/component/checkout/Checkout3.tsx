@@ -448,7 +448,7 @@ const Checkout3: React.FC = () => {
     return (
         <>
             {contextHolder}
-            <div className="ps36231-checkout-staff-1">
+            <div className="ps36231-checkout-staff-1" style={{color: 'var(--text-color)'}}>
                 <div className="call-staff">
                     <div className="d-flex justify-content-between align-items-center">
                         <div className="turn-back">
@@ -469,7 +469,7 @@ const Checkout3: React.FC = () => {
                 </div>
                 <div>
                     <div>
-                        <h2 className="title-table title-red">Đây là thông tin đơn hàng, bạn chỉ trả tiền khi nhận được PHIẾU THANH TOÁN</h2>
+                        <h2 className="title-table" style={{color: 'var(--first-color)'}}>Đây là thông tin đơn hàng, bạn chỉ trả tiền khi nhận được PHIẾU THANH TOÁN</h2>
                     </div>
                     <div className="container-table">
                         <div>
@@ -537,7 +537,7 @@ const Checkout3: React.FC = () => {
                                 <thead>
                                     <tr>
                                         <th>Tổng tiền cần thanh toán</th>
-                                        <th>{lastAmount.toLocaleString() + " VNĐ"}</th>
+                                        <th style={{color: 'var(--first-color)'}}>{lastAmount.toLocaleString() + " VNĐ"}</th>
                                     </tr>
                                 </thead>
                             </table>

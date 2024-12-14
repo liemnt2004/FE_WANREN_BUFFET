@@ -1,5 +1,6 @@
 import React from 'react';
-import TableList from './TableList'; // Make sure this import points to the correct path
+import TableList from './TableList'; 
+import InfoSetting from './InfoSetting';
 
 interface MainContentProps {
   content: 'home' | '2nd_floor' | 'gdeli' | 'setting' | 'theme';
@@ -11,7 +12,7 @@ const MainContent: React.FC<MainContentProps> = ({ content }) => {
       {content === 'home' && <TableList area="home" />}
       {content === '2nd_floor' && <TableList area="2nd_floor" />}
       {content === 'gdeli' && <TableList area="gdeli" />}
-      {content === 'setting' && <h1>Cài Đặt</h1>}
+      {content === 'setting' && <InfoSetting/>}
     </main>
   );
 };
