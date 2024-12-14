@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import logo from '../../customer/assets/img/warenbuffet.png';
+import logoLight from '../assets/img/warenbuffet.png';
+import logoDark from '../assets/img/warenbuffetDark.png';
 import '../assets/css/styles.css';
 import { useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
   onClickContent: (contentType: 'home' | '2nd_floor' | 'gdeli' | 'setting') => void;
   isVisible: boolean;
-  toggleTheme: () => void;
-  icon: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onClickContent, isVisible, toggleTheme, icon }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onClickContent, isVisible }) => {
   const [activeLink, setActiveLink] = useState<'home' | '2nd_floor' | 'gdeli' | 'setting'>('home'); // Default link
   const navigate = useNavigate();
 
@@ -24,13 +23,14 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, isVisible, toggleThem
     window.location.reload()
   };
 
+  const [theme, setTheme] = useState(localStorage.getItem('selected-theme') || 'light');
 
   return (
     <nav className={`sidebar ${isVisible ? 'show-sidebar' : ''}`} id="sidebar">
       <div className="sidebar__container">
         <div className="sidebar__user">
           <div className="sidebar__img">
-            <img src={logo} alt="WAREN BUFFET Logo" className="" width={100} />
+            <img src={theme === 'light' ? logoLight : logoDark} alt="WAREN BUFFET Logo" className="" width={100} />
           </div>
         </div>
         <div className="sidebar__content">
@@ -69,13 +69,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, isVisible, toggleThem
               >
                 <i className="ri-settings-3-fill"></i>
                 <span style={{ color: 'var(--firstColor)' }}>Cài Đặt</span>
-              </p>
-              <p
-                className="sidebar__link mb-0"
-                onClick={toggleTheme}
-              >
-                <i className={`ri ${icon}`}></i>
-                <span style={{ color: 'var(--firstColor)' }}>Giao Diện</span>
               </p>
             </div>
           </div>

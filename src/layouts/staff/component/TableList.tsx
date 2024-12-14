@@ -190,10 +190,10 @@ const TableModal: React.FC<{
 
           {/* Modal Footer */}
           <div className="modal-footer text-end">
-            <button type="button" className="btn btn-secondary rounder" onClick={onClose}>
+            <button type="button" className="btn btn-danger" onClick={onClose}>
               Đóng
             </button>
-            <button type="button" className="btn btn-danger" onClick={() => handleConfirm(Number(reID))}>
+            <button type="button" className="btn btn-danger btn-danger-active" onClick={() => handleConfirm(Number(reID))}>
               Xác nhận
             </button>
           </div>

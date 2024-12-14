@@ -209,10 +209,10 @@ const TransferTableModal: React.FC<{
                             </select>
                         </div>
                         <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" onClick={onClose}>
+                            <button type="button" className="btn btn-danger" onClick={onClose}>
                                 Đóng
                             </button>
-                            <button type="button" className="btn btn-danger" onClick={handleOpenModal}>
+                            <button type="button" className="btn btn-danger btn-danger-active" onClick={handleOpenModal}>
                                 Chuyển bàn
                             </button>
                         </div>

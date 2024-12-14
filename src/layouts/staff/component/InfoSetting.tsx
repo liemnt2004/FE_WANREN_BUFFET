@@ -3,7 +3,12 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { AuthContext } from '../../customer/component/AuthContext';
 
-const InfoSetting: React.FC = () => {
+interface SettingProps {
+    toggleTheme: () => void;
+    icon: string;
+}
+
+const InfoSetting: React.FC<SettingProps> = ({ toggleTheme, icon }) => {
     const { employeeUserId, employeeFullName } = useContext(AuthContext);
     return (
         <div className="container" style={{ maxWidth: '800px', backgroundColor: 'var(--body-color)', padding: '20px', borderRadius: '10px' }}>
@@ -14,7 +19,7 @@ const InfoSetting: React.FC = () => {
 
             {/* Information Section */}
             <div className="row mb-3">
-                <div className="col-md-12" style={{color: 'var(--text-color)'}}>
+                <div className="col-md-12" style={{ color: 'var(--text-color)' }}>
                     <div className="d-flex justify-content-between">
                         <p><strong>Tên nhân viên:</strong></p>
                         <p>{`${employeeFullName}`} - W1108</p>
@@ -38,10 +43,13 @@ const InfoSetting: React.FC = () => {
                 </div>
             </div>
 
-            <div className="form-check form-switch mb-3" style={{color: 'var(--text-color)'}}>
-                <input className="form-check-input" type="checkbox" id="logEnableSwitch" defaultChecked />
-                <label className="form-check-label" htmlFor="logEnableSwitch">Log Enable</label>
-            </div>
+            <p
+                className="sidebar__link mb-0 p-0"
+                onClick={toggleTheme}
+            >
+                <i className={`ri ${icon}`}></i>
+                <span style={{ color: 'var(--firstColor)' }}>Giao Diện</span>
+            </p>
         </div>
     );
 };
