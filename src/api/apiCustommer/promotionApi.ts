@@ -77,3 +77,4 @@ export async function GetPromotionById(PromotionId: number): Promise<PromotionMo
         return null;
     }
 }
+

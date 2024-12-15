@@ -334,8 +334,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
                   <h5 className="card-title text-center">Bàn {table.tableNumber} <span style={{ fontWeight: 'bold', color: 'var(--text-color)' }}>{table.location === 'GDeli' ? '(Deli)' : ''}</span> </h5>
                   {table.tableStatus !== 'EMPTY_TABLE' && table.tableStatus !== 'LOCKED_TABLE' && table.tableStatus !== 'PAYING_TABLE' && (
                     <>
-                      <p className="table-status">{table.tableStatus === 'OCCUPIED_TABLE' && ('2h05')}</p>
-                      <p key={table.tableId} onClick={() => handleCheckoutStep(table.tableId, 1, table.tableNumber)} className="btn btn-danger rounder-0 mt-4">Thanh toán</p>
+                      <p className="table-status">{table.tableStatus === 'OCCUPIED_TABLE' && ('')}</p>
                     </>
                   )}
                 </div>

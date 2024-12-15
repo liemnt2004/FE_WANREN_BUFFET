@@ -20,7 +20,7 @@ function MenuCustomer() {
     }
 
     function login() {
-        window.location.href = "https://wanrenbuffet.netlify.app/login";
+        window.location.href = "http://localhost:3000/login";
     }
 
     const handleShowMenu = () => setShowOffcanvas(true);

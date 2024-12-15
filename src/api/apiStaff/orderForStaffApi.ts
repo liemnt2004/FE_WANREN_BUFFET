@@ -98,19 +98,19 @@ export const updateOStatus = async (orderId: number, status: string) => {
       `${BASE_URL}/api/order_staff/update-status/${orderId}?status=${status}`,
       {
         method: "PUT",
-        headers: getHeaders()
+        headers: getHeaders(),
       }
     );
   } catch (error) {}
 };
 
-export const fetchCreatedDate  = async (orderId: number) => {
+export const fetchCreatedDate = async (orderId: number) => {
   try {
     const response = await fetch(
       `${BASE_URL}/api/order_staff/created_date/${orderId}`,
       {
         method: "GET",
-        headers: getHeaders()
+        headers: getHeaders(),
       }
     );
     if (response.ok) {
@@ -120,23 +120,32 @@ export const fetchCreatedDate  = async (orderId: number) => {
   } catch (error) {}
 };
 
-export const createPayment = async (lastAmount: number, orderId:number, employeeUserId: number, paymentMethod: string, status: boolean) => {
+export const createPayment = async (
+  lastAmount: number,
+  orderId: number,
+  employeeUserId: number,
+  paymentMethod: string,
+  status: boolean
+) => {
   try {
-      const newOrderResponse = await fetch(`${BASE_URL}/api/payment/create_payment/normal`, {
-          method: 'POST',
-          headers: getHeaders(),
-          body: JSON.stringify({
-              amountPaid: lastAmount,
-              paymentMethod: paymentMethod,
-              paymentStatus: status,
-              orderId: orderId,
-              userId: Number(employeeUserId)
-          })
-      });
+    const newOrderResponse = await fetch(
+      `${BASE_URL}/api/payment/create_payment/normal`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({
+          amountPaid: lastAmount,
+          paymentMethod: paymentMethod,
+          paymentStatus: status,
+          orderId: orderId,
+          userId: Number(employeeUserId),
+        }),
+      }
+    );
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
+};
 
 export async function updateLoyaltyPoint(phoneNumber: string, amount: number) {
   try {
@@ -156,40 +165,44 @@ export async function updateLoyaltyPoint(phoneNumber: string, amount: number) {
   }
 }
 
-export async function updateTotalAmount(
-  orderId: number,
-  total_amount: number
-): Promise<number> {
+export async function updateTotalAmount(orderId: number, total_amount: number) {
   try {
-    const response = await axios.put(
+    const response = await fetch(
       `${BASE_URL}/api/order_staff/update/total_amount/${orderId}/${total_amount}`,
       {
         method: "PUT",
         headers: getHeaders(),
       }
     );
-    const data = response.data;
-    return data.amount_last;
+    if (!response) {
+      return response;
+    }
   } catch (error) {
-    return 0;
+    console.log("No Update")
   }
 }
 
 // ORDER ON TABLE
 
 export const fetchOrderDetailsAPI = async (orderId: number) => {
-  const response = await fetch(`${BASE_URL}/api/orders_detail_staff/${orderId}`, {
-    method: "GET",
-    headers: getHeaders(),
-  });
+  const response = await fetch(
+    `${BASE_URL}/api/orders_detail_staff/${orderId}`,
+    {
+      method: "GET",
+      headers: getHeaders(),
+    }
+  );
   return response.json();
 };
 
 export const fetchOrderStatusAPI = async (orderId: number) => {
-  const response = await fetch(`${BASE_URL}/api/order_staff/status/${orderId}`, {
-    method: "GET",
-    headers: getHeaders(),
-  });
+  const response = await fetch(
+    `${BASE_URL}/api/order_staff/status/${orderId}`,
+    {
+      method: "GET",
+      headers: getHeaders(),
+    }
+  );
   return response.json();
 };
 
@@ -216,28 +229,34 @@ export const updateLoyaltyPoints = async (
   phoneNumber: number,
   pointsToDeduct: number
 ) => {
-  const response = await fetch(`${BASE_URL}/api/customer/update-loyalty-points`, {
-    method: "PUT",
-    headers: getHeaders(),
-    body: JSON.stringify({
-      phoneNumber: phoneNumber,
-      pointsToDeduct: pointsToDeduct,
-    }),
-  });
+  const response = await fetch(
+    `${BASE_URL}/api/customer/update-loyalty-points`,
+    {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify({
+        phoneNumber: phoneNumber,
+        pointsToDeduct: pointsToDeduct,
+      }),
+    }
+  );
 };
 
 export const transferTable = async (
   orderId: number,
   selectedTableId: number
 ) => {
-  const response = await fetch(`${BASE_URL}/api/order_staff/${orderId}/transfer`, {
-    method: "PUT",
-    headers: getHeaders(),
-    body: JSON.stringify({
-      orderId: orderId,
-      newTableId: selectedTableId,
-    }),
-  });
+  const response = await fetch(
+    `${BASE_URL}/api/order_staff/${orderId}/transfer`,
+    {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify({
+        orderId: orderId,
+        newTableId: selectedTableId,
+      }),
+    }
+  );
 };
 
 export const fetchReservations = async () => {
@@ -249,13 +268,10 @@ export const fetchReservations = async () => {
 };
 
 export const fetchTables = async () => {
-  const response = await fetch(
-    `${BASE_URL}/api-data/Table?page=0&size=55`,
-    {
-      method: "GET",
-      headers: getHeaders(),
-    }
-  );
+  const response = await fetch(`${BASE_URL}/api-data/Table?page=0&size=55`, {
+    method: "GET",
+    headers: getHeaders(),
+  });
   return response.json();
 };
 
@@ -496,11 +512,14 @@ export const updateCustomerInOrder = async (
   phoneNumber: string
 ) => {
   try {
-    const response = await fetch(`${BASE_URL}/api/order_staff/update-customer`, {
-      method: "PUT",
-      headers: getHeaders(),
-      body: JSON.stringify({ orderId: orderId, phoneNumber: phoneNumber }),
-    });
+    const response = await fetch(
+      `${BASE_URL}/api/order_staff/update-customer`,
+      {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify({ orderId: orderId, phoneNumber: phoneNumber }),
+      }
+    );
 
     if (!response.ok) {
       const error = await response.text();

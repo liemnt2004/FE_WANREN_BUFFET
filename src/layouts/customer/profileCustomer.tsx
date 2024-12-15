@@ -15,6 +15,15 @@ import axios from "axios";
 import { OrderModel } from "../../models/OrderModel";
 import { CartContext, CartItem } from "./component/CartContext";
 import { useTranslation } from 'react-i18next';
+
+interface PromotionVoucher {
+    promotionName: string;
+    image: string;
+    endDate: string;
+    voucherCode: string;
+    status: boolean;
+}
+
 interface UserInfo {
     fullName: string;
     phoneNumber: string;
@@ -72,7 +81,7 @@ const AccountPanel: React.FC<TogglePanelProps> = ({ togglePanel }) => (
 );
 
 const OrderPanel: React.FC<TogglePanelProps> = ({ togglePanel }) => (
-    
+
     <div className="col-12 col-sm-4 tinh-height25 mb-3 mb-sm-0 px-2 px-md-3">
         <div
             className="border tinh-height100 tinh-border-shadow tinh-border-right p-3 px-5 tinh-bgcWhite"
@@ -138,7 +147,7 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
     const [tempInfo, setTempInfo] = useState<UserInfo>(userInfo);
     const token = localStorage.getItem("token");
     const decoded = jwtDecode<DecodedToken>(token || "");
-    const { t } = useTranslation(); 
+    const { t } = useTranslation();
     const handleSave = async () => {
         try {
             const response = await fetch(`https://wanrenbuffet.online/api/customer/updateCustomer/${decoded.sub}`, {
@@ -253,6 +262,8 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
 
 
 
+
+
 const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
     const [editing, setEditing] = useState(false);
     const [tempPassword, setTempPassword] = useState<string>("");
@@ -261,7 +272,7 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
     const [token, setToken] = useState<string | null>(localStorage.getItem('token')); // Token state
 
     const authContext = useContext(AuthContext);
-    const { t } = useTranslation(); 
+    const { t } = useTranslation();
     // Update token if it changes in localStorage
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
@@ -419,7 +430,7 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
     const [totalmodal, setTotalmodal] = useState<number | null>(null);
     const [promotion, setPromotion] = useState<string | "">("");
     const cartContext = useContext(CartContext);
-    const { t } = useTranslation(); 
+    const { t } = useTranslation();
     // State variables for order review
     const [selectedOrderForReview, setSelectedOrderForReview] =
         useState<OrderModel | null>(null);
@@ -831,19 +842,85 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
 };
 
 
+const VoucherContent: React.FC = () => {
+    const [promotionVouchers, setPromotionVouchers] = useState<PromotionVoucher[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+    const token = localStorage.getItem('token');
+    const customerId = 1;
 
-const VoucherContent: React.FC = () => (
-    <div
-        className="row tinh-height90 m-0 p-3 px-5 align-items-center tinh-overflowScroll"
-        style={{ padding: "100px 40px 0 40px" }}
-    >
-        {/* Include your voucher components here */}
-        <span>Voucher content goes here.</span>
-    </div>
-);
+    useEffect(() => {
+        const fetchPromotionVouchers = async () => {
+            setLoading(true);
+            setError(null);
+
+            try {
+                const response = await axios.get(`https://wanrenbuffet.online/api/vouchers/voucherInfo/${customerId}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setPromotionVouchers(response.data);
+            } catch (err) {
+                setError('Failed to fetch promotion vouchers');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPromotionVouchers();
+    }, [customerId]);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
+    }
+
+    return (
+        <div
+            className="container"
+            style={{ paddingTop: '80px' }}
+        >
+            {promotionVouchers.length === 0 ? (
+                <div>No vouchers found.</div>
+            ) : (
+                <div className="voucher-container" style={{ maxHeight: '500px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+                    <div className="voucher-header" style={{ display: 'flex', padding: '10px', fontWeight: 'bold', borderBottom: '2px solid #ddd' }}>
+                        <div style={{ flex: 1 }} className="voucher-date"></div>
+                        <div style={{ flex: 2 }}>Tên Voucher</div>
+                        <div style={{ flex: 1 }}>Mã Voucher</div>
+                        <div style={{ flex: 1 }} className="voucher-date">Ngày kết thúc</div>
+                        <div style={{ flex: 1 }}>Trạng thái</div>
+                    </div>
+                    <div className="voucher-body" style={{ overflowY: 'auto' }}>
+                        {promotionVouchers.map((voucher, index) => (
+                            <div key={index} className="voucher-row" style={{ display: 'flex', padding: '10px', borderBottom: '1px solid #ddd', alignItems: 'center' }}>
+                                <div className="voucher-image" style={{ flex: 1 }}>
+                                    <img src={voucher.image} alt={voucher.promotionName} style={{ width: '100px', height: 'auto' }} />
+                                </div>
+                                <div style={{ flex: 2 }}>{voucher.promotionName}</div>
+                                <div style={{ flex: 1 , fontWeight: 'bold'}}>{voucher.voucherCode}</div>
+                                <div className="voucher-date" style={{ flex: 1 }}>{new Date(voucher.endDate).toLocaleDateString()}</div>
+                                <div style={{ flex: 1, color: voucher.status ? 'red' : 'green', padding: '10px' }}>
+                                    {voucher.status ? 'Đã dùng' : 'Chưa sử dụng'}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+
+            )}
+        </div>
+    );
+};
 
 const MenuProfile: React.FC = () => {
-    const { t } = useTranslation(); 
+    const { t } = useTranslation();
     const [activePanel, setActivePanel] = useState<string | null>(null);
     const token = localStorage.getItem('token');
     const navigate = useNavigate();
