@@ -209,7 +209,7 @@ export const fetchTableId = async (tableLink: string): Promise<number | null> =>
 // Hàm cập nhật trạng thái sản phẩm
 export const updateOrderStatus = async (orderId: number, newStatus: string) => {
   try {
-    await axios.patch(`${BASE_URL}/Orders/${orderId}`, {
+    await axios.patch(`${BASE_URL}/api-data/Orders/${orderId}`, {
       orderStatus: newStatus
     }, {
       method: "PATCH",

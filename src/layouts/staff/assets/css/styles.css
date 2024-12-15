@@ -413,7 +413,7 @@
 
   .card-custom {
     background-color: var(--body-color-table);
-    color: var(--text-color);
+    color: var(--title-color);
   }
 
   .quantity-custom {
@@ -676,6 +676,7 @@
     background-color: #973737;
   }
 
-  .theme-dark {
-    background-color: #202334;
+  .btn-danger-active {
+    background-color: var(--first-color);
+    color: white;
   }

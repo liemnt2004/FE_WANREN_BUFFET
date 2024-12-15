@@ -190,10 +190,10 @@ const TableModal: React.FC<{
 
           {/* Modal Footer */}
           <div className="modal-footer text-end">
-            <button type="button" className="btn btn-secondary rounder" onClick={onClose}>
+            <button type="button" className="btn btn-danger" onClick={onClose}>
               Đóng
             </button>
-            <button type="button" className="btn btn-danger" onClick={() => handleConfirm(Number(reID))}>
+            <button type="button" className="btn btn-danger btn-danger-active" onClick={() => handleConfirm(Number(reID))}>
               Xác nhận
             </button>
           </div>
@@ -267,10 +267,8 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
       if (orderId !== null) {
         navigate(`/staff/checkout/step${step}`, { state: { tableId: tableId, orderId: orderId, orderTableNum: tableNumber} });
       } else {
-        console.error('No orderId found for this table');
       }
     } catch (error) {
-      console.error('Error fetching orderId:', error);
     }
   };
 
@@ -303,7 +301,6 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
         state: { tableId: tableId, tableNumber, adults, children, tableLocation: selectedTable.location },
       });
     } else {
-      alert("Please enter valid numbers for adults and children.");
     }
   };
 
@@ -346,7 +343,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
             </div>
           ))
         ) : (
-          <div>No tables available</div>
+          <div style={{color: 'var(--text-color)'}}>Không có dữ liệu</div>
         )}
         {showModal && (
           <TableModal

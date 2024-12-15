@@ -10,7 +10,7 @@ const CheckoutSucess: React.FC = () => {
         <div className="congratulation-area text-center mt-5">
             <div className="container">
                 <div className="congratulation-wrapper">
-                    <div className="congratulation-contents center-text">
+                    <div className="congratulation-contents center-text" style={{color: 'var(--text-color)'}}>
                         <div className="congratulation-contents-icon">
                             <i className="fas fa-check"></i>
                         </div>
