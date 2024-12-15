@@ -13,7 +13,7 @@ function MenuAdmin() {
     localStorage.removeItem("employeeToken");
     window.location.reload()
   }
-  const { fullName } = useContext(AuthContext);
+  const { employeeFullName } = useContext(AuthContext);
   const handleOffcanvasClose = () => {
     const backdrops = document.querySelectorAll('.offcanvas-backdrop');
 
@@ -63,7 +63,7 @@ function MenuAdmin() {
                   onClick={toggleDropdown}  // Điều khiển dropdown bằng React state
                   aria-expanded={isOpen}
               />
-              <span>                  {fullName}
+              <span>                  {employeeFullName}
               </span>
               {/* Dropdown menu */}
               {isOpen && (
