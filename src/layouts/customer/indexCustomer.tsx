@@ -11,6 +11,7 @@ import lau3 from './assets/img/Lau3-300x300.jpg';
 import cothaygia from './assets/img/cothaygia_t11.png';
 import publicAvif from './assets/img/public.avif';
 import khichi from './assets/img/Kichi.svg';
+import bannerThum from './assets/img/Thêm tiêu đề.png';
 import loginfooter from './assets/img/Cream and Black Simple Illustration Catering Logo.png';
 import ProductModel from "../../models/ProductModel";
 import { getProductHot } from "../../api/apiCustommer/productApi";
@@ -25,6 +26,7 @@ import Banner from "./component/Banner";
 import { useTranslation } from 'react-i18next';
 import i18n from "../../i18n";
 import { Link } from "react-router-dom";
+
 
   
 const IndexCustomer: React.FC = () => {

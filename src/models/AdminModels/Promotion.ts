@@ -4,29 +4,31 @@ export default class PromotionAdmin {
   promotion: number;
   promotionName: string;
   description: string;
-  promotionType: string;
+  promotionType: 'DISCOUNT%' | 'DISCOUNT-';
   promotionValue: number;
   type_food: string;
-  startDate: string; // ISO string hoặc định dạng tương ứng
-  endDate: string;   // ISO string hoặc định dạng tương ứng
+  startDate: string;
+  endDate: string;
   promotionStatus: boolean;
-  image?: string;    // URL ảnh
+  unitPrice: number;
+  image?: string;
   createdDate: string;
   updatedDate: string | null;
 
   constructor(
-    promotion: number,
+      promotion: number,
       promotionName: string,
       description: string,
-      promotionType: string,
+      promotionType: 'DISCOUNT%' | 'DISCOUNT-',
       promotionValue: number,
       type_food: string,
       startDate: string,
       endDate: string,
       promotionStatus: boolean,
+      unitPrice: number,
       image?: string,
       createdDate?: string,
-      updatedDate?: string | null
+      updatedDate?: string | null,
   ) {
       this.promotion = promotion;
       this.promotionName = promotionName;
@@ -37,14 +39,9 @@ export default class PromotionAdmin {
       this.startDate = startDate;
       this.endDate = endDate;
       this.promotionStatus = promotionStatus;
+      this.unitPrice = unitPrice;
       this.image = image;
       this.createdDate = createdDate || new Date().toISOString();
       this.updatedDate = updatedDate || null;
   }
 }
-
-
-// src/models/AdminModels/PromotionInput.ts
-
-
-

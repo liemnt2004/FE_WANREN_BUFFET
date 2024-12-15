@@ -1,12 +1,12 @@
 // src/components/MainDash.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState  } from "react";
 import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import "./assets/css/CustomerManagement.css";
 import "./assets/css/Dashboard.css";
 import axios from "axios";
 
-
+import { AuthContext } from "../customer/component/AuthContext";
 const MainDash: React.FC = () => {
   // Trạng thái để lưu trữ dữ liệu doanh thu hàng tháng
   const [monthlyRevenue, setMonthlyRevenue] = useState<number[]>([]);

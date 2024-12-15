@@ -36,7 +36,7 @@ export const fetchTables = async () => {
 
 export const fetchOrderbyTableId = async (tableId: number) => {
   try {
-    const response = await axios.get(`${BASE_URL}/Table/${tableId}/orders`, {
+    const response = await axios.get(`${BASE_URL}/api-data/Table/${tableId}/orders`, {
       method: "GET",
       headers: getHeaders(),
     });
@@ -49,7 +49,7 @@ export const fetchOrderbyTableId = async (tableId: number) => {
 
 export const updateTableStatus = async (tableId: number, newStatus: string) => {
   try {
-    await axios.patch(`${BASE_URL}/Table/${tableId}`, {
+    await axios.patch(`${BASE_URL}/api-data/Table/${tableId}`, {
       tableStatus: newStatus
     }, {
       method: "PATCH",

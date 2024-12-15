@@ -1,4 +1,4 @@
-// src/components/PromotionManagement.tsx
+// src/layouts/ADMIN/promotionManagement.tsx
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
@@ -25,7 +25,7 @@ import {
     DeleteOutlined,
 } from "@ant-design/icons";
 import { ColumnsType } from "antd/es/table";
-import useDebounce from "../customer/component/useDebounce";
+
 import {
     fetchPromotionList,
     createPromotion,
@@ -41,6 +41,9 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { PromotionInput } from "../../models/AdminModels/PromotionInput";
 import PromotionAdmin from "../../models/AdminModels/Promotion"; // Đảm bảo đường dẫn chính xác
 import dayjs from "dayjs";
+import useDebounce from "../customer/component/useDebounce";
+import FormatMoney from "../customer/component/FormatMoney";
+
 
 const { Option } = Select;
 const { confirm } = Modal;
@@ -56,7 +59,7 @@ const PromotionManagement: React.FC = () => {
     const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
     const [editPromotion, setEditPromotion] = useState<PromotionAdmin | null>(null);
     const [confirmDeletePromotionId, setConfirmDeletePromotionId] = useState<number | null>(null);
-
+    
     // Trạng thái dữ liệu
     const [promotions, setPromotions] = useState<PromotionAdmin[]>([]);
     const [loading, setLoading] = useState<boolean>(false); // Trạng thái tải dữ liệu
@@ -207,6 +210,7 @@ const PromotionManagement: React.FC = () => {
                 endDate: newPromotionData.endDate,
                 promotionStatus: newPromotionData.promotionStatus,
                 image: addImageUrl,
+                unitPrice: newPromotionData.unitPrice, // Thêm đơn giá
             };
 
             // Gọi API để tạo khuyến mãi mới
@@ -262,6 +266,7 @@ const PromotionManagement: React.FC = () => {
                     endDate: updatedPromotionData.endDate,
                     promotionStatus: updatedPromotionData.promotionStatus,
                     image: editImageUrl,
+                    unitPrice: updatedPromotionData.unitPrice, // Thêm đơn giá
                 };
 
                 // Cập nhật thông tin khuyến mãi
@@ -350,6 +355,7 @@ const PromotionManagement: React.FC = () => {
                 dataIndex: "promotion",
                 key: "promotion",
                 sorter: (a, b) => a.promotion - b.promotion,
+                width: 100,
             },
             {
                 title: "Tên khuyến mãi",
@@ -363,43 +369,61 @@ const PromotionManagement: React.FC = () => {
                 dataIndex: "description",
                 key: "description",
                 ellipsis: true,
-                width: 150,
+                width: 200,
             },
             {
-                title: "Giá trị khuyến mãi",
+                title: "Giá trị khuyến mãi (%)",
                 dataIndex: "promotionValue",
                 key: "promotionValue",
                 sorter: (a, b) => a.promotionValue - b.promotionValue,
                 render: (value: number) => `${value}%`,
+                width: 150,
+            },
+            {
+                title: "Đơn Giá (VNĐ)",
+                dataIndex: "unitPrice",
+                key: "unitPrice",
+                sorter: (a, b) => a.unitPrice - b.unitPrice,
+                render: (value: number) => `${FormatMoney(value)}`,
+                width: 120,
             },
             {
                 title: "Loại món ăn",
                 dataIndex: "type_food",
                 key: "type_food",
-                
+                width: 150,
             },
             {
                 title: "Loại khuyến mãi",
                 dataIndex: "promotionType",
                 key: "promotionType",
-                width: 100,
-                
+                width: 200,
+                render: (type: string) => {
+                    switch(type) {
+                        case 'DISCOUNT%':
+                            return 'Giảm Giá theo phần trăm';
+                        case 'DISCOUNT-':
+                            return 'Trừ tiền trực tiếp';
+                        default:
+                            return type;
+                    }
+                }
             },
             {
                 title: "Ảnh",
                 dataIndex: "image",
                 key: "image",
                 render: (image: string, record) => (
-                    <Image
-                        src={image}
+                    <Image  
+                        src={image || "https://via.placeholder.com/100"}
                         alt={`${record.promotionName} image`}
-                        width={50}
-                        height={50}
-                        style={{ objectFit: "cover" }}
-                        fallback="https://via.placeholder.com/50"
+                        style={{ width: "100px", height: "100px", objectFit: "cover" }}
+                        width={100}
+                        height={100}
+                        fallback="https://via.placeholder.com/100"
                     />
                 ),
-                width: 80,
+                width: 100,
             },
             {
                 title: "Ngày bắt đầu",
@@ -407,7 +431,7 @@ const PromotionManagement: React.FC = () => {
                 key: "startDate",
                 render: (date: string) => dayjs(date).format("YYYY-MM-DD HH:mm"),
                 sorter: (a, b) => dayjs(a.startDate).unix() - dayjs(b.startDate).unix(),
-                width: 100,
+                width: 150,
             },
             {
                 title: "Ngày kết thúc",
@@ -415,7 +439,7 @@ const PromotionManagement: React.FC = () => {
                 key: "endDate",
                 render: (date: string) => dayjs(date).format("YYYY-MM-DD HH:mm"),
                 sorter: (a, b) => dayjs(a.endDate).unix() - dayjs(b.endDate).unix(),
-                width: 100,
+                width: 150,
             },
             {
                 title: "Trạng thái",
@@ -433,7 +457,8 @@ const PromotionManagement: React.FC = () => {
                     { text: "Hiển thị", value: true },
                     { text: "Ẩn", value: false },
                 ],
-               
+                onFilter: (value, record) => record.promotionStatus === value,
+                width: 100,
             },
             {
                 title: "Hành động",
@@ -454,7 +479,7 @@ const PromotionManagement: React.FC = () => {
                         />
                     </Space>
                 ),
-                width: 120,
+                width: 100,
             },
         ],
         [handleUpdatePromotionStatus, openEditModal, handleDeletePromotion]
@@ -478,7 +503,8 @@ const PromotionManagement: React.FC = () => {
             "Mã khuyến mãi": promo.promotion,
             "Tên khuyến mãi": promo.promotionName,
             "Mô tả": promo.description,
-            "Giá trị khuyến mãi": promo.promotionValue,
+            "Giá trị khuyến mãi (%)": promo.promotionValue,
+            "Đơn Giá (VNĐ)": promo.unitPrice, // Thêm Đơn Giá
             "Loại món ăn": promo.type_food,
             "Loại khuyến mãi": promo.promotionType,
             "Ngày bắt đầu": dayjs(promo.startDate).format("YYYY-MM-DD HH:mm"),
@@ -512,12 +538,13 @@ const PromotionManagement: React.FC = () => {
         const csvContent =
             'data:text/csv;charset=utf-8,' +
             [
-                ['Mã khuyến mãi', 'Tên khuyến mãi', 'Mô tả', 'Giá trị khuyến mãi (%)', 'Loại món ăn', 'Loại khuyến mãi', 'Ngày bắt đầu', 'Ngày kết thúc', 'Trạng thái'],
+                ['Mã khuyến mãi', 'Tên khuyến mãi', 'Mô tả', 'Giá trị khuyến mãi (%)', 'Đơn Giá (VNĐ)', 'Loại món ăn', 'Loại khuyến mãi', 'Ngày bắt đầu', 'Ngày kết thúc', 'Trạng thái'],
                 ...promotions.map((item) => [
                     item.promotion,
                     item.promotionName,
                     item.description,
                     item.promotionValue,
+                    item.unitPrice, // Thêm Đơn Giá
                     item.type_food,
                     item.promotionType,
                     dayjs(item.startDate).format("YYYY-MM-DD HH:mm"),
@@ -562,9 +589,9 @@ const PromotionManagement: React.FC = () => {
             });
 
             // Bảng dữ liệu
-            const tableHeader = ['Mã KM', 'Tên KM', 'Giá trị (%)', 'Loại món ăn', 'Loại KM', 'Ngày bắt đầu', 'Ngày kết thúc', 'Trạng thái'];
+            const tableHeader = ['Mã KM', 'Tên KM', 'Giá trị (%)', 'Đơn Giá (VNĐ)', 'Loại món ăn', 'Loại KM', 'Ngày bắt đầu', 'Ngày kết thúc', 'Trạng thái'];
             let yPosition = height - margin - 40;
-            const cellWidth = [60, 100, 80, 100, 100, 100, 100, 80];
+            const cellWidth = [60, 100, 80, 100, 100, 100, 100, 100, 80];
 
             // Header row
             tableHeader.forEach((header, i) => {
@@ -585,6 +612,7 @@ const PromotionManagement: React.FC = () => {
                     promo.promotion.toString(),
                     promo.promotionName || '',
                     promo.promotionValue.toString(),
+                    FormatMoney(promo.unitPrice), // Thêm Đơn Giá
                     promo.type_food || '',
                     promo.promotionType || '',
                     dayjs(promo.startDate).format("YYYY-MM-DD HH:mm"),
@@ -715,6 +743,9 @@ const PromotionManagement: React.FC = () => {
                                 Lưu
                             </Button>,
                         ]}
+                        destroyOnClose={true} // Đảm bảo modal bị unmount khi đóng
+                        width={800}
+                        style={{ maxWidth: '90%' }}
                     >
                         <Form form={addForm} layout="vertical" initialValues={{ promotionStatus: true }}>
                             <Row gutter={16}>
@@ -773,19 +804,44 @@ const PromotionManagement: React.FC = () => {
                                             {
                                                 type: "number",
                                                 min: 1,
-                                                
+                                                message: "Giá trị khuyến mãi phải từ 1",
                                             },
                                         ]}
                                     >
                                         <InputNumber
                                             placeholder="Nhập giá trị khuyến mãi (%)"
                                             style={{ width: "100%" }}
+                                            min={1}
+                                            
                                         />
                                     </Form.Item>
                                 </Col>
                             </Row>
 
                             <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Đơn Giá (VNĐ)"
+                                        name="unitPrice"
+                                        rules={[
+                                            { required: true, message: "Vui lòng nhập đơn giá!" },
+                                            {
+                                                type: "number",
+                                                min: 0,
+                                                message: "Đơn giá phải là số không âm!",
+                                            },
+                                        ]}
+                                    >
+                                        <InputNumber
+                                            placeholder="Nhập đơn giá (VNĐ)"
+                                            style={{ width: "100%" }}
+                                            formatter={(value) =>
+                                                value ? `VNĐ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ''
+                                            }
+                                            parser={(value?: string) => value ? value.replace(/VNĐ\s?|(,*)/g, "") : ''}
+                                        />
+                                    </Form.Item>
+                                </Col>
                                 <Col span={12}>
                                     <Form.Item
                                         label="Ngày bắt đầu"
@@ -795,6 +851,9 @@ const PromotionManagement: React.FC = () => {
                                         <Input type="datetime-local" style={{ width: "100%" }} />
                                     </Form.Item>
                                 </Col>
+                            </Row>
+
+                            <Row gutter={16}>
                                 <Col span={12}>
                                     <Form.Item
                                         label="Ngày kết thúc"
@@ -804,9 +863,6 @@ const PromotionManagement: React.FC = () => {
                                         <Input type="datetime-local" style={{ width: "100%" }} />
                                     </Form.Item>
                                 </Col>
-                            </Row>
-
-                            <Row gutter={16}>
                                 <Col span={12}>
                                     <Form.Item
                                         label="Trạng thái"
@@ -817,6 +873,9 @@ const PromotionManagement: React.FC = () => {
                                         <Switch checkedChildren="Hiển thị" unCheckedChildren="Ẩn" />
                                     </Form.Item>
                                 </Col>
+                            </Row>
+
+                            <Row gutter={16}>
                                 <Col span={12}>
                                     <Form.Item
                                         label="Ảnh khuyến mãi"
@@ -836,19 +895,17 @@ const PromotionManagement: React.FC = () => {
                                                 {uploadingAddImage ? "Đang tải lên..." : "Chọn ảnh"}
                                             </Button>
                                         </Upload>
-                                        {addImageUrl && (
-                                            <Image
-                                                src={addImageUrl}
-                                                alt="Ảnh khuyến mãi"
-                                                style={{ width: "100px", marginTop: "10px" }}
-                                            />
-                                        )}
+                                        <Image
+                                            src={addImageUrl || "https://via.placeholder.com/100"}
+                                            alt="Ảnh khuyến mãi"
+                                            style={{ width: "100px", height: "100px", objectFit: "cover", marginTop: "10px" }}
+                                            width={100}
+                                            height={100}
+                                            fallback="https://via.placeholder.com/100"
+                                        />
                                     </Form.Item>
                                 </Col>
-                            </Row>
-
-                            <Row gutter={16}>
-                                <Col span={24}>
+                                <Col span={12}>
                                     <Form.Item
                                         label="Mô tả"
                                         name="description"
@@ -873,8 +930,10 @@ const PromotionManagement: React.FC = () => {
                                                     'blockQuote',
                                                     'undo',
                                                     'redo'
-                                                ]
+                                                ],
+                                                
                                             }}
+                                           
                                         />
                                     </Form.Item>
                                 </Col>
@@ -905,6 +964,9 @@ const PromotionManagement: React.FC = () => {
                                 Lưu thay đổi
                             </Button>,
                         ]}
+                        destroyOnClose={true} // Đảm bảo modal bị unmount khi đóng
+                        width={800}
+                        style={{ maxWidth: '90%' }}
                     >
                         <Form
                             form={editForm}
@@ -936,8 +998,8 @@ const PromotionManagement: React.FC = () => {
                                         rules={[{ required: true, message: "Vui lòng chọn loại khuyến mãi!" }]}
                                     >
                                         <Select placeholder="Chọn loại khuyến mãi">
-                                            <Option value="Discount">Discount</Option>
-                                            <Option value="Buy One Get One">Buy One Get One</Option>
+                                            <Option value="DISCOUNT%">Giảm Giá theo phần trăm</Option>
+                                            <Option value="DISCOUNT-">Trừ tiền trực tiếp</Option>
                                             {/* Thêm các loại khác nếu cần */}
                                         </Select>
                                     </Form.Item>
@@ -975,19 +1037,44 @@ const PromotionManagement: React.FC = () => {
                                             {
                                                 type: "number",
                                                 min: 1,
-                                                
+                                                message: "Giá trị khuyến mãi phải từ 1",
                                             },
                                         ]}
                                     >
                                         <InputNumber
                                             placeholder="Nhập giá trị khuyến mãi (%)"
                                             style={{ width: "100%" }}
+                                            min={1}
+                                            
                                         />
                                     </Form.Item>
                                 </Col>
                             </Row>
 
                             <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Đơn Giá (VNĐ)"
+                                        name="unitPrice"
+                                        rules={[
+                                            { required: true, message: "Vui lòng nhập đơn giá!" },
+                                            {
+                                                type: "number",
+                                                min: 0,
+                                                message: "Đơn giá phải là số không âm!",
+                                            },
+                                        ]}
+                                    >
+                                        <InputNumber
+                                            placeholder="Nhập đơn giá (VNĐ)"
+                                            style={{ width: "100%" }}
+                                            formatter={(value) =>
+                                                value ? `VNĐ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ''
+                                            }
+                                            parser={(value?: string) => value ? value.replace(/VNĐ\s?|(,*)/g, "") : ''}
+                                        />
+                                    </Form.Item>
+                                </Col>
                                 <Col span={12}>
                                     <Form.Item
                                         label="Ngày bắt đầu"
@@ -997,6 +1084,9 @@ const PromotionManagement: React.FC = () => {
                                         <Input type="datetime-local" style={{ width: "100%" }} />
                                     </Form.Item>
                                 </Col>
+                            </Row>
+
+                            <Row gutter={16}>
                                 <Col span={12}>
                                     <Form.Item
                                         label="Ngày kết thúc"
@@ -1006,9 +1096,6 @@ const PromotionManagement: React.FC = () => {
                                         <Input type="datetime-local" style={{ width: "100%" }} />
                                     </Form.Item>
                                 </Col>
-                            </Row>
-
-                            <Row gutter={16}>
                                 <Col span={12}>
                                     <Form.Item
                                         label="Trạng thái"
@@ -1019,6 +1106,9 @@ const PromotionManagement: React.FC = () => {
                                         <Switch checkedChildren="Hiển thị" unCheckedChildren="Ẩn" />
                                     </Form.Item>
                                 </Col>
+                            </Row>
+
+                            <Row gutter={16}>
                                 <Col span={12}>
                                     <Form.Item
                                         label="Ảnh khuyến mãi"
@@ -1038,19 +1128,17 @@ const PromotionManagement: React.FC = () => {
                                                 {uploadingEditImage ? "Đang tải lên..." : "Chọn ảnh"}
                                             </Button>
                                         </Upload>
-                                        {editImageUrl && (
-                                            <Image
-                                                src={editImageUrl}
-                                                alt="Ảnh khuyến mãi"
-                                                style={{ width: "100px", marginTop: "10px" }}
-                                            />
-                                        )}
+                                        <Image
+                                            src={editImageUrl || "https://via.placeholder.com/100"}
+                                            alt="Ảnh khuyến mãi"
+                                            style={{ width: "100px", height: "100px", objectFit: "cover", marginTop: "10px" }}
+                                            width={100}
+                                            height={100}
+                                            fallback="https://via.placeholder.com/100"
+                                        />
                                     </Form.Item>
                                 </Col>
-                            </Row>
-
-                            <Row gutter={16}>
-                                <Col span={24}>
+                                <Col span={12}>
                                     <Form.Item
                                         label="Mô tả"
                                         name="description"
@@ -1075,8 +1163,10 @@ const PromotionManagement: React.FC = () => {
                                                     'blockQuote',
                                                     'undo',
                                                     'redo'
-                                                ]
+                                                ],
+                                                
                                             }}
+                                           
                                         />
                                     </Form.Item>
                                 </Col>
@@ -1091,6 +1181,7 @@ const PromotionManagement: React.FC = () => {
                         footer={null}
                         centered
                         width={400}
+                        destroyOnClose={true} // Đảm bảo modal bị unmount khi đóng
                     >
                         <div style={{ textAlign: "center" }}>
                             <ExclamationCircleOutlined style={{ fontSize: "48px", color: "#ff4d4f" }} />
@@ -1137,7 +1228,7 @@ const PromotionManagement: React.FC = () => {
                             <Table
                                 columns={columns}
                                 dataSource={promotions}
-                                rowKey="promotionId"
+                                rowKey="promotion" // Đảm bảo rằng 'promotion' là khóa duy nhất
                                 pagination={{
                                     current: currentPage + 1, // Ant Design pagination bắt đầu từ 1
                                     pageSize: 20, // Phù hợp với backend

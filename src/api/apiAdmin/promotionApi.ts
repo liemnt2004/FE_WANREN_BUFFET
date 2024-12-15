@@ -5,7 +5,7 @@ import PromotionAdmin from "../../models/AdminModels/Promotion";
 import { PromotionInput } from "../../models/AdminModels/PromotionInput";
 
 // Base API URL for promotions
-const API_BASE_URL = "https://wanrenbuffet.online";
+export const API_BASE_URL = "https://wanrenbuffet.online";
 
 // Function to get employee token
 function getEmployeeToken(): string {
@@ -25,7 +25,7 @@ export const fetchPromotionList = async (
         let response: any;
 
         if (searchText.length > 0) {
-            // When we have a search text, use the search endpoint
+            // Khi có tìm kiếm, sử dụng endpoint tìm kiếm
             response = await axios.get(`${API_BASE_URL}/api-data/Promotion/search/findByPromotionNameContaining`, {
                 params: {
                     promotionName: searchText,
@@ -37,7 +37,7 @@ export const fetchPromotionList = async (
                 },
             });
         } else {
-            // If no search text, fetch all promotions
+            // Nếu không có tìm kiếm, lấy tất cả khuyến mãi
             response = await axios.get(`${API_BASE_URL}/api-data/Promotion`, {
                 params: {
                     page,
@@ -49,29 +49,35 @@ export const fetchPromotionList = async (
             });
         }
 
-       
-        
-
+        // Mapping dữ liệu từ API
         const promotionsData = response.data?._embedded?.promotions || [];
-        const promotions = promotionsData.map((promotion: any) =>
-            new PromotionAdmin(
-                promotion.promotion,
+        const promotions = promotionsData.map((promotion: any) => {
+            // Mapping dữ liệu đúng tên trường
+            const promotionId = promotion.promotionId || promotion.promotion; // Tùy thuộc vào API
+            const unitPrice = typeof promotion.unitPrice === 'number' ? promotion.unitPrice :
+                typeof promotion.unitPrice === 'string' ? parseFloat(promotion.unitPrice) : 0;
+
+            const image = typeof promotion.image === 'string' && promotion.image.startsWith('http') ? promotion.image : '';
+
+            const updatedDate = typeof promotion.updatedDate === 'string' ? promotion.updatedDate :
+                typeof promotion.updatedDate === 'number' ? new Date(promotion.updatedDate).toISOString() : null;
+
+            return new PromotionAdmin(
+                promotionId,
                 promotion.promotionName,
                 promotion.description,
                 promotion.promotionType,
                 promotion.promotionValue,
-                promotion.type_food || "", // Map API field `type_food` to `typeFood` if needed
+                promotion.type_food || "",
                 promotion.startDate,
                 promotion.endDate,
                 promotion.promotionStatus,
-                promotion.image || "",
+                unitPrice,
+                image,
                 promotion.createdDate || "",
-                promotion.updatedDate || ""
-            )
-        );
-
-        console.log(promotions);
-        
+                updatedDate || null
+            );
+        });
 
         const totalElements = response.data?.page?.totalElements ?? promotions.length;
         const totalPages = response.data?.page?.totalPages ?? 1;
@@ -101,19 +107,28 @@ export const createPromotion = async (
         }
 
         const promotion = response.data;
+        const unitPrice = typeof promotion.unitPrice === 'number' ? promotion.unitPrice :
+            typeof promotion.unitPrice === 'string' ? parseFloat(promotion.unitPrice) : 0;
+
+        const image = typeof promotion.image === 'string' && promotion.image.startsWith('http') ? promotion.image : '';
+
+        const updatedDate = typeof promotion.updatedDate === 'string' ? promotion.updatedDate :
+            typeof promotion.updatedDate === 'number' ? new Date(promotion.updatedDate).toISOString() : null;
+
         return new PromotionAdmin(
-            promotion.promotionId,
+            promotion.promotionId || promotion.promotion,
             promotion.promotionName,
             promotion.description,
             promotion.promotionType,
             promotion.promotionValue,
-            promotion.typeFood || promotion.type_food || "",
+            promotion.type_food || "",
             promotion.startDate,
             promotion.endDate,
             promotion.promotionStatus,
-            promotion.image || "",
+            unitPrice,
+            image,
             promotion.createdDate || "",
-            promotion.updatedDate || ""
+            updatedDate || null
         );
     } catch (error) {
         console.error("Cannot create Promotion:", error);
@@ -140,19 +155,28 @@ export const updatePromotion = async (
         }
 
         const promotion = response.data;
+        const unitPrice = typeof promotion.unitPrice === 'number' ? promotion.unitPrice :
+            typeof promotion.unitPrice === 'string' ? parseFloat(promotion.unitPrice) : 0;
+
+        const image = typeof promotion.image === 'string' && promotion.image.startsWith('http') ? promotion.image : '';
+
+        const updatedDate = typeof promotion.updatedDate === 'string' ? promotion.updatedDate :
+            typeof promotion.updatedDate === 'number' ? new Date(promotion.updatedDate).toISOString() : null;
+
         return new PromotionAdmin(
-            promotion.promotionId,
+            promotion.promotionId || promotion.promotion,
             promotion.promotionName,
             promotion.description,
             promotion.promotionType,
             promotion.promotionValue,
-            promotion.typeFood || promotion.type_food || "",
+            promotion.type_food || "",
             promotion.startDate,
             promotion.endDate,
             promotion.promotionStatus,
-            promotion.image || "",
+            unitPrice,
+            image,
             promotion.createdDate || "",
-            promotion.updatedDate || ""
+            updatedDate || null
         );
     } catch (error) {
         console.error("Error updating Promotion:", error);

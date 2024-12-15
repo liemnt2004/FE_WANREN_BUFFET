@@ -1,9 +1,10 @@
 // src/components/MenuAdmin.tsx
-import React, {useState} from "react";
+import React, {useState , useContext} from "react";
 import { NavLink , Navigate, useNavigate } from "react-router-dom";
 import logo from "./assets/img/warenbuffet.png";
 import "./assets/css/CustomerManagement.css";
-import { Link } from "react-router-dom";
+import { AuthContext } from "../customer/component/AuthContext";
+
 function MenuAdmin() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ function MenuAdmin() {
     localStorage.removeItem("employeeToken");
     window.location.reload()
   }
-  
+  const { employeeFullName } = useContext(AuthContext);
   const handleOffcanvasClose = () => {
     const backdrops = document.querySelectorAll('.offcanvas-backdrop');
 
@@ -49,8 +50,12 @@ function MenuAdmin() {
             <span className="badge">8</span>
           </div>
           <div className="profile   ">
+            <div>
+
+            </div>
             <div className="dropdown">
-              {/* Profile image with manual toggle */}
+                
+                
               <img
                   src="https://i.pravatar.cc/300"
                   alt="User Profile"
@@ -58,6 +63,8 @@ function MenuAdmin() {
                   onClick={toggleDropdown}  // Điều khiển dropdown bằng React state
                   aria-expanded={isOpen}
               />
+              <span>                  {employeeFullName}
+              </span>
               {/* Dropdown menu */}
               {isOpen && (
                   <ul className="dropdown-menu show">
