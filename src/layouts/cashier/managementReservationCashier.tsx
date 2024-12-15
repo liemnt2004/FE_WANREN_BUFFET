@@ -615,17 +615,6 @@ const ManagementReservationCashier: React.FC = () => {
                   <div className="buttonGroup d-flex justify-content-between">
                     <button
                       onClick={() => {
-                        completeReservation(detailReservation2);
-                        closeDetailReservation2();
-                        loadReservations();
-                      }}
-                      type="button"
-                      className="mx-1"
-                    >
-                      Khách đã đến
-                    </button>
-                    <button
-                      onClick={() => {
                         cancelReservation(detailReservation2);
                         closeDetailReservation2();
                         loadReservations();

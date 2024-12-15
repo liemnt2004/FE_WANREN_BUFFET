@@ -1,3 +1,5 @@
+import { CheckCircleOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import { notification } from "antd";
 import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import { v4 as uuidv4_3 } from "uuid";
@@ -21,6 +23,12 @@ import {
   fetchTables,
   updateTableStatus,
 } from "../../api/apiCashier/tableApi";
+import {
+  createPromotionOrder,
+  fetchPromotionById,
+  fetchVoucherByCode,
+  updateVoucherStatus,
+} from "../../api/apiCashier/voucherApi";
 import { CreateNewOrder } from "../../api/apiStaff/orderForStaffApi";
 import { AuthContext } from "../customer/component/AuthContext";
 import AlertSuccess from "./component/alertSuccess";
@@ -40,6 +48,7 @@ const ManagementTableCashier: React.FC = () => {
   //   tableLink: undefined,
   //   orderDetailsLink: undefined,
   // };
+
   const defaultOrder: Order = {
     createdDate: "", // Thời gian tạo đơn hàng (ISO 8601 string)
     orderId: 0, // ID của đơn hàng
@@ -120,11 +129,32 @@ const ManagementTableCashier: React.FC = () => {
 
   const [totalAmount, setTotalAmount] = useState<number | 0>(0);
 
+  const [inputValue, setInputValue] = useState(""); // Khởi tạo state
+
   const { employeeUserId } = useContext(AuthContext);
 
   // useState ^
 
   // lấy dữ liệu từ api v
+
+  const [api, contextHolder] = notification.useNotification();
+
+  const openNotification = (
+    message: string,
+    description: string,
+    icon: React.ReactNode,
+    pauseOnHover: boolean = true
+  ) => {
+    api.open({
+      message,
+      description,
+      showProgress: true,
+      pauseOnHover,
+      placement: "topRight",
+      duration: 3,
+      icon,
+    });
+  };
 
   const loadOrderDetails = async () => {
     if (selectOrderbyTableId) {
@@ -268,6 +298,36 @@ const ManagementTableCashier: React.FC = () => {
       }
     });
   };
+  const addDetail3 = (product: Product, productPrice: number) => {
+    setOrderDetailsTemp((prevDetails) => {
+      // Kiểm tra xem sản phẩm đã tồn tại trong danh sách chưa
+      const isProductExisting = prevDetails.some(
+        (detail) => detail.productId === product.productId
+      );
+
+      if (isProductExisting) {
+        // Nếu sản phẩm đã tồn tại, tăng quantity
+        return prevDetails.map((detail) =>
+          detail.productId === product.productId
+            ? { ...detail, quantity: (detail.quantity || 0) + 1 }
+            : detail
+        );
+      } else {
+        // Nếu sản phẩm chưa tồn tại, thêm mới
+        return [
+          ...prevDetails,
+          {
+            orderDetailId: Math.random(), // ID tạm, tùy chỉnh nếu cần
+            productId: product.productId,
+            productName: product.productName,
+            productImage: product.image,
+            unitPrice: productPrice,
+            quantity: 1, // Số lượng mặc định là 1
+          },
+        ];
+      }
+    });
+  };
 
   const handleQuantityChange = (orderDetailId: number, newQuantity: number) => {
     setOrderDetailsTemp((prevDetails) =>
@@ -285,7 +345,7 @@ const ManagementTableCashier: React.FC = () => {
     );
   };
 
-  const addDetail2 = (product: Product) => {
+  const addDetail2 = (product: Product, productPrice: number) => {
     setOrderDetailsTemp2((prevDetails) => {
       // Kiểm tra xem sản phẩm đã tồn tại trong danh sách chưa
       const isProductExisting = prevDetails.some(
@@ -308,7 +368,7 @@ const ManagementTableCashier: React.FC = () => {
             productId: product.productId,
             productName: product.productName,
             productImage: product.image,
-            unitPrice: product.price,
+            unitPrice: productPrice,
             quantity: 1, // Số lượng mặc định là 1
           },
         ];
@@ -701,14 +761,14 @@ const ManagementTableCashier: React.FC = () => {
     console.log("đã lock");
   };
 
+  const takeTotalAmount = () => {
+    let total = 0;
+    orderDetailsTemp.map((detail) => {
+      total += (detail.unitPrice || 0) * (detail.quantity || 0);
+    });
+    setTotalAmount(total);
+  };
   useEffect(() => {
-    const takeTotalAmount = () => {
-      let total = 0;
-      orderDetailsTemp.map((detail) => {
-        total += (detail.unitPrice || 0) * (detail.quantity || 0);
-      });
-      setTotalAmount(total);
-    };
     takeTotalAmount();
   }, [orderDetailsTemp]);
 
@@ -724,6 +784,64 @@ const ManagementTableCashier: React.FC = () => {
     // Tính số tiền trả lại
     const calculatedChange = payment - totalAmount;
     setChange(calculatedChange > 0 ? calculatedChange : 0);
+  };
+
+  const handleChange = (event: any) => {
+    setInputValue(event.target.value); // Cập nhật state khi nhập liệu
+  };
+
+  const isDateTimeValid = (endDate: Date) => {
+    const now = new Date();
+    const reservationDateTime = new Date(endDate);
+
+    // Kiểm tra xem ngày giờ đến có trước hiện tại không
+    return reservationDateTime > now;
+  };
+
+  const checkVoucherCode = async (code: string, orderId: number) => {
+    if (code.length === 0) {
+      openNotification(
+        "Áp dụng Voucher",
+        "Vui lòng nhập Voucher!",
+        <InfoCircleOutlined style={{ color: "#1890ff" }} />
+      );
+    } else {
+      const data = await fetchVoucherByCode(code);
+      if (data.promotionId === null) {
+        openNotification(
+          "Áp dụng Voucher",
+          "Không tìm thấy Voucher!",
+          <InfoCircleOutlined style={{ color: "#1890ff" }} />
+        );
+      } else {
+        if (!data.status) {
+          const promotion = await fetchPromotionById(data.promotionId);
+          if (!isDateTimeValid(promotion.promotionEndDate)) {
+            await updateVoucherStatus(data.voucherId, true);
+            createPromotionOrder(orderId, data.promotionId);
+            closeDetailTable();
+            closeSaleTable();
+            openNotification(
+              "Áp dụng Voucher",
+              "Áp dụng thành công!",
+              <CheckCircleOutlined style={{ color: "#52c41a" }} />
+            );
+          } else {
+            openNotification(
+              "Áp dụng Voucher",
+              "Voucher đã quá hạn!",
+              <InfoCircleOutlined style={{ color: "#1890ff" }} />
+            );
+          }
+        } else {
+          openNotification(
+            "Áp dụng Voucher",
+            "Voucher đã được sử dụng!",
+            <InfoCircleOutlined style={{ color: "#1890ff" }} />
+          );
+        }
+      }
+    }
   };
 
   // các hành động function ^
@@ -858,7 +976,8 @@ const ManagementTableCashier: React.FC = () => {
   };
   const closeSaleTable = () => {
     setSaleTable(null);
-    setSelectOrderbyTableId(null);
+    setInputValue("");
+    // setSelectOrderbyTableId(null);
   };
 
   const hehe = () => {};
@@ -870,594 +989,602 @@ const ManagementTableCashier: React.FC = () => {
   }, [orderDetails]);
 
   return (
-    <div>
-      <StyledWrapperTab style={{ marginBottom: "25px", marginTop: "-25px" }}>
-        <div className="radio-inputs">
-          <label className="radio">
-            <input
-              type="radio"
-              name="radio"
-              value="all"
-              checked={filter === "all"}
-              onChange={handleRadioChange}
-            />
-            <span className="name">Tất cả</span>
-          </label>
-          <label className="radio">
-            <input
-              type="radio"
-              name="radio"
-              value="paying"
-              checked={filter === "paying"}
-              onChange={handleRadioChange}
-            />
-            <span className="name">Thanh toán</span>
-          </label>
-          <label className="radio">
-            <input
-              type="radio"
-              name="radio"
-              value="empty"
-              checked={filter === "empty"}
-              onChange={handleRadioChange}
-            />
-            <span className="name">Bàn trống</span>
-          </label>
-          <label className="radio">
-            <input
-              type="radio"
-              name="radio"
-              value="gdeli"
-              checked={filter === "gdeli"}
-              onChange={handleRadioChange}
-            />
-            <span className="name">GDeli</span>
-          </label>
-        </div>
-      </StyledWrapperTab>
-      <StyledWrapper>
-        {filteredTables.map((table) => (
-          <div className="d-flex justify-content-center" key={table.tableId}>
-            <CardTableCashier
-              key={table.tableId}
-              tableId={table.tableId}
-              tableNumber={table.tableNumber}
-              status={
-                table.tableStatus === "EMPTY_TABLE"
-                  ? "Trống"
-                  : table.tableStatus === "OCCUPIED_TABLE"
-                  ? "Có Khách"
-                  : table.tableStatus === "PAYING_TABLE"
-                  ? "Thanh Toán"
-                  : table.tableStatus === "LOCKED_TABLE"
-                  ? "Khóa"
-                  : "Không xác định"
-              }
-              location={table.location}
-              timeOrder={times[table.tableId] || ""}
-              foodTable={async () => {
-                {
-                  table.tableStatus === "OCCUPIED_TABLE"
-                    ? openFoodTable(
-                        table,
-                        (await getOrderbyTableId(table.tableId)) || defaultOrder
-                      )
-                    : void null;
-                }
-              }}
-              swapTable={async () => {
-                {
-                  table.tableStatus === "OCCUPIED_TABLE"
-                    ? openSwapTable(
-                        table,
-                        (await getOrderbyTableId(table.tableId)) || defaultOrder
-                      )
-                    : void null;
-                }
-              }}
-              splitTable={async () => {
-                {
-                  table.tableStatus === "OCCUPIED_TABLE"
-                    ? openSplitTable(
-                        table,
-                        (await getOrderbyTableId(table.tableId)) || defaultOrder
-                      )
-                    : void null;
-                }
-              }}
-              combineTable={async () => {
-                {
-                  table.tableStatus === "OCCUPIED_TABLE"
-                    ? openCombineTable(
-                        table,
-                        (await getOrderbyTableId(table.tableId)) || defaultOrder
-                      )
-                    : void null;
-                }
-              }}
-              deleteTable={async () => {
-                {
-                  table.tableStatus === "OCCUPIED_TABLE"
-                    ? openDeleteTable(
-                        table,
-                        (await getOrderbyTableId(table.tableId)) || defaultOrder
-                      )
-                    : void null;
-                }
-              }}
-              detailTable={async () => {
-                {
+    <>
+      {contextHolder}
+      <div>
+        <StyledWrapperTab style={{ marginBottom: "25px", marginTop: "-25px" }}>
+          <div className="radio-inputs">
+            <label className="radio">
+              <input
+                type="radio"
+                name="radio"
+                value="all"
+                checked={filter === "all"}
+                onChange={handleRadioChange}
+              />
+              <span className="name">Tất cả</span>
+            </label>
+            <label className="radio">
+              <input
+                type="radio"
+                name="radio"
+                value="paying"
+                checked={filter === "paying"}
+                onChange={handleRadioChange}
+              />
+              <span className="name">Thanh toán</span>
+            </label>
+            <label className="radio">
+              <input
+                type="radio"
+                name="radio"
+                value="empty"
+                checked={filter === "empty"}
+                onChange={handleRadioChange}
+              />
+              <span className="name">Bàn trống</span>
+            </label>
+            <label className="radio">
+              <input
+                type="radio"
+                name="radio"
+                value="gdeli"
+                checked={filter === "gdeli"}
+                onChange={handleRadioChange}
+              />
+              <span className="name">GDeli</span>
+            </label>
+          </div>
+        </StyledWrapperTab>
+        <StyledWrapper>
+          {filteredTables.map((table) => (
+            <div className="d-flex justify-content-center" key={table.tableId}>
+              <CardTableCashier
+                key={table.tableId}
+                tableId={table.tableId}
+                tableNumber={table.tableNumber}
+                status={
                   table.tableStatus === "EMPTY_TABLE"
-                    ? openEmptyTable(table)
+                    ? "Trống"
+                    : table.tableStatus === "OCCUPIED_TABLE"
+                    ? "Có Khách"
                     : table.tableStatus === "PAYING_TABLE"
-                    ? openDetailTable(
-                        table,
-                        (await getOrderbyTableId(table.tableId)) || defaultOrder
-                      )
+                    ? "Thanh Toán"
                     : table.tableStatus === "LOCKED_TABLE"
-                    ? openLockTable(table)
-                    : hehe();
+                    ? "Khóa"
+                    : "Không xác định"
                 }
-              }}
-            />
-            {/* {table.tableStatus === "OCCUPIED_TABLE" ||
+                location={table.location}
+                timeOrder={times[table.tableId] || ""}
+                foodTable={async () => {
+                  {
+                    table.tableStatus === "OCCUPIED_TABLE"
+                      ? openFoodTable(
+                          table,
+                          (await getOrderbyTableId(table.tableId)) ||
+                            defaultOrder
+                        )
+                      : void null;
+                  }
+                }}
+                swapTable={async () => {
+                  {
+                    table.tableStatus === "OCCUPIED_TABLE"
+                      ? openSwapTable(
+                          table,
+                          (await getOrderbyTableId(table.tableId)) ||
+                            defaultOrder
+                        )
+                      : void null;
+                  }
+                }}
+                splitTable={async () => {
+                  {
+                    table.tableStatus === "OCCUPIED_TABLE"
+                      ? openSplitTable(
+                          table,
+                          (await getOrderbyTableId(table.tableId)) ||
+                            defaultOrder
+                        )
+                      : void null;
+                  }
+                }}
+                combineTable={async () => {
+                  {
+                    table.tableStatus === "OCCUPIED_TABLE"
+                      ? openCombineTable(
+                          table,
+                          (await getOrderbyTableId(table.tableId)) ||
+                            defaultOrder
+                        )
+                      : void null;
+                  }
+                }}
+                deleteTable={async () => {
+                  {
+                    table.tableStatus === "OCCUPIED_TABLE"
+                      ? openDeleteTable(
+                          table,
+                          (await getOrderbyTableId(table.tableId)) ||
+                            defaultOrder
+                        )
+                      : void null;
+                  }
+                }}
+                detailTable={async () => {
+                  {
+                    table.tableStatus === "EMPTY_TABLE"
+                      ? openEmptyTable(table)
+                      : table.tableStatus === "PAYING_TABLE"
+                      ? openDetailTable(
+                          table,
+                          (await getOrderbyTableId(table.tableId)) ||
+                            defaultOrder
+                        )
+                      : table.tableStatus === "LOCKED_TABLE"
+                      ? openLockTable(table)
+                      : hehe();
+                  }
+                }}
+              />
+              {/* {table.tableStatus === "OCCUPIED_TABLE" ||
             table.tableStatus === "LOCKED_TABLE"
               ? times[table.tableId] || ""
               : ""} */}
-          </div>
-        ))}
-      </StyledWrapper>
+            </div>
+          ))}
+        </StyledWrapper>
 
-      {foodTable && (
-        <PopupOverlay onClick={() => closeFoodTable(foodTable)}>
-          <PopupCard onClick={(e) => e.stopPropagation()}>
-            <PopupCardGrid>
-              <div className="grid-container-edit">
-                <div className="box d-flex align-items-center">
-                  <StyledWrapperSearchEdit>
-                    <input
-                      className="input"
-                      name="text"
-                      type="text"
-                      placeholder="Search..."
-                      value={searchTerm}
-                      onChange={handleSearchChange}
-                    />
-                  </StyledWrapperSearchEdit>
-                  &ensp;
-                  <OrderLabel>Món ăn</OrderLabel>
+        {foodTable && (
+          <PopupOverlay onClick={() => closeFoodTable(foodTable)}>
+            <PopupCard onClick={(e) => e.stopPropagation()}>
+              <PopupCardGrid>
+                <div className="grid-container-edit">
+                  <div className="box d-flex align-items-center">
+                    <StyledWrapperSearchEdit>
+                      <input
+                        className="input"
+                        name="text"
+                        type="text"
+                        placeholder="Search..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                      />
+                    </StyledWrapperSearchEdit>
+                    &ensp;
+                    <OrderLabel>Món ăn</OrderLabel>
+                  </div>
+                  <div className="box d-flex align-items-center justify-content-center">
+                    <OrderLabel>Mã Đơn Hàng:</OrderLabel>{" "}
+                    <span>{selectOrderbyTableId?.orderId}</span>
+                  </div>
+                  <div className="box-food" key={selectOrderbyTableId?.orderId}>
+                    {filteredProducts.map((product) => (
+                      <div className="d-flex justify-content-center">
+                        <CardFoodEditCashier
+                          img={product.image}
+                          price={product.price}
+                          name={product.productName}
+                          onToggleCart={() => addDetail(product)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="box">
+                    <div
+                      className="border rounded p-2 h-100"
+                      style={{ overflowY: "auto" }}
+                    >
+                      {isLoading ? (
+                        <p>Đang tải chi tiết đơn hàng...</p>
+                      ) : orderDetailsTemp.length > 0 ? (
+                        orderDetailsTemp.map((detail) => (
+                          <CardSpacing key={detail.orderDetailId}>
+                            <CardFoodOrderCashierEdit
+                              imageUrl={detail.productImage}
+                              productName={detail.productName}
+                              price={detail.unitPrice}
+                              quantity={detail.quantity}
+                              onchangeQuantity={(e) =>
+                                handleQuantityChange(
+                                  detail.orderDetailId,
+                                  Number(e.target.value)
+                                )
+                              }
+                              deleteDetail={() =>
+                                handleDeleteDetail(detail.orderDetailId)
+                              }
+                            />
+                          </CardSpacing>
+                        ))
+                      ) : (
+                        <p>Không có chi tiết đơn hàng.</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="box d-flex align-items-center justify-content-center">
+                    <OrderLabel>Tổng Số Tiền:</OrderLabel>{" "}
+                    <PriceText>{totalAmount}đ</PriceText>
+                  </div>
+                  <div className="box d-flex align-items-center justify-content-end">
+                    <StyledWrapperButton>
+                      <button
+                        onClick={() =>
+                          saveEditDetail(
+                            selectOrderbyTableId?.orderId || 0,
+                            foodTable
+                          )
+                        }
+                      >
+                        Lưu
+                      </button>
+                    </StyledWrapperButton>
+                    &emsp;
+                    <StyledWrapperButton>
+                      <button onClick={() => closeFoodTable(foodTable)}>
+                        Đóng
+                      </button>
+                    </StyledWrapperButton>
+                  </div>
                 </div>
-                <div className="box d-flex align-items-center justify-content-center">
-                  <OrderLabel>Mã Đơn Hàng:</OrderLabel>{" "}
-                  <span>{selectOrderbyTableId?.orderId}</span>
-                </div>
-                <div className="box-food" key={selectOrderbyTableId?.orderId}>
-                  {filteredProducts.map((product) => (
-                    <div className="d-flex justify-content-center">
-                      <CardFoodEditCashier
-                        img={product.image}
-                        price={product.price}
-                        name={product.productName}
-                        onToggleCart={() => addDetail(product)}
+              </PopupCardGrid>
+            </PopupCard>
+          </PopupOverlay>
+        )}
+
+        {swapTable && (
+          <PopupOverlay onClick={() => closeSwapTable(swapTable)}>
+            <PopupCard onClick={(e) => e.stopPropagation()}>
+              <PopupCardGrid>
+                <div
+                  className="w-100"
+                  style={{ overflow: "auto", height: "80vh" }}
+                >
+                  <div className="grid-container-swapTable">
+                    <div className="box d-flex align-items-center justify-content-center">
+                      <OrderLabel>Đổi bàn</OrderLabel>
+                    </div>
+                    <div className="box d-flex align-items-center justify-content-center">
+                      <OrderLabel>Bàn hiện tại</OrderLabel>
+                    </div>
+                    <div className="box box-table">
+                      {tablesEmpty
+                        .filter(
+                          (table) =>
+                            table.tableId !== swapTable.tableId &&
+                            table.location !== "GDeli"
+                        )
+                        .map((table) => (
+                          <div
+                            className="d-flex justify-content-center"
+                            key={table.tableId}
+                          >
+                            <CardTableCashier
+                              key={table.tableId}
+                              tableId={table.tableId}
+                              tableNumber={table.tableNumber}
+                              status={
+                                table.tableStatus === "EMPTY_TABLE"
+                                  ? "Trống"
+                                  : table.tableStatus === "OCCUPIED_TABLE"
+                                  ? "Có Khách"
+                                  : table.tableStatus === "PAYING_TABLE"
+                                  ? "Thanh Toán"
+                                  : table.tableStatus === "LOCKED_TABLE"
+                                  ? "Khóa"
+                                  : "Không xác định"
+                              }
+                              detailTable={() => setSelectTable(table)}
+                              location={table.location}
+                            />
+                          </div>
+                        ))}
+                    </div>
+                    <div className="box d-flex align-items-center justify-content-center">
+                      <CardTableCashier
+                        tableId={swapTable.tableId}
+                        tableNumber={swapTable.tableNumber}
+                        status={
+                          swapTable.tableStatus === "EMPTY_TABLE"
+                            ? "Trống"
+                            : swapTable.tableStatus === "OCCUPIED_TABLE"
+                            ? "Có Khách"
+                            : swapTable.tableStatus === "PAYING_TABLE"
+                            ? "Thanh Toán"
+                            : swapTable.tableStatus === "LOCKED_TABLE"
+                            ? "Khóa"
+                            : "Không xác định"
+                        }
+                        location={swapTable.location}
                       />
                     </div>
-                  ))}
-                </div>
-                <div className="box">
-                  <div
-                    className="border rounded p-2 h-100"
-                    style={{ overflowY: "auto" }}
-                  >
-                    {isLoading ? (
-                      <p>Đang tải chi tiết đơn hàng...</p>
-                    ) : orderDetailsTemp.length > 0 ? (
-                      orderDetailsTemp.map((detail) => (
-                        <CardSpacing key={detail.orderDetailId}>
-                          <CardFoodOrderCashierEdit
-                            imageUrl={detail.productImage}
-                            productName={detail.productName}
-                            price={detail.unitPrice}
-                            quantity={detail.quantity}
-                            onchangeQuantity={(e) =>
-                              handleQuantityChange(
-                                detail.orderDetailId,
-                                Number(e.target.value)
-                              )
-                            }
-                            deleteDetail={() =>
-                              handleDeleteDetail(detail.orderDetailId)
-                            }
-                          />
-                        </CardSpacing>
-                      ))
-                    ) : (
-                      <p>Không có chi tiết đơn hàng.</p>
-                    )}
+                    <div className="box d-flex align-items-center justify-content-center">
+                      <OrderLabel>Bàn đang chọn:</OrderLabel>{" "}
+                      <span>{selectTable?.tableNumber}</span>
+                    </div>
+                    <div className="box d-flex align-items-center justify-content-end">
+                      <StyledWrapperButton>
+                        <button
+                          onClick={() =>
+                            saveSwapTable(
+                              selectOrderbyTableId?.orderId || 0,
+                              selectTable?.tableId || 0,
+                              swapTable
+                            )
+                          }
+                        >
+                          Lưu
+                        </button>
+                      </StyledWrapperButton>
+                      &emsp;
+                      <StyledWrapperButton>
+                        <button onClick={() => closeSwapTable(swapTable)}>
+                          Đóng
+                        </button>
+                      </StyledWrapperButton>
+                    </div>
                   </div>
                 </div>
-                <div className="box d-flex align-items-center justify-content-center">
-                  <OrderLabel>Tổng Số Tiền:</OrderLabel>{" "}
-                  <PriceText>{totalAmount}đ</PriceText>
-                </div>
-                <div className="box d-flex align-items-center justify-content-end">
-                  <StyledWrapperButton>
-                    <button
-                      onClick={() =>
-                        saveEditDetail(
-                          selectOrderbyTableId?.orderId || 0,
-                          foodTable
+              </PopupCardGrid>
+            </PopupCard>
+          </PopupOverlay>
+        )}
+
+        {splitTable && (
+          <PopupOverlay onClick={() => closeSplitTable(splitTable)}>
+            <PopupCard onClick={(e) => e.stopPropagation()}>
+              <PopupCardGrid>
+                <div
+                  className="w-100"
+                  style={{ overflow: "auto", height: "80vh" }}
+                >
+                  <div className="grid-container-swapTable">
+                    <div className="box d-flex align-items-center justify-content-center">
+                      <OrderLabel>Tách bàn</OrderLabel>
+                    </div>
+                    <div className="box d-flex align-items-center justify-content-center">
+                      <OrderLabel>Bàn hiện tại</OrderLabel>
+                    </div>
+                    <div className="box box-table">
+                      {tablesEmpty
+                        .filter(
+                          (table) =>
+                            table.tableId !== splitTable.tableId &&
+                            table.location !== "GDeli"
                         )
-                      }
-                    >
-                      Lưu
-                    </button>
-                  </StyledWrapperButton>
-                  &emsp;
-                  <StyledWrapperButton>
-                    <button onClick={() => closeFoodTable(foodTable)}>
-                      Đóng
-                    </button>
-                  </StyledWrapperButton>
-                </div>
-              </div>
-            </PopupCardGrid>
-          </PopupCard>
-        </PopupOverlay>
-      )}
-
-      {swapTable && (
-        <PopupOverlay onClick={() => closeSwapTable(swapTable)}>
-          <PopupCard onClick={(e) => e.stopPropagation()}>
-            <PopupCardGrid>
-              <div
-                className="w-100"
-                style={{ overflow: "auto", height: "80vh" }}
-              >
-                <div className="grid-container-swapTable">
-                  <div className="box d-flex align-items-center justify-content-center">
-                    <OrderLabel>Đổi bàn</OrderLabel>
-                  </div>
-                  <div className="box d-flex align-items-center justify-content-center">
-                    <OrderLabel>Bàn hiện tại</OrderLabel>
-                  </div>
-                  <div className="box box-table">
-                    {tablesEmpty
-                      .filter(
-                        (table) =>
-                          table.tableId !== swapTable.tableId &&
-                          table.location !== "GDeli"
-                      )
-                      .map((table) => (
-                        <div
-                          className="d-flex justify-content-center"
-                          key={table.tableId}
-                        >
-                          <CardTableCashier
+                        .map((table) => (
+                          <div
+                            className="d-flex justify-content-center"
                             key={table.tableId}
-                            tableId={table.tableId}
-                            tableNumber={table.tableNumber}
-                            status={
-                              table.tableStatus === "EMPTY_TABLE"
-                                ? "Trống"
-                                : table.tableStatus === "OCCUPIED_TABLE"
-                                ? "Có Khách"
-                                : table.tableStatus === "PAYING_TABLE"
-                                ? "Thanh Toán"
-                                : table.tableStatus === "LOCKED_TABLE"
-                                ? "Khóa"
-                                : "Không xác định"
-                            }
-                            detailTable={() => setSelectTable(table)}
-                            location={table.location}
-                          />
-                        </div>
-                      ))}
-                  </div>
-                  <div className="box d-flex align-items-center justify-content-center">
-                    <CardTableCashier
-                      tableId={swapTable.tableId}
-                      tableNumber={swapTable.tableNumber}
-                      status={
-                        swapTable.tableStatus === "EMPTY_TABLE"
-                          ? "Trống"
-                          : swapTable.tableStatus === "OCCUPIED_TABLE"
-                          ? "Có Khách"
-                          : swapTable.tableStatus === "PAYING_TABLE"
-                          ? "Thanh Toán"
-                          : swapTable.tableStatus === "LOCKED_TABLE"
-                          ? "Khóa"
-                          : "Không xác định"
-                      }
-                      location={swapTable.location}
-                    />
-                  </div>
-                  <div className="box d-flex align-items-center justify-content-center">
-                    <OrderLabel>Bàn đang chọn:</OrderLabel>{" "}
-                    <span>{selectTable?.tableNumber}</span>
-                  </div>
-                  <div className="box d-flex align-items-center justify-content-end">
-                    <StyledWrapperButton>
-                      <button
-                        onClick={() =>
-                          saveSwapTable(
-                            selectOrderbyTableId?.orderId || 0,
-                            selectTable?.tableId || 0,
-                            swapTable
-                          )
+                          >
+                            <CardTableCashier
+                              key={table.tableId}
+                              tableId={table.tableId}
+                              tableNumber={table.tableNumber}
+                              status={
+                                table.tableStatus === "EMPTY_TABLE"
+                                  ? "Trống"
+                                  : table.tableStatus === "OCCUPIED_TABLE"
+                                  ? "Có Khách"
+                                  : table.tableStatus === "PAYING_TABLE"
+                                  ? "Thanh Toán"
+                                  : table.tableStatus === "LOCKED_TABLE"
+                                  ? "Khóa"
+                                  : "Không xác định"
+                              }
+                              detailTable={() => setSelectTable(table)}
+                              location={table.location}
+                            />
+                          </div>
+                        ))}
+                    </div>
+                    <div className="box d-flex align-items-center justify-content-center">
+                      <CardTableCashier
+                        tableId={splitTable.tableId}
+                        tableNumber={splitTable.tableNumber}
+                        status={
+                          splitTable.tableStatus === "EMPTY_TABLE"
+                            ? "Trống"
+                            : splitTable.tableStatus === "OCCUPIED_TABLE"
+                            ? "Có Khách"
+                            : splitTable.tableStatus === "PAYING_TABLE"
+                            ? "Thanh Toán"
+                            : splitTable.tableStatus === "LOCKED_TABLE"
+                            ? "Khóa"
+                            : "Không xác định"
                         }
-                      >
-                        Lưu
-                      </button>
-                    </StyledWrapperButton>
-                    &emsp;
-                    <StyledWrapperButton>
-                      <button onClick={() => closeSwapTable(swapTable)}>
-                        Đóng
-                      </button>
-                    </StyledWrapperButton>
-                  </div>
-                </div>
-              </div>
-            </PopupCardGrid>
-          </PopupCard>
-        </PopupOverlay>
-      )}
-
-      {splitTable && (
-        <PopupOverlay onClick={() => closeSplitTable(splitTable)}>
-          <PopupCard onClick={(e) => e.stopPropagation()}>
-            <PopupCardGrid>
-              <div
-                className="w-100"
-                style={{ overflow: "auto", height: "80vh" }}
-              >
-                <div className="grid-container-swapTable">
-                  <div className="box d-flex align-items-center justify-content-center">
-                    <OrderLabel>Tách bàn</OrderLabel>
-                  </div>
-                  <div className="box d-flex align-items-center justify-content-center">
-                    <OrderLabel>Bàn hiện tại</OrderLabel>
-                  </div>
-                  <div className="box box-table">
-                    {tablesEmpty
-                      .filter(
-                        (table) =>
-                          table.tableId !== splitTable.tableId &&
-                          table.location !== "GDeli"
-                      )
-                      .map((table) => (
-                        <div
-                          className="d-flex justify-content-center"
-                          key={table.tableId}
+                        location={splitTable.location}
+                      />
+                    </div>
+                    <div className="box d-flex align-items-center justify-content-center">
+                      <OrderLabel>Bàn đang chọn:</OrderLabel>{" "}
+                      <span>{selectTable?.tableNumber}</span>
+                    </div>
+                    <div className="box d-flex align-items-center justify-content-end">
+                      <StyledWrapperButton>
+                        <button
+                          onClick={() =>
+                            saveSplitTable(
+                              selectOrderbyTableId?.orderId || 0,
+                              selectTable?.tableId || 0,
+                              selectTable || defaultTable,
+                              splitTable.tableId
+                            )
+                          }
                         >
-                          <CardTableCashier
-                            key={table.tableId}
-                            tableId={table.tableId}
-                            tableNumber={table.tableNumber}
-                            status={
-                              table.tableStatus === "EMPTY_TABLE"
-                                ? "Trống"
-                                : table.tableStatus === "OCCUPIED_TABLE"
-                                ? "Có Khách"
-                                : table.tableStatus === "PAYING_TABLE"
-                                ? "Thanh Toán"
-                                : table.tableStatus === "LOCKED_TABLE"
-                                ? "Khóa"
-                                : "Không xác định"
-                            }
-                            detailTable={() => setSelectTable(table)}
-                            location={table.location}
-                          />
-                        </div>
-                      ))}
-                  </div>
-                  <div className="box d-flex align-items-center justify-content-center">
-                    <CardTableCashier
-                      tableId={splitTable.tableId}
-                      tableNumber={splitTable.tableNumber}
-                      status={
-                        splitTable.tableStatus === "EMPTY_TABLE"
-                          ? "Trống"
-                          : splitTable.tableStatus === "OCCUPIED_TABLE"
-                          ? "Có Khách"
-                          : splitTable.tableStatus === "PAYING_TABLE"
-                          ? "Thanh Toán"
-                          : splitTable.tableStatus === "LOCKED_TABLE"
-                          ? "Khóa"
-                          : "Không xác định"
-                      }
-                      location={splitTable.location}
-                    />
-                  </div>
-                  <div className="box d-flex align-items-center justify-content-center">
-                    <OrderLabel>Bàn đang chọn:</OrderLabel>{" "}
-                    <span>{selectTable?.tableNumber}</span>
-                  </div>
-                  <div className="box d-flex align-items-center justify-content-end">
-                    <StyledWrapperButton>
-                      <button
-                        onClick={() =>
-                          saveSplitTable(
-                            selectOrderbyTableId?.orderId || 0,
-                            selectTable?.tableId || 0,
-                            selectTable || defaultTable,
-                            splitTable.tableId
-                          )
-                        }
-                      >
-                        Chọn món
-                      </button>
-                    </StyledWrapperButton>
-                    &emsp;
-                    <StyledWrapperButton>
-                      <button onClick={() => closeSplitTable(splitTable)}>
-                        Đóng
-                      </button>
-                    </StyledWrapperButton>
+                          Chọn món
+                        </button>
+                      </StyledWrapperButton>
+                      &emsp;
+                      <StyledWrapperButton>
+                        <button onClick={() => closeSplitTable(splitTable)}>
+                          Đóng
+                        </button>
+                      </StyledWrapperButton>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </PopupCardGrid>
-          </PopupCard>
-        </PopupOverlay>
-      )}
+              </PopupCardGrid>
+            </PopupCard>
+          </PopupOverlay>
+        )}
 
-      {combineTable && (
-        <PopupOverlay onClick={() => closeCombineTable(combineTable)}>
-          <PopupCard onClick={(e) => e.stopPropagation()}>
-            <PopupCardGrid>
-              <div
-                className="w-100"
-                style={{ overflow: "auto", height: "80vh" }}
-              >
-                <div className="grid-container-swapTable">
-                  <div className="box d-flex align-items-center justify-content-center">
-                    <OrderLabel>Gộp bàn</OrderLabel>
-                  </div>
-                  <div className="box d-flex align-items-center justify-content-center">
-                    <OrderLabel>Bàn hiện tại</OrderLabel>
-                  </div>
-                  <div className="box box-table">
-                    {tablesOccupied
-                      .filter(
-                        (table) =>
-                          table.tableId !== combineTable.tableId &&
-                          table.location !== "GDeli"
-                      )
-                      .map((table) => (
-                        <div
-                          className="d-flex justify-content-center"
-                          key={table.tableId}
+        {combineTable && (
+          <PopupOverlay onClick={() => closeCombineTable(combineTable)}>
+            <PopupCard onClick={(e) => e.stopPropagation()}>
+              <PopupCardGrid>
+                <div
+                  className="w-100"
+                  style={{ overflow: "auto", height: "80vh" }}
+                >
+                  <div className="grid-container-swapTable">
+                    <div className="box d-flex align-items-center justify-content-center">
+                      <OrderLabel>Gộp bàn</OrderLabel>
+                    </div>
+                    <div className="box d-flex align-items-center justify-content-center">
+                      <OrderLabel>Bàn hiện tại</OrderLabel>
+                    </div>
+                    <div className="box box-table">
+                      {tablesOccupied
+                        .filter(
+                          (table) =>
+                            table.tableId !== combineTable.tableId &&
+                            table.location !== "GDeli"
+                        )
+                        .map((table) => (
+                          <div
+                            className="d-flex justify-content-center"
+                            key={table.tableId}
+                          >
+                            <CardTableCashier
+                              key={table.tableId}
+                              tableId={table.tableId}
+                              tableNumber={table.tableNumber}
+                              status={
+                                table.tableStatus === "EMPTY_TABLE"
+                                  ? "Trống"
+                                  : table.tableStatus === "OCCUPIED_TABLE"
+                                  ? "Có Khách"
+                                  : table.tableStatus === "PAYING_TABLE"
+                                  ? "Thanh Toán"
+                                  : table.tableStatus === "LOCKED_TABLE"
+                                  ? "Khóa"
+                                  : "Không xác định"
+                              }
+                              detailTable={() => setSelectTable(table)}
+                              location={table.location}
+                            />
+                          </div>
+                        ))}
+                    </div>
+                    <div className="box d-flex align-items-center justify-content-center">
+                      <CardTableCashier
+                        tableId={combineTable.tableId}
+                        tableNumber={combineTable.tableNumber}
+                        status={
+                          combineTable.tableStatus === "EMPTY_TABLE"
+                            ? "Trống"
+                            : combineTable.tableStatus === "OCCUPIED_TABLE"
+                            ? "Có Khách"
+                            : combineTable.tableStatus === "PAYING_TABLE"
+                            ? "Thanh Toán"
+                            : combineTable.tableStatus === "LOCKED_TABLE"
+                            ? "Khóa"
+                            : "Không xác định"
+                        }
+                        location={combineTable.location}
+                      />
+                    </div>
+                    <div className="box d-flex align-items-center justify-content-center">
+                      <OrderLabel>Bàn đang chọn:</OrderLabel>{" "}
+                      <span>{selectTable?.tableNumber}</span>
+                    </div>
+                    <div className="box d-flex align-items-center justify-content-end">
+                      <StyledWrapperButton>
+                        <button
+                          onClick={async () =>
+                            saveCombineTable(
+                              selectOrderbyTableId?.orderId || 0,
+                              selectTable?.tableId || 0,
+                              (await getOrderbyTableId(
+                                selectTable?.tableId || 0
+                              )) || defaultOrder,
+                              combineTable
+                            )
+                          }
                         >
-                          <CardTableCashier
-                            key={table.tableId}
-                            tableId={table.tableId}
-                            tableNumber={table.tableNumber}
-                            status={
-                              table.tableStatus === "EMPTY_TABLE"
-                                ? "Trống"
-                                : table.tableStatus === "OCCUPIED_TABLE"
-                                ? "Có Khách"
-                                : table.tableStatus === "PAYING_TABLE"
-                                ? "Thanh Toán"
-                                : table.tableStatus === "LOCKED_TABLE"
-                                ? "Khóa"
-                                : "Không xác định"
-                            }
-                            detailTable={() => setSelectTable(table)}
-                            location={table.location}
-                          />
-                        </div>
-                      ))}
-                  </div>
-                  <div className="box d-flex align-items-center justify-content-center">
-                    <CardTableCashier
-                      tableId={combineTable.tableId}
-                      tableNumber={combineTable.tableNumber}
-                      status={
-                        combineTable.tableStatus === "EMPTY_TABLE"
-                          ? "Trống"
-                          : combineTable.tableStatus === "OCCUPIED_TABLE"
-                          ? "Có Khách"
-                          : combineTable.tableStatus === "PAYING_TABLE"
-                          ? "Thanh Toán"
-                          : combineTable.tableStatus === "LOCKED_TABLE"
-                          ? "Khóa"
-                          : "Không xác định"
-                      }
-                      location={combineTable.location}
-                    />
-                  </div>
-                  <div className="box d-flex align-items-center justify-content-center">
-                    <OrderLabel>Bàn đang chọn:</OrderLabel>{" "}
-                    <span>{selectTable?.tableNumber}</span>
-                  </div>
-                  <div className="box d-flex align-items-center justify-content-end">
-                    <StyledWrapperButton>
-                      <button
-                        onClick={async () =>
-                          saveCombineTable(
-                            selectOrderbyTableId?.orderId || 0,
-                            selectTable?.tableId || 0,
-                            (await getOrderbyTableId(
-                              selectTable?.tableId || 0
-                            )) || defaultOrder,
-                            combineTable
-                          )
-                        }
-                      >
-                        Lưu
-                      </button>
-                    </StyledWrapperButton>
-                    &emsp;
-                    <StyledWrapperButton>
-                      <button onClick={() => closeCombineTable(combineTable)}>
-                        Đóng
-                      </button>
-                    </StyledWrapperButton>
+                          Lưu
+                        </button>
+                      </StyledWrapperButton>
+                      &emsp;
+                      <StyledWrapperButton>
+                        <button onClick={() => closeCombineTable(combineTable)}>
+                          Đóng
+                        </button>
+                      </StyledWrapperButton>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </PopupCardGrid>
-          </PopupCard>
-        </PopupOverlay>
-      )}
+              </PopupCardGrid>
+            </PopupCard>
+          </PopupOverlay>
+        )}
 
-      {deleteTable && (
-        <PopupOverlay onClick={closeDeleteTable}>
-          <PopupCardDeleteTable onClick={(e) => e.stopPropagation()}>
-            <div className="header">
-              <div className="image">
-                <svg
-                  aria-hidden="true"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <path
-                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                  />
-                </svg>
+        {deleteTable && (
+          <PopupOverlay onClick={closeDeleteTable}>
+            <PopupCardDeleteTable onClick={(e) => e.stopPropagation()}>
+              <div className="header">
+                <div className="image">
+                  <svg
+                    aria-hidden="true"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <path
+                      d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+                <div className="content">
+                  <span className="title">Hủy bàn?</span>
+                  <p className="message">
+                    Bạn có chắc chắn hủy bàn? Mọi thứ liên quan tới order của
+                    bàn sẽ bị ẩn và không thể khôi phục.
+                  </p>
+                </div>
+                <div className="actions">
+                  <button
+                    onClick={() =>
+                      saveDeleteTable(
+                        selectOrderbyTableId?.orderId || 0,
+                        deleteTable.tableId
+                      )
+                    }
+                    className="desactivate"
+                    type="button"
+                  >
+                    Hủy bàn
+                  </button>
+                  <button
+                    onClick={closeDeleteTable}
+                    className="cancel"
+                    type="button"
+                  >
+                    Thoát
+                  </button>
+                </div>
               </div>
-              <div className="content">
-                <span className="title">Hủy bàn?</span>
-                <p className="message">
-                  Bạn có chắc chắn hủy bàn? Mọi thứ liên quan tới order của bàn
-                  sẽ bị ẩn và không thể khôi phục.
-                </p>
-              </div>
-              <div className="actions">
-                <button
-                  onClick={() =>
-                    saveDeleteTable(
-                      selectOrderbyTableId?.orderId || 0,
-                      deleteTable.tableId
-                    )
-                  }
-                  className="desactivate"
-                  type="button"
-                >
-                  Hủy bàn
-                </button>
-                <button
-                  onClick={closeDeleteTable}
-                  className="cancel"
-                  type="button"
-                >
-                  Thoát
-                </button>
-              </div>
-            </div>
-          </PopupCardDeleteTable>
-        </PopupOverlay>
-      )}
+            </PopupCardDeleteTable>
+          </PopupOverlay>
+        )}
 
-      {detailTable && (
-        <PopupOverlay onClick={closeDetailTable}>
-          {/* <PopupCard
+        {detailTable && (
+          <PopupOverlay onClick={closeDetailTable}>
+            {/* <PopupCard
             onClick={(e) => e.stopPropagation()}
             className="d-flex align-items-center justify-content-center"
           >
@@ -1489,416 +1616,434 @@ const ManagementTableCashier: React.FC = () => {
               </button>
             </StyledWrapperButton>
           </PopupCard> */}
-          <StyleDetail onClick={(e) => e.stopPropagation()}>
-            <div className="d-flex">
-              <div className="cash" onClick={() => openPayTable(detailTable)}>
-                <div className="text-center">
-                  <i className="bi bi-cash fs-3 borderIn"></i>
-                  <p>Thanh&#160;toán</p>
+            <StyleDetail onClick={(e) => e.stopPropagation()}>
+              <div className="d-flex">
+                <div className="cash" onClick={() => openPayTable(detailTable)}>
+                  <div className="text-center">
+                    <i className="bi bi-cash fs-3 borderIn"></i>
+                    <p>Thanh&#160;toán</p>
+                  </div>
+                </div>
+                <div
+                  className="sale"
+                  onClick={() => openSaleTable(detailTable)}
+                >
+                  <div className="text-center">
+                    <i className="bi bi-tags fs-3 borderIn"></i>
+                    <p>Mã&#160;giảm&#160;giá</p>
+                  </div>
+                </div>
+                <div
+                  className="unlock"
+                  onClick={async () => {
+                    unlockTable(
+                      detailTable,
+                      (await getOrderbyTableId(detailTable.tableId || 0)) ||
+                        defaultOrder
+                    );
+                  }}
+                >
+                  <div className="text-center">
+                    <i className="bi bi-key fs-3 borderIn"></i>
+                    <p>Mở&#160;khóa</p>
+                  </div>
                 </div>
               </div>
-              <div className="sale" onClick={() => openSaleTable(detailTable)}>
-                <div className="text-center">
-                  <i className="bi bi-tags fs-3 borderIn"></i>
-                  <p>Mã&#160;giảm&#160;giá</p>
-                </div>
-              </div>
-              <div
-                className="unlock"
-                onClick={async () => {
-                  unlockTable(
-                    detailTable,
-                    (await getOrderbyTableId(detailTable.tableId || 0)) ||
-                      defaultOrder
-                  );
-                }}
-              >
-                <div className="text-center">
-                  <i className="bi bi-key fs-3 borderIn"></i>
-                  <p>Mở&#160;khóa</p>
-                </div>
-              </div>
-            </div>
-          </StyleDetail>
-        </PopupOverlay>
-      )}
+            </StyleDetail>
+          </PopupOverlay>
+        )}
 
-      {emptyTable && (
-        <PopupOverlay onClick={closeEmptyTable}>
-          <PopupCard onClick={(e) => e.stopPropagation()}>
-            <PopupCardGrid>
-              <div className="grid-container-edit">
-                <div className="box d-flex align-items-center">
-                  <StyledWrapperSearchEdit>
-                    <input
-                      className="input"
-                      name="text"
-                      type="text"
-                      placeholder="Search..."
-                      value={searchTerm}
-                      onChange={handleSearchChange}
-                    />
-                  </StyledWrapperSearchEdit>
-                  &ensp;
-                  <OrderLabel>Bàn mới</OrderLabel>
-                </div>
-                <div className="box d-flex align-items-center justify-content-center">
-                  <OrderLabel>Mã Đơn Hàng:</OrderLabel>{" "}
-                  <span>{selectOrderbyTableId?.orderId}</span>
-                </div>
-                <div className="box-food" key={selectOrderbyTableId?.orderId}>
-                  {filteredProducts.map((product) => (
-                    <div className="d-flex justify-content-center">
-                      <CardFoodEditCashier
-                        img={product.image}
-                        price={product.price}
-                        name={product.productName}
-                        onToggleCart={() => addDetail(product)}
+        {emptyTable && (
+          <PopupOverlay onClick={closeEmptyTable}>
+            <PopupCard onClick={(e) => e.stopPropagation()}>
+              <PopupCardGrid>
+                <div className="grid-container-edit">
+                  <div className="box d-flex align-items-center">
+                    <StyledWrapperSearchEdit>
+                      <input
+                        className="input"
+                        name="text"
+                        type="text"
+                        placeholder="Search..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
                       />
-                    </div>
-                  ))}
-                </div>
-                <div className="box">
-                  <div
-                    className="border rounded p-2 h-100"
-                    style={{ overflowY: "auto" }}
-                  >
-                    {isLoading ? (
-                      <p>Đang tải chi tiết đơn hàng...</p>
-                    ) : orderDetailsTemp.length > 0 ? (
-                      orderDetailsTemp.map((detail) => (
-                        <CardSpacing key={detail.orderDetailId}>
-                          <CardFoodOrderCashierEdit
-                            imageUrl={detail.productImage}
-                            productName={detail.productName}
-                            price={detail.unitPrice}
-                            quantity={detail.quantity}
-                            onchangeQuantity={(e) =>
-                              handleQuantityChange(
-                                detail.orderDetailId,
-                                Number(e.target.value)
-                              )
-                            }
-                            deleteDetail={() =>
-                              handleDeleteDetail(detail.orderDetailId)
-                            }
-                          />
-                        </CardSpacing>
-                      ))
-                    ) : (
-                      <p>Không có chi tiết đơn hàng.</p>
-                    )}
+                    </StyledWrapperSearchEdit>
+                    &ensp;
+                    <OrderLabel>Bàn mới</OrderLabel>
                   </div>
-                </div>
-                <div className="box d-flex align-items-center justify-content-center">
-                  <OrderLabel>Tổng Số Tiền:</OrderLabel>{" "}
-                  <PriceText>{totalAmount}đ</PriceText>
-                </div>
-                <div className="box d-flex align-items-center justify-content-end">
-                  <StyledWrapperButton>
-                    <button onClick={() => saveEmptyTable(emptyTable.tableId)}>
-                      Lưu
-                    </button>
-                  </StyledWrapperButton>
-                  &emsp;
-                  <StyledWrapperButton>
-                    <button
-                      onClick={() => {
-                        closeEmptyTable();
-                      }}
-                    >
-                      Đóng
-                    </button>
-                  </StyledWrapperButton>
-                </div>
-              </div>
-            </PopupCardGrid>
-          </PopupCard>
-        </PopupOverlay>
-      )}
-
-      {popupSplitFood && (
-        <PopupOverlay onClick={closePopupSplitFood}>
-          <PopupCard onClick={(e) => e.stopPropagation()}>
-            <PopupCardGrid>
-              <div className="grid-container-edit">
-                <div className="box d-flex align-items-center justify-content-center">
-                  <OrderLabel>Bàn hiện tại:</OrderLabel>{" "}
-                  <span>{splitTable?.tableId}</span>
-                </div>
-                <div className="box d-flex align-items-center justify-content-center">
-                  <OrderLabel>Bàn đã chọn:</OrderLabel>{" "}
-                  <span>{popupSplitFood?.tableId}</span>
-                </div>
-                <div className="box">
-                  <div
-                    className="border rounded p-1 h-100"
-                    style={{ overflowY: "auto" }}
-                  >
-                    {isLoading ? (
-                      <p>Đang tải chi tiết đơn hàng...</p>
-                    ) : orderDetailsTemp.length > 0 ? (
-                      orderDetailsTemp.map((detail) => (
-                        <CardSpacing
-                          key={detail.orderDetailId}
-                          onClick={async () => {
-                            if ((detail.quantity || 0) > 1) {
-                              handleQuantityChange(
-                                detail.orderDetailId,
-                                (detail.quantity || 0) - 1
-                              );
-                              let check = false;
-                              orderDetailsTemp2.map((detail2) => {
-                                if (detail.productId === detail2.productId) {
-                                  handleQuantityChange2(
-                                    detail2.orderDetailId,
-                                    (detail2.quantity || 0) + 1
-                                  );
-                                  check = true;
-                                  return;
-                                }
-                              });
-                              if (check === false) {
-                                addDetail2(
-                                  await findProductById(detail.productId || 0)
-                                );
-                              }
-                            } else if ((detail.quantity || 0) === 1) {
-                              handleDeleteDetail(detail.orderDetailId);
-                              let check = false;
-                              orderDetailsTemp2.map((detail2) => {
-                                if (detail.productId === detail2.productId) {
-                                  handleQuantityChange2(
-                                    detail2.orderDetailId,
-                                    (detail2.quantity || 0) + 1
-                                  );
-                                  check = true;
-                                  return;
-                                }
-                              });
-                              if (check === false) {
-                                addDetail2(
-                                  await findProductById(detail.productId || 0)
-                                );
-                              }
-                            }
-                          }}
-                        >
-                          <CardFoodOrderCashier
-                            imageUrl={detail.productImage}
-                            productName={detail.productName}
-                            price={detail.unitPrice}
-                            quantity={detail.quantity}
-                          />
-                        </CardSpacing>
-                      ))
-                    ) : (
-                      <p>Không có chi tiết đơn hàng.</p>
-                    )}
+                  <div className="box d-flex align-items-center justify-content-center">
+                    <OrderLabel>Mã Đơn Hàng:</OrderLabel>{" "}
+                    <span>{selectOrderbyTableId?.orderId}</span>
                   </div>
-                </div>
-                <div className="box">
-                  <div
-                    className="border rounded p-1 h-100"
-                    style={{ overflowY: "auto" }}
-                  >
-                    {isLoading ? (
-                      <p>Đang tải chi tiết đơn hàng...</p>
-                    ) : orderDetailsTemp2.length > 0 ? (
-                      orderDetailsTemp2.map((detail) => (
-                        <CardSpacing
-                          key={detail.orderDetailId}
-                          onClick={async () => {
-                            if ((detail.quantity || 0) > 1) {
-                              handleQuantityChange2(
-                                detail.orderDetailId,
-                                (detail.quantity || 0) - 1
-                              );
-                              let check = false;
-                              orderDetailsTemp.map((detail2) => {
-                                if (detail.productId === detail2.productId) {
-                                  handleQuantityChange(
-                                    detail2.orderDetailId,
-                                    (detail2.quantity || 0) + 1
-                                  );
-                                  check = true;
-                                  return;
-                                }
-                              });
-                              if (check === false) {
-                                addDetail(
-                                  await findProductById(detail.productId || 0)
-                                );
-                              }
-                            } else if ((detail.quantity || 0) === 1) {
-                              handleDeleteDetail2(detail.orderDetailId);
-                              let check = false;
-                              orderDetailsTemp.map((detail2) => {
-                                if (detail.productId === detail2.productId) {
-                                  handleQuantityChange(
-                                    detail2.orderDetailId,
-                                    (detail2.quantity || 0) + 1
-                                  );
-                                  check = true;
-                                  return;
-                                }
-                              });
-                              if (check === false) {
-                                addDetail(
-                                  await findProductById(detail.productId || 0)
-                                );
-                              }
-                            }
-                          }}
-                        >
-                          <CardFoodOrderCashier
-                            imageUrl={detail.productImage}
-                            productName={detail.productName}
-                            price={detail.unitPrice}
-                            quantity={detail.quantity}
-                          />
-                        </CardSpacing>
-                      ))
-                    ) : (
-                      <p>Không có chi tiết đơn hàng.</p>
-                    )}
-                  </div>
-                </div>
-                <div className="box"></div>
-                <div className="box d-flex align-items-center justify-content-end">
-                  <StyledWrapperButton>
-                    <button
-                      onClick={async () =>
-                        savePopupSplitFood(
-                          (await getOrderbyTableId(splitTable?.tableId || 0)) ||
-                            defaultOrder,
-                          popupSplitFood.tableId,
-                          orderDetailsTemp,
-                          orderDetailsTemp2,
-                          splitTable || defaultTable
-                        )
-                      }
-                    >
-                      Lưu
-                    </button>
-                  </StyledWrapperButton>
-                  &emsp;
-                  <StyledWrapperButton>
-                    <button
-                      onClick={() => {
-                        closePopupSplitFood();
-                      }}
-                    >
-                      Đóng
-                    </button>
-                  </StyledWrapperButton>
-                </div>
-              </div>
-            </PopupCardGrid>
-          </PopupCard>
-        </PopupOverlay>
-      )}
-
-      {payTable && (
-        <PopupOverlay onClick={closePayTable}>
-          <PopupCard onClick={(e) => e.stopPropagation()}>
-            <PopupCardGrid>
-              <div className="grid-container-pay">
-                <div className="box d-flex align-items-center justify-content-center">
-                  <OrderLabel>Các món đã gọi</OrderLabel>
-                </div>
-                <div className="box d-flex align-items-center justify-content-center">
-                  <OrderLabel>Thanh toán</OrderLabel>
-                </div>
-                <div className="box">
-                  <div
-                    className="border rounded p-2 h-100"
-                    style={{ overflowY: "auto" }}
-                  >
-                    {isLoading ? (
-                      <p>Đang tải chi tiết đơn hàng...</p>
-                    ) : orderDetails.length > 0 ? (
-                      orderDetails.map((detail) => (
-                        <CardSpacing key={detail.orderDetailId}>
-                          <CardFoodOrderCashier
-                            imageUrl={detail.productImage}
-                            productName={detail.productName}
-                            price={detail.unitPrice}
-                            quantity={detail.quantity}
-                          />
-                        </CardSpacing>
-                      ))
-                    ) : (
-                      <p>Không có chi tiết đơn hàng.</p>
-                    )}
-                  </div>
-                </div>
-                <StylePay>
-                  <div className="box payment-box">
-                    <div className="payment-info">
-                      <div className="form-group">
-                        <label htmlFor="customerPayment">
-                          Số tiền khách đưa:
-                        </label>
-                        <input
-                          id="customerPayment"
-                          type="number"
-                          className="form-control"
-                          placeholder="Nhập số tiền khách đưa"
-                          onChange={(e) =>
-                            handleCustomerPaymentChange(
-                              e.target.value,
-                              selectOrderbyTableId?.totalAmount || 0
-                            )
-                          }
+                  <div className="box-food" key={selectOrderbyTableId?.orderId}>
+                    {filteredProducts.map((product) => (
+                      <div className="d-flex justify-content-center">
+                        <CardFoodEditCashier
+                          img={product.image}
+                          price={product.price}
+                          name={product.productName}
+                          onToggleCart={() => addDetail(product)}
                         />
                       </div>
-                      <div className="form-group">
-                        <label htmlFor="totalBill">Tổng hóa đơn:</label>
-                        <span id="totalBill" className="amount">
-                          {selectOrderbyTableId?.totalAmount} đ
-                        </span>
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="change">Số tiền cần trả lại:</label>
-                        <span id="change" className="amount">
-                          {change} đ
-                        </span>
-                      </div>
+                    ))}
+                  </div>
+                  <div className="box">
+                    <div
+                      className="border rounded p-2 h-100"
+                      style={{ overflowY: "auto" }}
+                    >
+                      {isLoading ? (
+                        <p>Đang tải chi tiết đơn hàng...</p>
+                      ) : orderDetailsTemp.length > 0 ? (
+                        orderDetailsTemp.map((detail) => (
+                          <CardSpacing key={detail.orderDetailId}>
+                            <CardFoodOrderCashierEdit
+                              imageUrl={detail.productImage}
+                              productName={detail.productName}
+                              price={detail.unitPrice}
+                              quantity={detail.quantity}
+                              onchangeQuantity={(e) =>
+                                handleQuantityChange(
+                                  detail.orderDetailId,
+                                  Number(e.target.value)
+                                )
+                              }
+                              deleteDetail={() =>
+                                handleDeleteDetail(detail.orderDetailId)
+                              }
+                            />
+                          </CardSpacing>
+                        ))
+                      ) : (
+                        <p>Không có chi tiết đơn hàng.</p>
+                      )}
                     </div>
                   </div>
-                </StylePay>
-
-                <div className="box"></div>
-                <div className="box d-flex align-items-center justify-content-end">
-                  <StyledWrapperButton>
-                    <button
-                      onClick={async () => {
-                        if (
-                          customerPayment <
-                          (selectOrderbyTableId?.totalAmount || 0)
-                        ) {
-                          alert("Số tiền khách đưa không đủ để thanh toán.");
-                          return;
-                        }
-                        await confirmPay(
-                          payTable.tableId,
-                          (await getOrderbyTableId(payTable.tableId || 0)) ||
-                            defaultOrder
-                        );
-                      }}
-                    >
-                      Xác nhận thanh toán
-                    </button>
-                  </StyledWrapperButton>
-                  &emsp;
-                  <StyledWrapperButton>
-                    <button onClick={closePayTable}>Đóng</button>
-                  </StyledWrapperButton>
+                  <div className="box d-flex align-items-center justify-content-center">
+                    <OrderLabel>Tổng Số Tiền:</OrderLabel>{" "}
+                    <PriceText>{totalAmount}đ</PriceText>
+                  </div>
+                  <div className="box d-flex align-items-center justify-content-end">
+                    <StyledWrapperButton>
+                      <button
+                        onClick={() => saveEmptyTable(emptyTable.tableId)}
+                      >
+                        Lưu
+                      </button>
+                    </StyledWrapperButton>
+                    &emsp;
+                    <StyledWrapperButton>
+                      <button
+                        onClick={() => {
+                          closeEmptyTable();
+                        }}
+                      >
+                        Đóng
+                      </button>
+                    </StyledWrapperButton>
+                  </div>
                 </div>
-              </div>
-            </PopupCardGrid>
-            {/* <OrderLabel>Tiền khách trả:</OrderLabel>{" "}
+              </PopupCardGrid>
+            </PopupCard>
+          </PopupOverlay>
+        )}
+
+        {popupSplitFood && (
+          <PopupOverlay onClick={closePopupSplitFood}>
+            <PopupCard onClick={(e) => e.stopPropagation()}>
+              <PopupCardGrid>
+                <div className="grid-container-edit">
+                  <div className="box d-flex align-items-center justify-content-center">
+                    <OrderLabel>Bàn hiện tại:</OrderLabel>{" "}
+                    <span>{splitTable?.tableId}</span>
+                  </div>
+                  <div className="box d-flex align-items-center justify-content-center">
+                    <OrderLabel>Bàn đã chọn:</OrderLabel>{" "}
+                    <span>{popupSplitFood?.tableId}</span>
+                  </div>
+                  <div className="box">
+                    <div
+                      className="border rounded p-1 h-100"
+                      style={{ overflowY: "auto" }}
+                    >
+                      {isLoading ? (
+                        <p>Đang tải chi tiết đơn hàng...</p>
+                      ) : orderDetailsTemp.length > 0 ? (
+                        orderDetailsTemp.map((detail) => (
+                          <CardSpacing
+                            key={detail.orderDetailId}
+                            onClick={async () => {
+                              if ((detail.quantity || 0) > 1) {
+                                handleQuantityChange(
+                                  detail.orderDetailId,
+                                  (detail.quantity || 0) - 1
+                                );
+                                let check = false;
+                                orderDetailsTemp2.map((detail2) => {
+                                  if (detail.productId === detail2.productId) {
+                                    handleQuantityChange2(
+                                      detail2.orderDetailId,
+                                      (detail2.quantity || 0) + 1
+                                    );
+                                    check = true;
+                                    return;
+                                  }
+                                });
+                                if (check === false) {
+                                  addDetail2(
+                                    await findProductById(
+                                      detail.productId || 0
+                                    ),
+                                    detail.unitPrice || 0
+                                  );
+                                }
+                              } else if ((detail.quantity || 0) === 1) {
+                                handleDeleteDetail(detail.orderDetailId);
+                                let check = false;
+                                orderDetailsTemp2.map((detail2) => {
+                                  if (detail.productId === detail2.productId) {
+                                    handleQuantityChange2(
+                                      detail2.orderDetailId,
+                                      (detail2.quantity || 0) + 1
+                                    );
+                                    check = true;
+                                    return;
+                                  }
+                                });
+                                if (check === false) {
+                                  addDetail2(
+                                    await findProductById(
+                                      detail.productId || 0
+                                    ),
+                                    detail.unitPrice || 0
+                                  );
+                                }
+                              }
+                            }}
+                          >
+                            <CardFoodOrderCashier
+                              imageUrl={detail.productImage}
+                              productName={detail.productName}
+                              price={detail.unitPrice}
+                              quantity={detail.quantity}
+                            />
+                          </CardSpacing>
+                        ))
+                      ) : (
+                        <p>Không có chi tiết đơn hàng.</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="box">
+                    <div
+                      className="border rounded p-1 h-100"
+                      style={{ overflowY: "auto" }}
+                    >
+                      {isLoading ? (
+                        <p>Đang tải chi tiết đơn hàng...</p>
+                      ) : orderDetailsTemp2.length > 0 ? (
+                        orderDetailsTemp2.map((detail) => (
+                          <CardSpacing
+                            key={detail.orderDetailId}
+                            onClick={async () => {
+                              if ((detail.quantity || 0) > 1) {
+                                handleQuantityChange2(
+                                  detail.orderDetailId,
+                                  (detail.quantity || 0) - 1
+                                );
+                                let check = false;
+                                orderDetailsTemp.map((detail2) => {
+                                  if (detail.productId === detail2.productId) {
+                                    handleQuantityChange(
+                                      detail2.orderDetailId,
+                                      (detail2.quantity || 0) + 1
+                                    );
+                                    check = true;
+                                    return;
+                                  }
+                                });
+                                if (check === false) {
+                                  addDetail3(
+                                    await findProductById(
+                                      detail.productId || 0
+                                    ),
+                                    detail.unitPrice || 0
+                                  );
+                                }
+                              } else if ((detail.quantity || 0) === 1) {
+                                handleDeleteDetail2(detail.orderDetailId);
+                                let check = false;
+                                orderDetailsTemp.map((detail2) => {
+                                  if (detail.productId === detail2.productId) {
+                                    handleQuantityChange(
+                                      detail2.orderDetailId,
+                                      (detail2.quantity || 0) + 1
+                                    );
+                                    check = true;
+                                    return;
+                                  }
+                                });
+                                if (check === false) {
+                                  addDetail3(
+                                    await findProductById(
+                                      detail.productId || 0
+                                    ),
+                                    detail.unitPrice || 0
+                                  );
+                                }
+                              }
+                            }}
+                          >
+                            <CardFoodOrderCashier
+                              imageUrl={detail.productImage}
+                              productName={detail.productName}
+                              price={detail.unitPrice}
+                              quantity={detail.quantity}
+                            />
+                          </CardSpacing>
+                        ))
+                      ) : (
+                        <p>Không có chi tiết đơn hàng.</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="box"></div>
+                  <div className="box d-flex align-items-center justify-content-end">
+                    <StyledWrapperButton>
+                      <button
+                        onClick={async () =>
+                          savePopupSplitFood(
+                            (await getOrderbyTableId(
+                              splitTable?.tableId || 0
+                            )) || defaultOrder,
+                            popupSplitFood.tableId,
+                            orderDetailsTemp,
+                            orderDetailsTemp2,
+                            splitTable || defaultTable
+                          )
+                        }
+                      >
+                        Lưu
+                      </button>
+                    </StyledWrapperButton>
+                    &emsp;
+                    <StyledWrapperButton>
+                      <button
+                        onClick={() => {
+                          closePopupSplitFood();
+                        }}
+                      >
+                        Đóng
+                      </button>
+                    </StyledWrapperButton>
+                  </div>
+                </div>
+              </PopupCardGrid>
+            </PopupCard>
+          </PopupOverlay>
+        )}
+
+        {payTable && (
+          <PopupOverlay onClick={closePayTable}>
+            <PopupCard onClick={(e) => e.stopPropagation()}>
+              <PopupCardGrid>
+                <div className="grid-container-pay">
+                  <div className="box d-flex align-items-center justify-content-center">
+                    <OrderLabel>Các món đã gọi</OrderLabel>
+                  </div>
+                  <div className="box d-flex align-items-center justify-content-center">
+                    <OrderLabel>Thanh toán</OrderLabel>
+                  </div>
+                  <div className="box">
+                    <div
+                      className="border rounded p-2 h-100"
+                      style={{ overflowY: "auto" }}
+                    >
+                      {isLoading ? (
+                        <p>Đang tải chi tiết đơn hàng...</p>
+                      ) : orderDetails.length > 0 ? (
+                        orderDetails.map((detail) => (
+                          <CardSpacing key={detail.orderDetailId}>
+                            <CardFoodOrderCashier
+                              imageUrl={detail.productImage}
+                              productName={detail.productName}
+                              price={detail.unitPrice}
+                              quantity={detail.quantity}
+                            />
+                          </CardSpacing>
+                        ))
+                      ) : (
+                        <p>Không có chi tiết đơn hàng.</p>
+                      )}
+                    </div>
+                  </div>
+                  <StylePay>
+                    <div className="box payment-box">
+                      <div className="payment-info">
+                        <div className="form-group">
+                          <label htmlFor="customerPayment">
+                            Số tiền khách đưa:
+                          </label>
+                          <input
+                            id="customerPayment"
+                            type="number"
+                            className="form-control"
+                            placeholder="Nhập số tiền khách đưa"
+                            onChange={(e) =>
+                              handleCustomerPaymentChange(
+                                e.target.value,
+                                selectOrderbyTableId?.totalAmount || 0
+                              )
+                            }
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label htmlFor="totalBill">Tổng hóa đơn:</label>
+                          <span id="totalBill" className="amount">
+                            {selectOrderbyTableId?.totalAmount} đ
+                          </span>
+                        </div>
+                        <div className="form-group">
+                          <label htmlFor="change">Số tiền cần trả lại:</label>
+                          <span id="change" className="amount">
+                            {change} đ
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </StylePay>
+
+                  <div className="box"></div>
+                  <div className="box d-flex align-items-center justify-content-end">
+                    <StyledWrapperButton>
+                      <button
+                        onClick={async () => {
+                          if (
+                            customerPayment <
+                            (selectOrderbyTableId?.totalAmount || 0)
+                          ) {
+                            alert("Số tiền khách đưa không đủ để thanh toán.");
+                            return;
+                          }
+                          await confirmPay(
+                            payTable.tableId,
+                            (await getOrderbyTableId(payTable.tableId || 0)) ||
+                              defaultOrder
+                          );
+                        }}
+                      >
+                        Xác nhận thanh toán
+                      </button>
+                    </StyledWrapperButton>
+                    &emsp;
+                    <StyledWrapperButton>
+                      <button onClick={closePayTable}>Đóng</button>
+                    </StyledWrapperButton>
+                  </div>
+                </div>
+              </PopupCardGrid>
+              {/* <OrderLabel>Tiền khách trả:</OrderLabel>{" "}
             <Input
               onChange={changeMoneyBack}
               value={moneyBack}
@@ -1928,44 +2073,129 @@ const ManagementTableCashier: React.FC = () => {
             <StyledWrapperButton>
               <button onClick={closePayTable}>Đóng</button>
             </StyledWrapperButton> */}
-          </PopupCard>
-        </PopupOverlay>
-      )}
+            </PopupCard>
+          </PopupOverlay>
+        )}
 
-      {lockTable && (
-        <PopupOverlay onClick={closeLockTable}>
-          <StyleDetail onClick={(e) => e.stopPropagation()}>
-            <div
-              className="unlock"
-              onClick={async () => {
-                await unlockTableWhenAction(lockTable);
-                closeLockTable();
-                setTables([]);
-                loadTables();
-              }}
-            >
-              <div className="text-center">
-                <i className="bi bi-key fs-3 borderIn"></i>
-                <p>Mở khóa</p>
+        {lockTable && (
+          <PopupOverlay onClick={closeLockTable}>
+            <StyleDetail onClick={(e) => e.stopPropagation()}>
+              <div
+                className="unlock"
+                onClick={async () => {
+                  await unlockTableWhenAction(lockTable);
+                  closeLockTable();
+                  setTables([]);
+                  loadTables();
+                }}
+              >
+                <div className="text-center">
+                  <i className="bi bi-key fs-3 borderIn"></i>
+                  <p>Mở khóa</p>
+                </div>
               </div>
-            </div>
-          </StyleDetail>
-        </PopupOverlay>
-      )}
+            </StyleDetail>
+          </PopupOverlay>
+        )}
 
-      {saleTable && (
-        <PopupOverlay onClick={closeSaleTable}>
-          <PopupCard onClick={(e) => e.stopPropagation()}></PopupCard>
-        </PopupOverlay>
-      )}
+        {saleTable && (
+          <PopupOverlay onClick={closeSaleTable}>
+            <PopupCard onClick={(e) => e.stopPropagation()}>
+              <PopupCardGrid>
+                <div
+                  className="w-100"
+                  style={{ overflowY: "auto", height: "80vh" }}
+                >
+                  <div className="grid-container-swapTable">
+                    <div className="box d-flex align-items-center justify-content-center">
+                      <OrderLabel>Bàn hiện tại: </OrderLabel>
+                      {saleTable.tableId}
+                    </div>
+                    <div className="box d-flex align-items-center justify-content-center">
+                      <OrderLabel>Hóa đơn: </OrderLabel>
+                      {selectOrderbyTableId?.orderId}
+                    </div>
+                    <div className="box d-flex align-items-center justify-content-center">
+                      <FormReservation>
+                        <form className="form">
+                          <div className="input-box">
+                            <label>Nhập mã Voucher:</label>
+                            <input
+                              value={inputValue} // Liên kết giá trị input với state
+                              onChange={handleChange} // Gọi hàm xử lý khi giá trị thay đổi
+                              placeholder="Nhập mã voucher"
+                              type="text"
+                            />
+                          </div>
+                        </form>
+                      </FormReservation>
+                    </div>
+                    <div className="box" style={{ overflowY: "auto" }}>
+                      <div
+                        className="border rounded p-2 h-100"
+                        style={{ overflowY: "auto", overflowX: "hidden" }}
+                      >
+                        {isLoading ? (
+                          <p>Đang tải chi tiết đơn hàng...</p>
+                        ) : orderDetailsTemp.length > 0 ? (
+                          orderDetailsTemp.map((detail) => (
+                            <div className="row align-items-center mb-3">
+                              <div className="col-4 text-start">
+                                <strong>{detail.productName}</strong>
+                              </div>
+                              <div className="col-4 text-end">
+                                {detail.unitPrice} x {detail.quantity}
+                              </div>
+                              <div className="col-4 text-end">
+                                <strong>
+                                  {(detail.unitPrice || 0) *
+                                    (detail.quantity || 0)}{" "}
+                                  đ
+                                </strong>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <p>Không có chi tiết đơn hàng.</p>
+                        )}
+                        <hr />
+                        Tổng tiền: <strong>{totalAmount}</strong>
+                      </div>
+                    </div>
+                    <div className="box"></div>
+                    <div className="box d-flex align-items-center justify-content-end">
+                      <StyledWrapperButton>
+                        <button
+                          onClick={() => {
+                            checkVoucherCode(
+                              inputValue,
+                              selectOrderbyTableId?.orderId || 0
+                            );
+                          }}
+                        >
+                          Xác nhận
+                        </button>
+                      </StyledWrapperButton>
+                      &emsp;
+                      <StyledWrapperButton>
+                        <button onClick={closeSaleTable}>Đóng</button>
+                      </StyledWrapperButton>
+                    </div>
+                  </div>
+                </div>
+              </PopupCardGrid>
+            </PopupCard>
+          </PopupOverlay>
+        )}
 
-      {/* Container hiển thị thông báo */}
-      <div className="fixed top-4 right-4 flex flex-col items-end space-y-2">
-        {alerts.map((alert) => (
-          <AlertSuccess key={alert.id} message={alert.message} />
-        ))}
+        {/* Container hiển thị thông báo */}
+        <div className="fixed top-4 right-4 flex flex-col items-end space-y-2">
+          {alerts.map((alert) => (
+            <AlertSuccess key={alert.id} message={alert.message} />
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -2083,7 +2313,7 @@ const PopupCardGrid = styled.div`
     .grid-container-swapTable > .box:nth-child(3) {
       grid-column: 1; /* Cột đầu tiên */
       grid-row: 4; /* Hàng thứ hai */
-      height: 600px;
+      height: 400px;
     }
 
     .grid-container-swapTable > .box:nth-child(5) {
@@ -2100,6 +2330,7 @@ const PopupCardGrid = styled.div`
     .grid-container-swapTable > .box:nth-child(4) {
       grid-column: 1; /* Cột thứ hai */
       grid-row: 2; /* Hàng thứ hai */
+      height: 400px;
     }
 
     .grid-container-swapTable > .box:nth-child(6) {
@@ -2120,9 +2351,9 @@ const PopupCardGrid = styled.div`
     row-gap: 20px;
     overflow-y: auto;
   }
-  // .box {
-  //   border: solid 1px black;
-  // }
+  .box {
+    border: solid 1px black;
+  }
 `;
 
 const PopupCard = styled.div`
@@ -2372,6 +2603,140 @@ const StylePay = styled.div`
     font-size: 18px;
     font-weight: bold;
     color: #333;
+  }
+`;
+
+const FormReservation = styled.div`
+  .container {
+    position: relative;
+    max-width: 550px;
+    width: 100%;
+    background: #fcedda;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .container header {
+    position: relative;
+    font-size: 1.2rem;
+    color: #000;
+    font-weight: 600;
+    text-align: center;
+    width: auto;
+  }
+
+  .container .form {
+    margin-top: 15px;
+  }
+
+  .form .input-box {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .input-box label {
+    color: #000;
+  }
+
+  .form :where(.input-box input, .select-box) {
+    position: relative;
+    height: 35px;
+    width: 100%;
+    outline: none;
+    font-size: 1rem;
+    color: #808080;
+    margin-top: 5px;
+    border: 1px solid #ee4e34;
+    border-radius: 6px;
+    padding: 0 15px;
+    background: #fcedda;
+  }
+
+  .input-box input:focus {
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  .form .column {
+    display: flex;
+    column-gap: 15px;
+    width: 100%;
+  }
+
+  .form .gender-box {
+    margin-top: 10px;
+  }
+
+  .form :where(.gender-option, .gender) {
+    display: flex;
+    align-items: center;
+    column-gap: 50px;
+    flex-wrap: wrap;
+  }
+
+  .form .gender {
+    column-gap: 5px;
+  }
+
+  .gender input {
+    accent-color: #ee4e34;
+  }
+
+  .form :where(.gender input, .gender label) {
+    cursor: pointer;
+  }
+
+  .gender label {
+    color: #000;
+  }
+
+  .address :where(input, .select-box) {
+    margin-top: 10px;
+  }
+
+  .select-box select {
+    height: 100%;
+    width: 100%;
+    outline: none;
+    border: none;
+    color: #808080;
+    font-size: 1rem;
+    background: #fcedda;
+  }
+
+  .form button {
+    height: 40px;
+    width: 100%;
+    color: #000;
+    font-size: 1rem;
+    font-weight: 400;
+    margin-top: 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #ee4e34;
+    text-align: center;
+  }
+
+  .form button:hover {
+    background: #ee3e34;
+  }
+
+  form p {
+    color: #808080;
+  }
+
+  .clamped-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Giới hạn số dòng */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Thêm dấu "..." */
+  }
+
+  .buttonGroup {
+    width: 100%;
   }
 `;
 
