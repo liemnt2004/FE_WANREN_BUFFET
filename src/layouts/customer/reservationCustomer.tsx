@@ -63,6 +63,16 @@ const ReservationForm: React.FC = () => {
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        const phoneRegex = /^(0?)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-5]|9[0-9])[0-9]{7}$/;
+
+        if (!phoneRegex.test(formData.phoneNumber)) {
+            notification.warning({
+                message: t('reservationForm.warning'),
+                description: "Số điện thoại không đúng định dạng!",
+                placement: 'topRight',
+            });
+            return;
+        }
         try {
             if (formData.agree === true) {
                 const response = await axios.post('http://localhost:8080/api/reservation/create', formData, {
@@ -235,6 +245,7 @@ const ReservationForm: React.FC = () => {
                                     onChange={handleChange}
                                     placeholder={t('reservationForm.placeholderNumberPeople') || ''}
                                     required
+                                    min={1}
                                 />
                             </div>
 
@@ -248,6 +259,7 @@ const ReservationForm: React.FC = () => {
                                     value={formData.dateToCome}
                                     onChange={handleChange}
                                     required
+                                    min={new Date().toISOString().split('T')[0]}
                                 />
                             </div>
 

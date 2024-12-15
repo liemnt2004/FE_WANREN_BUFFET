@@ -519,6 +519,12 @@ span {
 
 @media (max-width: 768px) {
 
+
+    .voucher-image,
+    .voucher-date {
+        display: none;
+    }
+
     .card-custom {
         width: 188px;
         cursor: pointer;
@@ -978,19 +984,19 @@ span {
         padding: 0;
     }
 
-   .text-login{
+    .text-login {
         display: none;
-   }
+    }
 
-   .head-login{
-    font-size: 20px !important;
-   }
+    .head-login {
+        font-size: 20px !important;
+    }
 
-   
-   .ps28277 .container span{
+
+    .ps28277 .container span {
         font-size: 10px;
-   }
+    }
 
-   
-   
+
+
 }
