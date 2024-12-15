@@ -31,7 +31,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "file-saver": "^2.0.5",
-    "i18next": "^22.4.15",
+    "i18next": "^22.5.1",
     "json2csv": "^6.0.0-alpha.2",
     "jspdf": "^2.5.2",
     "jspdf-autotable": "^3.8.4",
