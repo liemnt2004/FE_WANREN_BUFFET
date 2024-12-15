@@ -377,11 +377,12 @@ const CheckoutCustomer: React.FC = () => {
                         phoneCheckout: newDecoded.phone || "",
                     }));
                 }
-                cartContext?.clearCart();
+                
 
                 setModalMessage(t('checkout.order_success') || "Đặt hàng thành công. Chúng tôi sẽ liên hệ với bạn sớm.");
                 setModalType('success');
                 setShowModal(true);
+                window.location.reload();
             } else if (formData.payment === "QR_CODE") {
                 const createOrderResponse = await fetch('https://wanrenbuffet.online/api/orders', {
                     method: 'POST',
@@ -819,24 +820,27 @@ const CheckoutCustomer: React.FC = () => {
                             <p className="text-danger">{errorPromotions}</p>
                         ) : promotions.length > 0 ? (
                             <ul className="list-group">
-                                {promotions.map((promo) => (
-                                    <li
-                                        key={promo.promotion}
-                                        className="list-group-item d-flex justify-content-between align-items-center"
-                                    >
-                                        <div>
-                                            <strong>{promo.promotionName}</strong> - {promo.description}
-                                        </div>
-                                        <button
-                                            type="button"
-                                            className="btn btn-primary"
-                                            onClick={() => handleSelectPromotion(promo)}
-                                        >
-                                            {t("checkout.select")}
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
+  {promotions.map((promo) => (
+    <li
+      key={promo.promotion}
+      className="list-group-item d-flex justify-content-between align-items-center"
+    >
+      <div>
+        <strong>{promo.promotionName}</strong> - {promo.description}
+      </div>
+      
+      <button
+        type="button"
+        className="btn btn-primary"
+        onClick={() => handleSelectPromotion(promo)}
+        disabled={subtotal < promo.unitPrice}
+      >
+        {t("checkout.select")}
+      </button>
+    </li>
+  ))}
+</ul>
+
                         ) : (
                             <p>{t('checkout.no_available_promotions')}</p>
                         )}

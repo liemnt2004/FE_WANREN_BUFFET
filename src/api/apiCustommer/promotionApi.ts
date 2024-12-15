@@ -1,5 +1,7 @@
+// src/api/apiCustommer/promotionApi.ts
+
 import { request } from "../Request";
-import PromotionModel from "../../models/PromotionModel";
+import Promotion from "../../models/PromotionModel"; // Đảm bảo đúng đường dẫn và tên
 
 interface PromotionApiResponse {
     promotion: number;
@@ -10,8 +12,9 @@ interface PromotionApiResponse {
     startDate: string;
     endDate: string;
     promotionStatus: boolean;
-    image?: string;       // Add this if the API provides image
-    type_food?: string;   // Add this if the API provides type_food
+    image?: string;
+    type_food?: string;
+    unitPrice: number; // Đã thêm
 }
 
 interface EmbeddedPromotions {
@@ -20,15 +23,14 @@ interface EmbeddedPromotions {
     };
 }
 
-export async function getAllPromotion(): Promise<PromotionModel[]> {
-    const result: PromotionModel[] = [];
+export async function getAllPromotion(): Promise<Promotion[]> {
+    const result: Promotion[] = [];
     try {
         const data: EmbeddedPromotions = await request('https://wanrenbuffet.online/api-data/Promotion/search/findByPromotionStatus?promotionStatus=true');
 
-        
         if (data?._embedded?.promotions) {
             for (const promotion of data._embedded.promotions) {
-                const promotionModel = new PromotionModel(
+                const promotionModel = new Promotion(
                     promotion.promotion,
                     promotion.promotionName,
                     promotion.description,
@@ -38,12 +40,12 @@ export async function getAllPromotion(): Promise<PromotionModel[]> {
                     promotion.endDate,
                     promotion.promotionStatus,
                     promotion.image || "",       // Use empty string if image is not provided
-                    promotion.type_food || ""    // Use empty string if type_food is not provided
+                    promotion.type_food || "",    // Use empty string if type_food is not provided
+                    promotion.unitPrice           // Thêm unitPrice
                 );
                 result.push(promotionModel);
             }
             console.log(result);
-            
         }
         return result;
     } catch (error) {
@@ -52,12 +54,12 @@ export async function getAllPromotion(): Promise<PromotionModel[]> {
     }
 }
 
-export async function GetPromotionById(PromotionId: number): Promise<PromotionModel | null> {
+export async function GetPromotionById(PromotionId: number): Promise<Promotion | null> {
     try {
         const data: PromotionApiResponse = await request(`https://wanrenbuffet.online/api-data/Promotion/${PromotionId}`);
 
         if (data) {
-            return new PromotionModel(
+            return new Promotion(
                 data.promotion,
                 data.promotionName,
                 data.description,
@@ -67,7 +69,8 @@ export async function GetPromotionById(PromotionId: number): Promise<PromotionMo
                 data.endDate,
                 data.promotionStatus,
                 data.image || "",
-                data.type_food || ""
+                data.type_food || "",
+                data.unitPrice // Thêm unitPrice
             );
         } else {
             return null; // Return null if no data is found

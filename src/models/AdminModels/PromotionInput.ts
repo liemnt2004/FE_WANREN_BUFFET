@@ -7,5 +7,6 @@ export interface PromotionInput {
     startDate: string; // ISO string hoặc định dạng tương ứng
     endDate: string;   // ISO string hoặc định dạng tương ứng
     promotionStatus: boolean;
-    image: string;     // URL ảnh
+    image: string;
+    unitPrice:number;
   }
