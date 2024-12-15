@@ -91,6 +91,8 @@ const ManagementTableCashier: React.FC = () => {
 
   const [lockTable, setLockTable] = useState<Table | null>(null);
 
+  const [saleTable, setSaleTable] = useState<Table | null>(null);
+
   const [selectOrderbyTableId, setSelectOrderbyTableId] =
     useState<Order | null>(null);
 
@@ -850,6 +852,15 @@ const ManagementTableCashier: React.FC = () => {
     setSelectOrderbyTableId(null);
   };
 
+  const openSaleTable = (table: Table) => {
+    setSaleTable(table);
+    // getOrderbyTableId(table.tableId);
+  };
+  const closeSaleTable = () => {
+    setSaleTable(null);
+    setSelectOrderbyTableId(null);
+  };
+
   const hehe = () => {};
 
   // các popup ^
@@ -1486,7 +1497,7 @@ const ManagementTableCashier: React.FC = () => {
                   <p>Thanh&#160;toán</p>
                 </div>
               </div>
-              <div className="sale">
+              <div className="sale" onClick={() => openSaleTable(detailTable)}>
                 <div className="text-center">
                   <i className="bi bi-tags fs-3 borderIn"></i>
                   <p>Mã&#160;giảm&#160;giá</p>
@@ -1939,6 +1950,12 @@ const ManagementTableCashier: React.FC = () => {
               </div>
             </div>
           </StyleDetail>
+        </PopupOverlay>
+      )}
+
+      {saleTable && (
+        <PopupOverlay onClick={closeSaleTable}>
+          <PopupCard onClick={(e) => e.stopPropagation()}></PopupCard>
         </PopupOverlay>
       )}
 

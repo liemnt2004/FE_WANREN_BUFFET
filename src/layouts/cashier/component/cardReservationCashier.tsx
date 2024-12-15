@@ -1,34 +1,87 @@
-import React from "react";
 import styled from "styled-components";
 
 type Props = {
   reservationId?: number;
   status?: string;
+  time?: string;
+  date?: string;
+  name?: string;
 };
 
-const CardReservationCashier = ({ reservationId, status }: Props) => {
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case "CANCELED":
+      return "bi bi-calendar-x";
+    case "PENDING":
+      return "bi bi-calendar";
+    case "APPROVED":
+      return "bi bi-calendar-check";
+    case "SEATED":
+      return "bi bi-calendar-heart";
+    default:
+      return "";
+  }
+};
+
+export const getStatus = (status: string) => {
+  switch (status) {
+    case "CANCELED":
+      return "Hủy";
+    case "PENDING":
+      return "Chờ xác nhận";
+    case "APPROVED":
+      return "Xác nhận";
+    case "SEATED":
+      return "Đã đến";
+    default:
+      return "";
+  }
+};
+
+const CardReservationCashier = ({
+  reservationId,
+  status,
+  time,
+  date,
+  name,
+}: Props) => {
+  const safeTime = time || "00:00";
+  const safeDate = date || new Date().toISOString();
+
   return (
     <StyledWrapper status={status}>
       <div className="card">
         <div className="card-content">
           <div className="card-top">
             <span className="card-title">{reservationId}.</span>
-            <p>{status}.</p>
+            <p>{getStatus(status || "")}</p>
           </div>
           <div className="card-bottom">
-            <p>.</p>
-            <svg
+            <span>{name}</span>
+            <span>
+              {`${safeTime.slice(0, 5)} - ${new Date(safeDate)
+                .getDate()
+                .toString()
+                .padStart(2, "0")}/${(new Date(safeDate).getMonth() + 1)
+                .toString()
+                .padStart(2, "0")}/${new Date(safeDate).getFullYear()}`}
+            </span>
+
+            {/* <svg
               width={32}
               viewBox="0 -960 960 960"
               height={32}
               xmlns="http://www.w3.org/2000/svg"
             >
               <path d="M226-160q-28 0-47-19t-19-47q0-28 19-47t47-19q28 0 47 19t19 47q0 28-19 47t-47 19Zm254 0q-28 0-47-19t-19-47q0-28 19-47t47-19q28 0 47 19t19 47q0 28-19 47t-47 19Zm254 0q-28 0-47-19t-19-47q0-28 19-47t47-19q28 0 47 19t19 47q0 28-19 47t-47 19ZM226-414q-28 0-47-19t-19-47q0-28 19-47t47-19q28 0 47 19t19 47q0 28-19 47t-47 19Zm254 0q-28 0-47-19t-19-47q0-28 19-47t47-19q28 0 47 19t19 47q0 28-19 47t-47 19Zm254 0q-28 0-47-19t-19-47q0-28 19-47t47-19q28 0 47 19t19 47q0 28-19 47t-47 19ZM226-668q-28 0-47-19t-19-47q0-28 19-47t47-19q28 0 47 19t19 47q0 28-19 47t-47 19Zm254 0q-28 0-47-19t-19-47q0-28 19-47t47-19q28 0 47 19t19 47q0 28-19 47t-47 19Zm254 0q-28 0-47-19t-19-47q0-28 19-47t47-19q28 0 47 19t19 47q0 28-19 47t-47 19Z" />
-            </svg>
+            </svg> */}
           </div>
         </div>
         <div className="card-image">
-          <i className="bi bi-display" style={{ fontSize: 36 }}></i>
+          <i
+            className={getStatusIcon(status || "")}
+            style={{ fontSize: 36 }}
+          ></i>
         </div>
       </div>
     </StyledWrapper>
@@ -40,12 +93,14 @@ const StyledWrapper = styled.div<{ status?: string }>`
     width: 320px;
     background: ${
       ({ status }) =>
-        status === "Trống"
-          ? "#fff"
-          : status === "Có Khách"
+        status === "APPROVED"
           ? "#fff480"
-          : status === "Đặt Trước"
+          : status === "PENDING"
+          ? "#fff"
+          : status === "CANCELED"
           ? "#ffc0cb"
+          : status === "SEATED"
+          ? "#CCFFCC"
           : "#fff" // Màu mặc định
     };
     color: black;
