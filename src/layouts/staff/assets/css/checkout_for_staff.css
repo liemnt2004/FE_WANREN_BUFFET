@@ -16,7 +16,7 @@
 }
 
 .ps36231-checkout-staff-1 .call-staff-inner {
-    background-color: #bd4242;
+    background-color: var(--first-color);
     color: white;
     display: flex;
     justify-content: space-between;
@@ -30,6 +30,7 @@
     text-align: center;
     font-size: 25px;
     margin-top: 10px;
+    padding-bottom: 20px;
 }
 
 .ps36231-checkout-staff-1 .title-red {
@@ -84,7 +85,7 @@
 
 .ps36231-checkout-staff-1 .container-button>a {
     padding: 10px;
-    background-color: #bd4242;
+    background-color: var(--first-color);
     width: 200px;
     text-align: center;
     text-decoration: none;
@@ -95,7 +96,7 @@
 
 .ps36231-checkout-staff-1 .container-button>button {
     padding: 10px;
-    background-color: #bd4242;
+    background-color: var(--first-color);
     width: 200px;
     text-align: center;
     text-decoration: none;
@@ -186,7 +187,7 @@
 .ps36231-checkout-staff-1 .container-method-checkout .title-all-method-payment>div {
     width: 35px;
     height: 35px;
-    background-color: #bd4242;
+    background-color: var(--first-color);
     border-radius: 50%;
     display: grid;
     place-items: center;
@@ -214,7 +215,7 @@
 }
 
 .ps36231-checkout-staff-1 .container-method-checkout .all-div-method-payment>.selected {
-    border: 2px solid #bd4242;
+    border: 2px solid var(--first-color);
 }
 
 .ps36231-checkout-staff-1 .container-method-checkout .all-div-method-payment>div>.control-img {
@@ -247,7 +248,7 @@
 }
 
 .ps36231-checkout-staff-1 h5:hover {
-    color: #bd4242 !important;
+    color: var(--first-color) !important;
 }
 
 
@@ -300,7 +301,7 @@
 }
 
 .cmn-btn.btn-bg-1 {
-    background: #bd4242;
+    background: var(--first-color);
     color: #fff;
     border: 2px solid transparent;
     border-radius: 3px;
@@ -308,4 +309,39 @@
     padding: 5px;
     width: 200px;
     cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .ps36231-checkout-staff-1 .container-table>div {
+        padding: 0 20px;
+    }
+
+    .ps36231-checkout-staff-1 .call-staff>div {
+        padding: 0 20px;
+    }
+
+    .ps36231-checkout-staff-1 .container-button>button {
+        width: 150px;
+        padding: 5px;
+    }
+
+    .ps36231-checkout-staff-1 .container-table input {
+        width: auto;
+        padding: 5px 15px;
+    }
+
+    .ps36231-checkout-staff-1 .title-table {
+        padding: 10px 20px 20px 20px;
+    }
+    .container-price-all-sp {
+        padding: 0 20px;
+    }
+
+    .container-method-checkout {
+        padding: 0 20px;
+    }
+
+    .title-all-method-payment h3 {
+        font-size: 16px !important;
+    }
 }

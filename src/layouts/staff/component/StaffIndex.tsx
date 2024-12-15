@@ -19,27 +19,10 @@ const StaffIndex: React.FC = () => {
         setSidebarVisible(!isSidebarVisible);
     };
 
-    const [theme, setTheme] = useState(localStorage.getItem('selected-theme') || 'light');
-    const [icon, setIcon] = useState(theme === 'light' ? 'ri-moon-clear-fill' : 'ri-sun-fill');
-
-    const toggleTheme = () => {
-        const newTheme = theme === 'light' ? 'dark' : 'light';
-        const newIcon = newTheme === 'light' ? 'ri-moon-clear-fill' : 'ri-sun-fill';
-      
-        setTheme(newTheme);
-        setIcon(newIcon);
-      
-        localStorage.setItem('selected-theme', newTheme);
-      };
-
-    useEffect(() => {
-        document.body.className = theme === 'dark' ? 'dark-theme' : '';
-    }, [theme]);
-
     return (
         <>
             <Header toggleSidebar={toggleSidebar} />
-            <Sidebar onClickContent={handleSidebarClick} isVisible={isSidebarVisible} toggleTheme={toggleTheme} icon={icon} />
+            <Sidebar onClickContent={handleSidebarClick} isVisible={isSidebarVisible} />
             <MainContent content={selectedContent} />
             <TableModal />
         </>

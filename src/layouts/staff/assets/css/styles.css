@@ -676,6 +676,7 @@
     background-color: #973737;
   }
 
-  .theme-dark {
-    background-color: #202334;
+  .btn-danger-active {
+    background-color: var(--first-color);
+    color: white;
   }

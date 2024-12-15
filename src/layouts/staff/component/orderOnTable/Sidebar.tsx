@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import logo from '../../../customer/assets/img/warenbuffet.png';
+import logoLight from '../../../customer/assets/img/warenbuffet.png';
+import logoDark from '../../../customer/assets/img/warenbuffetDark.png';
 import TransferTableModal from '../TransferTableModal';
 import { notification } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
@@ -25,7 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
 
   const handleLinkClick = (value: string) => {
     onClickContent(value as LinkValue);
-    setActiveLink(value as LinkValue); 
+    setActiveLink(value as LinkValue);
   };
 
   const openNotification = (message: string, description: string, icon: React.ReactNode, pauseOnHover: boolean = true) => {
@@ -67,6 +68,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
     { label: 'Tráng miệng', value: 'dessert' },
   ];
 
+  const [theme, setTheme] = useState(localStorage.getItem('selected-theme') || 'light');
+
+  useEffect(() => {
+    document.body.className = theme === 'dark' ? 'dark-theme' : '';
+  }, [theme]);
+
   return (
     <>
       {contextHolder}
@@ -74,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
         <div className="sidebar__container">
           <div className="sidebar__user">
             <div className="sidebar__img">
-              <img src={logo} alt="WAREN BUFFET Logo" className="" width={100} />
+              <img src={theme === 'light' ? logoLight : logoDark} alt="WAREN BUFFET Logo" className="" width={100} />
             </div>
             <div className="sidebar__info">
               <h3 className="fw-bold fs-4" style={{ color: 'var(--first-color)' }}>Bàn {tableId}</h3>
@@ -95,7 +102,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
                     link.value === 'noodles') && (
                     <p
                       key={link.value}
-                      className={`sidebar__link mb-0 ${activeLink === link.value ? 'active-link' : ''}`} 
+                      className={`sidebar__link mb-0 ${activeLink === link.value ? 'active-link' : ''}`}
                       style={{ cursor: 'pointer' }}
                       onClick={() => handleLinkClick(link.value)}
                     >
@@ -111,10 +118,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
               <h3 className="sidebar__title">ALACARTE</h3>
               <div className="sidebar__list">
                 {sidebarLinks.map(link => (
-                  ((link.value === 'buffet_tickets' && tableLocation !== 'GDeli') || link.value === 'dessert' || link.value === 'cold_towel')  && (
+                  ((link.value === 'buffet_tickets' && tableLocation !== 'GDeli') || link.value === 'dessert' || link.value === 'cold_towel') && (
                     <p
                       key={link.value}
-                      className={`sidebar__link mb-0 ${activeLink === link.value ? 'active-link' : ''}`} 
+                      className={`sidebar__link mb-0 ${activeLink === link.value ? 'active-link' : ''}`}
                       style={{ cursor: 'pointer' }}
                       onClick={() => handleLinkClick(link.value)}
                     >
@@ -132,7 +139,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
                   (link.value === 'mixers' || link.value === 'soft_drinks' || link.value === 'beer' || link.value === 'wine') && (
                     <p
                       key={link.value}
-                      className={`sidebar__link mb-0 ${activeLink === link.value ? 'active-link' : ''}`} 
+                      className={`sidebar__link mb-0 ${activeLink === link.value ? 'active-link' : ''}`}
                       style={{ cursor: 'pointer' }}
                       onClick={() => handleLinkClick(link.value)}
                     >
