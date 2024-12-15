@@ -77,18 +77,20 @@ const Checkout2: React.FC = () => {
 
     const handleClick = () => {
         try {
-            if (inputValue.length < 10) {
+            const value = inputValue;
+            const phoneRegex = /^(0?)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-5]|9[0-9])[0-9]{7}$/;
+
+            if (phoneRegex.test(value)) {
+                updatePoints(value, amount);
+            } else {
                 openNotification(
                     'Tích điểm',
                     'Số điện thoại không đúng định dạng!',
                     <InfoCircleOutlined style={{ color: '#1890ff' }} />
                 );
-            } else {
-                updatePoints(inputValue, amount);
             }
 
         } catch (error) {
-            console.log("Cannot update loyalty point");
         }
     };
 
@@ -127,7 +129,7 @@ const Checkout2: React.FC = () => {
     return (
         <>
             {contextHolder}
-            <div className="ps36231-checkout-staff-1" style={{color: 'var(--text-color)'}}>
+            <div className="ps36231-checkout-staff-1" style={{ color: 'var(--text-color)' }}>
                 <div className="call-staff">
                     <div className="d-flex justify-content-between align-items-center">
                         <div className="turn-back">
