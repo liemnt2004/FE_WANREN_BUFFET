@@ -103,6 +103,7 @@ const EmployeeLoginComponent = () => {
                         <button
                           className="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3"
                           type="submit"
+                          style={{padding:20}}
                         >
                           Đăng Nhập
                         </button>
