@@ -46,6 +46,10 @@
     stroke-width: 12px;
 }
 
+.ck-editor__editable {
+    min-height: 100px;
+}
+
 .CircularProgressbar-trail {
     stroke: rgba(255, 255, 255, 0.2);
     stroke-width: 12px;

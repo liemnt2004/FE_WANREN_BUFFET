@@ -84,7 +84,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const decodeToken = (token: string, isEmployee: boolean = false) => {
         try {
             const decoded: DecodedToken = jwtDecode<DecodedToken>(token);
-        
+            
             
             if (isEmployee) {
                 setEmployeeUserId(decoded.userId || "");
@@ -97,7 +97,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 setUserId(null);
                 setAddress(null);
             } else {
-                setUserId(decoded.userId || "")// Lưu userId
+                setUserId(decoded.userId || null)// Lưu userId
                 setUsername(decoded.sub || null);
                 setFullName(decoded.fullName || null);
                 setEmail(decoded.email || null);
@@ -106,9 +106,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 setAddress(decoded.address || null); // Lưu address
             }
             
-            
-            
-
 
         } catch (error) {
             console.error("Invalid token:", error);

@@ -381,14 +381,14 @@ const LoginRegisterComponent: React.FC = () => {
                         <div className="toggle-panel toggle-left">
                             <h1>{t('signIn.welcomeBack')}</h1>
                             <p>{t('signIn.enterInfo')}</p>
-                            <Link to={"/login"} className="hidden btn btn btn-primary" id="login" onClick={handleLoginClick}>
+                            <Link to={"/login"} className=" btn btn btn-primary" id="login" onClick={handleLoginClick}>
                                 {t('signIn.loginBtn')}
                             </Link>
                         </div>
                         <div className="toggle-panel toggle-right">
                             <h1>{t('signIn.hello')}</h1>
                             <p>{t('signIn.signUpInfo')}</p>
-                            <Link to={"/register"} className="hidden btn btn btn-primary" id="register" onClick={handleRegisterClick}>
+                            <Link to={"/register"} className=" btn btn btn-primary" id="register" onClick={handleRegisterClick}>
                                 {t('signIn.registerBtn')}
                             </Link>
                         </div>

@@ -11,6 +11,7 @@ class Promotion {
     private _promotionStatus: boolean;
     private _image: string;
     private _type_food: string;
+    private _unitPrice:number
 
     constructor(
         promotion: number,
@@ -22,7 +23,8 @@ class Promotion {
         endDate: string,
         promotionStatus: boolean,
         image: string,
-        type_food: string
+        type_food: string,
+        unitPrice: number
     ) {
         this._promotion = promotion;
         this._promotionName = promotionName;
@@ -34,6 +36,7 @@ class Promotion {
         this._promotionStatus = promotionStatus;
         this._image = image;
         this._type_food = type_food;
+        this._unitPrice = unitPrice; 
     }
 
     // Getters
@@ -116,6 +119,14 @@ class Promotion {
 
     public set type_food(value: string) {
         this._type_food = value;
+    }
+
+    public get unitPrice(): number {
+        return this._unitPrice;
+    }
+
+    public set unitPrice(value: number) {
+        this._unitPrice = value;
     }
 }
 

@@ -217,11 +217,11 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
       { base: 'y', letters: /[ýỳỷỹỵ]/g },
       { base: 'd', letters: /[đ]/g }
     ];
-  
+
     accents.forEach(accent => {
       str = str.replace(accent.letters, accent.base);
     });
-  
+
     return str;
   };
 
@@ -358,7 +358,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
                   </tbody>
                 </table>
               </div>
-              <button style={{ float: 'right' }} className="btn btn-danger" onClick={handleConfirmOrder}>
+              <button style={{ float: 'right' }} className="btn btn-danger" onClick={handleConfirmOrder} disabled={cartItems.length <= 0}>
                 Xác nhận gọi món
               </button>
             </div>
@@ -408,7 +408,7 @@ const OffcanvasCart: React.FC<OffcanvasCartProps> = ({
                   </tbody>
                 </table>
               </div>
-              <button onClick={() => navigate(`/staff/checkout/step1`, { state: { tableId: tableId, orderId: orderId } })} style={{ float: 'right' }} className="btn btn-danger">
+              <button onClick={() => navigate(`/staff/checkout/step1`, { state: { tableId: tableId, orderId: orderId } })} style={{ float: 'right' }} className="btn btn-danger" disabled={selectedItemsTotal <= 0}>
                 Thanh Toán
               </button>
             </div>
