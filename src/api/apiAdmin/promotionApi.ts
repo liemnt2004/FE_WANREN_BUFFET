@@ -94,7 +94,7 @@ export const createPromotion = async (
     newPromotion: PromotionInput
 ): Promise<PromotionAdmin> => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/Promotion/create`, newPromotion, {
+        const response = await axios.post(`${API_BASE_URL}/api/Promotion/create`, newPromotion, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${getEmployeeToken()}`,
@@ -142,7 +142,7 @@ export const updatePromotion = async (
     promotionUpdates: Partial<PromotionInput>
 ): Promise<PromotionAdmin> => {
     try {
-        const response = await axios.patch(`${API_BASE_URL}/Promotion/update/${id}`, promotionUpdates, {
+        const response = await axios.patch(`${API_BASE_URL}/api/Promotion/update/${id}`, promotionUpdates, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${getEmployeeToken()}`,
@@ -187,7 +187,7 @@ export const updatePromotion = async (
 // Delete a promotion
 export const deletePromotion = async (id: number): Promise<void> => {
     try {
-        await axios.delete(`${API_BASE_URL}/Promotion/delete/${id}`, {
+        await axios.delete(`${API_BASE_URL}/api/Promotion/delete/${id}`, {
             headers: {
                 Authorization: `Bearer ${getEmployeeToken()}`,
             },
