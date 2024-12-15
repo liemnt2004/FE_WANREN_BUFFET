@@ -149,12 +149,14 @@ const Checkout3: React.FC = () => {
                 setAmount(discountedAmount);
                 setVat(vatAmount);
                 setLastAmount(adjustedAmount); // Cập nhật lastAmount với giá trị đã trừ
+                await updateTotalAmount(orderId, lastAmount);
             } catch (err) {
             }
         };
 
         calculateAmounts();
-    }, [orderDetails, promotion, inputValue, loyaltyPoints, pointsUsableDB]);
+
+    }, [orderDetails, promotion, inputValue, loyaltyPoints, pointsUsableDB, orderId, lastAmount]);
 
 
 
@@ -278,7 +280,7 @@ const Checkout3: React.FC = () => {
 
         const totalTableWidth = 70; // Chiều rộng tổng cộng của bảng
         const rightMargin = 20; // Khoảng cách từ mép phải
-        const marginLeftTotal = doc.internal.pageSize.width - totalTableWidth - rightMargin; 
+        const marginLeftTotal = doc.internal.pageSize.width - totalTableWidth - rightMargin;
 
         // Tạo bảng tổng hợp
         autoTable(doc, {
@@ -332,15 +334,6 @@ const Checkout3: React.FC = () => {
         setChoicePayment(divId);
     }
 
-    const updateAmount = async (order_id: number, total_amount: number) => {
-        try {
-            const amountOfRs = await updateTotalAmount(order_id, total_amount);
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to update amount';
-            console.log(errorMessage);
-        }
-    }
-
     useEffect(() => {
         const generateQrCode = (bank: { bank_ID: string; account_NO: string; }, amount: number): string => {
             return `https://img.vietqr.io/image/${bank.bank_ID}-${bank.account_NO}-compact.png?amount=${amount}&addInfo=${(description)}`;
@@ -366,7 +359,7 @@ const Checkout3: React.FC = () => {
             } else if (choicePayment === "2") {
                 setQrPopupVisible(true);
             } else if (choicePayment === "3") {
-                updateAmount(Number(orderId), lastAmount);
+                updateTotalAmount(Number(orderId), lastAmount);
                 createPayment(lastAmount, orderId, Number(employeeUserId), "CASH", false);
                 if (Number(inputValue) > 0) {
                     try {
@@ -448,7 +441,7 @@ const Checkout3: React.FC = () => {
     return (
         <>
             {contextHolder}
-            <div className="ps36231-checkout-staff-1" style={{color: 'var(--text-color)'}}>
+            <div className="ps36231-checkout-staff-1" style={{ color: 'var(--text-color)' }}>
                 <div className="call-staff">
                     <div className="d-flex justify-content-between align-items-center">
                         <div className="turn-back">
@@ -469,7 +462,7 @@ const Checkout3: React.FC = () => {
                 </div>
                 <div>
                     <div>
-                        <h2 className="title-table" style={{color: 'var(--first-color)'}}>Đây là thông tin đơn hàng, bạn chỉ trả tiền khi nhận được PHIẾU THANH TOÁN</h2>
+                        <h2 className="title-table" style={{ color: 'var(--first-color)' }}>Đây là thông tin đơn hàng, bạn chỉ trả tiền khi nhận được PHIẾU THANH TOÁN</h2>
                     </div>
                     <div className="container-table">
                         <div>
@@ -537,7 +530,7 @@ const Checkout3: React.FC = () => {
                                 <thead>
                                     <tr>
                                         <th>Tổng tiền cần thanh toán</th>
-                                        <th style={{color: 'var(--first-color)'}}>{lastAmount.toLocaleString() + " VNĐ"}</th>
+                                        <th style={{ color: 'var(--first-color)' }}>{lastAmount.toLocaleString() + " VNĐ"}</th>
                                     </tr>
                                 </thead>
                             </table>
