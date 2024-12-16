@@ -113,7 +113,9 @@ const Scheduleworkshifts: React.FC = () => {
           opacity: isPast ? 0.5 : 1,
         }}
       >
-        <div className={cellClass} id="workshifts">{date.date()}</div>
+        <div className={cellClass} id="workshifts">
+          {date.date()}
+        </div>
         {visibleDate === dateString && (
           <Popover
             content={
@@ -323,7 +325,7 @@ const Scheduleworkshifts: React.FC = () => {
         </div>
 
         {isLoading ? (
-          <p>Loading...</p>
+          <p>Đang tải...</p>
         ) : getFilteredData().length === 0 ? (
           <p>Không có dữ liệu cho ngày này.</p>
         ) : (
@@ -335,8 +337,8 @@ const Scheduleworkshifts: React.FC = () => {
                 render: (text: any, record: any, index: number) => index + 1,
               },
               { title: "Username", dataIndex: "username", key: "username" },
-              { title: "Full Name", dataIndex: "fullName", key: "fullName" },
-              { title: "User Type", dataIndex: "userType", key: "userType" },
+              { title: "Họ tên", dataIndex: "fullName", key: "fullName" },
+              { title: "Vị trí", dataIndex: "userType", key: "userType" },
               {
                 title: "Ca làm việc",
                 dataIndex: "shiftName",
@@ -359,7 +361,7 @@ const Scheduleworkshifts: React.FC = () => {
                   </Select>
                 ),
               },
-              { title: "Work Date", dataIndex: "workDate", key: "workDate" },
+              { title: "Ngày làm", dataIndex: "workDate", key: "workDate" },
             ]}
             dataSource={getFilteredData()}
             rowKey="username"
