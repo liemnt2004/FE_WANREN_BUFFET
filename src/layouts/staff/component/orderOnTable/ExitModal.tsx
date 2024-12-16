@@ -17,11 +17,8 @@ const ExitModal: React.FC<ExitModalProps> = ({ onClose, onCheckout, onSwitchTabl
                         <i className="bi bi-box-arrow-right fs-1"></i>
                     </div>
                     <h3 className="mb-2">Thoát</h3>
-                    <p>Bạn có thể chọn thanh toán ngay hoặc chuyển bàn</p>
+                    <p>Wanren cảm ơn! Hẹn gặp lại!</p>
                     <div className="d-flex justify-content-center gap-3 mt-3">
-                        <button className="btn btn-primary" onClick={onCheckout}>
-                            <i className="bi bi-credit-card pe-2"></i>Thanh toán ngay
-                        </button>
                         <button className="btn btn-primary" onClick={onSwitchTable}>
                             <i className="bi bi-box-arrow-right pe-2"></i>Thoát bàn
                         </button>

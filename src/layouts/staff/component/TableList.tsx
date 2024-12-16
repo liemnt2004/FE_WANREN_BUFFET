@@ -31,6 +31,20 @@ const TableModal: React.FC<{
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
   const [reID, setReID] = useState<number | null>(null);
 
+  const [api, contextHolder] = notification.useNotification();
+
+  const openNotification = (message: string, description: string, icon: React.ReactNode, pauseOnHover: boolean = true) => {
+    api.open({
+      message,
+      description,
+      showProgress: true,
+      pauseOnHover,
+      placement: 'topRight',
+      duration: 3,
+      icon,
+    });
+  };
+
   useEffect(() => {
     const fetchReservation = async () => {
       try {
@@ -86,120 +100,151 @@ const TableModal: React.FC<{
   };
 
   const handleConfirm = (reservationId: number) => {
-    if (table) {
-      onConfirm(table.tableId, table.tableNumber, adults, children, table.location);
-      if (reservationId) {
-        updateReservationStatus(reservationId, "SEATED");
+    if (adults <= 0) {
+      openNotification(
+        'Thông tin khách hàng!',
+        'Số khách phải lớn hơn 0!',
+        <InfoCircleOutlined style={{ color: '#1890ff' }} />
+      );
+    } else {
+      if (table) {
+        onConfirm(table.tableId, table.tableNumber, adults, children, table.location);
+        if (reservationId) {
+          updateReservationStatus(reservationId, "SEATED");
+        }
       }
+      onClose();
     }
-    onClose();
   };
-
 
 
   if (!table) return null;
 
   return (
-    <div className="modal modal-lg fade show" style={{ display: 'block' }} tabIndex={-1} role="dialog">
-      <div className="modal-dialog modal-dialog-centered" role="document">
-        <div className="modal-content" style={{ maxWidth: '800px' }}>
-          {/* Modal Header */}
-          <div className="modal-header d-flex justify-content-between align-items-center">
-            <h5 className="modal-title">Thông tin khách hàng</h5>
-            <button type="button" className="btn-close" onClick={onClose}></button>
-          </div>
-
-          {/* Modal Body */}
-          <div className="modal-body">
-            {/* Section: Thông tin */}
-            <h6 className="mb-3">Thông tin đặt bàn</h6>
-            <div className="row">
-              <div className="col-md-6 mb-3">
-                <label>Số lượng người lớn:</label>
-                <input
-                  type="number"
-                  value={adults}
-                  onChange={(e) => setAdults(Number(e.target.value))}
-                  className="form-control"
-                  min="1"
-                  autoFocus
-                />
-              </div>
-              <div className="col-md-6 mb-3">
-                <label>Số lượng trẻ em:</label>
-                <input
-                  type="number"
-                  value={children}
-                  onChange={(e) => setChildren(Number(e.target.value))}
-                  className="form-control"
-                  min="0"
-                />
-              </div>
+    <>
+      {contextHolder}
+      <div className="modal modal-lg fade show" style={{ display: 'block' }} tabIndex={-1} role="dialog">
+        <div className="modal-dialog modal-dialog-centered" role="document">
+          <div className="modal-content" style={{ maxWidth: '800px' }}>
+            {/* Modal Header */}
+            <div className="modal-header d-flex justify-content-between align-items-center">
+              <h5 className="modal-title">Thông tin khách hàng</h5>
+              <button type="button" className="btn-close" onClick={onClose}></button>
             </div>
 
-            {/* Section: Danh sách đặt bàn */}
-            <h6 className="mb-3">
-              Danh sách đặt bàn ngày:{" "}
-              <span>
-                {new Intl.DateTimeFormat("vi-VN", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                }).format(new Date())}
-              </span>
-            </h6>
-            <div style={{ overflowY: 'auto', maxHeight: '250px' }}>
-              <table className="table">
-                <thead style={{ position: 'sticky', top: 0, backgroundColor: '#fff', zIndex: 1 }}>
-                  <tr>
-                    <th>Họ Tên</th>
-                    <th>SĐT</th>
-                    <th>Thời Gian</th>
-                    <th>Số Người</th>
-                    <th>Ghi Chú</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reservations.length > 0 ? (
-                    reservations.map((reservation, index) => (
-                      <tr
-                        key={index}
-                        onClick={() => handleRowClick(reservation, index)}
-                        className={index === selectedRowIndex ? "table-danger" : ""}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <td style={{ width: "30%" }}>{reservation.fullName}</td>
-                        <td>{reservation.phoneNumber}</td>
-                        <td>{reservation.timeToCome}</td>
-                        <td>{reservation.numberPeople}</td>
-                        <td style={{ width: '200px', whiteSpace: "normal", wordWrap: "break-word" }}>
-                          {reservation.note}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
+            {/* Modal Body */}
+            <div className="modal-body">
+              {/* Section: Thông tin */}
+              <h6 className="mb-3">Thông tin đặt bàn</h6>
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label>Số lượng người lớn:</label>
+                  <input
+                    type="number"
+                    value={adults}
+                    onChange={(e) => setAdults(Number(e.target.value))}
+                    className="form-control"
+                    min="1"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault(); // Ngăn hành vi mặc định (submit form)
+                        handleConfirm(Number(reID)); // Gọi hàm xác nhận khi nhấn Enter
+                      }
+                    }}
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label>Số lượng trẻ em:</label>
+                  <input
+                    type="number"
+                    value={children}
+                    onChange={(e) => setChildren(Number(e.target.value))}
+                    className="form-control"
+                    min="0"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault(); // Ngăn hành vi mặc định (submit form)
+                        handleConfirm(Number(reID)); // Gọi hàm xác nhận khi nhấn Enter
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Section: Danh sách đặt bàn */}
+              <h6 className="mb-3">
+                Danh sách đặt bàn ngày:{" "}
+                <span>
+                  {new Intl.DateTimeFormat("vi-VN", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  }).format(new Date())}
+                </span>
+              </h6>
+              <div style={{ overflowY: 'auto', maxHeight: '250px' }}>
+                <table className="table">
+                  <thead style={{ position: 'sticky', top: 0, backgroundColor: '#fff', zIndex: 1 }}>
                     <tr>
-                      <td colSpan={5} className="text-center">Không có dữ liệu</td>
+                      <th>Họ Tên</th>
+                      <th>SĐT</th>
+                      <th>Thời Gian</th>
+                      <th>Số Người</th>
+                      <th>Ghi Chú</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {reservations.length > 0 ? (
+                      reservations.map((reservation, index) => (
+                        <tr
+                          key={index}
+                          onClick={() => handleRowClick(reservation, index)}
+                          className={index === selectedRowIndex ? "table-danger" : ""}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <td style={{ width: "30%" }}>{reservation.fullName}</td>
+                          <td>{reservation.phoneNumber}</td>
+                          <td>{reservation.timeToCome}</td>
+                          <td>{reservation.numberPeople}</td>
+                          <td style={{ width: '200px', whiteSpace: "normal", wordWrap: "break-word" }}>
+                            {reservation.note}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="text-center">Không có dữ liệu</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
             </div>
 
-          </div>
-
-          {/* Modal Footer */}
-          <div className="modal-footer text-end">
-            <button type="button" className="btn btn-danger" onClick={onClose}>
-              Đóng
-            </button>
-            <button type="button" className="btn btn-danger btn-danger-active" onClick={() => handleConfirm(Number(reID))}>
-              Xác nhận
-            </button>
+            {/* Modal Footer */}
+            <div className="modal-footer text-end">
+              <button type="button" className="btn btn-danger" onClick={onClose}>
+                Đóng
+              </button>
+              <button
+                onClick={() => handleConfirm(Number(reID))}
+                className="btn btn-danger btn-danger-active"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault(); // Ngăn hành vi mặc định
+                    handleConfirm(Number(reID)); // Gọi hàm xác nhận khi nhấn Enter
+                  }
+                }}
+              >
+                Xác nhận
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
 
   );
 };
@@ -265,7 +310,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
       const orderId = await fetchOrderIdByTableId(tableId);
 
       if (orderId !== null) {
-        navigate(`/staff/checkout/step${step}`, { state: { tableId: tableId, orderId: orderId, orderTableNum: tableNumber} });
+        navigate(`/staff/checkout/step${step}`, { state: { tableId: tableId, orderId: orderId, orderTableNum: tableNumber } });
       } else {
       }
     } catch (error) {
@@ -342,7 +387,7 @@ const TableList: React.FC<TableListProps> = ({ area }) => {
             </div>
           ))
         ) : (
-          <div style={{color: 'var(--text-color)'}}>Không có dữ liệu</div>
+          <div style={{ color: 'var(--text-color)' }}>Không có dữ liệu</div>
         )}
         {showModal && (
           <TableModal

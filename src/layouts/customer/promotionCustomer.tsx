@@ -86,8 +86,8 @@ const PromotionCustomer: React.FC = () => {
                                     </div>
                                     <div className="col-md-5 d-flex flex-column justify-content-between">
                                         <div>
-                                            <h5>{promotion.promotionName}</h5>
-                                            <p dangerouslySetInnerHTML={{ __html: promotion.description }}></p>
+                                            <h5 className="fw-bold">{promotion.promotionName}</h5>
+                                            {/* <p dangerouslySetInnerHTML={{ __html: promotion.description }}></p> */}
                                             <p>
                                                 {t('promotions.applyTime')}<br />
                                                 {new Date(promotion.startDate).toLocaleDateString()} - {new Date(promotion.endDate).toLocaleDateString()}

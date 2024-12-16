@@ -21,7 +21,8 @@ interface PromotionVoucher {
     image: string;
     endDate: string;
     voucherCode: string;
-    status: boolean;
+    voucherStatus: boolean;
+    customerId: number;
 }
 
 interface UserInfo {
@@ -846,8 +847,10 @@ const VoucherContent: React.FC = () => {
     const [promotionVouchers, setPromotionVouchers] = useState<PromotionVoucher[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const token = localStorage.getItem('token');
-    const customerId = 1;
+    const token = localStorage.getItem('token'); let decoded: DecodedToken | null = null;
+    if (token) {
+        decoded = jwtDecode<DecodedToken>(token);
+    }
 
     useEffect(() => {
         const fetchPromotionVouchers = async () => {
@@ -855,7 +858,7 @@ const VoucherContent: React.FC = () => {
             setError(null);
 
             try {
-                const response = await axios.get(`https://wanrenbuffet.online/api/vouchers/voucherInfo/${customerId}`, {
+                const response = await axios.get(`http://localhost:8080/api/vouchers/voucherInfo/${Number(decoded?.userId)}`, {
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
@@ -863,21 +866,22 @@ const VoucherContent: React.FC = () => {
                 });
                 setPromotionVouchers(response.data);
             } catch (err) {
-                setError('Failed to fetch promotion vouchers');
+                setError('Không có voucher!');
             } finally {
                 setLoading(false);
             }
         };
 
         fetchPromotionVouchers();
-    }, [customerId]);
+    }, [decoded?.userId, token]);
 
     if (loading) {
         return <div>Loading...</div>;
     }
 
     if (error) {
-        return <div>{error}</div>;
+        return <div className="container"
+            style={{ paddingTop: '80px' }}>{error}</div>;
     }
 
     return (
@@ -903,10 +907,10 @@ const VoucherContent: React.FC = () => {
                                     <img src={voucher.image} alt={voucher.promotionName} style={{ width: '100px', height: 'auto' }} />
                                 </div>
                                 <div style={{ flex: 2 }}>{voucher.promotionName}</div>
-                                <div style={{ flex: 1 , fontWeight: 'bold'}}>{voucher.voucherCode}</div>
+                                <div style={{ flex: 1, fontWeight: 'bold' }}>{voucher.voucherCode}</div>
                                 <div className="voucher-date" style={{ flex: 1 }}>{new Date(voucher.endDate).toLocaleDateString()}</div>
-                                <div style={{ flex: 1, color: voucher.status ? 'red' : 'green', padding: '10px' }}>
-                                    {voucher.status ? 'Đã dùng' : 'Chưa sử dụng'}
+                                <div style={{ flex: 1, color: voucher.voucherStatus ? 'red' : 'green', padding: '10px' }}>
+                                    {voucher.voucherStatus ? 'Đã dùng' : 'Chưa sử dụng'}
                                 </div>
                             </div>
                         ))}

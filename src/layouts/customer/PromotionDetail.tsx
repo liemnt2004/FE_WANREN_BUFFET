@@ -6,12 +6,20 @@ import bannerHome from "./assets/img/Banner-Hompage-_1500W-x-700H_px.jpg";
 import './assets/css/promotion_detail.css';
 import { useTranslation } from 'react-i18next';
 import { createVoucher } from "../../api/apiCustommer/voucherApi";
-import { AuthContext } from "./component/AuthContext";
+import { AuthContext, DecodedToken } from "./component/AuthContext";
 import { notification } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
+import { jwtDecode } from "jwt-decode";
+import axios from "axios";
 
 const PromotionDetail = () => {
-  const { userId } = useContext(AuthContext);
+  const token = localStorage.getItem('token');
+  let decoded: DecodedToken | null = null;
+  if (token) {
+    decoded = jwtDecode<DecodedToken>(token);
+  }
+
+  console.log(Number(decoded?.userId));
   const { t } = useTranslation();
   const { id: promotionId } = useParams();
   const [promotion, setPromotion] = useState<PromotionModel | null>(null);
@@ -19,7 +27,7 @@ const PromotionDetail = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [api, contextHolder] = notification.useNotification();
-
+  const [isHasVoucher, setIsHasVoucher] = useState<boolean>(false);
   const openNotification = (message: string, description: string, icon: React.ReactNode, pauseOnHover: boolean = true) => {
     api.open({
       message,
@@ -31,6 +39,37 @@ const PromotionDetail = () => {
       icon,
     });
   };
+
+
+  useEffect(() => {
+    const fetchPromotionVouchers = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await axios.get(`http://localhost:8080/api/vouchers/voucherInfo/${Number(decoded?.userId)}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const vouchers = response.data; // Mảng dữ liệu từ API
+        const hasVoucher = vouchers.some(
+          (voucher: { promotionId: number; customerId: number }) =>
+            voucher.promotionId === Number(promotionId) &&
+            voucher.customerId === Number(decoded?.userId)
+        );
+
+        console.log(vouchers)
+
+        if (hasVoucher) {
+          setIsHasVoucher(true);
+        }
+      } catch (err) {
+      }
+    };
+    fetchPromotionVouchers();
+  }, [decoded?.userId, token]);
 
   useEffect(() => {
     const fetchPromotion = async () => {
@@ -52,6 +91,7 @@ const PromotionDetail = () => {
   const createV = async (customerId: number, promotionId: number) => {
     try {
       const reponse = await createVoucher(customerId, promotionId);
+      setIsHasVoucher(true);
       console.log(reponse);
 
       openNotification(
@@ -63,6 +103,7 @@ const PromotionDetail = () => {
 
     }
   }
+
 
 
 
@@ -81,16 +122,15 @@ const PromotionDetail = () => {
     return <div className="container">{t('promotionDetail.noData')}</div>;
   }
 
+
   return (
     <>
-    {contextHolder}
-      <div className="p36231-promotion-details">
+      {contextHolder}
+      <div className="ps36231-promotion-detail mt-5 mb-5" style={{ padding: '0 200px' }}>
         <div className="container">
           <div className="inner-container">
-            {/* Header Section */}
             <div className="row">
-              {/* Image Section */}
-              <div className="control-img col-12 fix-col-12 col-md-6">
+              <div className="control-img col-12 col-md-6">
                 <div className="container-img">
                   <img
                     src={promotion.image || "https://via.placeholder.com/150"}
@@ -99,9 +139,7 @@ const PromotionDetail = () => {
                   />
                 </div>
               </div>
-
-              {/* Information and Time Section */}
-              <div className="all-infor-time col-12 col-md-6 mt-32">
+              <div className="all-infor-time col-12 col-md-6">
                 <h1>{promotion.promotionName}</h1>
                 <table className="w-100">
                   <tbody>
@@ -118,31 +156,19 @@ const PromotionDetail = () => {
                     </tr>
                   </tbody>
                 </table>
-                {
-                  userId !== null && (
-                    <button className="btn btn-danger my-3" onClick={() => createV(Number(userId), Number(promotionId))}>Nhận Voucher</button>
-                  )
-                }
+                <div className="btn-get-promotion text-center">
+                  {
+                    !Number.isNaN(Number(decoded?.userId)) && (
+                      <button disabled={isHasVoucher} onClick={() => createV(Number(decoded?.userId), Number(promotionId))}>Nhận Voucher Ngay</button>
+                    )
+                  }
+                </div>
               </div>
             </div>
-
-            {/* Content Section */}
             <div className="row content">
-              <h2 className="mb-2">{t('promotionDetail.programContent')}</h2>
-              <div>
-                <p>
-                  <span dangerouslySetInnerHTML={{ __html: promotion.description }}></span>
-                </p>
-              </div>
+              <div dangerouslySetInnerHTML={{ __html: promotion.description }}></div>
 
-              <h2 className="mt-2 mb-2">{t('promotionDetail.conditions')}</h2>
-              <div>
-                <p>
-                  <span>{t('promotionDetail.conditionText', { foodType: promotion.type_food })}</span>
-                </p>
-              </div>
             </div>
-
           </div>
         </div>
       </div>
