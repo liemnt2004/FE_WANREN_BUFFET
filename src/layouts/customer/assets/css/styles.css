@@ -14,17 +14,51 @@
     --container_md: 90%;
     --container_sm: 94%;
     --transition: all 400ms ease;
+    --logo: url('../img/warenbuffet.png');
 }
 
-body {
-    font-family: 'Montserrat', sans-serif;
-    padding: 0;
-}
+/* Light Theme */
+body.light {
+    --bg-color: hsl(228, 100%, 99%);
+    --text-color: #000000;
+    --nav-bg-color: #f8f9fa;
+    --nav-text-color: #000000;
+    --first-color: #bd4242;
+    --title-color: hsl(228, 18%, 16%);
+    --text-color: hsl(229, 6%, 36%);
+    --body-color: hsl(228, 100%, 99%);
+    --body-color-table: hsl(228, 100%, 99%);
+    --shadow-color: hsla(228, 80%, 4%, .1);
+    --body-color-table-active: #f6e6c6;
+    /* Thêm các biến khác nếu cần */
+  }
+  
+  /* Dark Theme */
+  body.dark {
+    --bg-color: hsl(228, 24%, 16%);
+    --text-color: #3E5879;
+    --nav-bg-color: #343a40;
+    --nav-text-color: #ffffff;
+    --first-color: #bd4242;
+    --title-color: hsl(228, 18%, 96%);
+    --text-color: hsl(228, 12%, 61%);
+    --body-color: hsl(228, 24%, 16%);
+    --body-color-table: hsl(228, 31%, 19%);
+    --body-color-table-active: hsl(230, 26%, 23%);
+    --shadow-color: hsla(228, 80%, 4%, .3);
+    --logo: url('../img/warenbuffetDark.png');
+    /* Thêm các biến khác nếu cần */
+  }
 
 header {
     position: fixed;
     width: 100%;
     z-index: 2;
+}
+
+body{
+    background-color: var(--body-color) !important;
+    color:var(--text-color) !important ;
 }
 
 h1,
@@ -33,6 +67,7 @@ h3,
 h4,
 h5 {
     line-height: 1.2;
+    color:var(--text-color) !important ;
 }
 
 h1 {
@@ -66,6 +101,15 @@ span {
 
 .left-section img {
     border-radius: 10px;
+}
+
+.accordion-header button{
+    background-color: var(--body-color);
+    color: var(--text-color);
+}
+
+.accordion-header .accordion-body{
+    color: var(--text-color);
 }
 
 .right-section {
@@ -126,7 +170,6 @@ span {
     position: absolute;
     top: 20px;
     left: 20px;
-    background-color: var(--colorMain);
     padding: 10px 30px;
     width: auto;
     height: 60px;
@@ -136,10 +179,12 @@ span {
     border-radius: 15px;
     z-index: 10;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: var(--body-color);
+    
 }
 
 .menu-bar i {
-    color: var(--colorFont);
+    color: var(--text-color);
     font-size: 30px;
     margin-right: 10px;
     font-weight: bold;
@@ -167,12 +212,24 @@ span {
     align-items: center;
 }
 
+.brand .logo {
+    width: 100px; /* Đặt chiều rộng logo */
+    height: 50px; /* Đặt chiều cao logo */
+    background-image: var(--logo); /* Đường dẫn đến hình ảnh logo */
+    background-size: contain; /* Điều chỉnh kích thước hình ảnh */
+    background-repeat: no-repeat; /* Không lặp lại hình ảnh */
+    background-position: center; /* Căn giữa hình ảnh */
+    /* Tùy chọn thêm: */
+    display: block; /* Đảm bảo div có kích thước */
+}
+
 .menu-bar .nav-link {
     color: var(--colorFont);
     margin-right: 20px;
     font-size: 16px;
     text-decoration: none;
     font-weight: bold;
+    color: var(--nav-text-color);
 }
 
 .menu-bar .nav-link:hover {
@@ -181,15 +238,17 @@ span {
 
 .menu-bar .btn-book {
     color: var(--colorFont);
-    border: 2px solid var(--colorFont);
+    border: 2px solid var(--text-color);
     padding: 5px 15px;
     border-radius: 20px;
     text-decoration: none;
     font-weight: bold;
+    background-color: var(--body-color-table); /* Hoặc sử dụng biến khác nếu cần */
+    color: var(--text-color);
 }
 
 .menu-bar .btn-book:hover {
-    background-color: var(--colorFont);
+    background-color: var(--body-color);
     color: white;
 }
 
@@ -247,6 +306,10 @@ span {
 
 .what-can-we-do .accordion {
     max-height: 900px;
+}
+
+.text-span-custom {
+    color: var(--text-color);
 }
 
 

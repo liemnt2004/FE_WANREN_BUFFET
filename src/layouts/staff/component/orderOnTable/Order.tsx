@@ -115,11 +115,6 @@ const OrderOnTable: React.FC = () => {
         setSidebarVisible(!isSidebarVisible);
     };
 
-    const [theme, setTheme] = useState(localStorage.getItem('selected-theme') || 'light');
-    useEffect(() => {
-        document.body.className = theme === 'dark' ? 'dark-theme' : '';
-    }, [theme]);
-
     return (
         <div>
             <Header onCartClick={handleCartClick} selectedItemsSubtotal={selectedItemsSubtotal} totalCartQuantity={getTotalQuantity()} toggleSidebar={toggleSidebar} />

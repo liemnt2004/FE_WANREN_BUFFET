@@ -737,7 +737,7 @@ const CustomerManagement: React.FC = () => {
 
           {/* Customer Table */}
           <div className="table-container" ref={tableContainerRef}>
-            <table className="table-admin table-striped">
+            <table className="table table-striped">
               <thead>
                 <tr>
                   <th>CustomerID</th>

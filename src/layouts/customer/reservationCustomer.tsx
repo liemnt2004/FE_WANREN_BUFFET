@@ -75,7 +75,7 @@ const ReservationForm: React.FC = () => {
         }
         try {
             if (formData.agree === true) {
-                const response = await axios.post('http://localhost:8080/api/reservation/create', formData, {
+                const response = await axios.post('https://wanrenbuffet.online/api/reservation/create', formData, {
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -123,7 +123,7 @@ const ReservationForm: React.FC = () => {
         <div className="container-fluid" style={{ backgroundColor: 'white' }}>
             <div className="row mobile-layout">
                 {/* Left Section: Main Image */}
-                <div className="col-md-8 position-relative left-section" style={{ paddingBottom: 0 }}>
+                <div className="col-md-8 position-relative left-section" style={{ paddingBottom: 0, backgroundColor: 'var(--body-color)' }}>
                     <section className="banner">
                         <div id="carouselExampleIndicators" className="carousel slide">
                             <div className="carousel-indicators">
@@ -187,7 +187,7 @@ const ReservationForm: React.FC = () => {
                 </div>
 
                 {/* Right Section: Reservation Form */}
-                <div className="col-md-4">
+                <div className="col-md-4" style={{backgroundColor: 'var(--body-color)'}}>
                     <form className="form-booktable" onSubmit={handleSubmit}>
                         <h3 className="text-center pb-5">{t('reservationForm.title')}</h3>
                         <p className="text-center">{t('reservationForm.subtitle')}</p>

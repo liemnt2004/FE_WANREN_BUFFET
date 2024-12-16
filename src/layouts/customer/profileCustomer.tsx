@@ -122,20 +122,20 @@ const MenuList: React.FC<TogglePanelProps> = ({ togglePanel }) => (
                 <img src={kichi} className="rounded-circle w-50 " alt="User Logo" style={{ width: 10 }} />
             </div>
         </div>
-        <div className="d-flex flex-column justify-content-between">
-            <div className="tinh-btn-list-group">
+        <div className="d-flex flex-column justify-content-between" >
+            <div className="tinh-btn-list-group" style={{color: 'var(--text-color)'}}>
                 <a href="#" onClick={(e) => { e.preventDefault(); togglePanel("account"); }}>
-                    <span>Tài khoản của bạn</span>
+                    <span style={{color: 'var(--text-color)'}}>Tài khoản của bạn</span>
                 </a>
             </div>
             <div className="tinh-btn-list-group my-2">
                 <a href="#" onClick={(e) => { e.preventDefault(); togglePanel("orders"); }}>
-                    <span>Đơn hàng của bạn</span>
+                    <span style={{color: 'var(--text-color)'}}>Đơn hàng của bạn</span>
                 </a>
             </div>
             <div className="tinh-btn-list-group">
                 <a href="#" onClick={(e) => { e.preventDefault(); togglePanel("voucher"); }}>
-                    <span>Voucher</span>
+                    <span style={{color: 'var(--text-color)'}}>Voucher</span>
                 </a>
             </div>
         </div>
@@ -180,26 +180,26 @@ const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
     };
 
     return (
-        <div className="col-12 col-sm-4 ">
-            <h4 className="py-3 fw-bold text-dark">{t('personal_info')}</h4>
+        <div className="col-12 col-sm-4 " style={{color: 'var(--text-color)'}}>
+            <h4 className="py-3 fw-bold">{t('personal_info')}</h4>
             {!editing ? (
-                <div id="personalInfo">
-                    <span id="nameDisplay">
+                <div id="personalInfo" >
+                    <span  style={{color: 'var(--text-color)'}} id="nameDisplay">
                         {userInfo.fullName}
                     </span>
                     <br />
-                    <span id="phoneDisplay">
+                    <span style={{color: 'var(--text-color)'}} id="phoneDisplay">
                         {userInfo.phoneNumber}
                     </span>
                     <br />
-                    <span id="email">
+                    <span style={{color: 'var(--text-color)'}} id="email">
                         {userInfo.email}
                     </span>
                     <br />
                     <hr />
                     <a
                         href="#"
-                        className="text-black none-underline"
+                        className=" none-underline"
                         onClick={(e) => {
                             e.preventDefault();
                             setEditing(true);
@@ -320,13 +320,13 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
     };
 
     return (
-        <div className="card p-3 rounded-0 mb-3">
+        <div className="card p-3 rounded-0 mb-3" style={{backgroundColor: 'var(--body-color-table)'}}>
             {/* Check if username contains "@" */}
             {authContext.username && authContext.username.includes("@") ? (
                 // Don't allow editing if username contains "@"
                 <div id="passwordInfo">
                     <h4 className="py-3">{t('password')}</h4>
-                    <span className="tinh-fs12" id="passwordDisplay">
+                    <span className="tinh-fs12" id="passwordDisplay" >
                         *********
                     </span>
                     <br />
@@ -338,14 +338,15 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                 !editing && (
                     <div id="passwordInfo">
                         <h4 className="py-3">{t('password')}</h4>
-                        <span className="tinh-fs12" id="passwordDisplay">
+                        <span className="tinh-fs12" id="passwordDisplay" style={{color: 'var(--text-color)'}}>
                             *********
                         </span>
                         <br />
                         <hr />
                         <a
+                        style={{color: 'var(--text-color)'}}
                             href="#"
-                            className="text-black none-underline tinh-fs14"
+                            className="none-underline tinh-fs14"
                             onClick={(e) => {
                                 e.preventDefault();
                                 setEditing(true);
@@ -360,6 +361,8 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
             {!authContext.username?.includes("@") && editing && (
                 <div id="editPasswordInfo">
                     <input
+                    style={{backgroundColor: 'white'}}
+
                         type="password"
                         id="passwordInput"
                         className="form-control tinh-fs14 tinh-no-outline my-2"
@@ -368,6 +371,8 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                         placeholder="Nhập mật khẩu mới"
                     />
                     <input
+                    style={{backgroundColor: 'white'}}
+                    
                         type="password"
                         id="re-enterPassword"
                         className="form-control tinh-fs14 tinh-no-outline my-2"
@@ -377,9 +382,9 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                     />
                     {error && <div className="text-danger my-2">{error}</div>} {/* Display error message */}
                     <hr />
-                    <a
+                    <a style={{color: 'var(--text-color)'}}
                         href="#"
-                        className="text-black none-underline tinh-fs14 tinh-mr"
+                        className="none-underline tinh-fs14 tinh-mr"
                         onClick={(e) => {
                             e.preventDefault();
                             handleSave();
@@ -387,9 +392,9 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                     >
                         {t('save')}
                     </a>
-                    <a
+                    <a style={{color: 'var(--text-color)'}}
                         href="#"
-                        className="text-black none-underline tinh-fs14"
+                        className="none-underline tinh-fs14"
                         onClick={(e) => {
                             e.preventDefault();
                             handleCancel();
@@ -1010,7 +1015,7 @@ const MenuProfile: React.FC = () => {
                                     <h2>{userInfo.fullName}</h2>
                                     <p>{userInfo.phoneNumber}</p>
                                     <p>Email: {userInfo.email}</p>
-                                    <button className="btn" onClick={logout}>{t('logout')}</button>
+                                    <button className="btn" style={{color: 'var(--text-color)'}} onClick={logout}>{t('logout')}</button>
                                 </div>
                             </div>
                         ) : (

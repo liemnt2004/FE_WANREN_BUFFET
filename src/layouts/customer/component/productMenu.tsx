@@ -43,14 +43,14 @@ const ProductMenu: React.FC<Product> = (props) => {
 
 
     return (
-        <div className="my-3 d-flex" style={{ paddingLeft: 0 }} key={product.id}>
+        <div className="my-3 d-flex" style={{ paddingLeft: 0  }} key={product.id}>
             <div className="col-3">
                 <img src={image} style={{ height: "80px" }} alt={name} className="img-fluid rounded" />
             </div>
             <div className="col-6">
                 <div className="row m-0 align-items-center ms-2">
-                    <span style={{ fontWeight: "bold" }}>{name}</span>
-                    <span style={{ fontSize: "15px" }}>{formatMoney(price)}</span>
+                    <span className="text-span-custom" style={{ fontWeight: "bold" }}>{name}</span>
+                    <span className="text-span-custom" style={{ fontSize: "15px" }}>{formatMoney(price)}</span>
                 </div>
             </div>
             <div className="col-3 d-flex justify-content-end align-items-center add-to-cart">

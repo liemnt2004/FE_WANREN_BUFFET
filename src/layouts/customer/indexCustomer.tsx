@@ -199,14 +199,14 @@ const IndexCustomer: React.FC = () => {
                         <img src={bannerBuffet} alt="Main Dish Image" className="img-fluid" />
 
                         {/* About Section */}
-                        <section className="bg-white row pb-5 about-section">
-                            <div className="col-md-6">
+                        <section className="bg-white row pb-5 about-section" style={{ backgroundColor: 'var(--body-color) !important'}}>
+                            <div className="col-md-6" style={{ backgroundColor: 'var(--body-color) !important' }}>
                                 <div className="about">
                                     <h4 className="fw-bold">{t('laubangchuyen')}</h4>
                                     <p className="py-4">{t('aboutDescription')}</p>
                                 </div>
                             </div>
-                            <div className="col-md-6">
+                            <div className="col-md-6" style={{ backgroundColor: 'var(--body-color) !important' }}>
                                 <img src={kichiHomeAll} alt="" className="img-fluid rounded-3 text-center" />
                             </div>
                         </section>
@@ -219,12 +219,12 @@ const IndexCustomer: React.FC = () => {
                             ) : error ? (
                                 <div className="text-danger">{error}</div>
                             ) : (
-                                <div className="d-flex justify-content-center">
-                                    <div className="row g-4 mb-5">
+                                <div className="d-flex justify-content-center" style={{ backgroundColor: 'var(--body-color) !important' }}>
+                                    <div className="row g-4 mb-5" style={{ backgroundColor: 'var(--body-color) !important'}}>
                                         {listProduct.map((product) => (
                                             <React.Fragment key={product.productId}>
                                                 <div className="col-6 col-md-3">
-                                                    <div className="card border border-0 p-3 card-custom">
+                                                    <div className="card border border-0 p-3 card-custom" style={{ backgroundColor: 'var(--body-color) !important' }}>
                                                         <img
                                                             src={product.image || lau3}
                                                             className="rounded-3"
@@ -360,58 +360,58 @@ const IndexCustomer: React.FC = () => {
 
 
                         {/* What Can We Do Section */}
-                        <section className="what-can-we-do mt-3 pb-4" style={{ backgroundColor: 'white' }}>
+                        <section className="what-can-we-do mt-3 pb-4" style={{ backgroundColor: 'var(--body-color) !important' }}>
                             <div className="container">
                                 <div className="row">
-                                    <div className="col-md-6 help" style={{ paddingLeft: 0, paddingRight: '50px' }}>
+                                    <div className="col-md-6 help" style={{ paddingLeft: 0, paddingRight: '50px' ,backgroundColor: 'var(--body-color) !important' }}  >
                                         <h4 className="fw-bold pb-4">{t("whatCanWeDo")}</h4>
                                         <div className="container mt-5">
                                             <Accordion activeKey={activeKey} onSelect={handleAccordionSelect} flush>
-                                                <Accordion.Item eventKey="0">
-                                                    <Accordion.Header>{t('faq1Header')}</Accordion.Header>
+                                                <Accordion.Item eventKey="0" style={{ backgroundColor: 'var(--body-color) !important' }} >
+                                                    <Accordion.Header >{t('faq1Header')}</Accordion.Header>
                                                     <div
                                                         className="accordion-body"
-                                                        style={{ display: activeKey === '0' ? 'block' : 'none' }}
+                                                        style={{ display: activeKey === '0' ? 'block' : 'none', color:'var(--text-color)' }}
                                                     >
                                                         {t('faq1Body')}
                                                     </div>
                                                 </Accordion.Item>
 
-                                                <Accordion.Item eventKey="1">
+                                                <Accordion.Item eventKey="1" style={{ backgroundColor: 'var(--body-color) !important' }} >
                                                     <Accordion.Header>{t('faq2Header')}</Accordion.Header>
                                                     <div
                                                         className="accordion-body"
-                                                        style={{ display: activeKey === '1' ? 'block' : 'none' }}
+                                                        style={{ display: activeKey === '1' ? 'block' : 'none' ,color:'var(--text-color)'}}
                                                     >
                                                        {t('faq2Body')}
                                                     </div>
                                                 </Accordion.Item>
 
-                                                <Accordion.Item eventKey="2">
+                                                <Accordion.Item eventKey="2" style={{ backgroundColor: 'var(--body-color) !important' }} >
                                                     <Accordion.Header>{t('faq3Header')}</Accordion.Header>
                                                     <div
                                                         className="accordion-body"
-                                                        style={{ display: activeKey === '2' ? 'block' : 'none' }}
+                                                        style={{ display: activeKey === '2' ? 'block' : 'none',color:'var(--text-color)' }}
                                                     >
                                                         {t('faq3Body')}
                                                     </div>
                                                 </Accordion.Item>
 
-                                                <Accordion.Item eventKey="3">
+                                                <Accordion.Item eventKey="3" style={{ backgroundColor: 'var(--body-color) !important' }} >
                                                     <Accordion.Header>{t('faq4Header')}</Accordion.Header>
                                                     <div
                                                         className="accordion-body"
-                                                        style={{ display: activeKey === '3' ? 'block' : 'none' }}
+                                                        style={{ display: activeKey === '3' ? 'block' : 'none',color:'var(--text-color)' }}
                                                     >
                                                         {t('faq4Body')}
                                                     </div>
                                                 </Accordion.Item>
 
-                                                <Accordion.Item eventKey="4">
+                                                <Accordion.Item eventKey="4" style={{ backgroundColor: 'var(--body-color) !important' }} >
                                                     <Accordion.Header>{t('faq5Header')}</Accordion.Header>
                                                     <div
                                                         className="accordion-body"
-                                                        style={{ display: activeKey === '4' ? 'block' : 'none' }}
+                                                        style={{ display: activeKey === '4' ? 'block' : 'none' ,color:'var(--text-color)'}}
                                                     >
                                                         {t('faq5Body')}
                                                     </div>
@@ -419,7 +419,7 @@ const IndexCustomer: React.FC = () => {
                                             </Accordion>
                                         </div>
                                     </div>
-                                    <div className="col-md-6" style={{ paddingRight: 0 }}>
+                                    <div className="col-md-6" style={{ paddingRight: 0 , backgroundColor: 'var(--body-color) !important' }}>
                                         <h4 className="fw-bold pb-4">{t('customerFeedback')}</h4>
                                         <div id="carouselExampleCaptions" className="carousel slide"
                                             data-bs-ride="carousel">
@@ -450,8 +450,8 @@ const IndexCustomer: React.FC = () => {
                                             {/* Carousel Inner */}
                                             <div className="carousel-inner">
                                                 {/* Slide 1 */}
-                                                <div className="carousel-item active">
-                                                    <div className="customers-say text-center p-5">
+                                                <div className="carousel-item active" >
+                                                    <div className="customers-say text-center p-5" >
                                                         <div className="profile-img text-center">
                                                             <img
                                                                 src={khichi}
@@ -551,10 +551,10 @@ const IndexCustomer: React.FC = () => {
                         </section>
 
                         {/* Footer */}
-                        <footer className="text-center text-lg-start bg-body-tertiary text-muted">
+                        <footer className="text-center text-lg-start bg-body-tertiary text-muted" style={{ backgroundColor: 'var(--body-color) !important' }}>
                             <section className="pt-3">
                                 <div className="container text-center text-md-start mt-5 pb-5 border-bottom">
-                                    <div className="row mt-3">
+                                    <div className="row mt-3" style={{color:'var(--text-color)'}}>
                                         <div className="col-md-5">
                                             <img src={loginfooter} width="100" alt="Logo Footer" className="img-feeback" />
                                             <p className="mt-3 mb-4">{t('footerDescription')}</p>

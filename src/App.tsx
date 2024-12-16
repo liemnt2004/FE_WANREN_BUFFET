@@ -46,6 +46,8 @@ import OrderOnTable from "./layouts/staff/component/orderOnTable/Order";
 import './i18n'; // Import i18n configuration
 import React, {useEffect } from "react";
 import { useTranslation } from 'react-i18next';
+import { ThemeProvider } from "./layouts/customer/ThemeProvider";
+
 function App() {
   const { i18n: i18nHook } = useTranslation();
 
@@ -65,7 +67,10 @@ function App() {
     <Router>
       <AuthProvider>
         <CartProvider>
-          <Routing />
+          <ThemeProvider>
+              <Routing />
+          </ThemeProvider>
+          
         </CartProvider>
       </AuthProvider>
     </Router>
