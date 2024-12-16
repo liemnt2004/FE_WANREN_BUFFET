@@ -51,6 +51,10 @@
     outline: none;
 }
 
+.ps36231-promotion-detail .all-infor-time .btn-get-promotion > button:disabled{
+    background-color: #f4b873;
+}
+
 .ps36231-promotion-detail .content h2{
     font-size: inherit;
     font-weight: 600;
@@ -62,6 +66,11 @@
 
 
 @media screen and (max-width: 991px) {
+    .ps36231-promotion-detail {
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+
     .ps36231-promotion-detail .container-img > img{
         border-radius: unset;
     }

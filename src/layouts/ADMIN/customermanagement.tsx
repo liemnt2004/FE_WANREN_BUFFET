@@ -746,7 +746,7 @@ const CustomerManagement: React.FC = () => {
 
           {/* Bảng Khách hàng */}
           <div className="table-container" ref={tableContainerRef}>
-            <table className="table-admin table-striped">
+            <table className="table table-striped">
               <thead>
                 <tr>
                   <th>Mã khách hàng</th>

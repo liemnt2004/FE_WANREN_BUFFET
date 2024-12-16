@@ -7,13 +7,7 @@
 
     /*========== Colors ==========*/
     /*Color mode HSL(hue, saturation, lightness)*/
-    --first-color: #bd4242;
-    --title-color: hsl(228, 18%, 16%);
-    --text-color: hsl(229, 6%, 36%);
-    --body-color: hsl(228, 100%, 99%);
-    --body-color-table: hsl(228, 100%, 99%);
-    --shadow-color: hsla(228, 80%, 4%, .1);
-    --body-color-table-active: #f6e6c6;
+ 
 
     /*========== Font and typography ==========*/
     /*.5rem = 8px | 1rem = 16px ...*/
@@ -68,16 +62,19 @@
     all: unset;
   }
 
-  /*=============== VARIABLES DARK THEME ===============*/
-  body.dark-theme {
-    --first-color: #bd4242;
-    --title-color: hsl(228, 18%, 96%);
-    --text-color: hsl(228, 12%, 61%);
-    --body-color: hsl(228, 24%, 16%);
-    --body-color-table: hsl(228, 31%, 19%);
-    --body-color-table-active: hsl(230, 26%, 23%);
-    --shadow-color: hsla(228, 80%, 4%, .3);
+  .sidebar__img .logo {
+    width: 120px;
+    height: 80px;
+    background-image: var(--logo); /* Đường dẫn đến hình ảnh logo */
+    background-size: contain; /* Điều chỉnh kích thước hình ảnh */
+    background-repeat: no-repeat; /* Không lặp lại hình ảnh */
+    background-position: center; /* Căn giữa hình ảnh */
+    /* Tùy chọn thêm: */
+    display: block; /* Đảm bảo div có kích thước */
   }
+
+  /*=============== VARIABLES DARK THEME ===============*/
+
 
   /*========== 
     Color changes in some parts of 

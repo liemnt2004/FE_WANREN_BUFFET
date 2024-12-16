@@ -238,9 +238,9 @@ const RevenueReport: React.FC = () => {
   };
   
   return (
-    <Layout style={{ minHeight: '100vh' }} className='container-fluid'>
+    <Layout style={{ minHeight: '100vh' ,backgroundColor:'var(--body-color)'}} className='container-fluid'>
       
-      <Content style={{ padding: '20px 50px' }} className='main-content'>
+      <Content style={{ padding: '20px 50px', backgroundColor:'var(--body-color)'}} className='main-content'>
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} md={8}>
             <DatePicker
@@ -284,7 +284,6 @@ const RevenueReport: React.FC = () => {
           )}
         </div>
       </Content>
-      <Footer style={{ textAlign: 'center' }}>WANREN BUFFET ©2024 Created by Your Name</Footer>
     </Layout>
   );
 };

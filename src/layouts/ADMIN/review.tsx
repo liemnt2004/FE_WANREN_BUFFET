@@ -41,7 +41,7 @@ const Review: React.FC = () => {
     try {
       const employeeToken = localStorage.getItem("employeeToken");
       const response = await axios.get(
-        "http://localhost:8080/api-data/Review",
+        "https://wanrenbuffet.online/api-data/Review",
         {
           headers: {
             "Content-Type": "application/json",
@@ -221,8 +221,8 @@ const Review: React.FC = () => {
   };
 
   return (
-    <Layout style={{ minHeight: "100vh" }} className="container-fluid">
-      <Content style={{ padding: "20px 50px" }} className="main-content">
+    <Layout style={{ minHeight: "100vh" ,backgroundColor:'var(--body-color)'}} className="container-fluid">
+      <Content style={{ padding: "20px 50px" ,backgroundColor:'var(--body-color)'}} className="main-content">
         <DatePicker
           value={selectedDate}
           onChange={(date) => {
@@ -254,9 +254,7 @@ const Review: React.FC = () => {
           )}
         </div>
       </Content>
-      <Footer style={{ textAlign: "center" }}>
-        WANREN BUFFET ©2024 Created by Your Name
-      </Footer>
+     
     </Layout>
   );
 };
