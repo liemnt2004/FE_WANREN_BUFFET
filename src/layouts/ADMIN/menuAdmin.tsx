@@ -34,7 +34,7 @@ function MenuAdmin() {
   const toggleDropdown = () => setIsOpen(!isOpen);
   return (
     <div className="admin-layout">
-      {/* Top Bar */}
+      {/* Thanh điều hướng trên cùng */}
       <div className="topbar">
         <div className="left-side">
           <span className="menu-toggle">
@@ -53,18 +53,18 @@ function MenuAdmin() {
             <i className="fas fa-bell"></i>
             <span className="badge">8</span>
           </div>
-          <div className="profile   ">
+          <div className="profile">
             <div></div>
             <div className="dropdown">
               <img
                 src="https://i.pravatar.cc/300"
-                alt="User Profile"
+                alt="Hồ sơ người dùng"
                 className="dropdown-toggle"
                 onClick={toggleDropdown} // Điều khiển dropdown bằng React state
                 aria-expanded={isOpen}
               />
               <span> {employeeFullName}</span>
-              {/* Dropdown menu */}
+              {/* Menu thả xuống */}
               {isOpen && (
                 <ul className="dropdown-menu show">
                   <li>
@@ -82,7 +82,7 @@ function MenuAdmin() {
       {/* Sidebar */}
       <div className="sidebar_admin">
         <div className="logo">
-          <img src={logo} alt="Shop Logo" />
+          <img src={logo} alt="Logo Cửa hàng" />
         </div>
         <div className="menu">
           <NavLink
@@ -92,7 +92,7 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <i className="fas fa-home"></i> Home
+            <i className="fas fa-home"></i> Trang chủ
           </NavLink>
           <NavLink
             to="/admin/manage-product"
@@ -100,7 +100,7 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <i className="fas fa-utensils"></i> Manage Dishes
+            <i className="fas fa-utensils"></i> Quản lý Món ăn
           </NavLink>
           <NavLink
             to="/admin/manage-promotions"
@@ -108,7 +108,7 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <i className="fas fa-bullhorn"></i> Manage Promotions
+            <i className="fas fa-bullhorn"></i> Quản lý Khuyến mãi
           </NavLink>
           <NavLink
             to="/admin/manage-accounts"
@@ -116,7 +116,7 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <i className="fas fa-user-cog"></i> Manage Accounts
+            <i className="fas fa-user-cog"></i> Quản lý Tài khoản
           </NavLink>
           <NavLink
             to="/admin/employees"
@@ -124,7 +124,7 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <i className="fas fa-users"></i> Manage Employees
+            <i className="fas fa-users"></i> Quản lý Nhân viên
           </NavLink>
           <NavLink
             to="/admin/customers"
@@ -132,7 +132,7 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <i className="fas fa-user-friends"></i> Manage Customers
+            <i className="fas fa-user-friends"></i> Quản lý Khách hàng
           </NavLink>
           <NavLink
             to="/admin/manage-work-shifts"
@@ -140,7 +140,7 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <i className="fas fa-calendar-alt"></i> Manage Work Shifts
+            <i className="fas fa-calendar-alt"></i> Quản lý Ca làm việc
           </NavLink>
           <NavLink
             to="/admin/review"
@@ -148,7 +148,7 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <EyeOutlined /> Review
+            <EyeOutlined /> Đánh giá
           </NavLink>
           <NavLink
             to="/admin/revenue-report"
@@ -156,10 +156,11 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <i className="fas fa-chart-line"></i> Revenue Report
+            <i className="fas fa-chart-line"></i> Báo cáo Doanh thu
           </NavLink>
         </div>
       </div>
+
       <div
         className="offcanvas offcanvas-start"
         tabIndex={-1}
@@ -174,7 +175,7 @@ function MenuAdmin() {
             type="button"
             className="btn-close"
             data-bs-dismiss="offcanvas"
-            aria-label="Close"
+            aria-label="Đóng"
           ></button>
         </div>
         <div className="offcanvas-body">
@@ -185,7 +186,7 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <i className="fas fa-home"></i> Home
+            <i className="fas fa-home"></i> Trang chủ
           </NavLink>
           <NavLink
             to="/admin/manage-product"
@@ -193,7 +194,7 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <i className="fas fa-utensils"></i> Manage Dishes
+            <i className="fas fa-utensils"></i> Quản lý Món ăn
           </NavLink>
           <NavLink
             to="/admin/manage-promotions"
@@ -201,7 +202,7 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <i className="fas fa-bullhorn"></i> Manage Promotions
+            <i className="fas fa-bullhorn"></i> Quản lý Khuyến mãi
           </NavLink>
           <NavLink
             to="/admin/manage-accounts"
@@ -209,7 +210,7 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <i className="fas fa-user-cog"></i> Manage Accounts
+            <i className="fas fa-user-cog"></i> Quản lý Tài khoản
           </NavLink>
           <NavLink
             to="/admin/employees"
@@ -217,7 +218,7 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <i className="fas fa-users"></i> Manage Employees
+            <i className="fas fa-users"></i> Quản lý Nhân viên
           </NavLink>
           <NavLink
             to="/admin/customers"
@@ -225,7 +226,7 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <i className="fas fa-user-friends"></i> Manage Customers
+            <i className="fas fa-user-friends"></i> Quản lý Khách hàng
           </NavLink>
           <NavLink
             to="/admin/manage-work-shifts"
@@ -233,7 +234,7 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <i className="fas fa-calendar-alt"></i> Manage Work Shifts
+            <i className="fas fa-calendar-alt"></i> Quản lý Ca làm việc
           </NavLink>
           <NavLink
             to="/admin/revenue-report"
@@ -241,7 +242,7 @@ function MenuAdmin() {
               isActive ? "menuItem active" : "menuItem"
             }
           >
-            <i className="fas fa-chart-line"></i> Revenue Report
+            <i className="fas fa-chart-line"></i> Báo cáo Doanh thu
           </NavLink>
         </div>
       </div>
