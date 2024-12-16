@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import { v4 as uuidv4_2 } from "uuid";
 import { Product, fetchProductsInStock } from "../../api/apiCashier/foodApi";
@@ -9,7 +9,10 @@ import {
   fetchOrders,
   updateOrderDetails,
   updateOrderStatus,
+  updateOrderUpdateDate,
+  updateUserIdForOrder,
 } from "../../api/apiCashier/ordersOnl";
+import { AuthContext } from "../customer/component/AuthContext";
 import AlertSuccess from "./component/alertSuccess";
 import CardFoodEditCashier from "./component/cardFoodEditCashier";
 import CardFoodOrderCashier from "./component/cardFoodOrderCashier";
@@ -41,6 +44,10 @@ const ManagementOrdersOnlCashier = () => {
 
   const [totalAmount, setTotalAmount] = useState<number | 0>(0);
 
+  const [showAllOrder, setShowAllOrder] = useState(false); // Trạng thái để kiểm soát
+
+  const { employeeUserId } = useContext(AuthContext);
+
   // useState ^
 
   // Lấy api v
@@ -54,17 +61,17 @@ const ManagementOrdersOnlCashier = () => {
     loadProducts();
   }, []);
 
-  const loadOrders = async () => {
+  const loadOrders = async (limit = 1000) => {
     try {
-      const data = await fetchOrders();
-      setOrders(data.reverse());
+      const data = await fetchOrders(limit); // Gửi `limit` để giới hạn số lượng
+      setOrders(data); // Đảo ngược nếu cần thiết
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
     }
   };
 
   useEffect(() => {
-    loadOrders();
+    loadOrders(20);
   }, []);
   // const loadOrders = async () => {
   //   try {
@@ -122,6 +129,10 @@ const ManagementOrdersOnlCashier = () => {
       // Gọi API để cập nhật trạng thái
       await updateOrderStatus(orderId, newStatus);
 
+      await updateUserIdForOrder(orderId, Number(employeeUserId));
+
+      await updateOrderUpdateDate(orderId);
+
       // alert v
       const newAlert = {
         id: uuidv4_2(), // Tạo ID duy nhất cho mỗi alert
@@ -139,7 +150,7 @@ const ManagementOrdersOnlCashier = () => {
     } catch (error) {
       console.error("Lỗi khi cập nhật trạng thái sản phẩm:", error);
     }
-    loadOrders();
+    loadOrders(20);
     closePopup();
   };
 
@@ -225,7 +236,7 @@ const ManagementOrdersOnlCashier = () => {
       console.error("Lỗi khi cập nhật trạng thái sản phẩm:", error);
     }
     loadOrderDetails();
-    loadOrders();
+    loadOrders(20);
     closeEditPopup();
   };
 
@@ -263,18 +274,33 @@ const ManagementOrdersOnlCashier = () => {
   // Step 1: Declare a state for the selected filter value
   const [filter, setFilter] = useState("all"); // Default to 'Tất cả'
 
-  // Step 2: Filter tables based on selected radio button
-  const filteredOrders = orders.filter((order) => {
-    if (filter === "all") return order.orderStatus === "PREPARING_ORDER"; // Show all tables
-    if (filter === "intransit") return order.orderStatus === "IN_TRANSIT"; // Only empty tables
-    if (filter === "delivered") return order.orderStatus === "DELIVERED"; // Only GDeli tables
-    if (filter === "all2") return true; // Show all tables
-    return true; // Default case (shouldn't happen)
-  });
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]); // Khởi tạo với mảng rỗng
+
+  // Step 2: Update `filteredOrders` whenever `filter` or `orders` changes
+  useEffect(() => {
+    const applyFilter = () => {
+      const result = orders.filter((order) => {
+        if (filter === "all") return order.orderStatus === "PREPARING_ORDER"; // Show preparing orders
+        if (filter === "intransit") return order.orderStatus === "IN_TRANSIT"; // Show in-transit orders
+        if (filter === "delivered") return order.orderStatus === "DELIVERED"; // Show delivered orders
+        if (filter === "canceled") return order.orderStatus === "CANCELED"; // Show delivered orders
+        if (filter === "all2") return true; // Show all orders
+        return true; // Default case (shouldn't happen)
+      });
+      setFilteredOrders(result);
+    };
+
+    applyFilter();
+  }, [filter, orders]);
 
   // Step 3: Handle radio button change
   const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFilter(event.target.value); // Update filter based on the selected radio button
+  };
+
+  const handleShowAllOrder = () => {
+    setShowAllOrder(true);
+    loadOrders(); // Gọi mà không giới hạn `limit` để load toàn bộ
   };
 
   // function ^
@@ -309,7 +335,10 @@ const ManagementOrdersOnlCashier = () => {
 
   return (
     <div>
-      <StyledWrapperTab style={{ marginBottom: "25px", marginTop: "-25px" }}>
+      <StyledWrapperTab
+        style={{ marginBottom: "25px", marginTop: "-25px" }}
+        className="d-flex justify-content-between"
+      >
         <div className="radio-inputs">
           <label className="radio">
             <input
@@ -345,6 +374,16 @@ const ManagementOrdersOnlCashier = () => {
             <input
               type="radio"
               name="radio"
+              value="canceled"
+              checked={filter === "canceled"}
+              onChange={handleRadioChange}
+            />
+            <span className="name">Hủy</span>
+          </label>
+          <label className="radio">
+            <input
+              type="radio"
+              name="radio"
               value="all2"
               checked={filter === "all2"}
               onChange={handleRadioChange}
@@ -352,6 +391,7 @@ const ManagementOrdersOnlCashier = () => {
             <span className="name">Tất cả</span>
           </label>
         </div>
+        <button onClick={handleShowAllOrder}>Hiện tất cả</button>
       </StyledWrapperTab>
       <CardGrid>
         {filteredOrders.map((order) => (
@@ -419,6 +459,7 @@ const ManagementOrdersOnlCashier = () => {
                         <option value="PREPARING_ORDER">Chờ xác nhận</option>
                         <option value="IN_TRANSIT">Xác nhận</option>
                         <option value="DELIVERED">Hoàn thành</option>
+                        <option value="CANCELED">Hủy</option>
                       </SelectStatus>
                     </OrderDetailRow>
                     <OrderDetailRow>
@@ -432,6 +473,12 @@ const ManagementOrdersOnlCashier = () => {
                     <OrderDetailRow>
                       <OrderLabel>Tên Người Dùng:</OrderLabel>{" "}
                       <span>{selectedOrder.fullName}</span>
+                    </OrderDetailRow>
+                    <OrderDetailRow>
+                      <OrderLabel>Số Điện Thoại:</OrderLabel>{" "}
+                      <span>
+                        {selectedOrder.phoneNumber || "Không có số điện thoại"}
+                      </span>
                     </OrderDetailRow>
                     <OrderDetailRow>
                       <OrderLabel>Ghi Chú:</OrderLabel>{" "}
@@ -740,7 +787,7 @@ const StyledWrapperTab = styled.div`
     box-sizing: border-box;
     box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
     padding: 0.25rem;
-    width: 35%;
+    width: 40%;
     font-size: 14px;
   }
 
@@ -769,6 +816,24 @@ const StyledWrapperTab = styled.div`
   .radio-inputs .radio input:checked + .name {
     background-color: #fff;
     font-weight: 600;
+  }
+
+  button {
+    background-color: #f3f7fe;
+    color: black;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    width: 100px;
+    height: 35px;
+    transition: 0.3s;
+    text-align: center;
+  }
+
+  button:hover {
+    background-color: #aaaaaa;
+    box-shadow: 0 0 0 5px #cccccc;
+    color: #fff;
   }
 `;
 function uuidv4() {
