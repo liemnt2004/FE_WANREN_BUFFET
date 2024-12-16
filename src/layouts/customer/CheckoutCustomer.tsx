@@ -92,6 +92,8 @@ const CheckoutCustomer: React.FC = () => {
     useEffect(() => {
         if (!decoded) {
             window.location.href = "https://wanrenbuffet.netlify.app/login";
+        }else if(decoded.phone == null){
+            navigate('/profile')
         }
     }, [decoded, navigate]);
 
@@ -826,7 +828,7 @@ const CheckoutCustomer: React.FC = () => {
       className="list-group-item d-flex justify-content-between align-items-center"
     >
       <div>
-        <strong>{promo.promotionName}</strong> - {promo.description}
+        <strong>{promo.promotionName}</strong>
       </div>
       
       <button

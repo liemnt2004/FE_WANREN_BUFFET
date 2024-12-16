@@ -443,7 +443,8 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
     const [reviewSubmitting, setReviewSubmitting] = useState<boolean>(false);
     const [reviewError, setReviewError] = useState<string | null>(null);
 
-
+    console.log(selectedOrderId);
+    
 
     useEffect(() => {
         if (selectedOrderId) {
