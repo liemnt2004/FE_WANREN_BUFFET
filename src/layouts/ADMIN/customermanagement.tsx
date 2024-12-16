@@ -419,13 +419,13 @@ const CustomerManagement: React.FC = () => {
     <div className="container">
       <div className="main-content">
         <div className="employee-management">
-          <h2>Manage Customers</h2>
+          <h2>Quản lý Khách hàng</h2>
           <div className="search-filter">
             <div className="search-wrapper">
               <input
                 type="text"
                 className=" search-input"
-                placeholder="Search for customers..."
+                placeholder="Tìm kiếm khách hàng..."
                 onChange={handleSearchChange}
               />
               <i className="fas fa-search search-icon"></i>
@@ -435,13 +435,13 @@ const CustomerManagement: React.FC = () => {
               onClick={openAddModal}
               className="btn add-employee-btn text-white"
             >
-              Add Customer
+              Thêm Khách hàng
             </Button>
           </div>
 
           {/* Add Customer Modal */}
           <Modal
-            title="Add New Customer"
+            title="Thêm Khách hàng Mới"
             visible={isModalOpen}
             onCancel={() => {
               setIsModalOpen(false);
@@ -449,10 +449,10 @@ const CustomerManagement: React.FC = () => {
             }}
             footer={[
               <Button key="cancel" onClick={() => setIsModalOpen(false)}>
-                Close
+                Đóng
               </Button>,
               <Button key="save" type="primary" onClick={handleSaveNewCustomer}>
-                Save
+                Lưu
               </Button>,
             ]}
           >
@@ -460,24 +460,27 @@ const CustomerManagement: React.FC = () => {
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item
-                    label="Username"
+                    label="Tên đăng nhập"
                     name="username"
                     rules={[
-                      { required: true, message: "Please enter a username!" },
+                      {
+                        required: true,
+                        message: "Vui lòng nhập tên đăng nhập!",
+                      },
                     ]}
                   >
-                    <Input placeholder="Enter username" />
+                    <Input placeholder="Nhập tên đăng nhập" />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
                   <Form.Item
-                    label="Password"
+                    label="Mật khẩu"
                     name="password"
                     rules={[
-                      { required: true, message: "Please enter a password!" },
+                      { required: true, message: "Vui lòng nhập mật khẩu!" },
                     ]}
                   >
-                    <Input.Password placeholder="Enter password" />
+                    <Input placeholder="Nhập tên đăng nhập" />
                   </Form.Item>
                 </Col>
               </Row>
@@ -487,63 +490,65 @@ const CustomerManagement: React.FC = () => {
                     label="Full Name"
                     name="fullName"
                     rules={[
-                      { required: true, message: "Please enter full name!" },
+                      { required: true, message: "Vui lòng nhập họ và tên!" },
                     ]}
                   >
-                    <Input placeholder="Enter full name" />
+                    <Input placeholder="Nhập họ và tên" />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
                   <Form.Item
-                    label="Email"
+                    label="Mật khẩu"
                     name="email"
                     rules={[
-                      { required: true, message: "Please enter an email!" },
-                      { type: "email", message: "Please enter a valid email!" },
+                      { required: true, message: "Vui lòng nhập email!" },
+                      { type: "email", message: "Vui lòng nhập email hợp lệ!" },
                     ]}
                   >
-                    <Input placeholder="Enter email" />
+                    <Input placeholder="Nhập email" />
                   </Form.Item>
                 </Col>
               </Row>
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item
-                    label="Phone Number"
+                    label="Số điện thoại"
                     name="phoneNumber"
                     rules={[
                       {
                         required: true,
-                        message: "Please enter a phone number!",
+                        message: "Vui lòng nhập số điện thoại!",
                       },
                     ]}
                   >
-                    <Input placeholder="Enter phone number" />
+                    <Input placeholder="Nhập số điện thoại" />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
                   <Form.Item
-                    label="Address"
+                    label="Địa chỉ"
                     name="address"
                     rules={[
-                      { required: true, message: "Please enter an address!" },
+                      { required: true, message: "Vui lòng nhập địa chỉ!" },
                     ]}
                   >
-                    <Input placeholder="Enter address" />
+                    <Input placeholder="Nhập địa chỉ" />
                   </Form.Item>
                 </Col>
               </Row>
               <Row gutter={16}>
                 <Col span={12}>
-                  <Form.Item label="Loyalty Points" name="loyaltyPoints">
-                    <Input type="number" placeholder="Enter points" />
+                  <Form.Item label="Điểm thưởng" name="loyaltyPoints">
+                    <Input type="number" placeholder="Nhập điểm thưởng" />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item label="Account Status" name="accountStatus">
-                    <Select placeholder="Select account status">
-                      <Select.Option value={true}>Active</Select.Option>
-                      <Select.Option value={false}>Inactive</Select.Option>
+                  <Form.Item label="Trạng thái tài khoản" name="accountStatus">
+                    <Select placeholder="Chọn trạng thái tài khoản">
+                      <Select.Option value={true}>Kích hoạt</Select.Option>
+                      <Select.Option value={false}>
+                        Không kích hoạt
+                      </Select.Option>
                     </Select>
                   </Form.Item>
                 </Col>
@@ -553,7 +558,7 @@ const CustomerManagement: React.FC = () => {
 
           {/* Edit Customer Modal */}
           <Modal
-            title="Edit Customer"
+            title="Chỉnh sửa Khách hàng"
             visible={isEditModalOpen}
             onCancel={() => {
               setIsEditModalOpen(false);
@@ -561,14 +566,14 @@ const CustomerManagement: React.FC = () => {
             }}
             footer={[
               <Button key="cancel" onClick={() => setIsEditModalOpen(false)}>
-                Close
+                Đóng
               </Button>,
               <Button
                 key="save"
                 type="primary"
                 onClick={handleSaveEditCustomer}
               >
-                Save Changes
+                Lưu Thay đổi
               </Button>,
             ]}
           >
@@ -580,24 +585,27 @@ const CustomerManagement: React.FC = () => {
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item
-                    label="Username"
+                    label="Tên đăng nhập"
                     name="username"
                     rules={[
-                      { required: true, message: "Please enter a username!" },
+                      {
+                        required: true,
+                        message: "Vui lòng nhập tên đăng nhập!",
+                      },
                     ]}
                   >
-                    <Input placeholder="Enter username" disabled />
+                    <Input placeholder="Nhập tên đăng nhập" disabled />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
                   <Form.Item
-                    label="Full Name"
+                    label="Họ và Tên"
                     name="fullName"
                     rules={[
-                      { required: true, message: "Please enter full name!" },
+                      { required: true, message: "Vui lòng nhập họ và tên!" },
                     ]}
                   >
-                    <Input placeholder="Enter full name" />
+                    <Input placeholder="Nhập họ và tên" />
                   </Form.Item>
                 </Col>
               </Row>
@@ -607,37 +615,37 @@ const CustomerManagement: React.FC = () => {
                     label="Email"
                     name="email"
                     rules={[
-                      { required: true, message: "Please enter an email!" },
-                      { type: "email", message: "Please enter a valid email!" },
+                      { required: true, message: "Vui lòng nhập email!" },
+                      { type: "email", message: "Vui lòng nhập email hợp lệ!" },
                     ]}
                   >
-                    <Input placeholder="Enter email" />
+                    <Input placeholder="Nhập email" />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
                   <Form.Item
-                    label="Phone Number"
+                    label="Số điện thoại"
                     name="phoneNumber"
                     rules={[
                       {
                         required: true,
-                        message: "Please enter a phone number!",
+                        message: "Vui lòng nhập số điện thoại!",
                       },
                     ]}
                   >
-                    <Input placeholder="Enter phone number" />
+                    <Input placeholder="Nhập số điện thoại" />
                   </Form.Item>
                 </Col>
               </Row>
               <Row gutter={16}>
                 <Col span={12}>
-                  <Form.Item label="Address" name="address">
-                    <Input placeholder="Enter address" />
+                  <Form.Item label="Địa chỉ" name="address">
+                    <Input placeholder="Nhập địa chỉ" />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item label="Loyalty Points" name="loyaltyPoints">
-                    <Input type="number" placeholder="Enter loyalty points" />
+                  <Form.Item label="Điểm thưởng" name="loyaltyPoints">
+                    <Input type="number" placeholder="Nhập điểm thưởng" />
                   </Form.Item>
                 </Col>
               </Row>
@@ -657,11 +665,12 @@ const CustomerManagement: React.FC = () => {
                 style={{ fontSize: "48px", color: "#ff4d4f" }}
               />
               <h3 style={{ fontWeight: "bold", marginTop: "16px" }}>
-                Confirm Status Change
+                Xác nhận Thay đổi Trạng thái
               </h3>
               <p style={{ fontSize: "16px" }}>
-                Are you sure you want to{" "}
-                {currentStatus ? "activate" : "deactivate"} this account?
+                Bạn có chắc chắn muốn{" "}
+                {currentStatus ? "kích hoạt" : "vô hiệu hóa"} tài khoản này
+                không?
               </p>
               <div
                 style={{
@@ -674,7 +683,7 @@ const CustomerManagement: React.FC = () => {
                   onClick={() => setConfirmModalVisible(false)}
                   style={{ backgroundColor: "#f0f0f0", color: "#000" }}
                 >
-                  Go Back
+                  Quay lại
                 </Button>
                 <Button
                   type="primary"
@@ -684,7 +693,7 @@ const CustomerManagement: React.FC = () => {
                     borderColor: "rgb(252, 71, 10)",
                   }}
                 >
-                  {currentStatus ? "Activate" : "Deactivate"}
+                  {currentStatus ? "Kích hoạt" : "Vô hiệu hóa"}
                 </Button>
               </div>
             </div>
@@ -703,10 +712,10 @@ const CustomerManagement: React.FC = () => {
                 style={{ fontSize: "48px", color: "#ff4d4f" }}
               />
               <h3 style={{ fontWeight: "bold", marginTop: "16px" }}>
-                Confirm Delete
+                Xác nhận Xóa
               </h3>
               <p style={{ fontSize: "16px" }}>
-                Are you sure you want to delete this customer?
+                Bạn có chắc chắn muốn xóa khách hàng này không?
               </p>
               <div
                 style={{
@@ -719,7 +728,7 @@ const CustomerManagement: React.FC = () => {
                   onClick={() => setConfirmDeleteModalVisible(false)}
                   style={{ backgroundColor: "#f0f0f0", color: "#000" }}
                 >
-                  Cancel
+                  Hủy
                 </Button>
                 <Button
                   type="primary"
@@ -729,27 +738,27 @@ const CustomerManagement: React.FC = () => {
                     borderColor: "rgb(252, 71, 10)",
                   }}
                 >
-                  Delete
+                  Xóa
                 </Button>
               </div>
             </div>
           </Modal>
 
-          {/* Customer Table */}
+          {/* Bảng Khách hàng */}
           <div className="table-container" ref={tableContainerRef}>
-            <table className="table-admin table-striped">
+            <table className="table table-striped">
               <thead>
                 <tr>
-                  <th>CustomerID</th>
-                  <th>Username</th>
-                  <th>Full Name</th>
+                  <th>Mã khách hàng</th>
+                  <th>Tên đăng nhập</th>
+                  <th>Họ và Tên</th>
                   <th>Email</th>
-                  <th>Phone Number</th>
-                  <th>Address</th>
-                  <th>Registration Date</th>
-                  <th>Loyalty Points</th>
-                  <th>Account Status</th>
-                  <th>Actions</th>
+                  <th>Số điện thoại</th>
+                  <th>Địa chỉ</th>
+                  <th>Ngày đăng ký</th>
+                  <th>Điểm thưởng</th>
+                  <th>Trạng thái tài khoản</th>
+                  <th>Hành động</th>
                 </tr>
               </thead>
               <tbody>
@@ -799,7 +808,7 @@ const CustomerManagement: React.FC = () => {
                 {loading && (
                   <tr>
                     <td colSpan={10} style={{ textAlign: "center" }}>
-                      Loading...
+                      Đang tải...
                     </td>
                   </tr>
                 )}

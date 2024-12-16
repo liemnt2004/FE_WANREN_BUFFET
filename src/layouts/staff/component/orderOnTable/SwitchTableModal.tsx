@@ -61,6 +61,12 @@ const SwitchTableModal: React.FC<SwitchTableModalProps> = ({ onClose, onConfirm 
                                     className="otp-input"
                                     maxLength={4}
                                     required
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault(); // Ngăn form tự động submit
+                                            handleSubmit(e); // Gọi hàm handleSubmit
+                                        }
+                                    }}
                                 />
                             </div>
                             <div className='d-flex justify-content-center align-items-center mt-2'>

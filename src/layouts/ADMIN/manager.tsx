@@ -139,18 +139,21 @@ const Management: React.FC = () => {
     <div className="container-fluid">
       <div className="main-content">
         <div className="employee-management">
-          <h2>Manage Admin</h2>
-          <div className="search-filter" style={{
-                marginBottom: 16,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}>
+          <h2>Quản lý Admin</h2>
+          <div
+            className="search-filter"
+            style={{
+              marginBottom: 16,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <div className="search-wrapper">
               <input
                 type="text"
                 className="search-input"
-                placeholder="Search for admins..."
+                placeholder="Tìm kiếm admin..."
                 onChange={handleSearchChange}
               />
               <i className="fas fa-search search-icon"></i>
@@ -159,31 +162,31 @@ const Management: React.FC = () => {
               className="btn add-employee-btn text-white"
               onClick={showModal}
             >
-              Add Admin
+              Thêm Admin
             </button>
           </div>
 
-          {/* Admin Table */}
+          {/* Bảng Admin */}
           <div className="table-container">
             {loading ? (
-              <p>Loading...</p>
+              <p>Đang tải...</p>
             ) : error ? (
               <p style={{ color: "red", textAlign: "center" }}>{error}</p>
             ) : filteredAdmins.length === 0 ? (
-              <p style={{ textAlign: "center" }}>No data available</p>
+              <p style={{ textAlign: "center" }}>Không có dữ liệu</p>
             ) : (
               <table className="table table-striped">
                 <thead>
                   <tr>
                     <th style={{ width: 100 }}>Admin ID</th>
-                    <th>Username</th>
-                    <th>Full Name</th>
+                    <th>Tên đăng nhập</th>
+                    <th>Họ và Tên</th>
                     <th>Email</th>
-                    <th style={{ width: 150 }}>Phone Number</th>
-                    <th>Address</th>
-                    <th style={{ width: 170 }}>Registration Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th style={{ width: 150 }}>Số điện thoại</th>
+                    <th>Địa chỉ</th>
+                    <th style={{ width: 170 }}>Ngày đăng ký</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -226,9 +229,9 @@ const Management: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal thêm Admin */}
+      {/* Modal Thêm Admin */}
       <Modal
-        title="Add New Admin"
+        title="Thêm Admin Mới"
         visible={isModalVisible}
         onCancel={handleCancel} // Đóng modal
         footer={null}
@@ -238,23 +241,21 @@ const Management: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 name="username"
-                label="Username"
+                label="Tên đăng nhập"
                 rules={[
-                  { required: true, message: "Please enter the Username!" },
+                  { required: true, message: "Vui lòng nhập tên đăng nhập!" },
                 ]}
               >
-                <Input placeholder="Enter Username" />
+                <Input placeholder="Nhập tên đăng nhập" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
                 name="password"
-                label="Password"
-                rules={[
-                  { required: true, message: "Please enter the Password!" },
-                ]}
+                label="Mật khẩu"
+                rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
               >
-                <Input.Password placeholder="Enter Password" />
+                <Input.Password placeholder="Nhập mật khẩu" />
               </Form.Item>
             </Col>
           </Row>
@@ -263,12 +264,12 @@ const Management: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 name="fullName"
-                label="Full Name"
+                label="Họ và Tên"
                 rules={[
-                  { required: true, message: "Please enter the Full Name!" },
+                  { required: true, message: "Vui lòng nhập họ và tên!" },
                 ]}
               >
-                <Input placeholder="Enter Full Name" />
+                <Input placeholder="Nhập họ và tên" />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -276,11 +277,11 @@ const Management: React.FC = () => {
                 name="email"
                 label="Email"
                 rules={[
-                  { required: true, message: "Please enter the Email!" },
-                  { type: "email", message: "Please enter a valid Email!" },
+                  { required: true, message: "Vui lòng nhập email!" },
+                  { type: "email", message: "Vui lòng nhập email hợp lệ!" },
                 ]}
               >
-                <Input placeholder="Enter Email" />
+                <Input placeholder="Nhập email" />
               </Form.Item>
             </Col>
           </Row>
@@ -289,23 +290,21 @@ const Management: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 name="phoneNumber"
-                label="Phone Number"
+                label="Số điện thoại"
                 rules={[
-                  { required: true, message: "Please enter the Phone Number!" },
+                  { required: true, message: "Vui lòng nhập số điện thoại!" },
                 ]}
               >
-                <Input placeholder="Enter Phone Number" />
+                <Input placeholder="Nhập số điện thoại" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
                 name="address"
-                label="Address"
-                rules={[
-                  { required: true, message: "Please enter the Address!" },
-                ]}
+                label="Địa chỉ"
+                rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
               >
-                <Input placeholder="Enter Address" />
+                <Input placeholder="Nhập địa chỉ" />
               </Form.Item>
             </Col>
           </Row>
@@ -314,7 +313,7 @@ const Management: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 name="accountStatus"
-                label="Account Status"
+                label="Trạng thái tài khoản"
                 valuePropName="checked"
               >
                 <Switch />
@@ -328,17 +327,17 @@ const Management: React.FC = () => {
               onClick={handleCancel}
               style={{ marginRight: "8px" }}
             >
-              Cancel
+              Hủy
             </Button>
             <Button type="primary" htmlType="submit">
-              Add Admin
+              Thêm Admin
             </Button>
           </div>
         </Form>
       </Modal>
 
       <Modal
-        title="Edit Admin"
+        title="Chỉnh sửa Admin"
         visible={isEditModalVisible}
         onCancel={() => {
           form.resetFields();
@@ -351,23 +350,21 @@ const Management: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 name="username"
-                label="Username"
+                label="Tên đăng nhập"
                 rules={[
-                  { required: true, message: "Please enter the Username!" },
+                  { required: true, message: "Vui lòng nhập tên đăng nhập!" },
                 ]}
               >
-                <Input placeholder="Enter Username" />
+                <Input placeholder="Nhập tên đăng nhập" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
                 name="password"
-                label="Password"
-                rules={[
-                  { required: true, message: "Please enter the Password!" },
-                ]}
+                label="Mật khẩu"
+                rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
               >
-                <Input.Password placeholder="Enter Password" />
+                <Input.Password placeholder="Nhập mật khẩu" />
               </Form.Item>
             </Col>
           </Row>
@@ -376,12 +373,12 @@ const Management: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 name="fullName"
-                label="Full Name"
+                label="Họ và Tên"
                 rules={[
-                  { required: true, message: "Please enter the Full Name!" },
+                  { required: true, message: "Vui lòng nhập họ và tên!" },
                 ]}
               >
-                <Input placeholder="Enter Full Name" />
+                <Input placeholder="Nhập họ và tên" />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -389,11 +386,11 @@ const Management: React.FC = () => {
                 name="email"
                 label="Email"
                 rules={[
-                  { required: true, message: "Please enter the Email!" },
-                  { type: "email", message: "Please enter a valid Email!" },
+                  { required: true, message: "Vui lòng nhập email!" },
+                  { type: "email", message: "Vui lòng nhập email hợp lệ!" },
                 ]}
               >
-                <Input placeholder="Enter Email" />
+                <Input placeholder="Nhập email" />
               </Form.Item>
             </Col>
           </Row>
@@ -402,23 +399,21 @@ const Management: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 name="phoneNumber"
-                label="Phone Number"
+                label="Số điện thoại"
                 rules={[
-                  { required: true, message: "Please enter the Phone Number!" },
+                  { required: true, message: "Vui lòng nhập số điện thoại!" },
                 ]}
               >
-                <Input placeholder="Enter Phone Number" />
+                <Input placeholder="Nhập số điện thoại" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
                 name="address"
-                label="Address"
-                rules={[
-                  { required: true, message: "Please enter the Address!" },
-                ]}
+                label="Địa chỉ"
+                rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
               >
-                <Input placeholder="Enter Address" />
+                <Input placeholder="Nhập địa chỉ" />
               </Form.Item>
             </Col>
           </Row>
@@ -427,7 +422,7 @@ const Management: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 name="accountStatus"
-                label="Account Status"
+                label="Trạng thái tài khoản"
                 valuePropName="checked"
               >
                 <Switch />
@@ -444,10 +439,10 @@ const Management: React.FC = () => {
               }}
               style={{ marginRight: "8px" }}
             >
-              Cancel
+              Hủy
             </Button>
             <Button type="primary" htmlType="submit">
-              Update Admin
+              Cập nhật Admin
             </Button>
           </div>
         </Form>

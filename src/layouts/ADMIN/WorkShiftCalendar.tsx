@@ -18,7 +18,7 @@ const WorkShiftCalendar: React.FC = () => {
       const shifts = await ListWorkShift(month, year);
       setData(shifts);
     } catch (error) {
-      console.error("Failed to fetch work shifts:", error);
+      console.error("Lấy dữ liệu ca làm thất bại:", error);
     } finally {
       setLoading(false);
     }
@@ -28,7 +28,7 @@ const WorkShiftCalendar: React.FC = () => {
     fetchData(selectedMonth, currentYear);
   }, [selectedMonth, currentYear]);
 
-  // Columns for the table in the "Danh sách nhân viên" tab
+  // Cột cho bảng trong tab "Danh sách nhân viên"
   const columnsTab1 = [
     {
       title: "STT",
@@ -37,22 +37,22 @@ const WorkShiftCalendar: React.FC = () => {
     },
 
     {
-      title: "Username",
+      title: "Tên đăng nhập",
       dataIndex: "username",
       key: "username",
     },
     {
-      title: "Full Name",
+      title: "Họ tên",
       dataIndex: "fullName",
       key: "fullName",
     },
     {
-      title: "Position",
+      title: "Vị trí",
       dataIndex: "position",
       key: "position",
     },
     {
-      title: "Total Hours",
+      title: "Tổng giờ làm",
       dataIndex: "totalHours",
       key: "totalHours",
     },

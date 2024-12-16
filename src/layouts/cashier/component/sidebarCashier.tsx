@@ -8,10 +8,10 @@ const SidebarCashier = () => {
   };
 
   return (
-    <div className="card bg-white p-3 shadow-md shadow-purple-200/50 rounded-md">
+    <div className="card bg-white p-3 shadow-md shadow-purple-200/50 rounded-md" style={{color: 'var(--text-color) !important', backgroundColor: "var(--body-color) !important" }}>
       <ul className="w-full flex flex-col gap-2 m-0 p-0">
         <li className="flex-center cursor-pointer p-16-semibold w-full whitespace-nowrap">
-          <Link to="/cashier" className="no-underline">
+          <Link to="/cashier" className="no-underline"  style={{color: 'var(--text-color) !important'}}>
             <button className="w-75 p-16-semibold flex size-full gap-4 p-4 group font-semibold rounded-full bg-cover hover:bg-purple-100 hover:shadow-inner focus:bg-gradient-to-r from-purple-200 to-purple-400 focus:text-white text-gray-700 transition-all ease-linear">
               <i className="bi bi-bookmark-dash-fill"></i>
               <span className="no-underline">Trang Chính</span>

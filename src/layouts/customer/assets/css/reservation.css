@@ -1,5 +1,5 @@
 .form-booktable {
-    /* background-color: #f2f2f2; */
+    background-color: var(--body-color);
     padding: 20px;
     border-radius: 10px;
 }
@@ -9,14 +9,34 @@
     color: var(--colorPrimary);
 }
 
+.form-booktable input::placeholder {
+    color: var(--text-color); /* Màu đỏ */
+    opacity: 1; /* Đảm bảo màu hiển thị đầy đủ */
+}
+.form-booktable textarea::placeholder {
+    color: var(--text-color); /* Màu đỏ */
+    opacity: 1; /* Đảm bảo màu hiển thị đầy đủ */
+}
+
+
+
+.form-booktable input:focus {
+    color: var(--text-color); /* Màu đỏ */
+    background-color: transparent;
+}
+.form-booktable textarea:focus {
+    color: var(--text-color); /* Màu đỏ */
+    background-color: transparent;
+}
+
 .right-section {
     padding-left: 0;
 }
 .form-control {
-    background-color: transparent;
-    /* color: #fff; */
+    color: var(--text-color);
+    /* background-color: var(--colorPrimary); */
     border: none;
-    border-bottom: 1px solid #555;
+    border-bottom: 1px solid white;
     padding: 8px 0;
     font-size: 16px;
     border-radius: 0;
@@ -24,7 +44,7 @@
 
 .form-control:focus {
     box-shadow: none;
-    border-bottom: 1px solid #ffb347;
+    /* border-bottom: 1px solid #ffb347; */
 }
 
 .form-label {

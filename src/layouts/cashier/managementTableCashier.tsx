@@ -847,7 +847,7 @@ const ManagementTableCashier: React.FC = () => {
     const reservationDateTime = new Date(endDate);
 
     // Kiểm tra xem ngày giờ đến có trước hiện tại không
-    return reservationDateTime > now;
+    return reservationDateTime < now;
   };
 
   const checkVoucherCode = async (code: string, orderId: number) => {
@@ -868,6 +868,7 @@ const ManagementTableCashier: React.FC = () => {
       } else {
         if (!data.status) {
           const promotion = await fetchPromotionById(data.promotionId);
+          console.log(promotion.promotionEndDate);
           if (!isDateTimeValid(promotion.promotionEndDate)) {
             await updateVoucherStatus(data.voucherId, true);
             createPromotionOrder(orderId, data.promotionId);

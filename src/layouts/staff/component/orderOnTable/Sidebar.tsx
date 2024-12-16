@@ -67,13 +67,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
     { label: 'Rượu', value: 'wine' },
     { label: 'Tráng miệng', value: 'dessert' },
   ];
-
-  const [theme, setTheme] = useState(localStorage.getItem('selected-theme') || 'light');
-
-  useEffect(() => {
-    document.body.className = theme === 'dark' ? 'dark-theme' : '';
-  }, [theme]);
-
+  
   return (
     <>
       {contextHolder}
@@ -81,7 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, onOpenExitModal, tabl
         <div className="sidebar__container">
           <div className="sidebar__user">
             <div className="sidebar__img">
-              <img src={theme === 'light' ? logoLight : logoDark} alt="WAREN BUFFET Logo" className="" width={100} />
+              <div className="logo"></div>
             </div>
             <div className="sidebar__info">
               <h3 className="fw-bold fs-4" style={{ color: 'var(--first-color)' }}>Bàn {tableId}</h3>

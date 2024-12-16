@@ -63,6 +63,16 @@ const ReservationForm: React.FC = () => {
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        const phoneRegex = /^(0?)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-5]|9[0-9])[0-9]{7}$/;
+
+        if (!phoneRegex.test(formData.phoneNumber)) {
+            notification.warning({
+                message: t('reservationForm.warning'),
+                description: "Số điện thoại không đúng định dạng!",
+                placement: 'topRight',
+            });
+            return;
+        }
         try {
             if (formData.agree === true) {
                 const response = await axios.post('https://wanrenbuffet.online/api/reservation/create', formData, {
@@ -113,7 +123,7 @@ const ReservationForm: React.FC = () => {
         <div className="container-fluid" style={{ backgroundColor: 'white' }}>
             <div className="row mobile-layout">
                 {/* Left Section: Main Image */}
-                <div className="col-md-8 position-relative left-section" style={{ paddingBottom: 0 }}>
+                <div className="col-md-8 position-relative left-section" style={{ paddingBottom: 0, backgroundColor: 'var(--body-color)' }}>
                     <section className="banner">
                         <div id="carouselExampleIndicators" className="carousel slide">
                             <div className="carousel-indicators">
@@ -177,7 +187,7 @@ const ReservationForm: React.FC = () => {
                 </div>
 
                 {/* Right Section: Reservation Form */}
-                <div className="col-md-4">
+                <div className="col-md-4" style={{backgroundColor: 'var(--body-color)'}}>
                     <form className="form-booktable" onSubmit={handleSubmit}>
                         <h3 className="text-center pb-5">{t('reservationForm.title')}</h3>
                         <p className="text-center">{t('reservationForm.subtitle')}</p>
@@ -235,6 +245,7 @@ const ReservationForm: React.FC = () => {
                                     onChange={handleChange}
                                     placeholder={t('reservationForm.placeholderNumberPeople') || ''}
                                     required
+                                    min={1}
                                 />
                             </div>
 
@@ -248,6 +259,7 @@ const ReservationForm: React.FC = () => {
                                     value={formData.dateToCome}
                                     onChange={handleChange}
                                     required
+                                    min={new Date().toISOString().split('T')[0]}
                                 />
                             </div>
 
