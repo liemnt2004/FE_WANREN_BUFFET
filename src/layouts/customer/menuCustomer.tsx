@@ -8,6 +8,7 @@ import { Offcanvas } from 'react-bootstrap';
 import CartOffcanvas from "./component/offcanvas";
 import LanguageSwitcher from "./component/LanguageSwitcher";
 import { useTranslation } from 'react-i18next';
+import ThemeToggle from "./ThemeToggle";
 function MenuCustomer() {
     const { fullName } = useContext(AuthContext);
     const cartContext = useContext(CartContext);
@@ -20,7 +21,7 @@ function MenuCustomer() {
     }
 
     function login() {
-        window.location.href = "http://localhost:3000/login";
+        window.location.href = "https://wanrenbuffet.netlify.app/login";
     }
 
     const handleShowMenu = () => setShowOffcanvas(true);
@@ -39,13 +40,13 @@ function MenuCustomer() {
 
             {/* Brand Logo */}
             <Link to="/" className="brand">
-                <img src={logo} alt="WAREN BUFFET Logo" className="logo" />
+                <div className="logo" />
             </Link>
 
             {/* Navigation Links */}
-            <Link to="/menu" className="nav-link" onClick={handleCloseMenu}>{t('menu')}</Link>
-            <Link to="/promotion" className="nav-link" onClick={handleCloseMenu}>{t('promotion')}</Link>
-            <Link to="/reservation" className="btn-book" onClick={handleCloseMenu}>{t('reservation')}</Link>
+            <Link to="/menu" className="nav-link" style={{color: 'var(--text-color)'}} onClick={handleCloseMenu}>{t('menu')}</Link>
+            <Link to="/promotion" className="nav-link" style={{color: 'var(--text-color)'}} onClick={handleCloseMenu}>{t('promotion')}</Link>
+            <Link to="/reservation" className="btn-book" style={{color: 'var(--text-color)', }} onClick={handleCloseMenu}>{t('reservation')}</Link>
 
             {/* Cart Icon */}
             <button
@@ -69,14 +70,14 @@ function MenuCustomer() {
                         <Link to="/profile" className="btn-user cursor-pointer">
                             <i className="bi bi-person-fill"></i>
                         </Link>
-                        <p style={{ margin: 0 }}>{t('wellcome')}, {fullName}</p>
+                        <p style={{ margin: 0 , color:'var(--text-color)'}}>{t('wellcome')}, {fullName}</p>
                     </>
                 ) : (
                     <>
                         <button onClick={login} className="btn-user cursor-pointer">
                             <i className="bi bi-box-arrow-in-right"></i>
                         </button>
-                        <p style={{ margin: 0 }}>Wanren {t('wellcome')}!</p>
+                        <p style={{ margin: 0 ,color:'var(--text-color)'}}>Wanren {t('wellcome')}!</p>
                     </>
                 )}
             </div>
@@ -109,6 +110,7 @@ function MenuCustomer() {
                         {t('reservation')}
                     </Link>
                     <LanguageSwitcher></LanguageSwitcher>
+                    <ThemeToggle></ThemeToggle>
                 </Offcanvas.Body>
             </Offcanvas>
 

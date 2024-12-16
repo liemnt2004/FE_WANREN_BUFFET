@@ -39,50 +39,49 @@ import { PDFDocument, rgb } from 'pdf-lib';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { PromotionInput } from "../../models/AdminModels/PromotionInput";
-import PromotionAdmin from "../../models/AdminModels/Promotion"; // Đảm bảo đường dẫn chính xác
+import PromotionAdmin from "../../models/AdminModels/Promotion"; // Ensure correct path
 import dayjs from "dayjs";
 import useDebounce from "../customer/component/useDebounce";
 import FormatMoney from "../customer/component/FormatMoney";
 
-
 const { Option } = Select;
 const { confirm } = Modal;
 
-// Cấu hình Cloudinary
-const CLOUDINARY_CLOUD_NAME = 'dn2ot5mo6'; // Thay thế bằng Cloud name của bạn
-const CLOUDINARY_UPLOAD_PRESET = 'urvibegs'; // Thay thế bằng Upload preset của bạn
+// Cloudinary Configuration
+const CLOUDINARY_CLOUD_NAME = 'dn2ot5mo6'; // Replace with your Cloud name
+const CLOUDINARY_UPLOAD_PRESET = 'urvibegs'; // Replace with your Upload preset
 
 const PromotionManagement: React.FC = () => {
-    // Trạng thái cho các modal
+    // Modal States
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
     const [editPromotion, setEditPromotion] = useState<PromotionAdmin | null>(null);
     const [confirmDeletePromotionId, setConfirmDeletePromotionId] = useState<number | null>(null);
-    
-    // Trạng thái dữ liệu
+
+    // Data States
     const [promotions, setPromotions] = useState<PromotionAdmin[]>([]);
-    const [loading, setLoading] = useState<boolean>(false); // Trạng thái tải dữ liệu
+    const [loading, setLoading] = useState<boolean>(false); // Data loading state
     const [savingPromotion, setSavingPromotion] = useState<boolean>(false);
     const [deletingPromotion, setDeletingPromotion] = useState<boolean>(false);
-    const [currentPage, setCurrentPage] = useState<number>(0); // Chỉ số trang hiện tại (bắt đầu từ 0)
-    const [totalPromotions, setTotalPromotions] = useState<number>(0); // Tổng số khuyến mãi
+    const [currentPage, setCurrentPage] = useState<number>(0); // Current page index (starting from 0)
+    const [totalPromotions, setTotalPromotions] = useState<number>(0); // Total promotions count
     const [searchText, setSearchText] = useState<string>("");
 
-    // Giá trị tìm kiếm sau khi debounce
+    // Debounced search text
     const debouncedSearchText = useDebounce<string>(searchText, 500);
 
-    // Form
+    // Forms
     const [addForm] = Form.useForm();
     const [editForm] = Form.useForm();
 
-    // Trạng thái upload ảnh
+    // Image Upload States
     const [addImageUrl, setAddImageUrl] = useState<string | null>(null);
     const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
     const [uploadingAddImage, setUploadingAddImage] = useState<boolean>(false);
     const [uploadingEditImage, setUploadingEditImage] = useState<boolean>(false);
 
-    // Hàm xử lý lỗi API
+    // API Error Handling
     const handleApiError = useCallback((error: any, defaultMessage: string) => {
         if (axios.isAxiosError(error)) {
             const message =
@@ -99,7 +98,7 @@ const PromotionManagement: React.FC = () => {
         }
     }, []);
 
-    // Hàm lấy danh sách khuyến mãi từ backend
+    // Fetch Promotions from Backend
     const fetchPromotions = useCallback(async () => {
         setLoading(true);
         try {
@@ -117,22 +116,22 @@ const PromotionManagement: React.FC = () => {
         }
     }, [currentPage, debouncedSearchText, handleApiError]);
 
-    // Reset trang hiện tại khi tìm kiếm hoặc lọc thay đổi
+    // Reset current page when search or filter changes
     useEffect(() => {
         setCurrentPage(0);
     }, [debouncedSearchText]);
 
-    // Lấy danh sách khuyến mãi khi trang hiện tại, tìm kiếm hoặc lọc thay đổi
+    // Fetch promotions when current page, search, or filter changes
     useEffect(() => {
         fetchPromotions();
     }, [fetchPromotions]);
 
-    // Hàm mở modal chỉnh sửa khuyến mãi
+    // Open Edit Modal
     const openEditModal = useCallback(
         (promotion: PromotionAdmin) => {
             setEditPromotion(promotion);
             setIsEditModalOpen(true);
-            setEditImageUrl(promotion.image || null); // Khởi tạo với URL ảnh hiện tại
+            setEditImageUrl(promotion.image || null); // Initialize with current image URL
             editForm.setFieldsValue({
                 ...promotion,
                 startDate: dayjs(promotion.startDate).format("YYYY-MM-DDTHH:mm"),
@@ -142,7 +141,7 @@ const PromotionManagement: React.FC = () => {
         [editForm]
     );
 
-    // Hàm mở modal thêm mới khuyến mãi
+    // Open Add Modal
     const openAddModal = useCallback(() => {
         setEditPromotion(null);
         addForm.resetFields();
@@ -150,11 +149,12 @@ const PromotionManagement: React.FC = () => {
         setIsAddModalOpen(true);
     }, [addForm]);
 
-    // Hàm xử lý upload ảnh lên Cloudinary
+    // Handle Image Upload to Cloudinary
     const handleImageUpload = async (
         file: File,
         setImageUrl: (url: string) => void,
-        setUploading: (uploading: boolean) => void
+        setUploading: (uploading: boolean) => void,
+        form?: any // Optional form instance
     ) => {
         const formData = new FormData();
         formData.append("file", file);
@@ -166,7 +166,11 @@ const PromotionManagement: React.FC = () => {
                 `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
                 formData
             );
-            setImageUrl(res.data.secure_url);
+            const secureUrl = res.data.secure_url;
+            setImageUrl(secureUrl);
+            if (form) {
+                form.setFieldsValue({ image: secureUrl });
+            }
             notification.success({
                 message: "Upload ảnh thành công",
                 description: "Ảnh đã được upload thành công!",
@@ -182,13 +186,13 @@ const PromotionManagement: React.FC = () => {
         }
     };
 
-    // Hàm xử lý thêm mới khuyến mãi
+    // Handle Save New Promotion
     const handleSaveNewPromotion = useCallback(async () => {
         try {
-            // Xác thực form và lấy dữ liệu mới
+            // Validate form fields except 'image'
             const newPromotionData = await addForm.validateFields();
 
-            // Kiểm tra xem ảnh có được upload chưa
+            // Check if image is uploaded
             if (!addImageUrl) {
                 notification.error({
                     message: "Yêu cầu ảnh",
@@ -199,7 +203,7 @@ const PromotionManagement: React.FC = () => {
 
             setSavingPromotion(true);
 
-            // Tạo đối tượng khuyến mãi mới
+            // Create new promotion object
             const newPromotion: PromotionInput = {
                 promotionName: newPromotionData.promotionName,
                 description: newPromotionData.description,
@@ -209,26 +213,26 @@ const PromotionManagement: React.FC = () => {
                 startDate: newPromotionData.startDate,
                 endDate: newPromotionData.endDate,
                 promotionStatus: newPromotionData.promotionStatus,
-                image: addImageUrl,
-                unitPrice: newPromotionData.unitPrice, // Thêm đơn giá
+                image: addImageUrl, // Use the state-managed image URL
+                unitPrice: newPromotionData.unitPrice, // Add unit price
             };
 
-            // Gọi API để tạo khuyến mãi mới
+            // Call API to create new promotion
             const createdPromotion = await createPromotion(newPromotion);
 
-            // Cập nhật lại danh sách khuyến mãi sau khi tạo mới thành công
+            // Update promotions list
             setPromotions((prev) => [createdPromotion, ...prev]);
 
-            // Cập nhật tổng số khuyến mãi
+            // Update total promotions
             setTotalPromotions((prev) => prev + 1);
 
-            // Hiển thị thông báo thành công
+            // Show success notification
             notification.success({
                 message: "Thêm khuyến mãi",
                 description: "Khuyến mãi mới đã được thêm thành công!",
             });
 
-            // Đóng modal và reset form
+            // Close modal and reset form
             setIsAddModalOpen(false);
             addForm.resetFields();
             setAddImageUrl(null);
@@ -239,11 +243,12 @@ const PromotionManagement: React.FC = () => {
         }
     }, [addForm, addImageUrl, handleApiError]);
 
-    // Hàm xử lý cập nhật khuyến mãi
+    // Handle Save Edited Promotion
     const handleSaveEditPromotion = useCallback(async () => {
         try {
             const updatedPromotionData = await editForm.validateFields();
 
+            // Check if image is uploaded
             if (!editImageUrl) {
                 notification.error({
                     message: "Yêu cầu ảnh",
@@ -255,7 +260,7 @@ const PromotionManagement: React.FC = () => {
             if (editPromotion) {
                 setSavingPromotion(true);
 
-                // Tạo đối tượng updatedPromotion
+                // Create updated promotion object
                 const updatedPromotion: Partial<PromotionInput> = {
                     promotionName: updatedPromotionData.promotionName,
                     description: updatedPromotionData.description,
@@ -266,24 +271,26 @@ const PromotionManagement: React.FC = () => {
                     endDate: updatedPromotionData.endDate,
                     promotionStatus: updatedPromotionData.promotionStatus,
                     image: editImageUrl,
-                    unitPrice: updatedPromotionData.unitPrice, // Thêm đơn giá
+                    unitPrice: updatedPromotionData.unitPrice, // Add unit price
                 };
 
-                // Cập nhật thông tin khuyến mãi
+                // Update promotion via API
                 const result = await updatePromotion(editPromotion.promotion, updatedPromotion);
 
-                // Cập nhật lại danh sách khuyến mãi sau khi sửa thành công
+                // Update promotions list
                 setPromotions((prev) =>
                     prev.map((promo) =>
                         promo.promotion === editPromotion.promotion ? { ...promo, ...result } : promo
                     )
                 );
 
+                // Show success notification
                 notification.success({
                     message: "Cập nhật khuyến mãi",
                     description: "Khuyến mãi đã được cập nhật thành công!",
                 });
 
+                // Close modal and reset form
                 setIsEditModalOpen(false);
                 setEditImageUrl(null);
             }
@@ -294,13 +301,13 @@ const PromotionManagement: React.FC = () => {
         }
     }, [editForm, editPromotion, editImageUrl, handleApiError]);
 
-    // Hàm xử lý xóa khuyến mãi
+    // Handle Delete Promotion
     const handleDeletePromotion = useCallback((promotionId: number) => {
         setConfirmDeletePromotionId(promotionId);
         setConfirmDeleteModalVisible(true);
     }, []);
 
-    // Hàm xác nhận xóa khuyến mãi
+    // Confirm Delete Promotion
     const handleConfirmDeletePromotion = useCallback(async () => {
         if (confirmDeletePromotionId !== null) {
             try {
@@ -321,9 +328,9 @@ const PromotionManagement: React.FC = () => {
                 setDeletingPromotion(false);
             }
         }
-    }, [confirmDeletePromotionId, handleApiError, deletePromotion]);
+    }, [confirmDeletePromotionId, handleApiError]);
 
-    // Hàm cập nhật trạng thái khuyến mãi
+    // Handle Update Promotion Status
     const handleUpdatePromotionStatus = useCallback(
         async (promotionId: number, checked: boolean) => {
             const newStatus = checked;
@@ -344,10 +351,10 @@ const PromotionManagement: React.FC = () => {
                 handleApiError(error, "Có lỗi xảy ra khi cập nhật trạng thái khuyến mãi.");
             }
         },
-        [handleApiError, updatePromotion]
+        [handleApiError]
     );
 
-    // Định nghĩa các cột cho bảng
+    // Define Table Columns
     const columns = useMemo<ColumnsType<PromotionAdmin>>(
         () => [
             {
@@ -485,7 +492,7 @@ const PromotionManagement: React.FC = () => {
         [handleUpdatePromotionStatus, openEditModal, handleDeletePromotion]
     );
 
-    // Xử lý thay đổi của bảng (phân trang, lọc)
+    // Handle Table Changes (Pagination, Sorting, Filtering)
     const handleTableChange = useCallback(
         (pagination: any, filters: any, sorter: any) => {
             const newPage = pagination.current - 1;
@@ -497,14 +504,14 @@ const PromotionManagement: React.FC = () => {
         [currentPage]
     );
 
-    // Các hàm xuất dữ liệu
+    // Export Functions
     const exportToExcel = () => {
         const dataToExport = promotions.map((promo) => ({
             "Mã khuyến mãi": promo.promotion,
             "Tên khuyến mãi": promo.promotionName,
             "Mô tả": promo.description,
             "Giá trị khuyến mãi (%)": promo.promotionValue,
-            "Đơn Giá (VNĐ)": promo.unitPrice, // Thêm Đơn Giá
+            "Đơn Giá (VNĐ)": promo.unitPrice, // Add Unit Price
             "Loại món ăn": promo.type_food,
             "Loại khuyến mãi": promo.promotionType,
             "Ngày bắt đầu": dayjs(promo.startDate).format("YYYY-MM-DD HH:mm"),
@@ -516,10 +523,10 @@ const PromotionManagement: React.FC = () => {
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Promotions');
 
-        // Tạo buffer
+        // Create buffer
         const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
 
-        // Lưu file
+        // Save file
         const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
         const url = window.URL.createObjectURL(data);
         const link = document.createElement('a');
@@ -544,7 +551,7 @@ const PromotionManagement: React.FC = () => {
                     item.promotionName,
                     item.description,
                     item.promotionValue,
-                    item.unitPrice, // Thêm Đơn Giá
+                    item.unitPrice, // Add Unit Price
                     item.type_food,
                     item.promotionType,
                     dayjs(item.startDate).format("YYYY-MM-DD HH:mm"),
@@ -568,18 +575,18 @@ const PromotionManagement: React.FC = () => {
     };
 
     const exportToPDF = async () => {
-        const fontUrl = '/fonts/Roboto-Black.ttf'; // Đảm bảo đường dẫn font đúng
+        const fontUrl = '/fonts/Roboto-Black.ttf'; // Ensure correct font path
         try {
             const pdfDoc = await PDFDocument.create();
-            pdfDoc.registerFontkit(fontkit); // Đăng ký fontkit
+            pdfDoc.registerFontkit(fontkit); // Register fontkit
             const fontBytes = await fetch(fontUrl).then((res) => res.arrayBuffer());
             const customFont = await pdfDoc.embedFont(fontBytes);
 
-            let page = pdfDoc.addPage([595.28, 841.89]); // Kích thước A4
+            let page = pdfDoc.addPage([595.28, 841.89]); // A4 size
             const { width, height } = page.getSize();
             const margin = 50;
 
-            // Tiêu đề
+            // Title
             page.drawText('Danh Sách Khuyến Mãi', {
                 x: margin,
                 y: height - margin,
@@ -588,7 +595,7 @@ const PromotionManagement: React.FC = () => {
                 color: rgb(0, 0.53, 0.71),
             });
 
-            // Bảng dữ liệu
+            // Table Data
             const tableHeader = ['Mã KM', 'Tên KM', 'Giá trị (%)', 'Đơn Giá (VNĐ)', 'Loại món ăn', 'Loại KM', 'Ngày bắt đầu', 'Ngày kết thúc', 'Trạng thái'];
             let yPosition = height - margin - 40;
             const cellWidth = [60, 100, 80, 100, 100, 100, 100, 100, 80];
@@ -612,7 +619,7 @@ const PromotionManagement: React.FC = () => {
                     promo.promotion.toString(),
                     promo.promotionName || '',
                     promo.promotionValue.toString(),
-                    FormatMoney(promo.unitPrice), // Thêm Đơn Giá
+                    FormatMoney(promo.unitPrice), // Add Unit Price
                     promo.type_food || '',
                     promo.promotionType || '',
                     dayjs(promo.startDate).format("YYYY-MM-DD HH:mm"),
@@ -720,7 +727,7 @@ const PromotionManagement: React.FC = () => {
                         </Button>
                     </div>
 
-                    {/* Modal thêm khuyến mãi */}
+                    {/* Add Promotion Modal */}
                     <Modal
                         title="Thêm khuyến mãi mới"
                         visible={isAddModalOpen}
@@ -737,13 +744,13 @@ const PromotionManagement: React.FC = () => {
                                 key="save"
                                 type="primary"
                                 onClick={handleSaveNewPromotion}
-                                loading={savingPromotion}
-                                disabled={savingPromotion}
+                                loading={savingPromotion || uploadingAddImage}
+                                disabled={savingPromotion || uploadingAddImage}
                             >
                                 Lưu
                             </Button>,
                         ]}
-                        destroyOnClose={true} // Đảm bảo modal bị unmount khi đóng
+                        destroyOnClose={true} // Ensure modal unmounts on close
                         width={800}
                         style={{ maxWidth: '90%' }}
                     >
@@ -767,7 +774,7 @@ const PromotionManagement: React.FC = () => {
                                         <Select placeholder="Chọn loại khuyến mãi">
                                             <Option value="DISCOUNT%">Giảm Giá theo phần trăm</Option>
                                             <Option value="DISCOUNT-">Trừ tiền trực tiếp</Option>
-                                            {/* Thêm các loại khác nếu cần */}
+                                            {/* Add other types if needed */}
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -791,7 +798,7 @@ const PromotionManagement: React.FC = () => {
                                             <Option value="buffet_tickets">Buffet Tickets</Option>
                                             <Option value="soft_drinks">Soft Drinks</Option>
                                             <Option value="mixers">Mixers</Option>
-                                            {/* Thêm các loại khác nếu cần */}
+                                            {/* Add other types if needed */}
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -812,7 +819,6 @@ const PromotionManagement: React.FC = () => {
                                             placeholder="Nhập giá trị khuyến mãi (%)"
                                             style={{ width: "100%" }}
                                             min={1}
-                                            
                                         />
                                     </Form.Item>
                                 </Col>
@@ -877,18 +883,14 @@ const PromotionManagement: React.FC = () => {
 
                             <Row gutter={16}>
                                 <Col span={12}>
-                                    <Form.Item
-                                        label="Ảnh khuyến mãi"
-                                        name="image"
-                                        rules={[{ required: true, message: "Vui lòng upload ảnh khuyến mãi!" }]}
-                                    >
+                                    <Form.Item label="Ảnh khuyến mãi">
                                         <Upload
                                             name="image"
                                             listType="picture"
                                             showUploadList={false}
                                             beforeUpload={(file) => {
-                                                handleImageUpload(file, setAddImageUrl, setUploadingAddImage);
-                                                return false; // Ngăn chặn upload tự động
+                                                handleImageUpload(file, setAddImageUrl, setUploadingAddImage, addForm);
+                                                return false; // Prevent automatic upload
                                             }}
                                         >
                                             <Button icon={<UploadOutlined />} loading={uploadingAddImage}>
@@ -898,8 +900,8 @@ const PromotionManagement: React.FC = () => {
                                         <Image
                                             src={addImageUrl || "https://via.placeholder.com/100"}
                                             alt="Ảnh khuyến mãi"
-                                            style={{ width: "100px", height: "100px", objectFit: "cover", marginTop: "10px" }}
-                                            width={100}
+                                            style={{  height: "100px", objectFit: "cover", marginTop: "10px" }}
+                                            
                                             height={100}
                                             fallback="https://via.placeholder.com/100"
                                         />
@@ -931,9 +933,7 @@ const PromotionManagement: React.FC = () => {
                                                     'undo',
                                                     'redo'
                                                 ],
-                                                
                                             }}
-                                           
                                         />
                                     </Form.Item>
                                 </Col>
@@ -941,7 +941,7 @@ const PromotionManagement: React.FC = () => {
                         </Form>
                     </Modal>
 
-                    {/* Modal chỉnh sửa khuyến mãi */}
+                    {/* Edit Promotion Modal */}
                     <Modal
                         title="Chỉnh sửa khuyến mãi"
                         visible={isEditModalOpen}
@@ -958,13 +958,13 @@ const PromotionManagement: React.FC = () => {
                                 key="save"
                                 type="primary"
                                 onClick={handleSaveEditPromotion}
-                                loading={savingPromotion}
-                                disabled={savingPromotion}
+                                loading={savingPromotion || uploadingEditImage}
+                                disabled={savingPromotion || uploadingEditImage}
                             >
                                 Lưu thay đổi
                             </Button>,
                         ]}
-                        destroyOnClose={true} // Đảm bảo modal bị unmount khi đóng
+                        destroyOnClose={true} // Ensure modal unmounts on close
                         width={800}
                         style={{ maxWidth: '90%' }}
                     >
@@ -1000,7 +1000,7 @@ const PromotionManagement: React.FC = () => {
                                         <Select placeholder="Chọn loại khuyến mãi">
                                             <Option value="DISCOUNT%">Giảm Giá theo phần trăm</Option>
                                             <Option value="DISCOUNT-">Trừ tiền trực tiếp</Option>
-                                            {/* Thêm các loại khác nếu cần */}
+                                            {/* Add other types if needed */}
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -1024,7 +1024,7 @@ const PromotionManagement: React.FC = () => {
                                             <Option value="buffet_tickets">Buffet Tickets</Option>
                                             <Option value="soft_drinks">Soft Drinks</Option>
                                             <Option value="mixers">Mixers</Option>
-                                            {/* Thêm các loại khác nếu cần */}
+                                            {/* Add other types if needed */}
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -1045,7 +1045,6 @@ const PromotionManagement: React.FC = () => {
                                             placeholder="Nhập giá trị khuyến mãi (%)"
                                             style={{ width: "100%" }}
                                             min={1}
-                                            
                                         />
                                     </Form.Item>
                                 </Col>
@@ -1110,18 +1109,14 @@ const PromotionManagement: React.FC = () => {
 
                             <Row gutter={16}>
                                 <Col span={12}>
-                                    <Form.Item
-                                        label="Ảnh khuyến mãi"
-                                        name="image"
-                                        rules={[{ required: true, message: "Vui lòng upload ảnh khuyến mãi!" }]}
-                                    >
+                                    <Form.Item label="Ảnh khuyến mãi">
                                         <Upload
                                             name="image"
                                             listType="picture"
                                             showUploadList={false}
                                             beforeUpload={(file) => {
-                                                handleImageUpload(file, setEditImageUrl, setUploadingEditImage);
-                                                return false; // Ngăn chặn upload tự động
+                                                handleImageUpload(file, setEditImageUrl, setUploadingEditImage, editForm);
+                                                return false; // Prevent automatic upload
                                             }}
                                         >
                                             <Button icon={<UploadOutlined />} loading={uploadingEditImage}>
@@ -1131,8 +1126,8 @@ const PromotionManagement: React.FC = () => {
                                         <Image
                                             src={editImageUrl || "https://via.placeholder.com/100"}
                                             alt="Ảnh khuyến mãi"
-                                            style={{ width: "100px", height: "100px", objectFit: "cover", marginTop: "10px" }}
-                                            width={100}
+                                            style={{  height: "100px", objectFit: "cover", marginTop: "10px" }}
+                                            
                                             height={100}
                                             fallback="https://via.placeholder.com/100"
                                         />
@@ -1164,9 +1159,7 @@ const PromotionManagement: React.FC = () => {
                                                     'undo',
                                                     'redo'
                                                 ],
-                                                
                                             }}
-                                           
                                         />
                                     </Form.Item>
                                 </Col>
@@ -1174,14 +1167,14 @@ const PromotionManagement: React.FC = () => {
                         </Form>
                     </Modal>
 
-                    {/* Modal xác nhận xóa */}
+                    {/* Confirm Delete Modal */}
                     <Modal
                         visible={confirmDeleteModalVisible}
                         onCancel={() => setConfirmDeleteModalVisible(false)}
                         footer={null}
                         centered
                         width={400}
-                        destroyOnClose={true} // Đảm bảo modal bị unmount khi đóng
+                        destroyOnClose={true} // Ensure modal unmounts on close
                     >
                         <div style={{ textAlign: "center" }}>
                             <ExclamationCircleOutlined style={{ fontSize: "48px", color: "#ff4d4f" }} />
@@ -1218,7 +1211,7 @@ const PromotionManagement: React.FC = () => {
                         </div>
                     </Modal>
 
-                    {/* Bảng khuyến mãi */}
+                    {/* Promotions Table */}
                     <div className="table-container" style={{ overflow: "auto" }}>
                         {loading ? (
                             <div style={{ textAlign: "center", padding: "20px" }}>
@@ -1228,10 +1221,10 @@ const PromotionManagement: React.FC = () => {
                             <Table
                                 columns={columns}
                                 dataSource={promotions}
-                                rowKey="promotion" // Đảm bảo rằng 'promotion' là khóa duy nhất
+                                rowKey="promotion" // Ensure 'promotion' is unique
                                 pagination={{
-                                    current: currentPage + 1, // Ant Design pagination bắt đầu từ 1
-                                    pageSize: 20, // Phù hợp với backend
+                                    current: currentPage + 1, // Ant Design pagination starts at 1
+                                    pageSize: 20, // Match backend settings
                                     total: totalPromotions,
                                     showSizeChanger: false,
                                 }}

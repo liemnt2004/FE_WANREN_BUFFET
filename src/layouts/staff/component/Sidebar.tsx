@@ -23,14 +23,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onClickContent, isVisible }) => {
     window.location.reload()
   };
 
-  const [theme, setTheme] = useState(localStorage.getItem('selected-theme') || 'light');
-
   return (
     <nav className={`sidebar ${isVisible ? 'show-sidebar' : ''}`} id="sidebar">
       <div className="sidebar__container">
         <div className="sidebar__user">
           <div className="sidebar__img">
-            <img src={theme === 'light' ? logoLight : logoDark} alt="WAREN BUFFET Logo" className="" width={100} />
+            <div className='logo'></div>
           </div>
         </div>
         <div className="sidebar__content">

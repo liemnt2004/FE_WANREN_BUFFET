@@ -2,13 +2,9 @@ import React, { useContext } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { AuthContext } from '../../customer/component/AuthContext';
+import ThemeToggle from '../../customer/ThemeToggle';
 
-interface SettingProps {
-    toggleTheme: () => void;
-    icon: string;
-}
-
-const InfoSetting: React.FC<SettingProps> = ({ toggleTheme, icon }) => {
+const InfoSetting: React.FC = () => {
     const { employeeUserId, employeeFullName } = useContext(AuthContext);
     return (
         <div className="container" style={{ maxWidth: '800px', backgroundColor: 'var(--body-color)', padding: '20px', borderRadius: '10px' }}>
@@ -45,10 +41,8 @@ const InfoSetting: React.FC<SettingProps> = ({ toggleTheme, icon }) => {
 
             <p
                 className="sidebar__link mb-0 p-0"
-                onClick={toggleTheme}
             >
-                <i className={`ri ${icon}`}></i>
-                <span style={{ color: 'var(--firstColor)' }}>Giao Diện</span>
+                <ThemeToggle></ThemeToggle>
             </p>
         </div>
     );
