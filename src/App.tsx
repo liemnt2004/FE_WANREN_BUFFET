@@ -43,14 +43,15 @@ import CheckoutFailed from "./layouts/staff/component/checkout/CheckoutFailed";
 import CheckoutLayout from "./layouts/staff/component/checkout/CheckoutLayout";
 import CheckoutSucess from "./layouts/staff/component/checkout/CheckoutSucess";
 import OrderOnTable from "./layouts/staff/component/orderOnTable/Order";
-import './i18n'; // Import i18n configuration
-import React, {useEffect } from "react";
-import { useTranslation } from 'react-i18next';
+import "./i18n"; // Import i18n configuration
+import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import Review from "./layouts/ADMIN/review";
 function App() {
   const { i18n: i18nHook } = useTranslation();
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language') || 'vi';
+    const savedLanguage = localStorage.getItem("language") || "vi";
     if (i18nHook.language !== savedLanguage) {
       i18nHook.changeLanguage(savedLanguage);
     }
@@ -79,9 +80,12 @@ export function Routing() {
       (route) =>
         pathname === route ||
         (route === "/orderOnTable" && /^\/orderOnTable\/\d+$/.test(pathname)) ||
-        (route === "/staff/checkout" && /^\/staff\/checkout\/step[1-3]$/.test(pathname)) ||
-        (route === "/staff/checkout" && /^\/staff\/checkout\/sucessful/.test(pathname)) ||
-        (route === "/staff/checkout" && /^\/staff\/checkout\/failed/.test(pathname)) ||
+        (route === "/staff/checkout" &&
+          /^\/staff\/checkout\/step[1-3]$/.test(pathname)) ||
+        (route === "/staff/checkout" &&
+          /^\/staff\/checkout\/sucessful/.test(pathname)) ||
+        (route === "/staff/checkout" &&
+          /^\/staff\/checkout\/failed/.test(pathname)) ||
         (route === "/cashier" && /^\/cashier\/.+$/.test(pathname))
     );
   };
@@ -103,7 +107,8 @@ export function Routing() {
     "/admin/manage-product",
     "/cashier",
     "/admin/revenue-report",
-    "/forgot-password"
+    "/admin/review",
+    "/forgot-password",
   ];
 
   return (
@@ -224,6 +229,7 @@ export function Routing() {
           <Route path="/admin/manage-accounts" element={<Management />} />
           <Route path="/admin/manage-work-shifts" element={<WorkShift />} />
           <Route path="/admin/revenue-report" element={<RevenueReport />} />
+          <Route path="/admin/review" element={<Review />} />
         </Route>
 
         {/* Route không tìm thấy */}
