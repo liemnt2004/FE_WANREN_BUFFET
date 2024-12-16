@@ -1,9 +1,7 @@
-import React from "react";
 import { Link } from "react-router-dom"; // useNavigate để chuyển hướng sau khi logout
 import "../assets/css/cashierSidebar.css";
 
 const SidebarCashier = () => {
-
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = "/employee/login";
@@ -51,12 +49,6 @@ const SidebarCashier = () => {
               <span className="no-underline">Đặt Bàn</span>
             </button>
           </Link>
-        </li>
-        <li className="flex-center cursor-pointer p-16-semibold w-full whitespace-nowrap">
-          <button className="w-75 p-16-semibold flex size-full gap-4 p-4 group font-semibold rounded-full bg-cover hover:bg-purple-100 hover:shadow-inner focus:bg-gradient-to-r from-purple-200 to-purple-400 focus:text-white text-gray-700 transition-all ease-linear">
-            <i className="bi bi-gear-fill"></i>
-            <span>Cài Đặt</span>
-          </button>
         </li>
         <li className="flex-center cursor-pointer p-16-semibold w-full whitespace-nowrap">
           <button

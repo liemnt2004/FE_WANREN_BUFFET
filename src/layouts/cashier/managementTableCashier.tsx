@@ -24,9 +24,11 @@ import {
   updateTableStatus,
 } from "../../api/apiCashier/tableApi";
 import {
+  Voucher2,
   createPromotionOrder,
   fetchPromotionById,
   fetchVoucherByCode,
+  fetchVoucherByCode2,
   updateVoucherStatus,
 } from "../../api/apiCashier/voucherApi";
 import { CreateNewOrder } from "../../api/apiStaff/orderForStaffApi";
@@ -131,6 +133,10 @@ const ManagementTableCashier: React.FC = () => {
 
   const [inputValue, setInputValue] = useState(""); // Khởi tạo state
 
+  const [showCheckVoucher, setShowCheckVoucher] = useState(false);
+
+  const [checkVoucher2, setCheckVoucher2] = useState<Voucher2 | null>(null);
+
   const { employeeUserId } = useContext(AuthContext);
 
   // useState ^
@@ -212,9 +218,15 @@ const ManagementTableCashier: React.FC = () => {
       if (table.location !== "GDeli") {
         // Nếu table.location khác "GDeli", giá món ăn = 0 trừ các món có type_food là buffet_tickets, soft_drinks, mixers
         if (
-          !["buffet_tickets", "soft_drinks", "mixers"].includes(
-            product.typeFood || ""
-          )
+          ![
+            "buffet_tickets",
+            "soft_drinks",
+            "mixers",
+            "wine",
+            "beer",
+            "dessert",
+            "cold_towel",
+          ].includes(product.typeFood || "")
         ) {
           return {
             ...product,
@@ -267,6 +279,46 @@ const ManagementTableCashier: React.FC = () => {
   // lấy dữ liệu từ api ^
 
   // các hành động function v
+
+  const checkVoucher = async (code: string, orderId: number) => {
+    if (code.length === 0) {
+      openNotification(
+        "Kiểm tra Voucher",
+        "Vui lòng nhập Voucher!",
+        <InfoCircleOutlined style={{ color: "#1890ff" }} />
+      );
+    } else {
+      const data = await fetchVoucherByCode(code);
+      if (data.promotionId === null) {
+        openNotification(
+          "Kiểm tra Voucher",
+          "Không tìm thấy Voucher!",
+          <InfoCircleOutlined style={{ color: "#1890ff" }} />
+        );
+      } else {
+        if (!data.status) {
+          const promotion = await fetchPromotionById(data.promotionId);
+          if (!isDateTimeValid(promotion.promotionEndDate)) {
+            const data2 = await fetchVoucherByCode2(inputValue);
+            setCheckVoucher2(data2);
+            setShowCheckVoucher(true);
+          } else {
+            openNotification(
+              "Kiểm tra Voucher",
+              "Voucher đã quá hạn!",
+              <InfoCircleOutlined style={{ color: "#1890ff" }} />
+            );
+          }
+        } else {
+          openNotification(
+            "Kiểm tra Voucher",
+            "Voucher đã được sử dụng!",
+            <InfoCircleOutlined style={{ color: "#1890ff" }} />
+          );
+        }
+      }
+    }
+  };
 
   const addDetail = (product: Product) => {
     setOrderDetailsTemp((prevDetails) => {
@@ -524,7 +576,7 @@ const ManagementTableCashier: React.FC = () => {
       }, []);
 
       await updateOrderDetails(selectOrder.orderId || 0, orderWithEmptyDetails);
-      await updateOrderStatus(selectOrder.orderId || 0, "DELIVERED");
+      await updateOrderStatus(selectOrder.orderId || 0, "CANCELED");
       await updateOrderDetails(orderId, order3);
       await updateTableStatus(selectTable, "EMPTY_TABLE");
       loadTablesEmpty();
@@ -577,7 +629,7 @@ const ManagementTableCashier: React.FC = () => {
     closeDeleteTable();
     await updateTableStatus(currentTable, "EMPTY_TABLE");
     await updateOrderDetails(orderId, orderWithEmptyDetails);
-    await updateOrderStatus(orderId, "DELIVERED");
+    await updateOrderStatus(orderId, "CANCELED");
     loadTablesEmpty();
     loadTablesOccupied();
     loadTables();
@@ -977,6 +1029,7 @@ const ManagementTableCashier: React.FC = () => {
   const closeSaleTable = () => {
     setSaleTable(null);
     setInputValue("");
+    setShowCheckVoucher(false);
     // setSelectOrderbyTableId(null);
   };
 
@@ -1069,7 +1122,8 @@ const ManagementTableCashier: React.FC = () => {
                 }}
                 swapTable={async () => {
                   {
-                    table.tableStatus === "OCCUPIED_TABLE"
+                    table.tableStatus === "OCCUPIED_TABLE" &&
+                    table.location !== "GDeli"
                       ? openSwapTable(
                           table,
                           (await getOrderbyTableId(table.tableId)) ||
@@ -1080,7 +1134,8 @@ const ManagementTableCashier: React.FC = () => {
                 }}
                 splitTable={async () => {
                   {
-                    table.tableStatus === "OCCUPIED_TABLE"
+                    table.tableStatus === "OCCUPIED_TABLE" &&
+                    table.location !== "GDeli"
                       ? openSplitTable(
                           table,
                           (await getOrderbyTableId(table.tableId)) ||
@@ -1091,7 +1146,8 @@ const ManagementTableCashier: React.FC = () => {
                 }}
                 combineTable={async () => {
                   {
-                    table.tableStatus === "OCCUPIED_TABLE"
+                    table.tableStatus === "OCCUPIED_TABLE" &&
+                    table.location !== "GDeli"
                       ? openCombineTable(
                           table,
                           (await getOrderbyTableId(table.tableId)) ||
@@ -1912,17 +1968,34 @@ const ManagementTableCashier: React.FC = () => {
                   <div className="box d-flex align-items-center justify-content-end">
                     <StyledWrapperButton>
                       <button
-                        onClick={async () =>
-                          savePopupSplitFood(
+                        onClick={async () => {
+                          if (
+                            orderDetailsTemp.length === 0 ||
+                            orderDetailsTemp2.length === 0
+                          ) {
+                            openNotification(
+                              "Tách bàn",
+                              "Chưa có món trong bàn!",
+                              <InfoCircleOutlined
+                                style={{ color: "#1890ff" }}
+                              />
+                            );
+                            return;
+                          }
+
+                          const order =
                             (await getOrderbyTableId(
                               splitTable?.tableId || 0
-                            )) || defaultOrder,
+                            )) || defaultOrder;
+
+                          savePopupSplitFood(
+                            order,
                             popupSplitFood.tableId,
                             orderDetailsTemp,
                             orderDetailsTemp2,
                             splitTable || defaultTable
-                          )
-                        }
+                          );
+                        }}
                       >
                         Lưu
                       </button>
@@ -2127,6 +2200,41 @@ const ManagementTableCashier: React.FC = () => {
                               type="text"
                             />
                           </div>
+                          <button
+                            className="px-2"
+                            type="button"
+                            onClick={() =>
+                              checkVoucher(
+                                inputValue,
+                                selectOrderbyTableId?.orderId || 0
+                              )
+                            }
+                          >
+                            Kiểm tra
+                          </button>
+                          {showCheckVoucher && (
+                            <div className="my-2">
+                              <p>
+                                Tên Voucher:{" "}
+                                <span>{checkVoucher2?.promotion_name}</span>
+                              </p>
+                              <p>
+                                Mô tả: <span>{checkVoucher2?.description}</span>
+                              </p>
+                              <p>
+                                Giá trị:{" "}
+                                <span>{checkVoucher2?.promotion_value}đ</span>
+                              </p>
+                              <p>
+                                Trạng thái:{" "}
+                                <span className="text-success">
+                                  {checkVoucher2?.status
+                                    ? "Đã được sử dụng"
+                                    : "Có thể sử dụng"}
+                                </span>
+                              </p>
+                            </div>
+                          )}
                         </form>
                       </FormReservation>
                     </div>
@@ -2351,9 +2459,9 @@ const PopupCardGrid = styled.div`
     row-gap: 20px;
     overflow-y: auto;
   }
-  .box {
-    border: solid 1px black;
-  }
+  // .box {
+  //   border: solid 1px black;
+  // }
 `;
 
 const PopupCard = styled.div`
@@ -2706,7 +2814,7 @@ const FormReservation = styled.div`
 
   .form button {
     height: 40px;
-    width: 100%;
+    width: auto;
     color: #000;
     font-size: 1rem;
     font-weight: 400;

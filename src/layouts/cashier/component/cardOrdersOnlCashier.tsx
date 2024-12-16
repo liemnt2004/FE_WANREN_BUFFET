@@ -67,6 +67,8 @@ const StyledWrapper = styled.div<{ status?: string }>`
         ? "#99FFFF"
         : status === "DELIVERED"
         ? "#CCFFCC"
+        : status === "CANCELED"
+        ? "#ffc0cb"
         : "#F5F5F5"}; /* Default color */
     box-shadow: 0px 8px 16px 0px rgb(0 0 0 / 3%);
     position: relative;
