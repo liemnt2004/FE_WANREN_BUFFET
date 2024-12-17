@@ -5,13 +5,16 @@ export async function getListUser(page: number = 1): Promise<{
 }> {
   const employeeToken = localStorage.getItem("employeeToken");
   try {
-    const response = await fetch(`https://wanrenbuffet.online/api-data/User?page=${page}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${employeeToken}`,
-      },
-    });
+    const response = await fetch(
+      `https://wanrenbuffet.online/api-data/User?page=${page}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${employeeToken}`,
+        },
+      }
+    );
     if (!response.ok) {
       throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
@@ -57,14 +60,17 @@ export async function updateUser(
 ): Promise<EmployeeAdmin | null> {
   const employeeToken = localStorage.getItem("employeeToken");
   try {
-    const response = await fetch(`https://wanrenbuffet.online/User/update/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${employeeToken}`,
-      },
-      body: JSON.stringify(updatedFields),
-    });
+    const response = await fetch(
+      `https://wanrenbuffet.online/api-data/User/${id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${employeeToken}`,
+        },
+        body: JSON.stringify(updatedFields),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.text();
@@ -113,13 +119,16 @@ export async function updateAccountStatus(
 export async function deleteUser(id: number): Promise<void> {
   const employeeToken = localStorage.getItem("employeeToken");
   try {
-    const response = await fetch(`https://wanrenbuffet.online/User/delete/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${employeeToken}`,
-      },
-    });
+    const response = await fetch(
+      `https://wanrenbuffet.online/User/delete/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${employeeToken}`,
+        },
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.text();
