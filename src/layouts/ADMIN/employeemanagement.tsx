@@ -438,7 +438,7 @@ const EmployeeManagement: React.FC = () => {
       <div className="container-fluid">
         <div className="main-content">
           <div className="employee-management">
-            <h2>Employee Management</h2>
+            <h2>Quản lý Nhân viên</h2>
             <div
               className="search-filter"
               style={{
@@ -452,9 +452,9 @@ const EmployeeManagement: React.FC = () => {
                 <div className="search-wrapper">
                   <Input
                     className="search-input"
-                    placeholder="Search for employees..."
+                    placeholder="Tìm kiếm nhân viên..."
                     onChange={handleSearchChange}
-                     style={{width:300}}
+                    style={{ width: 300 }}
                   />
                   <i className="fas fa-search search-icon"></i>
                 </div>
@@ -464,37 +464,37 @@ const EmployeeManagement: React.FC = () => {
                 style={{ display: "flex", alignItems: "center" }}
               >
                 <Button onClick={exportToExcel} style={{ marginRight: 8 }}>
-                  Export Excel
+                  Xuất Excel
                 </Button>
                 <Button onClick={exportToPDF} style={{ marginRight: 8 }}>
-                  Export PDF
+                  Xuất PDF
                 </Button>
                 <Button onClick={exportToCSV} style={{ marginRight: 8 }}>
-                  Export CSV
+                  Xuất CSV
                 </Button>
                 <Button
                   onClick={handleAddEmployee}
                   className="btn add-employee-btn"
                 >
-                  Add Employee
+                  Thêm Nhân viên
                 </Button>
               </div>
             </div>
 
-            {/* Table */}
+            {/* Bảng dữ liệu */}
             <div className="table-container" onScroll={handleScroll}>
               <table className="table table-striped">
                 <thead>
                   <tr>
                     <th>ID</th>
-                    <th>Username</th>
-                    <th>Full Name</th>
+                    <th>Tên đăng nhập</th>
+                    <th>Tên đầy đủ</th>
                     <th>Email</th>
-                    <th style={{ width: 150 }}>Phone Number</th>
-                    <th>Address</th>
-                    <th>UserType</th>
-                    <th style={{ width: 150 }}>Account Status</th>
-                    <th style={{ width: 100 }}>Actions</th>
+                    <th style={{ width: 150 }}>Số điện thoại</th>
+                    <th>Địa chỉ</th>
+                    <th>Loại người dùng</th>
+                    <th style={{ width: 150 }}>Trạng thái tài khoản</th>
+                    <th style={{ width: 100 }}>Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -533,14 +533,14 @@ const EmployeeManagement: React.FC = () => {
                   {loading && (
                     <tr>
                       <td colSpan={9} className="text-center">
-                        Loading...
+                        Đang tải...
                       </td>
                     </tr>
                   )}
                   {!loading && employees.length === 0 && (
                     <tr>
                       <td colSpan={9} className="text-center">
-                        No employees found.
+                        Không tìm thấy nhân viên.
                       </td>
                     </tr>
                   )}
@@ -551,9 +551,9 @@ const EmployeeManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Add Employee Modal */}
+      {/* Modal Thêm Nhân viên */}
       <Modal
-        title="Add Employee"
+        title="Thêm Nhân viên"
         visible={isAddEmployeeModalOpen}
         onOk={handleAddEmployeeModalOk}
         onCancel={handleAddEmployeeModalCancel}
@@ -562,29 +562,33 @@ const EmployeeManagement: React.FC = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="Username"
+                label="Tên đăng nhập"
                 name="username"
-                rules={[{ required: true, message: "Please enter username" }]}
+                rules={[
+                  { required: true, message: "Vui lòng nhập tên đăng nhập" },
+                ]}
               >
-                <Input placeholder="Enter username" />
+                <Input placeholder="Nhập tên đăng nhập" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label="Password"
+                label="Mật khẩu"
                 name="password"
-                rules={[{ required: true, message: "Please enter password" }]}
+                rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
               >
-                <Input.Password placeholder="Enter password" />
+                <Input.Password placeholder="Nhập mật khẩu" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label="Full Name"
+                label="Tên đầy đủ"
                 name="fullName"
-                rules={[{ required: true, message: "Please enter full name" }]}
+                rules={[
+                  { required: true, message: "Vui lòng nhập tên đầy đủ" },
+                ]}
               >
-                <Input placeholder="Enter full name" />
+                <Input placeholder="Nhập tên đầy đủ" />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -592,36 +596,38 @@ const EmployeeManagement: React.FC = () => {
                 label="Email"
                 name="email"
                 rules={[
-                  { required: true, message: "Please enter email" },
-                  { type: "email", message: "Please enter a valid email" },
+                  { required: true, message: "Vui lòng nhập email" },
+                  { type: "email", message: "Vui lòng nhập email hợp lệ" },
                 ]}
               >
-                <Input placeholder="Enter email" type="email" />
+                <Input placeholder="Nhập email" type="email" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label="Phone Number"
+                label="Số điện thoại"
                 name="phoneNumber"
                 rules={[
-                  { required: true, message: "Please enter phone number" },
+                  { required: true, message: "Vui lòng nhập số điện thoại" },
                 ]}
               >
-                <Input placeholder="Enter phone number" />
+                <Input placeholder="Nhập số điện thoại" />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="Address" name="address">
-                <Input placeholder="Enter address" />
+              <Form.Item label="Địa chỉ" name="address">
+                <Input placeholder="Nhập địa chỉ" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label="User Type"
+                label="Loại người dùng"
                 name="userType"
-                rules={[{ required: true, message: "Please enter user type" }]}
+                rules={[
+                  { required: true, message: "Vui lòng chọn loại người dùng" },
+                ]}
               >
-                <Select placeholder="Select UserType">
+                <Select placeholder="Chọn loại người dùng">
                   <Select.Option value="Bếp trưởng">Bếp trưởng</Select.Option>
                   <Select.Option value="Bếp phó">Bếp phó</Select.Option>
                   <Select.Option value="Thu ngân">Thu ngân</Select.Option>
@@ -631,13 +637,15 @@ const EmployeeManagement: React.FC = () => {
             </Col>
             <Col span={12}>
               <Form.Item
-                label="Account Status"
+                label="Trạng thái tài khoản"
                 name="accountStatus"
-                rules={[{ required: true, message: "Please select status" }]}
+                rules={[
+                  { required: true, message: "Vui lòng chọn trạng thái" },
+                ]}
               >
-                <Select placeholder="Select account status">
-                  <Select.Option value={true}>Active</Select.Option>
-                  <Select.Option value={false}>Inactive</Select.Option>
+                <Select placeholder="Chọn trạng thái tài khoản">
+                  <Select.Option value={true}>Kích hoạt</Select.Option>
+                  <Select.Option value={false}>Không kích hoạt</Select.Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -645,9 +653,9 @@ const EmployeeManagement: React.FC = () => {
         </Form>
       </Modal>
 
-      {/* Update Employee Modal */}
+      {/* Modal Cập nhật Nhân viên */}
       <Modal
-        title="Update Employee"
+        title="Cập nhật Nhân viên"
         visible={isUpdateEmployeeModalOpen}
         onOk={handleUpdateEmployeeModalOk}
         onCancel={handleUpdateEmployeeModalCancel}
@@ -655,45 +663,45 @@ const EmployeeManagement: React.FC = () => {
         <Form form={updateForm} layout="vertical">
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label="Username" name="username">
-                <Input placeholder="Enter username" disabled />
+              <Form.Item label="Tên đăng nhập" name="username">
+                <Input placeholder="Nhập tên đăng nhập" disabled />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="Password" name="password">
-                <Input.Password placeholder="Enter new password" />
+              <Form.Item label="Mật khẩu" name="password">
+                <Input.Password placeholder="Nhập mật khẩu mới" />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="Full Name" name="fullName">
-                <Input placeholder="Enter full name" />
+              <Form.Item label="Tên đầy đủ" name="fullName">
+                <Input placeholder="Nhập tên đầy đủ" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item label="Email" name="email">
-                <Input placeholder="Enter email" type="email" />
+                <Input placeholder="Nhập email" type="email" />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="Phone Number" name="phoneNumber">
-                <Input placeholder="Enter phone number" />
+              <Form.Item label="Số điện thoại" name="phoneNumber">
+                <Input placeholder="Nhập số điện thoại" />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="Address" name="address">
-                <Input placeholder="Enter address" />
+              <Form.Item label="Địa chỉ" name="address">
+                <Input placeholder="Nhập địa chỉ" />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="User Type" name="userType">
-                <Input placeholder="Enter user type" />
+              <Form.Item label="Loại người dùng" name="userType">
+                <Input placeholder="Nhập loại người dùng" />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="Account Status" name="accountStatus">
-                <Select placeholder="Select account status">
-                  <Select.Option value={true}>Active</Select.Option>
-                  <Select.Option value={false}>Inactive</Select.Option>
+              <Form.Item label="Trạng thái tài khoản" name="accountStatus">
+                <Select placeholder="Chọn trạng thái tài khoản">
+                  <Select.Option value={true}>Kích hoạt</Select.Option>
+                  <Select.Option value={false}>Không kích hoạt</Select.Option>
                 </Select>
               </Form.Item>
             </Col>

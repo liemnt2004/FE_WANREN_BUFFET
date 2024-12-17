@@ -12,6 +12,16 @@ export type PromotionOrder = {
     orderId?: number;
 }
 
+export type Voucher2 = {
+  voucherId?: number;
+  status?: boolean;
+  promotionId?: number;
+  customerId?: number;
+  description?: string;
+  promotion_name?: string;
+  promotion_value?: number;
+    }
+
 const getHeaders = () => {
     const employeeToken = localStorage.getItem("employeeToken");
     return {
@@ -23,6 +33,18 @@ const getHeaders = () => {
   export const fetchVoucherByCode = async (code:string) => {
     try {
       const response = await axios.get(`${BASE_URL}/Voucher/${code}/findByCode`, {
+        method: "GET",
+        headers: getHeaders(),
+      });
+      return response.data;
+    } catch (error) {
+      return [];
+    }
+  };
+
+  export const fetchVoucherByCode2 = async (code:string) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/Voucher/${code}/findByCode2`, {
         method: "GET",
         headers: getHeaders(),
       });
