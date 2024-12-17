@@ -6,6 +6,7 @@ import { AuthContext } from "./component/AuthContext";
 import { notification, Spin, Button } from "antd";
 import { GoogleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { sign } from 'crypto';
 
 const LoginRegisterComponent: React.FC = () => {
     const { t } = useTranslation(); // Khởi tạo hook i18n
@@ -239,8 +240,8 @@ const LoginRegisterComponent: React.FC = () => {
             }
         } catch (error) {
             console.error('Sign-in error:', error);
-            setErrorMessage(t('signIn.loginError'));
-            openNotification('error', t('signIn.error'), t('signIn.loginError'));
+            setErrorMessage(t('signIn.loginFail'));
+            openNotification('error', t('signIn.loginFail'), t('signIn.loginFail'));
         } finally {
             setIsLoading(false);
         }

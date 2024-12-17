@@ -20,7 +20,6 @@
 /* Light Theme */
 body.light {
     --bg-color: hsl(228, 100%, 99%);
-    --text-color: #000000;
     --nav-bg-color: #f8f9fa;
     --nav-text-color: #000000;
     --first-color: #bd4242;
@@ -36,7 +35,6 @@ body.light {
   /* Dark Theme */
   body.dark {
     --bg-color: hsl(228, 24%, 16%);
-    --text-color: #3E5879;
     --nav-bg-color: #343a40;
     --nav-text-color: #ffffff;
     --first-color: #bd4242;
@@ -54,6 +52,10 @@ header {
     position: fixed;
     width: 100%;
     z-index: 2;
+}
+
+.form-control::placeholder{
+    color: var(--text-color);
 }
 
 body{

@@ -57,17 +57,17 @@ const EnterOtp: React.FC = () => {
 
     return (
         <div className="ps36231-enter-otp  container-flush">
-            <form onSubmit={handleSubmit} className="box-enter-otp p-4 border rounded">
+            <form onSubmit={handleSubmit} className="box-enter-otp p-4 border rounded" style={{color:'var(--text-color)'}}>
                 <div className="title d-flex align-items-center mb-4">
                     <Link className="back-to-enter-phone me-3" to="/forgot-password" state={{ email }}>
                         <i className="bi bi-caret-left-fill fs-4"></i>
                     </Link>
-                    <h3 className="mb-0">Nhập mã xác nhận</h3>
+                    <h3 className="mb-0" style={{color:'var(--text-color)'}}>Nhập mã xác nhận</h3>
                 </div>
                 <div className="input-otp d-flex flex-column">
                     <div className="note-otp mb-3">
-                        <p>Mã xác thực đã được gửi qua email:</p>
-                        <span>{email}</span>
+                        <p >Mã xác thực đã được gửi qua email:</p>
+                        <span style={{color:'var(--text-color)'}}>{email}</span>
                     </div>
                     {error && <div className="alert alert-danger">{error}</div>}
                     <div className="mb-3">
@@ -80,13 +80,12 @@ const EnterOtp: React.FC = () => {
                             value={otp}
                             onChange={(e) => setOtp(e.target.value)}
                             required
+                            
                         />
                     </div>
                     <div className="when-dont-done mb-3">
                         <span>Bạn vẫn chưa nhận được?</span>{' '}
-                        <span>
-                            <Link to="/resend-otp" state={{ email }}>Gửi lại</Link>
-                        </span>
+                    
                     </div>
                     <button type="submit" className="btn btn-primary w-100">
                         Tiếp theo

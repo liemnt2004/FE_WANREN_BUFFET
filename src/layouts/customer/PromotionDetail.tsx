@@ -47,7 +47,7 @@ const PromotionDetail = () => {
       setError(null);
 
       try {
-        const response = await axios.get(`http://localhost:8080/api/vouchers/voucherInfo/${Number(decoded?.userId)}`, {
+        const response = await axios.get(`https://wanrenbuffet.online/api/vouchers/voucherInfo/${Number(decoded?.userId)}`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -165,8 +165,8 @@ const PromotionDetail = () => {
                 </div>
               </div>
             </div>
-            <div className="row content">
-              <div dangerouslySetInnerHTML={{ __html: promotion.description }}></div>
+            <div className="row content" style={{backgroundColor:'var(--text-color) !important' , borderRadius:10}}>
+              <div dangerouslySetInnerHTML={{ __html: promotion.description }} ></div>
 
             </div>
           </div>

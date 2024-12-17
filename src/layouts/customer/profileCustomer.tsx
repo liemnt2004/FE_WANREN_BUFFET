@@ -146,119 +146,194 @@ const MenuList: React.FC<TogglePanelProps> = ({ togglePanel }) => (
 const PersonalInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
     const [editing, setEditing] = useState(false);
     const [tempInfo, setTempInfo] = useState<UserInfo>(userInfo);
+    const [error, setError] = useState<string | null>(null);
+    const [isChecking, setIsChecking] = useState(false);
     const token = localStorage.getItem("token");
     const decoded = jwtDecode<DecodedToken>(token || "");
     const { t } = useTranslation();
-    const handleSave = async () => {
-        try {
-            const response = await fetch(`https://wanrenbuffet.online/api/customer/updateCustomer/${decoded.sub}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(tempInfo),
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to update user information");
-            }
-
-            const updatedUser = await response.json();
-            console.log(updatedUser)
-            setUserInfo(updatedUser);
-            localStorage.setItem("token", updatedUser.jwtToken);
-            window.location.reload();
-            setEditing(false);
-        } catch (error) {
-            console.error("Error updating user information:", error);
+  
+    // Kiểm tra số điện thoại có hợp lệ không (10 chữ số và không có dấu cách)
+    const isValidPhoneNumber = (phoneNumber: string): boolean => {
+      // Kiểm tra số điện thoại có đúng định dạng 10 số và không chứa dấu cách
+      const phoneRegex = /^[0-9]{10}$/; // Chỉ chấp nhận 10 chữ số, không có dấu cách
+      return phoneRegex.test(phoneNumber);
+    };
+  
+    const checkPhoneNumberExists = async (phoneNumber: string): Promise<boolean> => {
+      try {
+        const response = await fetch(
+          `https://wanrenbuffet.online/api-data/Customer/search/existsByPhoneNumber?phoneNumber=${encodeURIComponent(
+            phoneNumber
+          )}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+  
+        if (!response.ok) {
+          throw new Error("Failed to check phone number.");
         }
+  
+        const data = await response.json();
+        return data; // Assuming the API returns { exists: boolean }
+      } catch (err) {
+        console.error("Error checking phone number:", err);
+        setError(t('checkout.phone_number_check_error'));
+        return false;
+      }
     };
-
+  
+    const handleSave = async () => {
+      setError(null); // Reset error state
+      setIsChecking(true);
+  
+      // Kiểm tra tính hợp lệ của số điện thoại
+      if (!isValidPhoneNumber(tempInfo.phoneNumber)) {
+        setError(t('checkout.phone_number_invalid'));
+        setIsChecking(false);
+        return; // Dừng lại nếu số điện thoại không hợp lệ
+      }
+  
+      // Kiểm tra xem số điện thoại có thay đổi và đã tồn tại hay không
+      if (tempInfo.phoneNumber !== userInfo.phoneNumber) {
+        const exists = await checkPhoneNumberExists(tempInfo.phoneNumber);
+        if (exists) {
+          setError(t('checkout.phone_number_check_error')); // Thông báo lỗi nếu số điện thoại đã tồn tại
+          setIsChecking(false);
+          return; // Dừng lại nếu số điện thoại đã tồn tại
+        }
+      }
+  
+      setIsChecking(false); // Đặt trạng thái kiểm tra lại là false sau khi kiểm tra
+  
+      // Tiến hành lưu thông tin người dùng
+      try {
+        const response = await fetch(`https://wanrenbuffet.online/api/customer/updateCustomer/${decoded.sub}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(tempInfo),
+        });
+  
+        if (!response.ok) {
+          throw new Error("Failed to update user information");
+        }
+  
+        const updatedUser = await response.json();
+        console.log(updatedUser);
+        setUserInfo(updatedUser); // Cập nhật thông tin người dùng mới
+        localStorage.setItem("token", updatedUser.jwtToken); // Cập nhật lại token
+        setEditing(false); // Đặt lại trạng thái chỉnh sửa
+      } catch (error) {
+        console.error("Error updating user information:", error);
+        setIsChecking(false); // Dừng trạng thái kiểm tra
+      }
+    };
+  
     const handleCancel = () => {
-        setTempInfo(userInfo);
-        setEditing(false);
+      setTempInfo(userInfo);
+      setError(null);
+      setEditing(false);
     };
-
+  
     return (
-        <div className="col-12 col-sm-4 " style={{color: 'var(--text-color)'}}>
-            <h4 className="py-3 fw-bold">{t('personal_info')}</h4>
-            {!editing ? (
-                <div id="personalInfo" >
-                    <span  style={{color: 'var(--text-color)'}} id="nameDisplay">
-                        {userInfo.fullName}
-                    </span>
-                    <br />
-                    <span style={{color: 'var(--text-color)'}} id="phoneDisplay">
-                        {userInfo.phoneNumber}
-                    </span>
-                    <br />
-                    <span style={{color: 'var(--text-color)'}} id="email">
-                        {userInfo.email}
-                    </span>
-                    <br />
-                    <hr />
-                    <a
-                        href="#"
-                        className=" none-underline"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            setEditing(true);
-                        }}
-                    >
-                        {t('edit')}
-                    </a>
-                </div>
-            ) : (
-                <div id="editPersonalInfo">
-                    <input
-                        type="text"
-                        id="nameInput"
-                        className="form-control tinh-fs14 tinh-no-outline my-2"
-                        value={tempInfo.fullName} // use tempInfo instead of userInfo
-                        onChange={(e) => setTempInfo({ ...tempInfo, fullName: e.target.value })}
-                    />
-                    <input
-                        type="text"
-                        id="phoneInput"
-                        className="form-control tinh-fs14 tinh-no-outline my-2"
-                        value={tempInfo.phoneNumber} // use tempInfo instead of userInfo
-                        onChange={(e) => setTempInfo({ ...tempInfo, phoneNumber: e.target.value })}
-                    />
-                    <input
-                        type="email"
-                        id="emailInput"
-                        className="form-control tinh-fs14 tinh-no-outline my-2"
-                        value={userInfo.email}
-                        onChange={(e) => setTempInfo({ ...tempInfo, email: e.target.value })}
-                    />
-                    <hr />
-                    <a
-                        href="#"
-                        className="text-black none-underline tinh-fs14 tinh-mr"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            handleSave();
-                        }}
-                    >
-                        {t('save')}
-                    </a>
-                    <a
-                        href="#"
-                        className="text-black none-underline tinh-fs14"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            handleCancel();
-                        }}
-                    >
-                        {t('cancel')}
-                    </a>
-                </div>
+      <div className="col-12 col-sm-4" style={{ color: "var(--text-color)" }}>
+        <h4 className="py-3 fw-bold">{t('personal_info')}</h4>
+        {!editing ? (
+          <div id="personalInfo">
+            <span style={{ color: "var(--text-color)" }} id="nameDisplay">
+              {userInfo.fullName}
+            </span>
+            <br />
+            <span style={{ color: "var(--text-color)" }} id="phoneDisplay">
+              {userInfo.phoneNumber}
+            </span>
+            <br />
+            <span style={{ color: "var(--text-color)" }} id="email">
+              {userInfo.email}
+            </span>
+            <br />
+            <hr />
+            <a
+              href="#"
+              className="none-underline"
+              onClick={(e) => {
+                e.preventDefault();
+                setEditing(true);
+              }}
+            >
+              {t('edit')}
+            </a>
+          </div>
+        ) : (
+          <div id="editPersonalInfo">
+            <input
+              type="text"
+              id="nameInput"
+              className="form-control tinh-fs14 tinh-no-outline my-2"
+              value={tempInfo.fullName}
+              onChange={(e) =>
+                setTempInfo({ ...tempInfo, fullName: e.target.value })
+              }
+              placeholder={t('full_name')}
+            />
+            <input
+              type="text"
+              id="phoneInput"
+              className="form-control tinh-fs14 tinh-no-outline my-2"
+              value={tempInfo.phoneNumber}
+              onChange={(e) =>
+                setTempInfo({ ...tempInfo, phoneNumber: e.target.value })
+              }
+              placeholder={t('phone_number')}
+            />
+            <input
+              type="email"
+              id="emailInput"
+              className="form-control tinh-fs14 tinh-no-outline my-2"
+              value={tempInfo.email}
+              readOnly
+              disabled
+              placeholder={t('email')}
+            />
+            {error && (
+              <div className="alert alert-danger my-2" role="alert">
+                {error}
+              </div>
             )}
-        </div>
+            <hr />
+            <button
+              className="btn btn-primary me-2"
+              onClick={(e) => {
+                e.preventDefault();
+                handleSave();
+              }}
+              disabled={isChecking}
+            >
+              {isChecking ? t('loading') : t('save')}
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={(e) => {
+                e.preventDefault();
+                handleCancel();
+              }}
+              disabled={isChecking}
+            >
+              {t('cancel')}
+            </button>
+          </div>
+        )}
+      </div>
     );
-};
-
+  };
+  
 
 
 
@@ -271,8 +346,7 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
     const [confirmPassword, setConfirmPassword] = useState<string>(""); // New state for confirm password
     const [error, setError] = useState<string | null>(null); // To display error messages
     const [token, setToken] = useState<string | null>(localStorage.getItem('token')); // Token state
-
-    const authContext = useContext(AuthContext);
+    const decoded = jwtDecode<DecodedToken>(token || "");
     const { t } = useTranslation();
     // Update token if it changes in localStorage
     useEffect(() => {
@@ -286,13 +360,13 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
             return;
         }
 
-        if (tempPassword.length < 6) {
-            setError("Mật khẩu phải có ít nhất 6 ký tự.");
+        if (tempPassword.length < 8) {
+            setError("Mật khẩu phải có ít nhất 8 ký tự.");
             return;
         }
 
         try {
-            const response = await fetch(`https://wanrenbuffet.online/api/customer/updatePassword/${authContext.userId}`, {
+            const response = await fetch(`https://wanrenbuffet.online/api/customer/updatePassword/${decoded.userId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -323,7 +397,7 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
     return (
         <div className="card p-3 rounded-0 mb-3" style={{backgroundColor: 'var(--body-color-table)'}}>
             {/* Check if username contains "@" */}
-            {authContext.username && authContext.username.includes("@") ? (
+            {decoded.sub && decoded.sub.includes("@") ? (
                 // Don't allow editing if username contains "@"
                 <div id="passwordInfo">
                     <h4 className="py-3">{t('password')}</h4>
@@ -359,7 +433,7 @@ const PasswordInfo: React.FC<UserInfoProps> = ({ userInfo, setUserInfo }) => {
                 )
             )}
 
-            {!authContext.username?.includes("@") && editing && (
+            {!decoded.sub?.includes("@") && editing && (
                 <div id="editPasswordInfo">
                     <input
                     style={{backgroundColor: 'white'}}
@@ -864,7 +938,7 @@ const VoucherContent: React.FC = () => {
             setError(null);
 
             try {
-                const response = await axios.get(`http://localhost:8080/api/vouchers/voucherInfo/${Number(decoded?.userId)}`, {
+                const response = await axios.get(`https://wanrenbuffet.online/api/vouchers/voucherInfo/${Number(decoded?.userId)}`, {
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
