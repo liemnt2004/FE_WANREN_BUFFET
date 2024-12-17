@@ -270,7 +270,11 @@
     "qr_alt": "Payment QR Code",
     "select_district": "Select District",
     "success": "Success",
-    "error": "Error"
+    "error": "Error",
+    "phone_number_check_error":"error phone number",
+    "phone_number_invalid":"Phone invalid",
+     "email_invalid":"Email invalid",
+     "password_error":"Password must have at least 8 characters."
   }
    
   }

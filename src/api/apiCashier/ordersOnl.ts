@@ -136,9 +136,10 @@ export const fetchOrderDetailsByOrderId = async (orderId: number): Promise<Order
     return [];
   }
 };
-export const fetchOrders = async (): Promise<Order[]> => {
+export const fetchOrders = async (limit?: number): Promise<Order[]> => {
   try {
-    const response = await axios.get(`${BASE_URL}/Orders/allWithTableNull`, {
+    const url = `${BASE_URL}/Orders/allWithTableNull${limit ? `?limit=${limit}` : ""}`;
+    const response = await axios.get(url, {
       method: "GET",
       headers: getHeaders(),
     });
@@ -148,6 +149,7 @@ export const fetchOrders = async (): Promise<Order[]> => {
     return [];
   }
 };
+
 // export const fetchOrders = async (): Promise<Order[]> => {
 //   try {
 //     const response = await axios.get(`${BASE_URL}/Orders`, {
@@ -221,6 +223,22 @@ export const updateOrderStatus = async (orderId: number, newStatus: string) => {
   }
 };
 
+// Hàm cập nhật trạng thái sản phẩm
+export const updateOrderUpdateDate = async (orderId: number) => {
+  try {
+    const currentDate = new Date().toISOString();
+    await axios.patch(`${BASE_URL}/api-data/Orders/${orderId}`, {
+      updatedDate: currentDate
+    }, {
+      method: "PATCH",
+      headers: getHeaders(),
+    });
+  } catch (error) {
+    console.error("Lỗi khi cập nhật trạng thái sản phẩm:", error);
+    throw error;
+  }
+};
+
 
 // Hàm cập nhật trạng thái sản phẩm
 export const updateOrderDetails = async (orderId: number, details: any[]) => {
@@ -253,4 +271,21 @@ export const updateTableIdOrder = async (orderId: number, tableId: number) => {
 } catch (error) {
     console.error('Error transferring table:', error);
 }
+};
+
+
+export const updateUserIdForOrder = async (orderId: number, userId: number) => {
+  try {
+    const response = await axios.put(
+      `${BASE_URL}/Orders/${orderId}/user`,
+      { userId },
+      { headers: getHeaders() }
+    );
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error("Chi tiết lỗi từ server:", error.response?.data);
+    } else {
+      console.error("Lỗi khác:", error);
+    }
+  }
 };

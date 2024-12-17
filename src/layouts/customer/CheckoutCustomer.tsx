@@ -92,8 +92,6 @@ const CheckoutCustomer: React.FC = () => {
     useEffect(() => {
         if (!decoded) {
             window.location.href = "https://wanrenbuffet.netlify.app/login";
-        }else if(decoded.phone == null){
-            navigate('/profile')
         }
     }, [decoded, navigate]);
 
@@ -107,7 +105,6 @@ const CheckoutCustomer: React.FC = () => {
             setModalType('success');
             setShowModal(true);
             navigate("/checkout", { replace: true });
-            navigate("/profile")
         } else if (error) {
             setModalMessage(decodeURIComponent(error));
             setModalType('error');
@@ -268,7 +265,27 @@ const CheckoutCustomer: React.FC = () => {
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-
+    
+        // Kiểm tra số điện thoại
+        const phoneRegex = /^(0[3|5|7|8|9])([0-9]{8})$/; // Regex cho số điện thoại Việt Nam (10 chữ số, không dấu cách)
+        if (!phoneRegex.test(formData.phoneCheckout)) {
+            setModalMessage(t('checkout.phone_number_invalid') || 'Số điện thoại không hợp lệ.');
+            setModalType('error');
+            setShowModal(true);
+            setIsSubmitting(false);
+            return;
+        }
+    
+        // Kiểm tra email
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; // Regex cho email hợp lệ
+        if (!emailRegex.test(formData.emailCheckout)) {
+            setModalMessage(t('checkout.email_invalid') || 'Email không hợp lệ.');
+            setModalType('error');
+            setShowModal(true);
+            setIsSubmitting(false);
+            return;
+        }
+    
         if (!formData.payment) {
             setModalMessage(t('checkout.select_payment_method') || 'Vui lòng chọn phương thức thanh toán.');
             setModalType('error');
@@ -276,11 +293,11 @@ const CheckoutCustomer: React.FC = () => {
             setIsSubmitting(false);
             return;
         }
-
+    
         let address22 = '';
-
-        if (!showNewAddressForm && decoded && decoded.address != '') {
-            address22 = decoded.address || ""
+    
+        if (!showNewAddressForm && decoded && decoded.address !== '' && decoded.address !== undefined && decoded.address !== null) {
+            address22 = decoded.address || "";
         } else {
             if (!formData.quan || !formData.phuong || !formData.detail_address) {
                 setModalMessage(t('checkout.fill_address_info') || 'Vui lòng điền đầy đủ thông tin địa chỉ.');
@@ -289,12 +306,12 @@ const CheckoutCustomer: React.FC = () => {
                 setIsSubmitting(false);
                 return;
             }
-
+    
             const selectedDistrict = districts.find(district => district.id === formData.quan);
             const districtName = selectedDistrict ? selectedDistrict.full_name : "";
             address22 = `${formData.detail_address}, ${formData.phuong}, ${districtName}, ${formData.tinh}`;
         }
-
+    
         const orderData = {
             username: formData.username,
             address: address22,
@@ -312,7 +329,7 @@ const CheckoutCustomer: React.FC = () => {
                 itemNotes: '',
             })),
         };
-
+    
         try {
             if (formData.payment === "VNPAY") {
                 const createOrderResponse = await fetch('https://wanrenbuffet.online/api/orders', {
@@ -323,19 +340,19 @@ const CheckoutCustomer: React.FC = () => {
                     },
                     body: JSON.stringify(orderData),
                 });
-
+    
                 if (!createOrderResponse.ok) {
                     const errorData = await createOrderResponse.json();
                     throw new Error(errorData.message || t('checkout.order_failed') || "Đặt hàng thất bại.");
                 }
-
+    
                 const createOrderResult = await createOrderResponse.json();
                 const orderId = createOrderResult.orderId;
-
+    
                 if (createOrderResult.jwtToken) {
                     localStorage.setItem("token", createOrderResult.jwtToken);
                     const newDecoded = jwtDecode<DecodedToken>(createOrderResult.jwtToken);
-
+    
                     setFormData(prev => ({
                         ...prev,
                         username: newDecoded.sub || "",
@@ -343,16 +360,17 @@ const CheckoutCustomer: React.FC = () => {
                         phoneCheckout: newDecoded.phone || "",
                     }));
                 }
-
+    
                 const paymentResponse = await request(`https://wanrenbuffet.online/api/payment/create_payment?price=${total}`);
                 if (!paymentResponse || !paymentResponse.url) {
                     throw new Error(t('checkout.vnpay_failed') || "Tạo thanh toán VN PAY thất bại.");
                 }
                 cartContext?.clearCart();
-
+    
                 window.location.href = paymentResponse.url;
-
+    
             } else if (formData.payment === "CASH") {
+                // Xử lý thanh toán tiền mặt
                 const createOrderResponse = await fetch('https://wanrenbuffet.online/api/orders', {
                     method: 'POST',
                     headers: {
@@ -361,14 +379,14 @@ const CheckoutCustomer: React.FC = () => {
                     },
                     body: JSON.stringify(orderData),
                 });
-
+    
                 if (!createOrderResponse.ok) {
                     const errorData = await createOrderResponse.json();
                     throw new Error(errorData.message || t('checkout.order_failed') || "Đặt hàng thất bại.");
                 }
-
+    
                 const createOrderResult = await createOrderResponse.json();
-
+    
                 if (createOrderResult.jwtToken) {
                     localStorage.setItem("token", createOrderResult.jwtToken);
                     const newDecoded = jwtDecode<DecodedToken>(createOrderResult.jwtToken);
@@ -379,13 +397,14 @@ const CheckoutCustomer: React.FC = () => {
                         phoneCheckout: newDecoded.phone || "",
                     }));
                 }
-                
-
+    
                 setModalMessage(t('checkout.order_success') || "Đặt hàng thành công. Chúng tôi sẽ liên hệ với bạn sớm.");
                 setModalType('success');
                 setShowModal(true);
+                cartContext?.clearCart();
                 window.location.reload();
             } else if (formData.payment === "QR_CODE") {
+                // Xử lý thanh toán qua QR code
                 const createOrderResponse = await fetch('https://wanrenbuffet.online/api/orders', {
                     method: 'POST',
                     headers: {
@@ -394,15 +413,15 @@ const CheckoutCustomer: React.FC = () => {
                     },
                     body: JSON.stringify(orderData),
                 });
-
+    
                 if (!createOrderResponse.ok) {
                     const errorData = await createOrderResponse.json();
                     throw new Error(errorData.message || t('checkout.order_failed') || "Đặt hàng thất bại.");
                 }
-
+    
                 const createOrderResult = await createOrderResponse.json();
                 const orderId: number = createOrderResult.orderId;
-
+    
                 if (createOrderResult.jwtToken) {
                     localStorage.setItem("token", createOrderResult.jwtToken);
                     const newDecoded = jwtDecode<DecodedToken>(createOrderResult.jwtToken);
@@ -413,22 +432,22 @@ const CheckoutCustomer: React.FC = () => {
                         phoneCheckout: newDecoded.phone || "",
                     }));
                 }
-
+    
                 const myBank = {
                     bank_ID: 'MB',
                     account_NO: '280520049999'
                 };
-
+    
                 setDescription(orderId + " Thanh toan tai Wanren Buffet");
-                setLastAmount(Number(2000))
-
+                setLastAmount(Number(2000));
+    
                 const generateQrCode = (bank: { bank_ID: string; account_NO: string; }, amount: number): string => {
                     return `https://img.vietqr.io/image/${bank.bank_ID}-${bank.account_NO}-compact.png?amount=${amount}&addInfo=${orderId + " Thanh toan tai Wanren Buffet"}`;
                 };
                 const QR = generateQrCode(myBank, Number(2000));
                 handleShowQRCodeModal(QR);
             }
-
+    
         } catch (error: any) {
             console.error("Đặt hàng thất bại:", error);
             setModalMessage(error.message || t('checkout.order_or_payment_error') || "Có lỗi xảy ra trong quá trình đặt hàng hoặc tạo thanh toán.");
@@ -438,48 +457,7 @@ const CheckoutCustomer: React.FC = () => {
             setIsSubmitting(false);
         }
     };
-
-    useEffect(() => {
-        const interval = setInterval(async () => {
-            if (isUpdating) {
-                await checkPaid(lastAmount, description || "");
-            }
-        }, 3000);
-
-        return () => clearInterval(interval);
-    }, [isUpdating, lastAmount, description]);
-
-    async function checkPaid(price: number, description: string) {
-        if (isSucess) {
-            return;
-        } else {
-            try {
-                const response = await fetch("https://script.google.com/macros/s/AKfycbyXPtx_J0RXilysEH-qwzQ8n2QPHJe8LyrMTn74sQJJGKAFKeVhuFYBA32zR3WZiXKHyw/exec");
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-
-                if (Array.isArray(data.data) && data.data.length > 0) {
-                    const lastPaid = data.data[1];
-                    const lastPrice = lastPaid["Giá trị"];
-                    const lastDescription = lastPaid["Mô tả"];
-                    if (lastPrice >= lastAmount && lastDescription.includes(description)) {
-                        handleCloseQRCodeModal()
-                        cartContext?.clearCart();
-                        window.location.href = `https://wanrenbuffet.online/api/payment/callbck_qrcode/${description.trim().slice(0, 2)}`;
-
-                    } else {
-                        console.log(t('checkout.payment_updating') || "Thanh toán đang cập nhật!")
-                    }
-                } else {
-                    console.log(t('checkout.no_data') || "No data or data is not an array.");
-                }
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
-        }
-    }
+    
 
     const handleOpenPromotionModal = () => {
         setShowPromotionModal(true);
@@ -523,8 +501,8 @@ const CheckoutCustomer: React.FC = () => {
                                     <div className="checkout__input mb-3">
                                         <label>{t('checkout.save_address')}</label>
                                         <div className="saved-address">
-                                            <p><strong>{t('checkout.full_name')}:</strong> {decoded.fullName}</p>
-                                            <p><strong>{t('checkout.address')}</strong> {`${decoded.address}`}</p>
+                                            <p style={{color:'var(--text-color)'}}><strong >{t('checkout.full_name')}:</strong> {decoded.fullName}</p>
+                                            <p style={{color:'var(--text-color)'}}><strong>{t('checkout.address')}</strong> {`${decoded.address}`}</p>
                                         </div>
                                     </div>
                                 )}

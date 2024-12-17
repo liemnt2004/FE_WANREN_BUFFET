@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import { v4 as uuidv4_4 } from "uuid";
 import {
@@ -6,7 +6,10 @@ import {
   fetchReservations,
   Reservation,
   updateReservationStatus,
+  updateReservationUpdateDate,
+  updateUserIdForReservation,
 } from "../../api/apiCashier/reservationApi";
+import { AuthContext } from "../customer/component/AuthContext";
 import AlertSuccess from "./component/alertSuccess";
 import CardReservationCashier, {
   getStatus,
@@ -62,16 +65,24 @@ const ManagementReservationCashier: React.FC = () => {
   const [detailReservation4, setDetailReservation4] =
     useState<Reservation | null>(null);
 
+  const [showAllReservation, setShowAllReservation] = useState(false); // Trạng thái để kiểm soát
+
+  const { employeeUserId } = useContext(AuthContext);
+
   // State ^
 
   // lấy api v
 
-  const loadReservations = async () => {
-    const data = await fetchReservations();
-    setReservations(data.reverse()); // Đảm bảo đúng đường dẫn `_embedded.tables`
+  const loadReservations = async (limit = 1000) => {
+    try {
+      const data = await fetchReservations(limit);
+      setReservations(data); // Đảm bảo đúng đường dẫn `_embedded.tables`
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+    }
   };
   useEffect(() => {
-    loadReservations();
+    loadReservations(20);
   }, []);
 
   // lấy api ^
@@ -117,7 +128,7 @@ const ManagementReservationCashier: React.FC = () => {
 
     closeBookReservation();
 
-    loadReservations();
+    loadReservations(20);
 
     // alert v
     const newAlert = {
@@ -158,7 +169,20 @@ const ManagementReservationCashier: React.FC = () => {
 
   const identifyReservation = async (reservation: Reservation) => {
     await updateReservationStatus(reservation.reservationId, "APPROVED");
-    loadReservations();
+    loadReservations(20);
+    await updateReservationUpdateDate(reservation.reservationId);
+
+    // updateUserIdForReservation(
+    //   reservation.reservationId,
+    //   Number(employeeUserId)
+    // );
+
+    await updateUserIdForReservation(
+      reservation.reservationId,
+      Number(employeeUserId)
+    ); // Cập nhật userId = 123 cho reservationId = 1
+
+    // console.log(Number(employeeUserId));
     // alert v
     const newAlert = {
       id: uuidv4_4(), // Tạo ID duy nhất cho mỗi alert
@@ -176,7 +200,13 @@ const ManagementReservationCashier: React.FC = () => {
 
   const cancelReservation = async (reservation: Reservation) => {
     await updateReservationStatus(reservation.reservationId, "CANCELED");
-    loadReservations();
+    loadReservations(20);
+    await updateReservationUpdateDate(reservation.reservationId);
+
+    await updateUserIdForReservation(
+      reservation.reservationId,
+      Number(employeeUserId)
+    );
     // alert v
     const newAlert = {
       id: uuidv4_4(), // Tạo ID duy nhất cho mỗi alert
@@ -194,7 +224,13 @@ const ManagementReservationCashier: React.FC = () => {
 
   const completeReservation = async (reservation: Reservation) => {
     await updateReservationStatus(reservation.reservationId, "SEATED");
-    loadReservations();
+    loadReservations(20);
+    await updateReservationUpdateDate(reservation.reservationId);
+
+    await updateUserIdForReservation(
+      reservation.reservationId,
+      Number(employeeUserId)
+    );
     // alert v
     const newAlert = {
       id: uuidv4_4(), // Tạo ID duy nhất cho mỗi alert
@@ -208,6 +244,11 @@ const ManagementReservationCashier: React.FC = () => {
       );
     }, 3000);
     // alert ^
+  };
+
+  const handleShowAllReservation = () => {
+    setShowAllReservation(true);
+    loadReservations(); // Gọi mà không giới hạn `limit` để load toàn bộ
   };
 
   // function ^
@@ -316,6 +357,7 @@ const ManagementReservationCashier: React.FC = () => {
           </label>
         </div>
         <button onClick={openBookReservation}>Đặt bàn</button>
+        <button onClick={handleShowAllReservation}>Hiện tất cả</button>
       </StyledWrapperTab>
       <StyledWrapper>
         {filteredReservations.map((reservation) => (
@@ -505,7 +547,7 @@ const ManagementReservationCashier: React.FC = () => {
                       onClick={() => {
                         identifyReservation(detailReservation);
                         closeDetailReservation();
-                        loadReservations();
+                        loadReservations(20);
                       }}
                       type="button"
                       className="mx-1"
@@ -516,7 +558,7 @@ const ManagementReservationCashier: React.FC = () => {
                       onClick={() => {
                         cancelReservation(detailReservation);
                         closeDetailReservation();
-                        loadReservations();
+                        loadReservations(20);
                       }}
                       type="button"
                       className="mx-1"
@@ -617,7 +659,7 @@ const ManagementReservationCashier: React.FC = () => {
                       onClick={() => {
                         cancelReservation(detailReservation2);
                         closeDetailReservation2();
-                        loadReservations();
+                        loadReservations(20);
                       }}
                       type="button"
                       className="mx-1"
@@ -718,7 +760,7 @@ const ManagementReservationCashier: React.FC = () => {
                       onClick={() => {
                         cancelReservation(detailReservation3);
                         closeDetailReservation3();
-                        loadReservations();
+                        loadReservations(20);
                       }}
                       type="button"
                       className="mx-1"
@@ -819,7 +861,7 @@ const ManagementReservationCashier: React.FC = () => {
                       onClick={() => {
                         identifyReservation(detailReservation4);
                         closeDetailReservation4();
-                        loadReservations();
+                        loadReservations(20);
                       }}
                       type="button"
                       className="mx-1"

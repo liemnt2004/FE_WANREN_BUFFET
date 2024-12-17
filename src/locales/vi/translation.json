@@ -267,7 +267,11 @@
     "qr_alt": "QR Code thanh toán",
     "select_district": "Chọn Quận/Huyện",
      "success": "Thành Công",
-    "error": "Lỗi"
+    "error": "Lỗi",
+    "phone_number_check_error":"Lỗi Check Số Điện Thoại",
+     "phone_number_invalid":"Số Điện thoại không đúng định dạng việt nam",
+     "email_invalid":"Email không đúng định dạnh",
+     "password_error":"Mật khẩu phải có ít nhất 8 ký tự."
   }
   }
   

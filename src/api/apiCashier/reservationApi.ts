@@ -23,9 +23,10 @@ const getHeaders = () => {
   };
 };
 
-export const fetchReservations = async () => {
+export const fetchReservations = async (limit?: number) => {
   try {
-    const response = await axios.get(`${BASE_URL}/Reservation/all`, {
+    const url = `${BASE_URL}/Reservation/all${limit ? `?limit=${limit}` : ""}`;
+    const response = await axios.get(url, {
       method: "GET",
       headers: getHeaders(),
     });
@@ -64,3 +65,35 @@ export const updateReservationStatus = async (reservationId: number, newStatus: 
     throw error;
   }
 };
+
+export const updateUserIdForReservation = async (reservationId: number, userId: number) => {
+  try {
+    const response = await axios.put(
+      `${BASE_URL}/Reservation/${reservationId}/user`,
+      { userId },
+      { headers: getHeaders() }
+    );
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error("Chi tiết lỗi từ server:", error.response?.data);
+    } else {
+      console.error("Lỗi khác:", error);
+    }
+  }
+};
+
+export const updateReservationUpdateDate = async (reservationId: number) => {
+  try {
+    const currentDate = new Date().toISOString();
+    await axios.patch(`${BASE_URL}/api-data/Reservation/${reservationId}`, {
+      updatedDate: currentDate
+    }, {
+      method: "PATCH",
+      headers: getHeaders(),
+    });
+  } catch (error) {
+    console.error("Lỗi khi cập nhật trạng thái sản phẩm:", error);
+    throw error;
+  }
+};
+

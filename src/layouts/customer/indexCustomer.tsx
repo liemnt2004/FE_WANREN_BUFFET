@@ -213,7 +213,7 @@ const IndexCustomer: React.FC = () => {
 
                         {/* Hot Deal Section */}
                         <section className="hot-deal" style={{ backgroundColor: 'white' }}>
-                            <h4 className="fw-bold">{t('hotDeal')}</h4>
+                            <h4 className="fw-bold" style={{backgroundColor:'var(--body-color) !important'}}>{t('hotDeal')}</h4>
                             {loading ? (
                                 <div>Đang tải sản phẩm...</div>
                             ) : error ? (
@@ -558,7 +558,7 @@ const IndexCustomer: React.FC = () => {
                                         <div className="col-md-5">
                                             <img src={loginfooter} width="100" alt="Logo Footer" className="img-feeback" />
                                             <p className="mt-3 mb-4">{t('footerDescription')}</p>
-                                            <h6 className="fw-bold">{t('followUs')}</h6>
+                                            <h6 className="fw-bold" >{t('followUs')}</h6>
                                             <div className="footer-contact mt-3 text-secondary">
                                                 <i className="bi bi-facebook pe-3"></i>
                                                 <i className="bi bi-twitter pe-3"></i>
