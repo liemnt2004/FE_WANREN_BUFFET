@@ -202,7 +202,12 @@ const Management: React.FC = () => {
                         {new Date(admin.createdDate).toLocaleDateString()}
                       </td>
                       <td>
-                        <Switch checked={admin.accountStatus} />
+                        if (admin.accountStatus) {
+                          <p>Hoạt Động</p>
+                        }
+
+
+                        
                       </td>
                       <td>
                         <button

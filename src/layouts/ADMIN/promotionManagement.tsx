@@ -383,7 +383,7 @@ const PromotionManagement: React.FC = () => {
                 dataIndex: "promotionValue",
                 key: "promotionValue",
                 sorter: (a, b) => a.promotionValue - b.promotionValue,
-                render: (value: number) => `${value}%`,
+                render: (value: number) => `${value}`,
                 width: 150,
             },
             {
@@ -680,6 +680,8 @@ const PromotionManagement: React.FC = () => {
         }
     };
 
+   
+
     return (
         <div className="container-fluid">
             <div className="main-content">
@@ -751,7 +753,7 @@ const PromotionManagement: React.FC = () => {
                             </Button>,
                         ]}
                         destroyOnClose={true} // Ensure modal unmounts on close
-                        width={800}
+                        width={1000}
                         style={{ maxWidth: '90%' }}
                     >
                         <Form form={addForm} layout="vertical" initialValues={{ promotionStatus: true }}>
@@ -778,9 +780,6 @@ const PromotionManagement: React.FC = () => {
                                         </Select>
                                     </Form.Item>
                                 </Col>
-                            </Row>
-
-                            <Row gutter={16}>
                                 <Col span={12}>
                                     <Form.Item
                                         label="Loại món ăn"
@@ -822,6 +821,11 @@ const PromotionManagement: React.FC = () => {
                                         />
                                     </Form.Item>
                                 </Col>
+                            </Row>
+
+                            <Row gutter={16}>
+                                
+                                
                             </Row>
 
                             <Row gutter={16}>

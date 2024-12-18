@@ -80,10 +80,11 @@ const LoginRegisterComponent: React.FC = () => {
             [name]: value,
         }));
     };
-
     const handleSignUpSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
-        setErrorMessage('');
+    
+        // Reset errors và message trước khi bắt đầu kiểm tra mới
+        setErrorMessage('');  // Reset thông báo lỗi chung
         setErrors({
             username: '',
             full_name: '',
@@ -92,35 +93,44 @@ const LoginRegisterComponent: React.FC = () => {
             phoneNumber: '',
             agree: '',
         });
-        setIsLoading(true);
-
+    
+        setIsLoading(true); // Bắt đầu loading
+    
         const vietnamPhoneRegex = /^(03|05|07|08|09|01[2689])+([0-9]{8,9})$/;
         const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-
+    
         let valid = true;
         const newErrors = { ...errors };
-
+    
+        // Kiểm tra lỗi từng trường dữ liệu
         if (!vietnamPhoneRegex.test(signUpData.phoneNumber)) {
             newErrors.phoneNumber = t('signIn.invalidPhone') || 'Invalid phone number';
             valid = false;
         }
-
+    
+        if (signUpData.password.length < 8) {
+            newErrors.password = t('checkout.password_error') || 'Password must be at least 8 characters';
+            valid = false;
+        }
+    
         if (!gmailRegex.test(signUpData.email)) {
             newErrors.email = t('signIn.invalidEmail') || 'Invalid email';
             valid = false;
         }
-
+    
         if (!signUpData.agree) {
             newErrors.agree = t('signIn.agreeRequired') || 'You must agree to the terms';
             valid = false;
         }
-
+    
         if (!valid) {
+            // Nếu có lỗi, cập nhật lỗi vào state
             setErrors(newErrors);
-            setIsLoading(false);
-            return;
+            setIsLoading(false); // Kết thúc loading
+            return;  // Dừng lại nếu dữ liệu không hợp lệ
         }
-
+    
+        // Kiểm tra tên người dùng, email và số điện thoại đã tồn tại chưa
         try {
             const checkUsernameResponse = await fetch(`https://wanrenbuffet.online/api-data/Customer/search/existsByUsername?username=${encodeURIComponent(signUpData.username)}`);
             if (!checkUsernameResponse.ok) {
@@ -131,7 +141,7 @@ const LoginRegisterComponent: React.FC = () => {
                 newErrors.username = t('signIn.usernameExists') || 'Username already exists';
                 valid = false;
             }
-
+    
             const checkEmailResponse = await fetch(`https://wanrenbuffet.online/api-data/Customer/search/existsByEmail?email=${encodeURIComponent(signUpData.email)}`);
             if (!checkEmailResponse.ok) {
                 throw new Error('Failed to check email');
@@ -141,7 +151,7 @@ const LoginRegisterComponent: React.FC = () => {
                 newErrors.email = t('signIn.emailExists') || 'Email already exists';
                 valid = false;
             }
-
+    
             const checkPhoneResponse = await fetch(`https://wanrenbuffet.online/api-data/Customer/search/existsByPhoneNumber?phoneNumber=${encodeURIComponent(signUpData.phoneNumber)}`);
             if (!checkPhoneResponse.ok) {
                 throw new Error('Failed to check phone number');
@@ -151,13 +161,14 @@ const LoginRegisterComponent: React.FC = () => {
                 newErrors.phoneNumber = t('signIn.phoneExists') || 'Phone number already exists';
                 valid = false;
             }
-
+    
             if (!valid) {
+                // Nếu có lỗi trong khi kiểm tra username/email/phone, cập nhật và dừng lại
                 setErrors(newErrors);
-                setIsLoading(false);
+                setIsLoading(false); // Kết thúc loading
                 return;
             }
-
+    
         } catch (err) {
             console.error('Error checking username, email or phone number:', err);
             setErrorMessage(t('signIn.checkError') || 'Error checking data');
@@ -165,7 +176,8 @@ const LoginRegisterComponent: React.FC = () => {
             setIsLoading(false);
             return;
         }
-
+    
+        // Tạo người dùng mới
         const newUser = {
             username: signUpData.username,
             email: signUpData.email,
@@ -178,14 +190,15 @@ const LoginRegisterComponent: React.FC = () => {
             accountStatus: true,
             updatedDate: null
         };
-
+    
+        // Gửi yêu cầu đăng ký người dùng
         try {
             const response = await fetch('https://wanrenbuffet.online/api/customer/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newUser),
             });
-
+    
             const result = await response.json();
             if (response.ok) {
                 openNotification('success', t('signIn.success') || 'Success', t('signIn.registerSuccess') || 'Register successful!');
@@ -208,9 +221,10 @@ const LoginRegisterComponent: React.FC = () => {
             setErrorMessage(t('signIn.tryAgain') || 'An error occurred. Please try again.');
             openNotification('error', t('signIn.error'), t('signIn.tryAgain') || 'An error occurred. Please try again.');
         } finally {
-            setIsLoading(false);
+            setIsLoading(false); // Kết thúc loading
         }
     };
+    
 
     const handleSignInSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();

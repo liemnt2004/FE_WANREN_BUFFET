@@ -685,7 +685,8 @@ const OrdersContent: React.FC<HistoryOrderProps> = ({
                                         <p>
                                             {(() => {
                                                 const status = order.orderStatus;
-
+                                                    console.log(status);
+                                                    
                                                 switch (status) {
                                                     case "PREPARING_ORDER":
                                                         return (
